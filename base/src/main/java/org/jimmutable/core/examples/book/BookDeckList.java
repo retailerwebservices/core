@@ -30,14 +30,14 @@ final public class BookDeckList extends StandardImmutableListDeck<BookDeckList, 
 	
 	public BookDeckList()
 	{
-		this(Collections.EMPTY_LIST);
+		this(Collections.emptyList());
 	}
 	
 	public BookDeckList(Collection<Book> books)
 	{
 		super();
 		
-		this.books = new FieldArrayList();
+		this.books = new FieldArrayList<>();
 		this.books.addAll(books);
 		
 		complete();
@@ -45,12 +45,12 @@ final public class BookDeckList extends StandardImmutableListDeck<BookDeckList, 
 	
 	private BookDeckList(Builder builder)
 	{
-		books = new FieldArrayList();
+		books = new FieldArrayList<>();
 	}
 	
 	public BookDeckList(ObjectParseTree t)
 	{
-		books = t.getCollection(FIELD_BOOKS, new FieldArrayList(), ReadAs.OBJECT, ObjectParseTree.OnError.SKIP);
+		books = t.getCollection(FIELD_BOOKS, new FieldArrayList<>(), ReadAs.OBJECT, ObjectParseTree.OnError.SKIP);
 	}
 	
 	public TypeName getTypeName() 
@@ -78,11 +78,16 @@ final public class BookDeckList extends StandardImmutableListDeck<BookDeckList, 
 		Validator.containsNoNulls(getSimpleContents());
 		Validator.containsOnlyInstancesOf(Book.class, getSimpleContents());
 	}
+    
+    @Override
+    public Builder getBuilder()
+    {
+        return new Builder(this);
+    }
 
-	static public class Builder
+	
+	static public class Builder extends StandardImmutableListDeck.Builder<BookDeckList, Book>
 	{
-		private BookDeckList under_construction;
-		
 		public Builder()
 		{
 			under_construction = new BookDeckList(this);
@@ -90,18 +95,13 @@ final public class BookDeckList extends StandardImmutableListDeck<BookDeckList, 
 		
 		public Builder(BookDeckList starting_point)
 		{
-			under_construction = starting_point.deepMutableCloneForBuilder();
+			super(starting_point);
 		}
 
 		public void addBook(Book book)
 		{
 			if ( book == null ) return;
 			under_construction.getSimpleContents().add(book);
-		}
-		
-		public BookDeckList create()
-		{
-			return under_construction.deepClone();
 		}
 	}
 }

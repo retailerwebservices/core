@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.jimmutable.core.decks.StandardImmutableSetDeck;
-import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.fields.FieldHashSet;
 import org.jimmutable.core.fields.FieldSet;
 import org.jimmutable.core.serialization.FieldName;
@@ -30,14 +29,14 @@ final public class BookDeckSet extends StandardImmutableSetDeck<BookDeckSet, Boo
 	
 	public BookDeckSet()
 	{
-		this(Collections.EMPTY_LIST);
+		this(Collections.emptySet());
 	}
 	
 	public BookDeckSet(Collection<Book> books)
 	{
 		super();
 		
-		this.books = new FieldHashSet();
+		this.books = new FieldHashSet<>();
 		this.books.addAll(books);
 		
 		complete();
@@ -50,7 +49,7 @@ final public class BookDeckSet extends StandardImmutableSetDeck<BookDeckSet, Boo
 	
 	public BookDeckSet(ObjectParseTree t)
 	{
-		books = t.getCollection(FIELD_BOOKS, new FieldHashSet(), ReadAs.OBJECT, ObjectParseTree.OnError.SKIP);
+		books = t.getCollection(FIELD_BOOKS, new FieldHashSet<>(), ReadAs.OBJECT, ObjectParseTree.OnError.SKIP);
 	}
 	
 	public TypeName getTypeName() 
@@ -73,13 +72,18 @@ final public class BookDeckSet extends StandardImmutableSetDeck<BookDeckSet, Boo
 		Validator.containsOnlyInstancesOf(Book.class, books);
 	}
 	
+	@Override
 	public FieldSet<Book> getSimpleContents() { return books; }
 	
-	
-	static public class Builder
+	@Override
+	public Builder getBuilder()
 	{
-		private BookDeckSet under_construction;
-		
+	    return new Builder(this);
+	}
+	
+	
+	static public class Builder extends StandardImmutableSetDeck.Builder<BookDeckSet, Book>
+	{
 		public Builder()
 		{
 			under_construction = new BookDeckSet(this);
@@ -87,18 +91,13 @@ final public class BookDeckSet extends StandardImmutableSetDeck<BookDeckSet, Boo
 		
 		public Builder(BookDeckSet starting_point)
 		{
-			under_construction = starting_point.deepMutableCloneForBuilder();
+			super(starting_point);
 		}
 
 		public void addBook(Book book)
 		{
 			if ( book == null ) return;
 			under_construction.getSimpleContents().add(book);
-		}
-		
-		public BookDeckSet create()
-		{
-			return under_construction.deepClone();
 		}
 	}
 }
