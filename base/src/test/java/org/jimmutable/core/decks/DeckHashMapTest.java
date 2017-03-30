@@ -38,7 +38,7 @@ public class DeckHashMapTest extends TestCase
 
     public void testBookSet()
     {
-    	List<Book> test_books = new ArrayList();
+    	List<Book> test_books = new ArrayList<>();
     	
     	test_books.add(new Book("Grapes of Wrath", 1211, "33242347234", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
     	test_books.add(new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
@@ -54,12 +54,12 @@ public class DeckHashMapTest extends TestCase
 		
 		assertEquals(first_library.getSimpleContents().size(),2);
 		
-		assert(first_library.getSimpleContents().containsKey("jim_first_book"));
-		assert(first_library.getSimpleContents().containsKey("jim_second_book"));
+		assertTrue(first_library.getSimpleContents().containsKey("jim_first_book"));
+		assertTrue(first_library.getSimpleContents().containsKey("jim_second_book"));
 		
 		// now test an "append" builder...
 		
-		builder = new Builder(first_library);
+		builder = first_library.createBuilder();
 		
 		builder.putBook("jim_first_book",test_books.get(2));
 		builder.putBook("jim_third_book",test_books.get(3));
@@ -72,6 +72,95 @@ public class DeckHashMapTest extends TestCase
 		System.out.println(second_library.toJavaCode(Format.XML_PRETTY_PRINT,"obj"));
 		
 		System.out.println(second_library.toJavaCode(Format.JSON_PRETTY_PRINT,"obj"));
+    }
+    
+    public void testCloneOperations()
+    {
+        final Book grapes_of_wrath = new Book("Grapes of Wrath", 1211, "33242347234", BindingType.TRADE_PAPER_BACK, "John Steinbeck");
+        final Book of_mice_and_men = new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, "John Steinbeck");
+        final Book o_lost = new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe");
+        
+        // Init
+        Builder builder = new Builder();
+        
+        builder.putBook("jim_first_book", grapes_of_wrath);
+        builder.putBook("jim_second_book", of_mice_and_men);
+        
+        BookDeckMap first_library = builder.create();
+        
+        assertEquals(first_library.getSimpleContents().size(),2);
+        assertTrue(first_library.getSimpleContents().containsKey("jim_first_book"));
+        assertTrue(first_library.getSimpleContents().get("jim_first_book").equals(grapes_of_wrath));
+        assertTrue(first_library.getSimpleContents().containsKey("jim_second_book"));
+        assertTrue(first_library.getSimpleContents().get("jim_second_book").equals(of_mice_and_men));
+        
+        // Put
+        BookDeckMap second_library = first_library.clonePut("jim_third_book", o_lost);
+        
+        assertEquals(first_library.getSimpleContents().size(),2);
+        assertTrue(first_library.getSimpleContents().containsKey("jim_first_book"));
+        assertTrue(first_library.getSimpleContents().get("jim_first_book").equals(grapes_of_wrath));
+        assertTrue(first_library.getSimpleContents().containsKey("jim_second_book"));
+        assertTrue(first_library.getSimpleContents().get("jim_second_book").equals(of_mice_and_men));
+        
+        assertEquals(second_library.getSimpleContents().size(),3);
+        assertTrue(second_library.getSimpleContents().containsKey("jim_first_book"));
+        assertTrue(second_library.getSimpleContents().get("jim_first_book").equals(grapes_of_wrath));
+        assertTrue(second_library.getSimpleContents().containsKey("jim_second_book"));
+        assertTrue(second_library.getSimpleContents().get("jim_second_book").equals(of_mice_and_men));
+        assertTrue(second_library.getSimpleContents().containsKey("jim_third_book"));
+        assertTrue(second_library.getSimpleContents().get("jim_third_book").equals(o_lost));
+        
+        // Remove
+        BookDeckMap third_library = second_library.cloneRemove("jim_third_book");
+        
+        assertEquals(second_library.getSimpleContents().size(),3);
+        assertTrue(second_library.getSimpleContents().containsKey("jim_first_book"));
+        assertTrue(second_library.getSimpleContents().get("jim_first_book").equals(grapes_of_wrath));
+        assertTrue(second_library.getSimpleContents().containsKey("jim_second_book"));
+        assertTrue(second_library.getSimpleContents().get("jim_second_book").equals(of_mice_and_men));
+        assertTrue(second_library.getSimpleContents().containsKey("jim_third_book"));
+        assertTrue(second_library.getSimpleContents().get("jim_third_book").equals(o_lost));
+        
+        assertEquals(third_library.getSimpleContents().size(),2);
+        assertTrue(third_library.getSimpleContents().containsKey("jim_first_book"));
+        assertTrue(third_library.getSimpleContents().get("jim_first_book").equals(grapes_of_wrath));
+        assertTrue(third_library.getSimpleContents().containsKey("jim_second_book"));
+        assertTrue(third_library.getSimpleContents().get("jim_second_book").equals(of_mice_and_men));
+        
+        assertEquals(first_library, third_library);
+        
+        // Clear
+        BookDeckMap fourth_library = third_library.cloneClear();
+        
+        assertEquals(third_library.getSimpleContents().size(),2);
+        assertTrue(third_library.getSimpleContents().containsKey("jim_first_book"));
+        assertTrue(third_library.getSimpleContents().get("jim_first_book").equals(grapes_of_wrath));
+        assertTrue(third_library.getSimpleContents().containsKey("jim_second_book"));
+        assertTrue(third_library.getSimpleContents().get("jim_second_book").equals(of_mice_and_men));
+        
+        assertEquals(fourth_library.getSimpleContents().size(), 0);
+        
+        // PutAll
+        BookDeckMap fifth_library = fourth_library.clonePutAll(second_library.getSimpleContents());
+        
+        assertEquals(second_library.getSimpleContents().size(),3);
+        assertTrue(second_library.getSimpleContents().containsKey("jim_first_book"));
+        assertTrue(second_library.getSimpleContents().get("jim_first_book").equals(grapes_of_wrath));
+        assertTrue(second_library.getSimpleContents().containsKey("jim_second_book"));
+        assertTrue(second_library.getSimpleContents().get("jim_second_book").equals(of_mice_and_men));
+        assertTrue(second_library.getSimpleContents().containsKey("jim_third_book"));
+        assertTrue(second_library.getSimpleContents().get("jim_third_book").equals(o_lost));
+        
+        assertEquals(fourth_library.getSimpleContents().size(), 0);
+        
+        assertEquals(fifth_library.getSimpleContents().size(),3);
+        assertTrue(fifth_library.getSimpleContents().containsKey("jim_first_book"));
+        assertTrue(fifth_library.getSimpleContents().get("jim_first_book").equals(grapes_of_wrath));
+        assertTrue(fifth_library.getSimpleContents().containsKey("jim_second_book"));
+        assertTrue(fifth_library.getSimpleContents().get("jim_second_book").equals(of_mice_and_men));
+        assertTrue(fifth_library.getSimpleContents().containsKey("jim_third_book"));
+        assertTrue(fifth_library.getSimpleContents().get("jim_third_book").equals(o_lost));
     }
     
     public void testSerializationXML()
@@ -125,7 +214,7 @@ public class DeckHashMapTest extends TestCase
     	assert(obj.getSimpleContents().containsKey("jim_second_book"));
     	assert(obj.getSimpleContents().containsKey("jim_third_book"));
     	
-    	List<Book> test_books = new ArrayList();
+    	List<Book> test_books = new ArrayList<>();
     	
     	test_books.add(new Book("Grapes of Wrath", 1211, "33242347234", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
     	test_books.add(new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
@@ -192,7 +281,7 @@ public class DeckHashMapTest extends TestCase
     	assert(obj.getSimpleContents().containsKey("jim_second_book"));
     	assert(obj.getSimpleContents().containsKey("jim_third_book"));
     	
-    	List<Book> test_books = new ArrayList();
+    	List<Book> test_books = new ArrayList<>();
     	
     	test_books.add(new Book("Grapes of Wrath", 1211, "33242347234", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
     	test_books.add(new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));

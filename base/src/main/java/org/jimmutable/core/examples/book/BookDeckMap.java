@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.jimmutable.core.decks.StandardImmutableMapDeck;
 import org.jimmutable.core.fields.FieldHashMap;
-import org.jimmutable.core.fields.FieldHashSet;
 import org.jimmutable.core.fields.FieldMap;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.TypeName;
@@ -54,7 +53,7 @@ final public class BookDeckMap extends StandardImmutableMapDeck<BookDeckMap, Str
 	
 	public BookDeckMap(ObjectParseTree t)
 	{
-		books = t.getMap(FIELD_BOOKS, new FieldHashMap(), ReadAs.STRING, ReadAs.OBJECT, ObjectParseTree.OnError.SKIP);
+		books = t.getMap(FIELD_BOOKS, new FieldHashMap<>(), ReadAs.STRING, ReadAs.OBJECT, ObjectParseTree.OnError.SKIP);
 	}
 	
 	public TypeName getTypeName() 
@@ -68,6 +67,7 @@ final public class BookDeckMap extends StandardImmutableMapDeck<BookDeckMap, Str
 	}
 	
 
+    @Override
 	public FieldMap<String,Book> getSimpleContents() { return books; }
 
 	public void normalize() 
@@ -79,10 +79,15 @@ final public class BookDeckMap extends StandardImmutableMapDeck<BookDeckMap, Str
 		Validator.containsOnlyInstancesOf(String.class, Book.class, books);
 	}
 	
-	static public class Builder
+	@Override
+	public Builder createBuilder()
 	{
-		private BookDeckMap under_construction;
-		
+	    return new Builder(this);
+	}
+	
+	
+	final static public class Builder extends StandardImmutableMapDeck.Builder<BookDeckMap, String, Book>
+	{
 		public Builder()
 		{
 			under_construction = new BookDeckMap(this);
@@ -90,18 +95,13 @@ final public class BookDeckMap extends StandardImmutableMapDeck<BookDeckMap, Str
 		
 		public Builder(BookDeckMap starting_point)
 		{
-			under_construction = starting_point.deepMutableCloneForBuilder();
+			super(starting_point);
 		}
 
 		public void putBook(String key, Book book)
 		{
 			if ( key == null || book == null ) return;
 			under_construction.getSimpleContents().put(key,book);
-		}
-		
-		public BookDeckMap create()
-		{
-			return under_construction.deepClone();
 		}
 	}
 }

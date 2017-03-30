@@ -1,6 +1,7 @@
 package org.jimmutable.core.decks;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.jimmutable.core.examples.book.BindingType;
@@ -9,7 +10,6 @@ import org.jimmutable.core.examples.book.BookDeckList;
 import org.jimmutable.core.examples.book.BookDeckList.Builder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
-import org.jimmutable.core.serialization.JavaCodeUtils;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 
 import junit.framework.Test;
@@ -39,7 +39,7 @@ public class DeckArrayListTest extends TestCase
 
     public void testLibrary()
     {
-    	List<String> authors = new ArrayList();
+    	List<String> authors = new ArrayList<>();
 		authors.add("John Steinbeck");
 		
 		Builder builder = new Builder();
@@ -55,11 +55,9 @@ public class DeckArrayListTest extends TestCase
 		assertEquals(first_library.getSimpleContents().get(1).getSimpleTitle(),"OF MICE AND MEN");
 		
 		// now test an "append" builder...
+		builder = first_library.createBuilder();
 		
-		builder = new Builder(first_library);
-		
-		
-		authors = new ArrayList();
+		authors = new ArrayList<>();
 		authors.add("Thomas Wolfe");
 		
 		builder.addBook(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, authors));
@@ -83,6 +81,143 @@ public class DeckArrayListTest extends TestCase
 		System.out.println(second_library.toJavaCode(Format.XML_PRETTY_PRINT,"obj"));
 		
 		System.out.println(second_library.toJavaCode(Format.JSON_PRETTY_PRINT,"obj"));
+    }
+    
+    public void testCloneOperations()
+    {
+        final Book grapes_of_wrath = new Book("Grapes of Wrath", 1211, "33242347234", BindingType.TRADE_PAPER_BACK, "John Steinbeck");
+        final Book of_mice_and_men = new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, "John Steinbeck");
+        final Book o_lost = new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe");
+        
+        // Init
+        Builder builder = new Builder();
+        
+        builder.addBook(grapes_of_wrath);
+        builder.addBook(of_mice_and_men);
+        
+        BookDeckList first_library = builder.create();
+        
+        assertEquals(first_library.getSimpleContents().size(),2);
+        
+        assertEquals(first_library.getSimpleContents().get(0).getSimpleTitle(),"GRAPES OF WRATH");
+        assertEquals(first_library.getSimpleContents().get(1).getSimpleTitle(),"OF MICE AND MEN");
+        
+        // Add
+        BookDeckList second_library = first_library.cloneAdd(o_lost);
+        
+        assertEquals(first_library.getSimpleContents().size(), 2);
+        assertEquals(first_library.getSimpleContents().get(0).getSimpleTitle(),"GRAPES OF WRATH");
+        assertEquals(first_library.getSimpleContents().get(1).getSimpleTitle(),"OF MICE AND MEN");
+        
+        assertEquals(second_library.getSimpleContents().size(), 3);
+        assertEquals(second_library.getSimpleContents().get(0).getSimpleTitle(),"GRAPES OF WRATH");
+        assertEquals(second_library.getSimpleContents().get(1).getSimpleTitle(),"OF MICE AND MEN");
+        assertEquals(second_library.getSimpleContents().get(2).getSimpleTitle(),"O LOST");
+        
+        // Remove - index
+        BookDeckList third_library = second_library.cloneRemove(1);
+        
+        assertEquals(second_library.getSimpleContents().size(), 3);
+        assertEquals(second_library.getSimpleContents().get(0).getSimpleTitle(),"GRAPES OF WRATH");
+        assertEquals(second_library.getSimpleContents().get(1).getSimpleTitle(),"OF MICE AND MEN");
+        assertEquals(second_library.getSimpleContents().get(2).getSimpleTitle(),"O LOST");
+        
+        assertEquals(third_library.getSimpleContents().size(), 2);
+        assertEquals(third_library.getSimpleContents().get(0).getSimpleTitle(),"GRAPES OF WRATH");
+        assertEquals(third_library.getSimpleContents().get(1).getSimpleTitle(),"O LOST");
+        
+        // Remove - Object
+        third_library = second_library.cloneRemove(grapes_of_wrath);
+        
+        assertEquals(second_library.getSimpleContents().size(), 3);
+        assertEquals(second_library.getSimpleContents().get(0).getSimpleTitle(),"GRAPES OF WRATH");
+        assertEquals(second_library.getSimpleContents().get(1).getSimpleTitle(),"OF MICE AND MEN");
+        assertEquals(second_library.getSimpleContents().get(2).getSimpleTitle(),"O LOST");
+        
+        assertEquals(third_library.getSimpleContents().size(), 2);
+        assertEquals(third_library.getSimpleContents().get(0).getSimpleTitle(),"OF MICE AND MEN");
+        assertEquals(third_library.getSimpleContents().get(1).getSimpleTitle(),"O LOST");
+        
+        // Clear
+        BookDeckList fourth_library = third_library.cloneClear();
+        
+        assertEquals(third_library.getSimpleContents().size(), 2);
+        assertEquals(third_library.getSimpleContents().get(0).getSimpleTitle(),"OF MICE AND MEN");
+        assertEquals(third_library.getSimpleContents().get(1).getSimpleTitle(),"O LOST");
+        
+        assertEquals(fourth_library.getSimpleContents().size(), 0);
+        
+        // AddAll
+        BookDeckList fifth_library = fourth_library.cloneAddAll(Arrays.asList(grapes_of_wrath, of_mice_and_men));
+        
+        assertEquals(fourth_library.getSimpleContents().size(), 0);
+        
+        assertEquals(fifth_library.getSimpleContents().size(), 2);
+        assertEquals(fifth_library.getSimpleContents().get(0).getSimpleTitle(),"GRAPES OF WRATH");
+        assertEquals(fifth_library.getSimpleContents().get(1).getSimpleTitle(),"OF MICE AND MEN");
+        
+        assertEquals(first_library, fifth_library);
+        
+        // RetainAll
+        BookDeckList sixth_library = second_library.cloneRetainAll(Arrays.asList(grapes_of_wrath, o_lost));
+        
+        assertEquals(second_library.getSimpleContents().size(), 3);
+        assertEquals(second_library.getSimpleContents().get(0).getSimpleTitle(),"GRAPES OF WRATH");
+        assertEquals(second_library.getSimpleContents().get(1).getSimpleTitle(),"OF MICE AND MEN");
+        assertEquals(second_library.getSimpleContents().get(2).getSimpleTitle(),"O LOST");
+        
+        assertEquals(sixth_library.getSimpleContents().size(), 2);
+        assertEquals(sixth_library.getSimpleContents().get(0).getSimpleTitle(),"GRAPES OF WRATH");
+        assertEquals(sixth_library.getSimpleContents().get(1).getSimpleTitle(),"O LOST");
+
+        // RemoveAll
+        BookDeckList seventh_library = second_library.cloneRemoveAll(Arrays.asList(grapes_of_wrath, o_lost));
+        
+        assertEquals(second_library.getSimpleContents().size(), 3);
+        assertEquals(second_library.getSimpleContents().get(0).getSimpleTitle(),"GRAPES OF WRATH");
+        assertEquals(second_library.getSimpleContents().get(1).getSimpleTitle(),"OF MICE AND MEN");
+        assertEquals(second_library.getSimpleContents().get(2).getSimpleTitle(),"O LOST");
+        
+        assertEquals(seventh_library.getSimpleContents().size(), 1);
+        assertEquals(seventh_library.getSimpleContents().get(0).getSimpleTitle(),"OF MICE AND MEN");
+        
+        // Set
+        BookDeckList eighth_library = third_library.cloneSet(0, grapes_of_wrath);
+        
+        assertEquals(third_library.getSimpleContents().size(), 2);
+        assertEquals(third_library.getSimpleContents().get(0).getSimpleTitle(),"OF MICE AND MEN");
+        assertEquals(third_library.getSimpleContents().get(1).getSimpleTitle(),"O LOST");
+        
+        assertEquals(eighth_library.getSimpleContents().size(), 2);
+        assertEquals(eighth_library.getSimpleContents().get(0).getSimpleTitle(),"GRAPES OF WRATH");
+        assertEquals(eighth_library.getSimpleContents().get(1).getSimpleTitle(),"O LOST");
+        
+        // Add @ index
+        BookDeckList ninth_library = eighth_library.cloneAdd(1, of_mice_and_men);
+        
+        assertEquals(eighth_library.getSimpleContents().size(), 2);
+        assertEquals(eighth_library.getSimpleContents().get(0).getSimpleTitle(),"GRAPES OF WRATH");
+        assertEquals(eighth_library.getSimpleContents().get(1).getSimpleTitle(),"O LOST");
+        
+        assertEquals(ninth_library.getSimpleContents().size(), 3);
+        assertEquals(ninth_library.getSimpleContents().get(0).getSimpleTitle(),"GRAPES OF WRATH");
+        assertEquals(ninth_library.getSimpleContents().get(1).getSimpleTitle(),"OF MICE AND MEN");
+        assertEquals(ninth_library.getSimpleContents().get(2).getSimpleTitle(),"O LOST");
+        
+        // AddAll @ index
+        BookDeckList tenth_library = ninth_library.cloneAddAll(2, Arrays.asList(grapes_of_wrath, of_mice_and_men));
+        
+        assertEquals(ninth_library.getSimpleContents().size(), 3);
+        assertEquals(ninth_library.getSimpleContents().get(0).getSimpleTitle(),"GRAPES OF WRATH");
+        assertEquals(ninth_library.getSimpleContents().get(1).getSimpleTitle(),"OF MICE AND MEN");
+        assertEquals(ninth_library.getSimpleContents().get(2).getSimpleTitle(),"O LOST");
+        
+        assertEquals(tenth_library.getSimpleContents().size(), 5);
+        assertEquals(tenth_library.getSimpleContents().get(0).getSimpleTitle(),"GRAPES OF WRATH");
+        assertEquals(tenth_library.getSimpleContents().get(1).getSimpleTitle(),"OF MICE AND MEN");
+        assertEquals(tenth_library.getSimpleContents().get(2).getSimpleTitle(),"GRAPES OF WRATH");
+        assertEquals(tenth_library.getSimpleContents().get(3).getSimpleTitle(),"OF MICE AND MEN");
+        assertEquals(tenth_library.getSimpleContents().get(4).getSimpleTitle(),"O LOST");
     }
     
     public void testSerializationXML()
