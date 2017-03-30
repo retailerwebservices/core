@@ -10,7 +10,7 @@ import org.jimmutable.core.objects.StandardImmutableObject;
 abstract public class StandardImmutableDeck<T extends StandardImmutableDeck<T, E>, E> extends StandardImmutableObject<T> implements Iterable<E>
 {
     abstract public FieldCollection<E> getSimpleContents();
-    abstract public Builder<T, E> getBuilder();
+    abstract public Builder<T, E> createBuilder();
     
     
     @Override
@@ -50,42 +50,42 @@ abstract public class StandardImmutableDeck<T extends StandardImmutableDeck<T, E
     
     public T cloneAdd(E element)
     {
-        Builder<T, E> builder = getBuilder();
+        Builder<T, E> builder = createBuilder();
         builder.getSimpleContents().add(element);
         return builder.create();
     }
     
     public T cloneRemove(Object obj)
     {
-        Builder<T, E> builder = getBuilder();
+        Builder<T, E> builder = createBuilder();
         builder.getSimpleContents().remove(obj);
         return builder.create();
     }
     
     public T cloneAddAll(Collection<? extends E> elements)
     {
-        Builder<T, E> builder = getBuilder();
+        Builder<T, E> builder = createBuilder();
         builder.getSimpleContents().addAll(elements);
         return builder.create();
     }
     
     public T cloneRetainAll(Collection<?> elements)
     {
-        Builder<T, E> builder = getBuilder();
+        Builder<T, E> builder = createBuilder();
         builder.getSimpleContents().retainAll(elements);
         return builder.create();
     }
     
     public T cloneRemoveAll(Collection<?> elements)
     {
-        Builder<T, E> builder = getBuilder();
+        Builder<T, E> builder = createBuilder();
         builder.getSimpleContents().removeAll(elements);
         return builder.create();
     }
     
     public T cloneClear()
     {
-        Builder<T, E> builder = getBuilder();
+        Builder<T, E> builder = createBuilder();
         builder.getSimpleContents().clear();
         return builder.create();
     }

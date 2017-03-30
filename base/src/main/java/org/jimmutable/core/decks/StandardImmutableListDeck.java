@@ -10,33 +10,33 @@ abstract public class StandardImmutableListDeck<T extends StandardImmutableListD
     abstract public FieldList<E> getSimpleContents();
     
     @Override
-    abstract public Builder<T, E> getBuilder();
+    abstract public Builder<T, E> createBuilder();
     
     
     public T cloneAddAll(int index, Collection<? extends E> elements)
     {
-        Builder<T, E> builder = getBuilder();
+        Builder<T, E> builder = createBuilder();
         builder.getSimpleContents().addAll(index, elements);
         return builder.create();
     }
     
     public T cloneSet(int index, E element)
     {
-        Builder<T, E> builder = getBuilder();
+        Builder<T, E> builder = createBuilder();
         builder.getSimpleContents().set(index, element);
         return builder.create();
     }
     
     public T cloneAdd(int index, E element)
     {
-        Builder<T, E> builder = getBuilder();
+        Builder<T, E> builder = createBuilder();
         builder.getSimpleContents().add(index, element);
         return builder.create();
     }
     
     public T cloneRemove(int index)
     {
-        Builder<T, E> builder = getBuilder();
+        Builder<T, E> builder = createBuilder();
         builder.getSimpleContents().remove(index);
         return builder.create();
     }

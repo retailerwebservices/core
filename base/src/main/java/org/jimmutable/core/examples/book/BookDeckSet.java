@@ -76,13 +76,13 @@ final public class BookDeckSet extends StandardImmutableSetDeck<BookDeckSet, Boo
 	public FieldSet<Book> getSimpleContents() { return books; }
 	
 	@Override
-	public Builder getBuilder()
+	public Builder createBuilder()
 	{
 	    return new Builder(this);
 	}
 	
 	
-	static public class Builder extends StandardImmutableSetDeck.Builder<BookDeckSet, Book>
+	final static public class Builder extends StandardImmutableSetDeck.Builder<BookDeckSet, Book>
 	{
 		public Builder()
 		{

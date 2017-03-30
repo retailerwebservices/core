@@ -1,16 +1,15 @@
 package org.jimmutable.core.decks;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.jimmutable.core.examples.book.BindingType;
 import org.jimmutable.core.examples.book.Book;
-import org.jimmutable.core.examples.book.BookDeckList;
 import org.jimmutable.core.examples.book.BookDeckSet;
 import org.jimmutable.core.examples.book.BookDeckSet.Builder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
-import org.jimmutable.core.serialization.JavaCodeUtils;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 
 import junit.framework.Test;
@@ -40,7 +39,7 @@ public class DeckHashSetTest extends TestCase
 
     public void testBookSet()
     {
-    	List<Book> test_books = new ArrayList();
+    	List<Book> test_books = new ArrayList<>();
     	
     	test_books.add(new Book("Grapes of Wrath", 1211, "33242347234", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
     	test_books.add(new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
@@ -62,7 +61,7 @@ public class DeckHashSetTest extends TestCase
 		
 		// now test an "append" builder...
 		
-		builder = new Builder(first_library);
+		builder = first_library.createBuilder();
 		
 		builder.addBook(test_books.get(2));
 		builder.addBook(test_books.get(3));
@@ -80,7 +79,92 @@ public class DeckHashSetTest extends TestCase
 		System.out.println(second_library.toJavaCode(Format.JSON_PRETTY_PRINT,"obj"));
     }
     
+    public void testCloneOperations()
+    {
+        final Book grapes_of_wrath = new Book("Grapes of Wrath", 1211, "33242347234", BindingType.TRADE_PAPER_BACK, "John Steinbeck");
+        final Book of_mice_and_men = new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, "John Steinbeck");
+        final Book o_lost = new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe");
+        
+        // Init
+        Builder builder = new Builder();
+        
+        builder.addBook(grapes_of_wrath);
+        builder.addBook(of_mice_and_men);
+        
+        BookDeckSet first_library = builder.create();
+        
+        assertEquals(first_library.getSimpleContents().size(),2);
+        
+        assertTrue(first_library.getSimpleContents().contains(grapes_of_wrath));
+        assertTrue(first_library.getSimpleContents().contains(of_mice_and_men));
+        
+        // Add
+        BookDeckSet second_library = first_library.cloneAdd(o_lost);
+        
+        assertEquals(first_library.getSimpleContents().size(), 2);
+        assertTrue(first_library.getSimpleContents().contains(grapes_of_wrath));
+        assertTrue(first_library.getSimpleContents().contains(of_mice_and_men));
+        
+        assertEquals(second_library.getSimpleContents().size(), 3);
+        assertTrue(second_library.getSimpleContents().contains(grapes_of_wrath));
+        assertTrue(second_library.getSimpleContents().contains(of_mice_and_men));
+        assertTrue(second_library.getSimpleContents().contains(o_lost));
+        
+        // Remove
+        BookDeckSet third_library = second_library.cloneRemove(of_mice_and_men);
+        
+        assertEquals(second_library.getSimpleContents().size(), 3);
+        assertTrue(second_library.getSimpleContents().contains(grapes_of_wrath));
+        assertTrue(second_library.getSimpleContents().contains(of_mice_and_men));
+        assertTrue(second_library.getSimpleContents().contains(o_lost));
+        
+        assertEquals(third_library.getSimpleContents().size(), 2);
+        assertTrue(third_library.getSimpleContents().contains(grapes_of_wrath));
+        assertTrue(third_library.getSimpleContents().contains(o_lost));
+        
+        // Clear
+        BookDeckSet fourth_library = third_library.cloneClear();
+        
+        assertEquals(third_library.getSimpleContents().size(), 2);
+        assertTrue(third_library.getSimpleContents().contains(grapes_of_wrath));
+        assertTrue(third_library.getSimpleContents().contains(o_lost));
+        
+        assertEquals(fourth_library.getSimpleContents().size(), 0);
+        
+        // AddAll
+        BookDeckSet fifth_library = fourth_library.cloneAddAll(Arrays.asList(grapes_of_wrath, of_mice_and_men));
+        
+        assertEquals(fourth_library.getSimpleContents().size(), 0);
+        
+        assertEquals(fifth_library.getSimpleContents().size(), 2);
+        assertTrue(fifth_library.getSimpleContents().contains(grapes_of_wrath));
+        assertTrue(fifth_library.getSimpleContents().contains(of_mice_and_men));
+        
+        assertEquals(first_library, fifth_library);
+        
+        // RetainAll
+        BookDeckSet sixth_library = second_library.cloneRetainAll(Arrays.asList(grapes_of_wrath, o_lost));
+        
+        assertEquals(second_library.getSimpleContents().size(), 3);
+        assertTrue(second_library.getSimpleContents().contains(grapes_of_wrath));
+        assertTrue(second_library.getSimpleContents().contains(of_mice_and_men));
+        assertTrue(second_library.getSimpleContents().contains(o_lost));
+        
+        assertEquals(sixth_library.getSimpleContents().size(), 2);
+        assertTrue(sixth_library.getSimpleContents().contains(grapes_of_wrath));
+        assertTrue(sixth_library.getSimpleContents().contains(o_lost));
 
+        // RemoveAll
+        BookDeckSet seventh_library = second_library.cloneRemoveAll(Arrays.asList(grapes_of_wrath, o_lost));
+        
+        assertEquals(second_library.getSimpleContents().size(), 3);
+        assertTrue(second_library.getSimpleContents().contains(grapes_of_wrath));
+        assertTrue(second_library.getSimpleContents().contains(of_mice_and_men));
+        assertTrue(second_library.getSimpleContents().contains(o_lost));
+        
+        assertEquals(seventh_library.getSimpleContents().size(), 1);
+        assertTrue(seventh_library.getSimpleContents().contains(of_mice_and_men));
+    }
 
     public void testSerializationXML()
     {
@@ -117,7 +201,7 @@ public class DeckHashSetTest extends TestCase
     		BookDeckSet obj = (BookDeckSet)StandardObject.deserialize(obj_string);
     	
     	
-    	List<Book> test_books = new ArrayList();
+    	List<Book> test_books = new ArrayList<>();
     	
     	test_books.add(new Book("Grapes of Wrath", 1211, "33242347234", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
     	test_books.add(new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
@@ -167,7 +251,7 @@ public class DeckHashSetTest extends TestCase
     		BookDeckSet obj = (BookDeckSet)StandardObject.deserialize(obj_string);
     	
     	
-    	List<Book> test_books = new ArrayList();
+    	List<Book> test_books = new ArrayList<>();
     	
     	test_books.add(new Book("Grapes of Wrath", 1211, "33242347234", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
     	test_books.add(new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));

@@ -80,13 +80,13 @@ final public class BookDeckList extends StandardImmutableListDeck<BookDeckList, 
 	}
     
     @Override
-    public Builder getBuilder()
+    public Builder createBuilder()
     {
         return new Builder(this);
     }
 
 	
-	static public class Builder extends StandardImmutableListDeck.Builder<BookDeckList, Book>
+	final static public class Builder extends StandardImmutableListDeck.Builder<BookDeckList, Book>
 	{
 		public Builder()
 		{

@@ -80,13 +80,13 @@ final public class BookDeckMap extends StandardImmutableMapDeck<BookDeckMap, Str
 	}
 	
 	@Override
-	public Builder getBuilder()
+	public Builder createBuilder()
 	{
 	    return new Builder(this);
 	}
 	
 	
-	static public class Builder extends StandardImmutableMapDeck.Builder<BookDeckMap, String, Book>
+	final static public class Builder extends StandardImmutableMapDeck.Builder<BookDeckMap, String, Book>
 	{
 		public Builder()
 		{
