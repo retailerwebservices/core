@@ -3,6 +3,7 @@ package org.jimmutable.core.examples.product_data;
 import org.jimmutable.core.fields.FieldHashMap;
 import org.jimmutable.core.fields.FieldMap;
 import org.jimmutable.core.objects.StandardImmutableObject;
+import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.TypeName;
@@ -22,20 +23,15 @@ public class ItemSpecifications extends StandardImmutableObject<ItemSpecificatio
 {
 	static public final TypeName TYPE_NAME = new TypeName("jimmutable.examples.ItemSpecifications"); public TypeName getTypeName() { return TYPE_NAME; }
 	
-	static private final FieldName FIELD_ITEM_KEY = new FieldName("item_key");
-	static private final FieldName FIELD_ATTRIBUTES = new FieldName("attributes");
+	static public final FieldDefinition.StandardObject FIELD_ITEM_KEY = new FieldDefinition.StandardObject("item_key", null);
+	static public final FieldDefinition.Map FIELD_ATTRIBUTES = new FieldDefinition.Map("attributes",new FieldHashMap());
 	
 	private ItemKey item_key; // required
 	private FieldMap<ItemAttribute,String> attributes;
 	
-	public ItemSpecifications(Builder builder)
-	{
-		this.attributes = new FieldHashMap();
-	}
-	
 	public ItemSpecifications(ObjectParseTree reader)
 	{
-		item_key = (ItemKey)reader.getObject(FIELD_ITEM_KEY, null);
+		item_key = (ItemKey)reader.getObject(FIELD_ITEM_KEY);
 		attributes = reader.getMap(FIELD_ATTRIBUTES, new FieldHashMap(), ItemAttribute.READ_AS, ReadAs.STRING, ObjectParseTree.OnError.SKIP);
 	}
 
@@ -84,38 +80,6 @@ public class ItemSpecifications extends StandardImmutableObject<ItemSpecificatio
 		if ( !getSimpleItemKey().equals(other.getSimpleItemKey()) ) return false;
 		
 		return attributes.equals(other.attributes);
-	}
-
-	static public class Builder
-	{
-		private ItemSpecifications under_construction;
-		
-		public Builder()
-		{
-			under_construction = new ItemSpecifications(this);
-		}
-		
-		public Builder(ItemSpecifications starting_point)
-		{
-			under_construction = (ItemSpecifications)starting_point.deepMutableCloneForBuilder();
-		}
-		
-		public void setItemKey(ItemKey key)
-		{
-			Validator.notNull(key);
-			under_construction.item_key = key;
-		}
-		
-		public void putAttribute(ItemAttribute attribute, String value)
-		{
-			Validator.notNull(attribute,value);
-			under_construction.attributes.put(attribute, value);
-		}
-		
-		public ItemSpecifications create()
-		{
-			return under_construction.deepClone();
-		}
 	}
 	
 	public ItemKey getSimpleItemKey() { return item_key; }

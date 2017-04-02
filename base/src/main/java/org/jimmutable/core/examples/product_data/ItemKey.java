@@ -3,6 +3,7 @@ package org.jimmutable.core.examples.product_data;
 import java.util.Objects;
 
 import org.jimmutable.core.objects.StandardImmutableObject;
+import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.TypeName;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
@@ -23,8 +24,8 @@ public class ItemKey extends StandardImmutableObject<ItemKey>
 {
 	static public final TypeName TYPE_NAME = new TypeName("jimmutable.examples.ItemKey"); public TypeName getTypeName() { return TYPE_NAME; }
 	
-	static private final FieldName FIELD_BRAND_CODE = new FieldName("brand");
-	static private final FieldName FIELD_PN = new FieldName("pn");
+	static private final FieldDefinition.String FIELD_BRAND_CODE = new FieldDefinition.String("brand",null);
+	static private final FieldDefinition.String FIELD_PN = new FieldDefinition.String("pn",null);
 	
 	private BrandCode brand; // required
 	private PartNumber pn; // required
@@ -44,8 +45,8 @@ public class ItemKey extends StandardImmutableObject<ItemKey>
 	
 	public ItemKey(ObjectParseTree r)
 	{
-		brand = new BrandCode(r.getString(FIELD_BRAND_CODE, null));
-		pn = new PartNumber(r.getString(FIELD_PN, null));
+		brand = new BrandCode(r.getString(FIELD_BRAND_CODE));
+		pn = new PartNumber(r.getString(FIELD_PN));
 	}
 	
 	public void write(ObjectWriter writer) 

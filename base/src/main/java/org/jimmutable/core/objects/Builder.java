@@ -171,6 +171,7 @@ public class Builder
 		if ( value instanceof Float ) primative_value = value.toString();
 		if ( value instanceof Double ) primative_value = value.toString();
 		if ( value instanceof String ) primative_value = (String)value;
+		if ( value instanceof Stringable ) primative_value = ((Stringable)value).getSimpleValue();
 		
 		if ( primative_value != null )
 		{

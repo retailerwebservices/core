@@ -77,15 +77,11 @@ abstract public class StandardImmutableObject<T extends StandardImmutableObject<
      */
 	public boolean isComplete() { return is_complete; }
 	
-	/**
-	 * Create an identical copy of this object that is still mutable.
-	 * Any changes to the returned object will <em>not</em> be reflected
-	 * by this object. 
-	 * 
-	 * @return A new, mutable object with all fields set to the same values as this instance
-	 */
-	protected T deepMutableCloneForBuilder()
+	public T deepClone()
 	{
-		return (T)ObjectParseTree.deserialize(ObjectWriter.serializeToTokenBuffer(this), false);
+		if ( this.is_complete )
+			return (T)this; // immutable, so, no need to clone...
+		
+		return super.deepClone();
 	}
 }

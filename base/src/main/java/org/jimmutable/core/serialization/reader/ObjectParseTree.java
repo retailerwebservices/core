@@ -569,12 +569,8 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 	 *         not possible.
 	 */
 	
-	public Object asObject(Object default_value) 
-	{
-		return asObject(default_value,true);
-	}
 	
-	private Object asObject(Object default_value, boolean complete_standard_object) 
+	public Object asObject(Object default_value) 
 	{
 		// Special handling for null fields
 		if ( !hasChildren() && !hasValue() )
@@ -673,7 +669,7 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 				Constructor constructor = c.getConstructor(ObjectParseTree.class);
 				Object ret = constructor.newInstance(this);
 				
-				if ( complete_standard_object && ret instanceof StandardObject )
+				if ( ret instanceof StandardObject )
 				{
 					((StandardObject)ret).complete();
 				}
@@ -1052,35 +1048,8 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 	
 	/**
 	 * Construct an object from previously serialized data. The format is
-	 * automatically detected.
-	 * 
-	 * This version of the function completes StandardObject(s) 
-	 * 
-	 * There are two common exceptions that can occur when constructing an
-	 * object from previously serialized data, SerializeException (trouble
-	 * reading) and ValidationException (object read was not valid). Both extend
-	 * RuntimeException, so you are not required to handle them explicitly. That
-	 * being said, most (nee all) well designed readers of serialized data
-	 * "trap" errors: thought must be given as to what to do when this happens.
-	 * 
-	 * @param serialized_data
-	 *            The data to read from
-	 * @return The object previously serialized
-	 * 
-	 */
-	static public Object deserialize(String serialized_data) 
-	{
-		return deserialize(serialized_data, true);
-	}
-	
-	/**
-	 * Construct an object from previously serialized data. The format is
 	 * automatically detected. 
 	 * 
-	 * This version of the function allows the user to
-	 * specify if StandardObjects are to be completed prior to being returned.
-	 * The default is that StandardObjects are completed.
-	 * 
 	 * There are two common exceptions that can occur when constructing an
 	 * object from previously serialized data, SerializeException (trouble
 	 * reading) and ValidationException (object read was not valid). Both extend
@@ -1094,11 +1063,11 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 	 * 
 	 */
 	
-	static public Object deserialize(String document, boolean complete_standard_object)
+	static public Object deserialize(String document)
 	{
 		ObjectParseTree t = Parser.parse(document);
 		
-		Object ret = t.asObject(null, complete_standard_object);
+		Object ret = t.asObject(null);
 		
 		if ( ret == null ) 
 			throw new SerializeException("Unable to read document!");
@@ -1115,11 +1084,11 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 	 * @return The object previously serialized
 	 * 
 	 */
-	static public Object deserialize(TokenBuffer document, boolean complete_standard_object) throws SerializeException
+	static public Object deserialize(TokenBuffer document) throws SerializeException
 	{
 		ObjectParseTree t = Parser.parse(document);
 		
-		Object ret = t.asObject(null, complete_standard_object);
+		Object ret = t.asObject(null);
 		
 		if ( ret == null ) 
 			throw new SerializeException("Unable to read document!");

@@ -9,6 +9,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
@@ -21,8 +22,6 @@ import org.jimmutable.core.small_document.SmallDocumentWriter;
 import org.jimmutable.core.threading.OperationMonitor;
 import org.jimmutable.core.threading.OperationRunnable;
 import org.jimmutable.core.threading.OperationRunnable.Result;
-
-import com.fasterxml.jackson.databind.util.TokenBuffer;
 
 public class OldSpecXMLConverter 
 {
@@ -37,7 +36,7 @@ public class OldSpecXMLConverter
 		XMLStreamReader reader = factory.createXMLStreamReader(new BufferedReader(new FileReader(src)));
 
 		StringBuilder char_buffer = new StringBuilder();
-		ItemSpecifications.Builder builder = new ItemSpecifications.Builder();
+		Builder builder = new Builder(ItemSpecifications.TYPE_NAME);
 		
 		String brand = null, pn = null;
 		
@@ -55,7 +54,7 @@ public class OldSpecXMLConverter
 				
 				if ( reader.getLocalName().equalsIgnoreCase("product_specs") )
 				{
-					builder = new ItemSpecifications.Builder();
+					builder = new Builder(ItemSpecifications.TYPE_NAME);
 					brand = null;
 					pn = null;
 				}
@@ -75,7 +74,7 @@ public class OldSpecXMLConverter
 				case "product_specs":
 					try 
 					{ 
-						out.writeDocument(builder.create().serialize(Format.JSON));
+						out.writeDocument(builder.create(null).serialize(Format.JSON));
 						object_count++;
 						
 						if ( object_count > max_objects ) break outer_loop;
@@ -98,7 +97,7 @@ public class OldSpecXMLConverter
 					
 					if ( brand != null && pn != null ) 
 					{
-						try { builder.setItemKey(new ItemKey(brand,pn)); } catch(Exception e) {}
+						try { builder.set(ItemSpecifications.FIELD_ITEM_KEY,new ItemKey(brand,pn)); } catch(Exception e) {}
 					}
 					
 					break;
@@ -108,13 +107,13 @@ public class OldSpecXMLConverter
 					
 					if ( brand != null && pn != null ) 
 					{
-						try { builder.setItemKey(new ItemKey(brand,pn)); } catch(Exception e) {}
+						try { builder.set(ItemSpecifications.FIELD_ITEM_KEY,new ItemKey(brand,pn)); } catch(Exception e) {}
 					}
 					
 					break;
 					
 				default:
-					builder.putAttribute(new ItemAttribute(reader.getLocalName()), char_buffer.toString());
+					builder.addMapEntry(ItemSpecifications.FIELD_ATTRIBUTES, new ItemAttribute(reader.getLocalName()), char_buffer.toString());
 				}
 			}
 		}

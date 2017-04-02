@@ -44,15 +44,6 @@ final public class Book extends StandardImmutableObject<Book>
 
 	private FieldList<String> authors;
 	
-	// builder constructor...
-	private Book(Builder builder)
-	{
-		super();
-		
-		// building constructor.  Builder will call complete...
-		this.authors = new FieldArrayList<>();
-	}
-	
 	public Book(ObjectParseTree t)
 	{
 		title = t.getString(FIELD_TITLE);
@@ -184,51 +175,6 @@ final public class Book extends StandardImmutableObject<Book>
 	public String toString()
 	{
 		return getSimpleTitle() + " by " + getSimpleAuthors();
-	}
-	
-	static public class Builder
-	{
-		private Book under_construction;
-		
-		public Builder()
-		{
-			under_construction = new Book(this);
-		}
-		
-		public Builder(Book starting_point)
-		{
-			under_construction = starting_point.deepMutableCloneForBuilder();
-		}
-		
-		public void setTitle(String title) 
-		{ 
-			under_construction.title = title;
-		}
-		
-		public void setPageCount(int count)
-		{
-			under_construction.page_count = count;
-		}
-		
-		public void setISBN(String isbn)
-		{
-			under_construction.isbn = isbn;
-		}
-		
-		public void addAuthor(String author)
-		{
-			under_construction.authors.add(author);
-		}
-		
-		public void setBindingType(BindingType type)
-		{
-			under_construction.binding = type;
-		}
-		
-		public Book create()
-		{
-			return under_construction.deepClone();
-		}
 	}
 }
 

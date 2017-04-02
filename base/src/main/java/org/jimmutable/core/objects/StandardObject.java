@@ -92,16 +92,14 @@ abstract public class StandardObject<T extends StandardObject<T>> implements Com
 	}
 	
 	/**
-	 * Use XML serialization to deeply clone the object
+	 * Use serialization to deeply clone the object
 	 * 
 	 * @return A deep copy of this object
 	 * 
-	 * @see #fromXML(String)
-	 * @see #toXML()
 	 */
 	public T deepClone()
 	{
-		return (T)ObjectParseTree.deserialize(ObjectWriter.serializeToTokenBuffer(this), true);
+		return (T)ObjectParseTree.deserialize(ObjectWriter.serializeToTokenBuffer(this));
 	}
 	
 	/**

@@ -1,8 +1,6 @@
 package org.jimmutable.core.examples.product_data;
 
-import org.jimmutable.core.examples.product_data.ItemAttribute;
-import org.jimmutable.core.examples.product_data.ItemKey;
-import org.jimmutable.core.examples.product_data.ItemSpecifications;
+import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
@@ -34,11 +32,11 @@ public class ItemSpecificationsTest extends TestCase
 
 	public void testBuilder()
 	{
-		ItemSpecifications.Builder builder = new ItemSpecifications.Builder();
+		Builder builder = new Builder(ItemSpecifications.TYPE_NAME);
 		
 		try
 		{
-			builder.create();
+			builder.create(null);
 			assert(false); // error, creation worked without a key set
 		}
 		catch(Exception e)
@@ -46,9 +44,11 @@ public class ItemSpecificationsTest extends TestCase
 			// expect this, key no set
 		}
 		
-		builder.setItemKey(new ItemKey("foo","bar"));
+		builder.set(ItemSpecifications.FIELD_ITEM_KEY, new ItemKey("foo","bar"));
 		
-		ItemSpecifications no_specs = builder.create();
+		ItemSpecifications no_specs = (ItemSpecifications)builder.create(null);
+		
+		assert(no_specs != null);
 		
 		assertEquals(no_specs.getSimpleItemKey(),new ItemKey("FOO","BAR"));
 		
@@ -58,14 +58,16 @@ public class ItemSpecificationsTest extends TestCase
 		
 		assert(no_specs.getSimpleAttributes().isEmpty());
 		
-		builder = new ItemSpecifications.Builder(no_specs);
+		builder = new Builder(no_specs);
 		 
-		builder.putAttribute(new ItemAttribute("BRAND"), "foo");
-		builder.putAttribute(new ItemAttribute("BRAND"), "bar");
-		builder.putAttribute(new ItemAttribute("DOC_SRC_URL0"), "http://toolbox.legacyclassic.com/customer_images/assemblypdf/490-8900_Assembly.pdf");
-		builder.putAttribute(new ItemAttribute("DOC_SRC_FILE0"), "FRBJHKQALSYB.PDF");
+		builder.addMapEntry(ItemSpecifications.FIELD_ATTRIBUTES, new ItemAttribute("BRAND"), "foo");
+		builder.addMapEntry(ItemSpecifications.FIELD_ATTRIBUTES, new ItemAttribute("BRAND"), "bar");
+		builder.addMapEntry(ItemSpecifications.FIELD_ATTRIBUTES, new ItemAttribute("DOC_SRC_URL0"), "http://toolbox.legacyclassic.com/customer_images/assemblypdf/490-8900_Assembly.pdf");
+		builder.addMapEntry(ItemSpecifications.FIELD_ATTRIBUTES, new ItemAttribute("DOC_SRC_FILE0"), "FRBJHKQALSYB.PDF");
 		
-		ItemSpecifications some_specs = builder.create();
+		ItemSpecifications some_specs = (ItemSpecifications)builder.create(null);
+		
+		assert(some_specs != null);
 		
 		assertEquals(some_specs.getSimpleItemKey(),new ItemKey("FOO","BAR"));
 		

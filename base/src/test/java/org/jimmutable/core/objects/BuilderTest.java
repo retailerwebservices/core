@@ -213,6 +213,31 @@ public class BuilderTest extends TestCase
     		assertEquals(obj.my_list_of_strings.get(1),"bar");
     	}
     }
+    
+    
+    public void testModifyExistingObject()
+    {
+    	// test a builder's create a modified version of an existing object functionality...
+    	
+    	Builder builder;
+    	
+    	builder = new Builder(TestObject.TYPE_NAME);
+    	builder.set(TestObject.FIELD_MY_FLOAT, 3.14159f);
+    	
+    	TestObject first = (TestObject)builder.create(null);
+    	
+    	assert(first != null);
+    	assertEquals(first.my_float,3.14159f);
+    	
+    	builder = new Builder(first);
+    	builder.set(TestObject.FIELD_MY_STRING, "foo");
+    	
+    	TestObject second = (TestObject)builder.create(null); 
+    	assert(second != null);
+    	
+    	assertEquals(second.my_float,3.14159f);
+    	assertEquals(second.my_string,"foo");
+    }
 
     public void testString()
     {
