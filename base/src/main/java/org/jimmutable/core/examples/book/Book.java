@@ -55,22 +55,22 @@ final public class Book extends StandardImmutableObject<Book>
 	
 	public Book(ObjectParseTree t)
 	{
-		title = t.getString(FIELD_TITLE.getSimpleFieldName(), null);
-		page_count = t.getInt(FIELD_PAGE_COUNT.getSimpleFieldName(), -1);
-		isbn = t.getString(FIELD_ISBN.getSimpleFieldName(), null);
-		binding = BindingType.fromCode(t.getString(FIELD_BINDING.getSimpleFieldName(), null),null);
+		title = t.getString(FIELD_TITLE);
+		page_count = t.getInt(FIELD_PAGE_COUNT);
+		isbn = t.getString(FIELD_ISBN);
+		binding = BindingType.fromCode(t.getString(FIELD_BINDING),null);
 		
-		authors = t.getCollection(FIELD_AUTHORS.getSimpleFieldName(), new FieldArrayList(), ReadAs.STRING, ObjectParseTree.OnError.SKIP);
+		authors = t.getCollection(FIELD_AUTHORS, new FieldArrayList(), ReadAs.STRING, ObjectParseTree.OnError.SKIP);
 	}
 	
 	@Override
 	public void write(ObjectWriter writer) 
 	{
-		writer.writeString(FIELD_TITLE.getSimpleFieldName(), getSimpleTitle());
-		writer.writeInt(FIELD_PAGE_COUNT.getSimpleFieldName(), getSimplePageCount());
-		writer.writeString(FIELD_ISBN.getSimpleFieldName(), getOptionalISBN(null));
-		writer.writeString(FIELD_BINDING.getSimpleFieldName(), getSimpleBinding().toString());
-		writer.writeCollection(FIELD_AUTHORS.getSimpleFieldName(), getSimpleAuthors(), WriteAs.STRING);
+		writer.writeString(FIELD_TITLE, getSimpleTitle());
+		writer.writeInt(FIELD_PAGE_COUNT, getSimplePageCount());
+		writer.writeString(FIELD_ISBN, getOptionalISBN(null));
+		writer.writeString(FIELD_BINDING, getSimpleBinding().toString());
+		writer.writeCollection(FIELD_AUTHORS, getSimpleAuthors(), WriteAs.STRING);
 	}
 	
 	// copy constructor...

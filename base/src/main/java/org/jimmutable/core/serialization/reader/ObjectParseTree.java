@@ -10,8 +10,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jimmutable.core.exceptions.SerializeException;
-import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.StandardObject;
+import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.TypeName;
 import org.jimmutable.core.utils.Validator;
@@ -22,7 +22,9 @@ import com.fasterxml.jackson.databind.util.TokenBuffer;
  * ObjectParseTree is created by Parser and used by StandardObject(s) to
  * instantiate themselves from serialized data.
  * 
- * Outside of the reader package, ObjectParseTree is an immutable object
+ * ObjectParseTree are mutable (they are modified by Parser and Builder). That
+ * being said, one should not modify a parse tree without a really good reason
+ * (generally, use builder to do this)
  * 
  * @author jim.kane
  *
@@ -40,14 +42,14 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 	/**
 	 * Construct an ObjectParseTree.
 	 * 
-	 * ObjectParseTree(s) are only made via Parser
+	 * ObjectParseTree(s) are only made via Parser and Builder
 	 * 
 	 * @param field_name
 	 *            The field name of this node in the parse tree. The root of a
 	 *            document has the special field name FieldName
 	 *            FIELD_DOCUMENT_ROOT
 	 */
-	protected ObjectParseTree(FieldName field_name)
+	public ObjectParseTree(FieldName field_name)
 	{
 		Validator.notNull(field_name);
 		
@@ -55,11 +57,11 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 	}
 	
 	/**
-	 * Set the value 
+	 * Set the value
 	 * 
 	 * @param value The value to set
 	 */
-	protected void setValue(String value)
+	public void setValue(String value)
 	{
 		this.value = value;
 		
@@ -90,7 +92,7 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 	/**
 	 * Set the field name, used by Builder only
 	 */
-	protected void setFieldName(FieldName field_name)
+	public void setFieldName(FieldName field_name)
 	{
 		Validator.notNull(field_name);
 		this.field_name = field_name;
@@ -176,7 +178,7 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 	 * 
 	 * @param child The child to add
 	 */
-	protected void add(ObjectParseTree child)
+	public void add(ObjectParseTree child)
 	{
 		Validator.notNull(child);
 		if ( children == null ) children = new LinkedList();
@@ -190,7 +192,7 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 	 * 
 	 * @param new_child The object parse tree to "set or add"
 	 */
-	protected void setOrAdd(ObjectParseTree new_child)
+	public void setOrAdd(ObjectParseTree new_child)
 	{
 		Validator.notNull(new_child);
 		
@@ -203,7 +205,7 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 	 * 
 	 * @param field_name The field name to search for/remove
 	 */
-	protected void removeAll(FieldName field_name)
+	public void removeAll(FieldName field_name)
 	{
 		Validator.notNull(field_name);
 		
@@ -309,7 +311,7 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 	/**
 	 * Called by Parser only
 	 */
-	protected void removeLast()
+	public void removeLast()
 	{
 		if ( children == null ) return;
 		
@@ -758,7 +760,7 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 	/**
 	 * Get the value of a given child (field_name) as a long
 	 */
-	public Long getInt(FieldName field_name, Long default_value)
+	public Long getLong(FieldName field_name, Long default_value)
 	{
 		ObjectParseTree child = findChild(field_name, null);
 		if ( child == null ) return default_value;
@@ -795,6 +797,99 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 		return child.asObject(default_value);
 	}
 	
+	
+	/**
+	 * Get the value of a given child (field) as a String
+	 * 
+	 * If the string is not readable, then the unset value of the field is returned.
+	 */
+	public String getString(FieldDefinition.String field)
+	{
+		Validator.notNull(field);
+		return getString(field.getSimpleFieldName(),field.getSimpleUnsetValue());
+	}
+	
+	/**
+	 * Get the value of a given child (field) as a boolean
+	 */
+	public Boolean getBoolean(FieldDefinition.Boolean field)
+	{
+		Validator.notNull(field);
+		return getBoolean(field.getSimpleFieldName(),field.getSimpleUnsetValue());
+	}
+	
+	/**
+	 * Get the value of a given child (field) as a char
+	 */
+	public Character getCharacter(FieldDefinition.Character field)
+	{
+		Validator.notNull(field);
+		return getCharacter(field.getSimpleFieldName(),field.getSimpleUnsetValue());
+	}
+	
+	/**
+	 * Get the value of a given child (field) as a byte
+	 */
+	public Byte getByte(FieldDefinition.Byte field)
+	{
+		Validator.notNull(field);
+		return getByte(field.getSimpleFieldName(),field.getSimpleUnsetValue());
+	}
+	
+	/**
+	 * Get the value of a given child (field) as a short
+	 */
+	public Short getShort(FieldDefinition.Short field)
+	{
+		Validator.notNull(field);
+		return getShort(field.getSimpleFieldName(),field.getSimpleUnsetValue());
+	}
+	
+	/**
+	 * Get the value of a given child (field) as a int
+	 */
+	public Integer getInt(FieldDefinition.Integer field)
+	{
+		Validator.notNull(field);
+		return getInt(field.getSimpleFieldName(),field.getSimpleUnsetValue());
+	}
+	
+	/**
+	 * Get the value of a given child (field) as a long
+	 */
+	public Long getLong(FieldDefinition.Long field)
+	{
+		Validator.notNull(field);
+		return getLong(field.getSimpleFieldName(),field.getSimpleUnsetValue());
+	}
+	
+	/**
+	 * Get the value of a given child (field) as a float
+	 */
+	public Float getFloat(FieldDefinition.Float field)
+	{
+		Validator.notNull(field);
+		return getFloat(field.getSimpleFieldName(),field.getSimpleUnsetValue());
+	}
+	
+	/**
+	 * Get the value of a given child (field) as a double
+	 */
+	public Double getDouble(FieldDefinition.Double field)
+	{
+		Validator.notNull(field);
+		return getDouble(field.getSimpleFieldName(),field.getSimpleUnsetValue());
+	}
+	
+	/**
+	 * Get the value of a given child (field) as a object
+	 */
+	public Object getObject(FieldDefinition field)
+	{
+		Validator.notNull(field);
+		return getObject(field.getSimpleFieldName(),field.getSimpleUnsetValue());
+	}
+	
 	/**
 	 * An enum used by getCollection and getMap as an instruction on what to do
 	 * when an error is encountered
@@ -806,6 +901,30 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 	{
 		SKIP,
 		THROW_EXCEPTION;
+	}
+	
+	/**
+	 * Get (read) a collection
+	 * 
+	 * @param field
+	 *            The field that contains the collection
+	 * @param empty_collection
+	 *            A mutable, empty collection (will be returned "filled", but
+	 *            still mutable)
+	 * @param type
+	 *            A ReadAs object that specifies the type to read as. If you are
+	 *            working with a collection of StandardObject(s), use
+	 *            ReadAs.OBJECT
+	 * @param on_error
+	 *            What to do if an error is encountered while reading an element
+	 *            of the collection (skip it, throw a SerializeException)
+	 * @return empty_collection "filled"
+	 */
+	
+	public <C extends Collection> C getCollection(FieldDefinition field, C empty_collection, ReadAs type, OnError on_error)
+	{
+		Validator.notNull(field);
+		return getCollection(field.getSimpleFieldName(), empty_collection, type, on_error);
 	}
 	
 	/**
@@ -850,6 +969,29 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 		}
 		
 		return ret;
+	}
+	
+	/**
+	 * Get (read) a Map
+	 * 
+	 * @param field
+	 *            The field definition of the field to read the map from
+	 * @param empty_map
+	 *            A mutable, empty map (will be returned "filled", but still
+	 *            mutable)
+	 * @param key_type
+	 *            A ReadAs object that specifies the type to read keys as
+	 * @param value_type
+	 *            A ReadAs object that specifies the type read values as
+	 * @param on_error
+	 *            What to do when an error (reading a key or value) occours
+	 *            (skip, throw and exception)
+	 * @return empty_map "filled"
+	 */
+	public <M extends Map> M getMap(FieldDefinition field, M empty_map, ReadAs key_type, ReadAs value_type, OnError on_error)
+	{
+		Validator.notNull(field_name);
+		return getMap(field.getSimpleFieldName(), empty_map, key_type, value_type, on_error);
 	}
 	
 	/**

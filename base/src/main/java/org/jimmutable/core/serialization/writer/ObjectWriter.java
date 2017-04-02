@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.jimmutable.core.exceptions.SerializeException;
 import org.jimmutable.core.objects.Stringable;
+import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.TypeName;
@@ -73,6 +74,17 @@ public class ObjectWriter
 	}
 	
 	/**
+	 * Write a null
+	 * @param field The field definition of the null
+	 */
+	public void writeNull(FieldDefinition field)
+	{
+		Validator.notNull(field);
+		writeNull(field.getSimpleFieldName());
+	}
+	
+	
+	/**
 	 * Write a String.
 	 * 
 	 * This function will favor the primitive form (over complete object form)
@@ -99,6 +111,23 @@ public class ObjectWriter
 		}
 	}
 	
+	/**
+	 * Write a String.
+	 * 
+	 * This function will favor the primitive form (over complete object form)
+	 * when possible
+	 * 
+	 * @param field
+	 *            The field definition of the String
+	 * @param value
+	 *            The value of the String
+	 */
+	public void writeString(FieldDefinition field, String value)
+	{
+		Validator.notNull(field);
+		writeString(field.getSimpleFieldName(),value);
+	}
+	
 	
 	/**
 	 * Convenience method for writing stringables. Equivalent to
@@ -116,6 +145,21 @@ public class ObjectWriter
 	}
 	
 	/**
+	 * Convenience method for writing stringables. Equivalent to
+	 * writeString(field_name, stringable.toString())
+	 * 
+	 * @param field_name
+	 *            The field name of the stringable to be written
+	 * @param stringable
+	 *            The stringable to write.
+	 */
+	public void writeStringable(FieldDefinition field, Stringable stringable)
+	{
+		Validator.notNull(field);
+		writeStringable(field.getSimpleFieldName(),stringable);
+	}
+	
+	/**
 	 * Write a boolean in primitive form
 	 * 
 	 * @param field_name
@@ -125,6 +169,18 @@ public class ObjectWriter
 	{
 		writer.writeFieldName(field_name);
 		writer.writeBoolean(value);
+	}
+	
+	/**
+	 * Write a boolean in primitive form
+	 * 
+	 * @param field
+	 * @param value
+	 */
+	public void writeBoolean(FieldDefinition.Boolean field, boolean value) 
+	{
+		Validator.notNull(field);
+		writeBoolean(field.getSimpleFieldName(),value);
 	}
 	
 	/**
@@ -140,6 +196,18 @@ public class ObjectWriter
 	}
 	
 	/**
+	 * Write a char in primitive form
+	 * 
+	 * @param field
+	 * @param value
+	 */
+	public void writeChar(FieldDefinition.Character field, char value) 
+	{
+		Validator.notNull(field);
+		writeChar(field.getSimpleFieldName(),value);
+	}
+	
+	/**
 	 * Write a byte in primitive form
 	 * 
 	 * @param field_name
@@ -149,6 +217,18 @@ public class ObjectWriter
 	{
 		writer.writeFieldName(field_name);
 		writer.writeByte(value);
+	}
+	
+	/**
+	 * Write a byte in primitive form
+	 * 
+	 * @param field
+	 * @param value
+	 */
+	public void writeByte(FieldDefinition.Byte field, byte value) 
+	{
+		Validator.notNull(field);
+		writeByte(field.getSimpleFieldName(),value);
 	}
 	
 	/**
@@ -164,6 +244,18 @@ public class ObjectWriter
 	}
 	
 	/**
+	 * Write a short in primitive form
+	 * 
+	 * @param field
+	 * @param value
+	 */
+	public void writeShort(FieldDefinition.Short field, short value) 
+	{
+		Validator.notNull(field);
+		writeShort(field.getSimpleFieldName(),value);
+	}
+	
+	/**
 	 * Write a int in primitive form
 	 * 
 	 * @param field_name
@@ -173,6 +265,18 @@ public class ObjectWriter
 	{
 		writer.writeFieldName(field_name);
 		writer.writeInt(value);
+	}
+	
+	/**
+	 * Write a int in primitive form
+	 * 
+	 * @param field
+	 * @param value
+	 */
+	public void writeInt(FieldDefinition.Integer field, int value) 
+	{
+		Validator.notNull(field);
+		writeInt(field.getSimpleFieldName(),value);
 	}
 	
 	/**
@@ -188,6 +292,18 @@ public class ObjectWriter
 	}
 	
 	/**
+	 * Write a long in primitive form
+	 * 
+	 * @param field
+	 * @param value
+	 */
+	public void writeLong(FieldDefinition.Long field, long value) 
+	{
+		Validator.notNull(field);
+		writeLong(field.getSimpleFieldName(),value);
+	}
+	
+	/**
 	 * Write a float in primitive form
 	 * 
 	 * @param field_name
@@ -197,6 +313,18 @@ public class ObjectWriter
 	{
 		writer.writeFieldName(field_name);
 		writer.writeFloat(value);
+	}
+	
+	/**
+	 * Write a float in primitive form
+	 * 
+	 * @param field
+	 * @param value
+	 */
+	public void writeFloat(FieldDefinition.Float field, float value) 
+	{
+		Validator.notNull(field);
+		writeFloat(field.getSimpleFieldName(),value);
 	}
 	
 	/**
@@ -212,6 +340,18 @@ public class ObjectWriter
 	}
 	
 	/**
+	 * Write a double in primitive form
+	 * 
+	 * @param field
+	 * @param value
+	 */
+	public void writeDouble(FieldDefinition.Double field, double value) 
+	{
+		Validator.notNull(field);
+		writeDouble(field.getSimpleFieldName(),value);
+	}
+	
+	/**
 	 * Write an Object. Primitives (String, Double, Float, etc.) will be
 	 * written in complete object form
 	 * 
@@ -224,6 +364,20 @@ public class ObjectWriter
 		
 		writer.writeFieldName(field_name);
 		writer.writeObject(value);
+	}
+	
+
+	/**
+	 * Write an Object. Primitives (String, Double, Float, etc.) will be
+	 * written in complete object form
+	 * 
+	 * @param field
+	 * @param value
+	 */
+	public void writeObject(FieldDefinition field, Object value)
+	{
+		Validator.notNull(field);
+		writeObject(field.getSimpleFieldName(),value);
 	}
 	
 	/**
@@ -279,6 +433,24 @@ public class ObjectWriter
 	}
 	
 	/**
+	 * Write a collection
+	 * 
+	 * @param field
+	 *            The field definition of the Collection
+	 * @param c
+	 *            The collection to write (may not be null, can be empty)
+	 * @param write_as
+	 *            How do you want each element in the collection written
+	 *            (String? Number? Boolean? Object?)
+	 */
+	public void writeCollection(FieldDefinition field, Collection c, WriteAs write_as)
+	{
+		Validator.notNull(field);
+
+		writeCollection(field.getSimpleFieldName(), c, write_as);
+	}
+	
+	/**
 	 * Write a map
 	 * 
 	 * @param field_name
@@ -295,6 +467,25 @@ public class ObjectWriter
 		Validator.notNull(field_name, m, write_keys_as, write_values_as);
 		
 		writeCollection(field_name, m.entrySet(), new WriteAs.MapWriteAs(write_keys_as, write_values_as));
+	}
+	
+	/**
+	 * Write a map
+	 * 
+	 * @param field
+	 *            The field definition of the Map
+	 * @param m
+	 *            The map to write (may not be null, can be empty)
+	 * @param write_keys_as
+	 *            How do you want to write the keys (Strings? Objects? etc.)
+	 * @param write_values_as
+	 *            How do you want to write the values (Strings? Objects? etc.)
+	 */
+	public void writeMap(FieldDefinition.Map field, Map m, WriteAs write_keys_as, WriteAs write_values_as)
+	{
+		Validator.notNull(field);
+		
+		writeMap(field.getSimpleFieldName(), m, write_keys_as, write_values_as);
 	}
 	
 	/**
