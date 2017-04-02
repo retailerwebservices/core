@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.util.TokenBuffer;
 
 final public class ObjectParseTree implements Iterable<ObjectParseTree>
 {
-	static private Map<TypeName,Class> standard_object_types = new ConcurrentHashMap();
+	static private Map<TypeName,Class> standard_object_types = new ConcurrentHashMap(); 
 	
 	private FieldName field_name; // required
 	private String value; // optional
@@ -85,6 +85,15 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 	public FieldName getSimpleFieldName() 
 	{ 
 		return field_name; 
+	}
+	
+	/**
+	 * Set the field name, used by Builder only
+	 */
+	protected void setFieldName(FieldName field_name)
+	{
+		Validator.notNull(field_name);
+		this.field_name = field_name;
 	}
 
 	/**
@@ -172,6 +181,44 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 		Validator.notNull(child);
 		if ( children == null ) children = new LinkedList();
 		children.add(child);
+	}
+	
+	/**
+	 * Set or add a child.  Only called from Builder
+	 * 
+	 * This function removes any children with the same field name as new_child, then adds new_child
+	 * 
+	 * @param new_child The object parse tree to "set or add"
+	 */
+	protected void setOrAdd(ObjectParseTree new_child)
+	{
+		Validator.notNull(new_child);
+		
+		removeAll(new_child.getSimpleFieldName());
+		add(new_child); 
+	}
+	
+	/**
+	 * Remove all children with the specified field name
+	 * 
+	 * @param field_name The field name to search for/remove
+	 */
+	protected void removeAll(FieldName field_name)
+	{
+		Validator.notNull(field_name);
+		
+		if ( children != null )
+		{ 
+			Iterator<ObjectParseTree> itr = children.iterator();
+			
+			while(itr.hasNext())
+			{
+				ObjectParseTree cur = itr.next();
+				
+				if ( cur.getSimpleFieldName().equals(field_name) )
+					itr.remove();
+			}
+		}
 	}
 	
 	/**
@@ -978,6 +1025,27 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 	{
 		if ( type == null ) return false;
 		return standard_object_types.containsKey(type);
+	}
+	
+	/**
+	 * Given the Class associated with a TypeName
+	 * 
+	 * @param type_name
+	 *            Any type name, may not be null
+	 * @param default_value
+	 *            The value to return if type_name is not associated with a
+	 *            class
+	 * @return The Class associated with type_name or default_value if the type
+	 *         name is not bound
+	 */
+	static public Class getClassForTypeName(TypeName type_name, Class default_value) 
+	{
+		if ( type_name == null ) return default_value;
+		
+		Class ret = standard_object_types.get(type_name);
+		if ( ret == null ) return default_value;
+		
+		return ret;
 	}
 }
 

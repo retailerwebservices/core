@@ -192,7 +192,7 @@ abstract public class FieldCollection<E> implements Field, Collection<E>
 	@Override
 	public String toString() 
 	{
-		return super.toString();
+		return contents.toString();
 	}
 
 	@Override
@@ -231,6 +231,8 @@ abstract public class FieldCollection<E> implements Field, Collection<E>
 			itr.remove();
 		}
 	}
+	
+	
 	
 	/**
 	 * Instantiate a <em>new</em>, <em>mutable</em> {@link Collection}.

@@ -8,6 +8,7 @@ import java.util.Objects;
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.fields.FieldList;
 import org.jimmutable.core.objects.StandardImmutableObject;
+import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.TypeName;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
@@ -28,11 +29,11 @@ final public class Book extends StandardImmutableObject<Book>
 {
 	static public final TypeName TYPE_NAME = new TypeName("jimmutable.examples.Book"); public TypeName getTypeName() { return TYPE_NAME; }
 	
-	static private final FieldName FIELD_TITLE = new FieldName("title");
-	static private final FieldName FIELD_PAGE_COUNT = new FieldName("page_count");
-	static private final FieldName FIELD_ISBN = new FieldName("isbn");
-	static private final FieldName FIELD_BINDING = new FieldName("binding");
-	static private final FieldName FIELD_AUTHORS = new FieldName("authors");
+	static public final FieldDefinition.String FIELD_TITLE = new FieldDefinition.String("title",null);
+	static public final FieldDefinition.Integer FIELD_PAGE_COUNT = new FieldDefinition.Integer("page_count",-1);
+	static public final FieldDefinition.String FIELD_ISBN = new FieldDefinition.String("isbn",null);
+	static public final FieldDefinition.String FIELD_BINDING = new FieldDefinition.String("binding", null);
+	static public final FieldDefinition.Collection FIELD_AUTHORS = new FieldDefinition.Collection("authors", new FieldArrayList());
 	
 	private String title; // required, upper-case
 	private int page_count; // required, must be 0 or greater
@@ -54,22 +55,22 @@ final public class Book extends StandardImmutableObject<Book>
 	
 	public Book(ObjectParseTree t)
 	{
-		title = t.getString(FIELD_TITLE, null);
-		page_count = t.getInt(FIELD_PAGE_COUNT, -1);
-		isbn = t.getString(FIELD_ISBN, null);
-		binding = BindingType.fromCode(t.getString(FIELD_BINDING, null),null);
+		title = t.getString(FIELD_TITLE.getSimpleFieldName(), null);
+		page_count = t.getInt(FIELD_PAGE_COUNT.getSimpleFieldName(), -1);
+		isbn = t.getString(FIELD_ISBN.getSimpleFieldName(), null);
+		binding = BindingType.fromCode(t.getString(FIELD_BINDING.getSimpleFieldName(), null),null);
 		
-		authors = t.getCollection(FIELD_AUTHORS, new FieldArrayList(), ReadAs.STRING, ObjectParseTree.OnError.SKIP);
+		authors = t.getCollection(FIELD_AUTHORS.getSimpleFieldName(), new FieldArrayList(), ReadAs.STRING, ObjectParseTree.OnError.SKIP);
 	}
 	
 	@Override
 	public void write(ObjectWriter writer) 
 	{
-		writer.writeString(FIELD_TITLE, getSimpleTitle());
-		writer.writeInt(FIELD_PAGE_COUNT, getSimplePageCount());
-		writer.writeString(FIELD_ISBN, getOptionalISBN(null));
-		writer.writeString(FIELD_BINDING, getSimpleBinding().toString());
-		writer.writeCollection(FIELD_AUTHORS, getSimpleAuthors(), WriteAs.STRING);
+		writer.writeString(FIELD_TITLE.getSimpleFieldName(), getSimpleTitle());
+		writer.writeInt(FIELD_PAGE_COUNT.getSimpleFieldName(), getSimplePageCount());
+		writer.writeString(FIELD_ISBN.getSimpleFieldName(), getOptionalISBN(null));
+		writer.writeString(FIELD_BINDING.getSimpleFieldName(), getSimpleBinding().toString());
+		writer.writeCollection(FIELD_AUTHORS.getSimpleFieldName(), getSimpleAuthors(), WriteAs.STRING);
 	}
 	
 	// copy constructor...
