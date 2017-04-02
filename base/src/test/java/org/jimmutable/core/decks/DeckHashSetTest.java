@@ -5,12 +5,10 @@ import java.util.List;
 
 import org.jimmutable.core.examples.book.BindingType;
 import org.jimmutable.core.examples.book.Book;
-import org.jimmutable.core.examples.book.BookDeckList;
 import org.jimmutable.core.examples.book.BookDeckSet;
-import org.jimmutable.core.examples.book.BookDeckSet.Builder;
+import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
-import org.jimmutable.core.serialization.JavaCodeUtils;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 
 import junit.framework.Test;
@@ -48,12 +46,12 @@ public class DeckHashSetTest extends TestCase
     	test_books.add(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
     	
     	
-		Builder builder = new Builder();
+		Builder builder = new Builder(BookDeckSet.TYPE_NAME);
 		
-		builder.addBook(test_books.get(0));
-		builder.addBook(test_books.get(1));
+		builder.add(BookDeckSet.FIELD_BOOKS,test_books.get(0));
+		builder.add(BookDeckSet.FIELD_BOOKS,test_books.get(1));
 
-		BookDeckSet first_library = builder.create();
+		BookDeckSet first_library = (BookDeckSet)builder.create(null);
 		
 		assertEquals(first_library.getSimpleContents().size(),2);
 		
@@ -64,10 +62,10 @@ public class DeckHashSetTest extends TestCase
 		
 		builder = new Builder(first_library);
 		
-		builder.addBook(test_books.get(2));
-		builder.addBook(test_books.get(3));
+		builder.add(BookDeckSet.FIELD_BOOKS,test_books.get(2));
+		builder.add(BookDeckSet.FIELD_BOOKS,test_books.get(3));
 		
-		BookDeckSet second_library = builder.create();
+		BookDeckSet second_library = (BookDeckSet)builder.create(null);
 		
 		// Confirm that first library has not changed...
 		assertEquals(second_library.getSimpleContents().size(),3); // because book 2 and 3 are duplicates...
@@ -123,13 +121,13 @@ public class DeckHashSetTest extends TestCase
     	test_books.add(new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
     	test_books.add(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
     	
-    	Builder builder = new Builder();
+    	Builder builder = new Builder(BookDeckSet.TYPE_NAME);
 		
-		builder.addBook(test_books.get(0));
-		builder.addBook(test_books.get(1));
-		builder.addBook(test_books.get(2));
+    	builder.add(BookDeckSet.FIELD_BOOKS,test_books.get(0));
+    	builder.add(BookDeckSet.FIELD_BOOKS,test_books.get(1));
+    	builder.add(BookDeckSet.FIELD_BOOKS,test_books.get(2));
 		
-		BookDeckSet second_library = builder.create();
+		BookDeckSet second_library = (BookDeckSet)builder.create(null);
 		
 		assertEquals(obj,second_library);
     }
@@ -173,13 +171,13 @@ public class DeckHashSetTest extends TestCase
     	test_books.add(new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
     	test_books.add(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
     	
-    	Builder builder = new Builder();
+    	Builder builder = new Builder(BookDeckSet.TYPE_NAME);
 		
-		builder.addBook(test_books.get(0));
-		builder.addBook(test_books.get(1));
-		builder.addBook(test_books.get(2));
+    	builder.add(BookDeckSet.FIELD_BOOKS,test_books.get(0));
+    	builder.add(BookDeckSet.FIELD_BOOKS,test_books.get(1));
+    	builder.add(BookDeckSet.FIELD_BOOKS,test_books.get(2));
 		
-		BookDeckSet second_library = builder.create();
+		BookDeckSet second_library = (BookDeckSet)builder.create(null);
 		
 		assertEquals(obj,second_library);
     }

@@ -7,6 +7,7 @@ import org.jimmutable.core.decks.StandardImmutableSetDeck;
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.fields.FieldHashSet;
 import org.jimmutable.core.fields.FieldSet;
+import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.TypeName;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
@@ -24,7 +25,7 @@ import org.jimmutable.core.utils.Validator;
 final public class BookDeckSet extends StandardImmutableSetDeck<BookDeckSet, Book>
 {
 	static public final TypeName TYPE_NAME = new TypeName("jimmutable.examples.BookDeckSet");
-	static private final FieldName FIELD_BOOKS = new FieldName("books");
+	static public final FieldDefinition.Collection FIELD_BOOKS = new FieldDefinition.Collection("books", new FieldHashSet());
 	
 	private FieldSet<Book> books;
 	
@@ -41,11 +42,6 @@ final public class BookDeckSet extends StandardImmutableSetDeck<BookDeckSet, Boo
 		this.books.addAll(books);
 		
 		complete();
-	}
-
-	private BookDeckSet(Builder builder)
-	{
-		books = new FieldHashSet<>();
 	}
 	
 	public BookDeckSet(ObjectParseTree t)
@@ -74,31 +70,4 @@ final public class BookDeckSet extends StandardImmutableSetDeck<BookDeckSet, Boo
 	}
 	
 	public FieldSet<Book> getSimpleContents() { return books; }
-	
-	
-	static public class Builder
-	{
-		private BookDeckSet under_construction;
-		
-		public Builder()
-		{
-			under_construction = new BookDeckSet(this);
-		}
-		
-		public Builder(BookDeckSet starting_point)
-		{
-			under_construction = starting_point.deepMutableCloneForBuilder();
-		}
-
-		public void addBook(Book book)
-		{
-			if ( book == null ) return;
-			under_construction.getSimpleContents().add(book);
-		}
-		
-		public BookDeckSet create()
-		{
-			return under_construction.deepClone();
-		}
-	}
 }

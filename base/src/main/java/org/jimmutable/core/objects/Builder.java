@@ -19,14 +19,11 @@ import com.fasterxml.jackson.databind.util.TokenBuffer;
 
 public class Builder 
 {
-	private TypeName under_construction_type_name;
 	private ObjectParseTree under_construction;
 	
 	public Builder(TypeName type_name)
 	{
 		Validator.notNull(type_name);
-		
-		under_construction_type_name = type_name;
 		
 		under_construction = new ObjectParseTree(FieldName.FIELD_DOCUMENT_ROOT);
 		
@@ -34,6 +31,14 @@ public class Builder
 		type_hint.setValue(type_name.getSimpleName());
 		
 		under_construction.add(type_hint);
+	}
+	
+	public Builder(StandardObject src)
+	{
+		Validator.notNull(src);
+		TokenBuffer token_buffer = ObjectWriter.serializeToTokenBuffer(src);
+		
+		under_construction = Parser.parse(token_buffer);
 	}
 	
 	public void unset(FieldDefinition field)
@@ -109,14 +114,14 @@ public class Builder
 		return (StandardObject)under_construction.asObject(default_value);
 	}
 	
-	public void add(FieldDefinition.Boolean field, boolean value) { insertNonNullPrimative(field, Boolean.toString(value),false); }
-	public void add(FieldDefinition.Character field, char value) { insertNonNullPrimative(field,Character.toString(value),false); }
-	public void add(FieldDefinition.Byte field, byte value) { insertNonNullPrimative(field,Byte.toString(value),false); }
-	public void add(FieldDefinition.Short field, short value) { insertNonNullPrimative(field,Short.toString(value),false); }
-	public void add(FieldDefinition.Integer field, int value) { insertNonNullPrimative(field,Integer.toString(value),false); }
-	public void add(FieldDefinition.Long field, long value) { insertNonNullPrimative(field,Long.toString(value),false); }
-	public void add(FieldDefinition.Float field, float value) { insertNonNullPrimative(field,Float.toString(value),false); }
-	public void add(FieldDefinition.Double field, double value) { insertNonNullPrimative(field,Double.toString(value),false); }
+	public void add(FieldDefinition.Collection field, boolean value) { insertNonNullPrimative(field, Boolean.toString(value),false); }
+	public void add(FieldDefinition.Collection field, char value) { insertNonNullPrimative(field,Character.toString(value),false); }
+	public void add(FieldDefinition.Collection field, byte value) { insertNonNullPrimative(field,Byte.toString(value),false); }
+	public void add(FieldDefinition.Collection field, short value) { insertNonNullPrimative(field,Short.toString(value),false); }
+	public void add(FieldDefinition.Collection field, int value) { insertNonNullPrimative(field,Integer.toString(value),false); }
+	public void add(FieldDefinition.Collection field, long value) { insertNonNullPrimative(field,Long.toString(value),false); }
+	public void add(FieldDefinition.Collection field, float value) { insertNonNullPrimative(field,Float.toString(value),false); }
+	public void add(FieldDefinition.Collection field, double value) { insertNonNullPrimative(field,Double.toString(value),false); }
 	
 	public void add(FieldDefinition.Collection field, String value)
 	{

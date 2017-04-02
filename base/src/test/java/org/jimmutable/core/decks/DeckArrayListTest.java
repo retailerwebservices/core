@@ -6,10 +6,9 @@ import java.util.List;
 import org.jimmutable.core.examples.book.BindingType;
 import org.jimmutable.core.examples.book.Book;
 import org.jimmutable.core.examples.book.BookDeckList;
-import org.jimmutable.core.examples.book.BookDeckList.Builder;
+import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
-import org.jimmutable.core.serialization.JavaCodeUtils;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 
 import junit.framework.Test;
@@ -42,12 +41,14 @@ public class DeckArrayListTest extends TestCase
     	List<String> authors = new ArrayList();
 		authors.add("John Steinbeck");
 		
-		Builder builder = new Builder();
+		Builder builder = new Builder(BookDeckList.TYPE_NAME);
+	
+		builder.add(BookDeckList.FIELD_CONTENTS, new Book("Grapes of Wrath", 1211, "33242347234", BindingType.TRADE_PAPER_BACK, authors));
+		builder.add(BookDeckList.FIELD_CONTENTS, new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, authors));
 		
-		builder.addBook(new Book("Grapes of Wrath", 1211, "33242347234", BindingType.TRADE_PAPER_BACK, authors));
-		builder.addBook(new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, authors));
+		BookDeckList first_library = (BookDeckList)builder.create(null);
 		
-		BookDeckList first_library = builder.create();
+		assert(first_library != null);
 		
 		assertEquals(first_library.getSimpleContents().size(),2);
 		
@@ -62,9 +63,11 @@ public class DeckArrayListTest extends TestCase
 		authors = new ArrayList();
 		authors.add("Thomas Wolfe");
 		
-		builder.addBook(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, authors));
+		builder.add(BookDeckList.FIELD_CONTENTS,new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, authors));
 		
-		BookDeckList second_library = builder.create();
+		BookDeckList second_library = (BookDeckList)builder.create(null);
+		
+		assert(second_library != null);
 		
 		// Confirm that first library has not changed...
 		assertEquals(first_library.getSimpleContents().size(),2);
@@ -126,13 +129,13 @@ public class DeckArrayListTest extends TestCase
     		assertEquals(obj.getSimpleContents().get(2).getSimpleTitle(),"O LOST");
     		
     		// Full test
-    		Builder builder = new Builder();
+    		Builder builder = new Builder(BookDeckList.TYPE_NAME);
     		
-    		builder.addBook(new Book("Grapes of Wrath", 1211, "33242347234", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
-    		builder.addBook(new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
-    		builder.addBook(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
+    		builder.add(BookDeckList.FIELD_CONTENTS,new Book("Grapes of Wrath", 1211, "33242347234", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
+    		builder.add(BookDeckList.FIELD_CONTENTS,new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
+    		builder.add(BookDeckList.FIELD_CONTENTS,new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
     		
-    		BookDeckList second_library = builder.create();
+    		BookDeckList second_library = (BookDeckList)builder.create(null);
     		
     		assertEquals(second_library,obj);
     }
@@ -177,13 +180,13 @@ public class DeckArrayListTest extends TestCase
     		assertEquals(obj.getSimpleContents().get(2).getSimpleTitle(),"O LOST");
     		
     		// Full test
-    		Builder builder = new Builder();
+    		Builder builder = new Builder(BookDeckList.TYPE_NAME);
     		
-    		builder.addBook(new Book("Grapes of Wrath", 1211, "33242347234", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
-    		builder.addBook(new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
-    		builder.addBook(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
+    		builder.add(BookDeckList.FIELD_CONTENTS,new Book("Grapes of Wrath", 1211, "33242347234", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
+    		builder.add(BookDeckList.FIELD_CONTENTS,new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
+    		builder.add(BookDeckList.FIELD_CONTENTS,new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
     		
-    		BookDeckList second_library = builder.create();
+    		BookDeckList second_library = (BookDeckList)builder.create(null);
     		
     		assertEquals(second_library,obj);
     }

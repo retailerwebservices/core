@@ -6,7 +6,7 @@ import java.util.List;
 import org.jimmutable.core.examples.book.BindingType;
 import org.jimmutable.core.examples.book.Book;
 import org.jimmutable.core.examples.book.BookDeckMap;
-import org.jimmutable.core.examples.book.BookDeckMap.Builder;
+import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
@@ -45,12 +45,14 @@ public class DeckHashMapTest extends TestCase
     	test_books.add(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
     	test_books.add(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
     	
-		Builder builder = new Builder();
+		Builder builder = new Builder(BookDeckMap.TYPE_NAME);
 		
-		builder.putBook("jim_first_book",test_books.get(0));
-		builder.putBook("jim_second_book",test_books.get(1));
+		builder.addMapEntry(BookDeckMap.FIELD_BOOKS,"jim_first_book",test_books.get(0));
+		builder.addMapEntry(BookDeckMap.FIELD_BOOKS,"jim_second_book",test_books.get(1));
 
-		BookDeckMap first_library = builder.create();
+		BookDeckMap first_library = (BookDeckMap)builder.create(null);
+		
+		assert(first_library != null);
 		
 		assertEquals(first_library.getSimpleContents().size(),2);
 		
@@ -61,10 +63,12 @@ public class DeckHashMapTest extends TestCase
 		
 		builder = new Builder(first_library);
 		
-		builder.putBook("jim_first_book",test_books.get(2));
-		builder.putBook("jim_third_book",test_books.get(3));
+		builder.addMapEntry(BookDeckMap.FIELD_BOOKS,"jim_first_book",test_books.get(2));
+		builder.addMapEntry(BookDeckMap.FIELD_BOOKS,"jim_third_book",test_books.get(3));
 		
-		BookDeckMap second_library = builder.create();
+		BookDeckMap second_library = (BookDeckMap)builder.create(null);
+		
+		assert(second_library != null);
 		
 		// Confirm that first library has not changed...
 		assertEquals(second_library.getSimpleContents().size(),3); 
@@ -132,13 +136,13 @@ public class DeckHashMapTest extends TestCase
     	test_books.add(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
     	test_books.add(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
     	
-    	Builder builder = new Builder();
+    	Builder builder = new Builder(BookDeckMap.TYPE_NAME);
     	
-    	builder.putBook("jim_first_book",test_books.get(2));
-    	builder.putBook("jim_second_book",test_books.get(1));
-    	builder.putBook("jim_third_book",test_books.get(3));
+    	builder.addMapEntry(BookDeckMap.FIELD_BOOKS,"jim_first_book",test_books.get(2));
+    	builder.addMapEntry(BookDeckMap.FIELD_BOOKS,"jim_second_book",test_books.get(1));
+    	builder.addMapEntry(BookDeckMap.FIELD_BOOKS,"jim_third_book",test_books.get(3));
     	
-    	BookDeckMap second_library = builder.create();
+    	BookDeckMap second_library = (BookDeckMap)builder.create(null);
     	
     	assertEquals(obj,second_library);
     }
@@ -199,13 +203,13 @@ public class DeckHashMapTest extends TestCase
     	test_books.add(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
     	test_books.add(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
     	
-    	Builder builder = new Builder();
+    	Builder builder = new Builder(BookDeckMap.TYPE_NAME);
     	
-    	builder.putBook("jim_first_book",test_books.get(2));
-    	builder.putBook("jim_second_book",test_books.get(1));
-    	builder.putBook("jim_third_book",test_books.get(3));
+    	builder.addMapEntry(BookDeckMap.FIELD_BOOKS,"jim_first_book",test_books.get(2));
+    	builder.addMapEntry(BookDeckMap.FIELD_BOOKS,"jim_second_book",test_books.get(1));
+    	builder.addMapEntry(BookDeckMap.FIELD_BOOKS,"jim_third_book",test_books.get(3));
     	
-    	BookDeckMap second_library = builder.create();
+    	BookDeckMap second_library = (BookDeckMap)builder.create(null);
     	
     	assertEquals(obj,second_library);
     }

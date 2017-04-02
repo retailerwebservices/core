@@ -6,6 +6,7 @@ import java.util.Collections;
 import org.jimmutable.core.decks.StandardImmutableListDeck;
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.fields.FieldList;
+import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.TypeName;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
@@ -24,7 +25,7 @@ import org.jimmutable.core.utils.Validator;
 final public class BookDeckList extends StandardImmutableListDeck<BookDeckList, Book>
 {
 	static public final TypeName TYPE_NAME = new TypeName("jimmutable.examples.BookDeckList");
-	static private final FieldName FIELD_BOOKS = new FieldName("books");
+	static public final FieldDefinition.Collection FIELD_CONTENTS = new FieldDefinition.Collection("books", new FieldArrayList());
 	
 	private FieldList<Book> books;
 	
@@ -43,14 +44,9 @@ final public class BookDeckList extends StandardImmutableListDeck<BookDeckList, 
 		complete();
 	}
 	
-	private BookDeckList(Builder builder)
-	{
-		books = new FieldArrayList();
-	}
-	
 	public BookDeckList(ObjectParseTree t)
 	{
-		books = t.getCollection(FIELD_BOOKS, new FieldArrayList(), ReadAs.OBJECT, ObjectParseTree.OnError.SKIP);
+		books = t.getCollection(FIELD_CONTENTS, new FieldArrayList(), ReadAs.OBJECT, ObjectParseTree.OnError.SKIP);
 	}
 	
 	public TypeName getTypeName() 
@@ -60,7 +56,7 @@ final public class BookDeckList extends StandardImmutableListDeck<BookDeckList, 
 
 	public void write(ObjectWriter writer) 
 	{
-		writer.writeCollection(FIELD_BOOKS, books, WriteAs.OBJECT);
+		writer.writeCollection(FIELD_CONTENTS, books, WriteAs.OBJECT);
 	}
 
 	@Override
@@ -77,31 +73,5 @@ final public class BookDeckList extends StandardImmutableListDeck<BookDeckList, 
 	{
 		Validator.containsNoNulls(getSimpleContents());
 		Validator.containsOnlyInstancesOf(Book.class, getSimpleContents());
-	}
-
-	static public class Builder
-	{
-		private BookDeckList under_construction;
-		
-		public Builder()
-		{
-			under_construction = new BookDeckList(this);
-		}
-		
-		public Builder(BookDeckList starting_point)
-		{
-			under_construction = starting_point.deepMutableCloneForBuilder();
-		}
-
-		public void addBook(Book book)
-		{
-			if ( book == null ) return;
-			under_construction.getSimpleContents().add(book);
-		}
-		
-		public BookDeckList create()
-		{
-			return under_construction.deepClone();
-		}
 	}
 }
