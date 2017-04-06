@@ -161,8 +161,16 @@ public class ObjectWriter
 	 */
 	public void writeStringable(FieldName field_name, Stringable stringable)
 	{
-		Validator.notNull(field_name, stringable);
-		writeString(field_name, stringable.toString());
+		Validator.notNull(field_name);
+		
+		if ( stringable == null )
+		{
+			writeString(field_name, null);
+		}
+		else
+		{
+			writeString(field_name, stringable.toString());
+		}
 	}
 	
 	/**

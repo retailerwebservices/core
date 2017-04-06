@@ -99,6 +99,19 @@ public class Builder
 		insertNonNullPrimative(field, value.getSimpleCode(), true);
 	}
 	
+	public <S extends Stringable> void set(FieldDefinition.Stringable<S> field, S value)
+	{
+		Validator.notNull(field);
+		
+		if ( value == null )
+		{
+			under_construction.removeAll(field.getSimpleFieldName());
+			return;
+		}
+		
+		insertNonNullPrimative(field, value.getSimpleValue(), true);
+	}
+	
 	public void set(FieldDefinition.StandardObject field, StandardObject value)
 	{
 		Validator.notNull(field);

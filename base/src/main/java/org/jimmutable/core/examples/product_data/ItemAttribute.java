@@ -16,7 +16,7 @@ import org.jimmutable.core.utils.Validator;
 
 public class ItemAttribute extends Stringable
 {
-	static public final ReadAs READ_AS = new ReadAsItemAttribute();
+	static public final MyConverter CONVERTER = new MyConverter();
 	
 	static public final ItemAttribute ATTRIBUTE_BRAND = new ItemAttribute("BRAND");
 	static public final ItemAttribute ATTRIBUTE_PN = new ItemAttribute("PN");
@@ -51,11 +51,18 @@ public class ItemAttribute extends Stringable
 		}
 	}
 	
-	static private class ReadAsItemAttribute extends ReadAs
+	static public class MyConverter extends Stringable.Converter<ItemAttribute>
 	{
-		public Object readAs(ObjectParseTree t) 
+		public ItemAttribute fromString(String str, ItemAttribute default_value)
 		{
-			return new ItemAttribute(t.asString(null));
+			try
+			{
+				return new ItemAttribute(str);
+			}
+			catch(Exception e)
+			{
+				return default_value;
+			}
 		}
 	}
 }

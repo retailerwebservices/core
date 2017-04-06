@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.jimmutable.core.exceptions.SerializeException;
 import org.jimmutable.core.objects.StandardEnum;
 import org.jimmutable.core.objects.StandardObject;
+import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.TypeName;
@@ -818,6 +819,20 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 		if ( code == null ) return field.getSimpleUnsetValue();
 		
 		return field.getSimpleConverter().fromCode(code, field.getSimpleUnsetValue());
+	}
+	
+	/**
+	 * Get the value of a given child (field) as a Stringable
+	 */
+	
+	public <S extends Stringable> S getStringable(FieldDefinition.Stringable<S> field)
+	{
+		Validator.notNull(field);
+		
+		String str = getString(field.getSimpleFieldName(),null);
+		if ( str == null ) return field.getSimpleUnsetValue();
+		
+		return field.getSimpleConverter().fromString(str, field.getSimpleUnsetValue());
 	}
 	
 	/**

@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import org.jimmutable.core.examples.book.BindingType;
 import org.jimmutable.core.examples.book.Book;
+import org.jimmutable.core.examples.product_data.BrandCode;
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.fields.FieldHashMap;
 import org.jimmutable.core.fields.FieldList;
@@ -49,6 +50,8 @@ public class BuilderTest extends TestCase
 		
 		static public final FieldDefinition.Enum<BindingType> FIELD_MY_ENUM = new FieldDefinition.Enum<BindingType>("my_enum", null, BindingType.CONVERTER);
 		
+		static public final FieldDefinition.Stringable<BrandCode> FIELD_MY_STRINGABLE = new FieldDefinition.Stringable("my_stringable", null, BrandCode.CONVERTER);
+		
 		private String my_string;
 		
 		private char my_char;
@@ -68,6 +71,7 @@ public class BuilderTest extends TestCase
 		private Book my_book;
 		
 		private BindingType my_enum;
+		private BrandCode my_stringable;
 		
 		public TestObject()
 		{ 
@@ -96,6 +100,8 @@ public class BuilderTest extends TestCase
 			my_int_book_map = t.getMap(FIELD_MY_INT_BOOK_MAP, new FieldHashMap(), ReadAs.INTEGER, ReadAs.OBJECT, OnError.SKIP);
 			
 			my_enum = t.getEnum(FIELD_MY_ENUM);
+			
+			my_stringable = t.getStringable(FIELD_MY_STRINGABLE);
 		}
 		
 		public void write(ObjectWriter writer) 
@@ -117,6 +123,8 @@ public class BuilderTest extends TestCase
 			writer.writeMap(FIELD_MY_INT_BOOK_MAP, my_int_book_map, WriteAs.NUMBER, WriteAs.OBJECT);
 			
 			writer.writeEnum(FIELD_MY_ENUM, my_enum);
+			
+			writer.writeStringable(FIELD_MY_STRINGABLE, my_stringable);
 		}
 
 		
@@ -261,6 +269,13 @@ public class BuilderTest extends TestCase
     	testOneEnum(BindingType.PAPER_BACK);
     	testOneEnum(BindingType.TRADE_PAPER_BACK);
     	testOneEnum(BindingType.UNKNOWN);
+    }
+    
+    public void testStringable()
+    {
+    	testOneStringable(null);
+    	testOneStringable(new BrandCode("GE"));
+    	testOneStringable(new BrandCode("FRIG"));
     }
     
     public void testDouble()
@@ -474,6 +489,17 @@ public class BuilderTest extends TestCase
     	
     	assert(obj != null);
     	assertEquals(obj.my_enum, value);
+    }
+    
+    public void testOneStringable(BrandCode value)
+    {
+    	Builder builder = new Builder(TestObject.TYPE_NAME);
+    	builder.set(TestObject.FIELD_MY_STRINGABLE, value);
+    	
+    	TestObject obj = (TestObject)builder.create(null);
+    	
+    	assert(obj != null);
+    	assertEquals(obj.my_stringable, value);
     }
     
     public void testOneDouble(double value)

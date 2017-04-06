@@ -128,4 +128,20 @@ abstract public class FieldDefinition<T>
 		
 		public  StandardEnum.Converter<E> getSimpleConverter() { return my_converter; }
 	}
+	
+	static public class Stringable<S extends org.jimmutable.core.objects.Stringable> extends FieldDefinition<S>
+	{
+		private org.jimmutable.core.objects.Stringable.Converter<S> my_converter;
+		
+		public Stringable(java.lang.String field_name, S unset_value, org.jimmutable.core.objects.Stringable.Converter<S> converter)
+		{
+			super(field_name,unset_value);
+			
+			Validator.notNull(converter);
+			
+			this.my_converter = converter;
+		}
+		
+		public  org.jimmutable.core.objects.Stringable.Converter<S> getSimpleConverter() { return my_converter; }
+	}
 }

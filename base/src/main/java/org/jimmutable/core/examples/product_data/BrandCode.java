@@ -15,6 +15,8 @@ import org.jimmutable.core.utils.Validator;
  */
 public class BrandCode extends Stringable
 {
+	static public final MyConverter CONVERTER = new MyConverter();
+	
 	public BrandCode(String code)
 	{
 		super(code);
@@ -41,6 +43,21 @@ public class BrandCode extends Stringable
 			if ( ch == '_' ) continue;
 			
 			throw new ValidationException(String.format("Illegal character \'%c\' in brand code %s.  Only upper case letters, numbers and underscore (_) are allowed", ch, getSimpleValue()));
+		}
+	}
+	
+	static public class MyConverter extends Stringable.Converter<BrandCode>
+	{
+		public BrandCode fromString(String str, BrandCode default_value)
+		{
+			try
+			{
+				return new BrandCode(str);
+			}
+			catch(Exception e)
+			{
+				return default_value;
+			}
 		}
 	}
 }

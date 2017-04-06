@@ -32,7 +32,7 @@ public class ItemSpecifications extends StandardImmutableObject<ItemSpecificatio
 	public ItemSpecifications(ObjectParseTree reader)
 	{
 		item_key = (ItemKey)reader.getObject(FIELD_ITEM_KEY);
-		attributes = reader.getMap(FIELD_ATTRIBUTES, new FieldHashMap(), ItemAttribute.READ_AS, ReadAs.STRING, ObjectParseTree.OnError.SKIP);
+		attributes = reader.getMap(FIELD_ATTRIBUTES, new FieldHashMap(), ItemAttribute.CONVERTER, ReadAs.STRING, ObjectParseTree.OnError.SKIP);
 	}
 
 	public void write(ObjectWriter writer) 

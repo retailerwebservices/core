@@ -1,9 +1,11 @@
 package org.jimmutable.core.objects;
 
+import org.jimmutable.core.examples.product_data.ItemAttribute;
 import org.jimmutable.core.exceptions.ImmutableException;
 import org.jimmutable.core.exceptions.SerializeException;
 import org.jimmutable.core.serialization.TypeName;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
+import org.jimmutable.core.serialization.reader.ReadAs;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.utils.Normalizer;
 
@@ -20,7 +22,7 @@ import org.jimmutable.core.utils.Normalizer;
  * 
  * writer.writeStringable(FIELD_BRAND_CODE, brand_code)
  * 
- * instead and it is equivilent
+ * instead and it is equivalent
  * 
  * You read Stringable(s) as String(s). For example:
  * 
@@ -103,5 +105,25 @@ abstract public class Stringable extends StandardImmutableObject<Stringable>
 	final protected void normalizeLowerCase()
 	{
 		setValue(Normalizer.lowerCase(getSimpleValue()));
+	}
+	
+	/**
+	 * The job of a Stringable Converter is to take a string and make a
+	 * Stringable (of the right type) out of it
+	 * 
+	 * This is used to streamline serialization
+	 * 
+	 * @author jim.kane
+	 *
+	 * @param <T>
+	 */
+	static abstract public class Converter<S extends Stringable> extends ReadAs
+	{
+		abstract public S fromString(String str, S default_value);
+		
+		public Object readAs(ObjectParseTree t) 
+		{
+			return fromString(t.asString(null), null);
+		}
 	}
 }
