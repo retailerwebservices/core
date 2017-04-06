@@ -1,5 +1,8 @@
 package org.jimmutable.core.serialization;
 
+import org.jimmutable.core.objects.StandardEnum;
+import org.jimmutable.core.utils.Validator;
+
 abstract public class FieldDefinition<T>
 {
 	private FieldName field_name;
@@ -108,5 +111,21 @@ abstract public class FieldDefinition<T>
 		{
 			super(field_name,unset_value);
 		}
+	}
+	
+	static public class Enum<E extends StandardEnum> extends FieldDefinition<E>
+	{
+		private StandardEnum.Converter<E> my_converter;
+		
+		public Enum(java.lang.String field_name, E unset_value, StandardEnum.Converter<E> converter)
+		{
+			super(field_name,unset_value);
+			
+			Validator.notNull(converter);
+			
+			this.my_converter = converter;
+		}
+		
+		public  StandardEnum.Converter<E> getSimpleConverter() { return my_converter; }
 	}
 }

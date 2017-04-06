@@ -17,7 +17,6 @@ import org.jimmutable.core.serialization.reader.ObjectParseTree.OnError;
 import org.jimmutable.core.serialization.reader.ReadAs;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.serialization.writer.WriteAs;
-import org.jimmutable.core.utils.Comparison;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -48,6 +47,8 @@ public class BuilderTest extends TestCase
 		
 		static public final FieldDefinition.Map FIELD_MY_INT_BOOK_MAP = new FieldDefinition.Map("my_int_book_map",new FieldHashMap());
 		
+		static public final FieldDefinition.Enum<BindingType> FIELD_MY_ENUM = new FieldDefinition.Enum<BindingType>("my_enum", null, BindingType.CONVERTER);
+		
 		private String my_string;
 		
 		private char my_char;
@@ -65,6 +66,8 @@ public class BuilderTest extends TestCase
 		private FieldMap<Integer,Book> my_int_book_map;
 		
 		private Book my_book;
+		
+		private BindingType my_enum;
 		
 		public TestObject()
 		{ 
@@ -91,6 +94,8 @@ public class BuilderTest extends TestCase
 			
 			my_string_int_map = t.getMap(FIELD_MY_STRING_INT_MAP, new FieldHashMap(), ReadAs.STRING, ReadAs.INTEGER, OnError.SKIP);
 			my_int_book_map = t.getMap(FIELD_MY_INT_BOOK_MAP, new FieldHashMap(), ReadAs.INTEGER, ReadAs.OBJECT, OnError.SKIP);
+			
+			my_enum = t.getEnum(FIELD_MY_ENUM);
 		}
 		
 		public void write(ObjectWriter writer) 
@@ -110,6 +115,8 @@ public class BuilderTest extends TestCase
 			
 			writer.writeObject(FIELD_MY_BOOK, my_book);
 			writer.writeMap(FIELD_MY_INT_BOOK_MAP, my_int_book_map, WriteAs.NUMBER, WriteAs.OBJECT);
+			
+			writer.writeEnum(FIELD_MY_ENUM, my_enum);
 		}
 
 		
@@ -247,6 +254,15 @@ public class BuilderTest extends TestCase
     	testOneString(PrimativeReadWriteTest.createNonBase64AcidString());
     }
     
+    public void testEnum()
+    {
+    	testOneEnum(null);
+    	testOneEnum(BindingType.HARD_COVER);
+    	testOneEnum(BindingType.PAPER_BACK);
+    	testOneEnum(BindingType.TRADE_PAPER_BACK);
+    	testOneEnum(BindingType.UNKNOWN);
+    }
+    
     public void testDouble()
     {
     	testOneDouble(0.2);
@@ -332,7 +348,7 @@ public class BuilderTest extends TestCase
     		Builder builder = new Builder(Book.TYPE_NAME);
     		builder.set(Book.FIELD_TITLE, "Of Mice and Men");
     		builder.add(Book.FIELD_AUTHORS, "John Steinbeck");
-    		builder.set(Book.FIELD_BINDING, BindingType.TRADE_PAPER_BACK.getSimpleCode());
+    		builder.set(Book.FIELD_BINDING, BindingType.TRADE_PAPER_BACK);
     		builder.set(Book.FIELD_ISBN, "0139438452");
     		builder.set(Book.FIELD_PAGE_COUNT, 821);
     		
@@ -377,7 +393,7 @@ public class BuilderTest extends TestCase
     		Builder builder = new Builder(Book.TYPE_NAME);
     		builder.set(Book.FIELD_TITLE, "Of Mice and Men");
     		builder.add(Book.FIELD_AUTHORS, "John Steinbeck");
-    		builder.set(Book.FIELD_BINDING, BindingType.TRADE_PAPER_BACK.getSimpleCode());
+    		builder.set(Book.FIELD_BINDING, BindingType.TRADE_PAPER_BACK);
     		builder.set(Book.FIELD_ISBN, "0139438452");
     		builder.set(Book.FIELD_PAGE_COUNT, 821);
     		
@@ -390,7 +406,7 @@ public class BuilderTest extends TestCase
     		Builder builder = new Builder(Book.TYPE_NAME);
     		builder.set(Book.FIELD_TITLE, "The Great Divorce");
     		builder.add(Book.FIELD_AUTHORS, "C.S. Lewis");
-    		builder.set(Book.FIELD_BINDING, BindingType.TRADE_PAPER_BACK.getSimpleCode());
+    		builder.set(Book.FIELD_BINDING, BindingType.TRADE_PAPER_BACK);
     		builder.set(Book.FIELD_ISBN, "274645102");
     		builder.set(Book.FIELD_PAGE_COUNT, 261);
     		
@@ -403,7 +419,7 @@ public class BuilderTest extends TestCase
     		Builder builder = new Builder(Book.TYPE_NAME);
     		builder.set(Book.FIELD_TITLE, "The Screwtape Letters");
     		builder.add(Book.FIELD_AUTHORS, "C.S. Lewis");
-    		builder.set(Book.FIELD_BINDING, BindingType.TRADE_PAPER_BACK.getSimpleCode());
+    		builder.set(Book.FIELD_BINDING, BindingType.TRADE_PAPER_BACK);
     		builder.set(Book.FIELD_ISBN, "174645102");
     		builder.set(Book.FIELD_PAGE_COUNT, 601);
     		
@@ -447,6 +463,17 @@ public class BuilderTest extends TestCase
     	
     	assert(obj != null);
     	assertEquals(obj.my_string, value);
+    }
+    
+    public void testOneEnum(BindingType value)
+    {
+    	Builder builder = new Builder(TestObject.TYPE_NAME);
+    	builder.set(TestObject.FIELD_MY_ENUM, value);
+    	
+    	TestObject obj = (TestObject)builder.create(null);
+    	
+    	assert(obj != null);
+    	assertEquals(obj.my_enum, value);
     }
     
     public void testOneDouble(double value)

@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.jimmutable.core.exceptions.SerializeException;
+import org.jimmutable.core.objects.StandardEnum;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.FieldName;
@@ -128,6 +129,26 @@ public class ObjectWriter
 		writeString(field.getSimpleFieldName(),value);
 	}
 	
+	/**
+	 * Write a StandardEnum
+	 * 
+	 * @param field
+	 *            The field definition of the Enum
+	 * @param value
+	 *            The value to write
+	 */
+	public <E extends StandardEnum> void writeEnum(FieldDefinition.Enum<E> field, E value)
+	{
+		Validator.notNull(field);
+		
+		if ( value == null )
+		{
+			writeString(field.getSimpleFieldName(), null);
+			return;
+		}
+		
+		writeString(field.getSimpleFieldName(), value.getSimpleCode());
+	}
 	
 	/**
 	 * Convenience method for writing stringables. Equivalent to

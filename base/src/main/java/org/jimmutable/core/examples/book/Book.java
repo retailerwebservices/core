@@ -7,6 +7,7 @@ import java.util.Objects;
 
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.fields.FieldList;
+import org.jimmutable.core.objects.StandardEnum;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.FieldName;
@@ -32,7 +33,7 @@ final public class Book extends StandardImmutableObject<Book>
 	static public final FieldDefinition.String FIELD_TITLE = new FieldDefinition.String("title",null);
 	static public final FieldDefinition.Integer FIELD_PAGE_COUNT = new FieldDefinition.Integer("page_count",-1);
 	static public final FieldDefinition.String FIELD_ISBN = new FieldDefinition.String("isbn",null);
-	static public final FieldDefinition.String FIELD_BINDING = new FieldDefinition.String("binding", null);
+	static public final FieldDefinition.Enum<BindingType> FIELD_BINDING = new FieldDefinition.Enum("binding", null, BindingType.CONVERTER);
 	static public final FieldDefinition.Collection FIELD_AUTHORS = new FieldDefinition.Collection("authors", new FieldArrayList());
 	
 	private String title; // required, upper-case
@@ -49,7 +50,8 @@ final public class Book extends StandardImmutableObject<Book>
 		title = t.getString(FIELD_TITLE);
 		page_count = t.getInt(FIELD_PAGE_COUNT);
 		isbn = t.getString(FIELD_ISBN);
-		binding = BindingType.fromCode(t.getString(FIELD_BINDING),null);
+		
+		binding = t.getEnum(FIELD_BINDING);
 		
 		authors = t.getCollection(FIELD_AUTHORS, new FieldArrayList(), ReadAs.STRING, ObjectParseTree.OnError.SKIP);
 	}
@@ -60,7 +62,7 @@ final public class Book extends StandardImmutableObject<Book>
 		writer.writeString(FIELD_TITLE, getSimpleTitle());
 		writer.writeInt(FIELD_PAGE_COUNT, getSimplePageCount());
 		writer.writeString(FIELD_ISBN, getOptionalISBN(null));
-		writer.writeString(FIELD_BINDING, getSimpleBinding().toString());
+		writer.writeEnum(FIELD_BINDING, binding);
 		writer.writeCollection(FIELD_AUTHORS, getSimpleAuthors(), WriteAs.STRING);
 	}
 	

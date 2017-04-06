@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jimmutable.core.exceptions.SerializeException;
+import org.jimmutable.core.objects.StandardEnum;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.FieldName;
@@ -803,6 +804,20 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 	{
 		Validator.notNull(field);
 		return getString(field.getSimpleFieldName(),field.getSimpleUnsetValue());
+	}
+	
+	/**
+	 * Get the value of a given child (field) as a StandardNum
+	 */
+	
+	public <E extends StandardEnum> E getEnum(FieldDefinition.Enum<E> field)
+	{
+		Validator.notNull(field);
+		
+		String code = getString(field.getSimpleFieldName(),null);
+		if ( code == null ) return field.getSimpleUnsetValue();
+		
+		return field.getSimpleConverter().fromCode(code, field.getSimpleUnsetValue());
 	}
 	
 	/**

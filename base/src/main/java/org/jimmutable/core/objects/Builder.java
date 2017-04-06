@@ -86,6 +86,19 @@ public class Builder
 		insertNonNullPrimative(field, value,true);
 	}
 	
+	public <E extends StandardEnum> void set(FieldDefinition.Enum<E> field, E value)
+	{
+		Validator.notNull(field);
+		
+		if ( value == null )
+		{
+			under_construction.removeAll(field.getSimpleFieldName());
+			return;
+		}
+		
+		insertNonNullPrimative(field, value.getSimpleCode(), true);
+	}
+	
 	public void set(FieldDefinition.StandardObject field, StandardObject value)
 	{
 		Validator.notNull(field);
