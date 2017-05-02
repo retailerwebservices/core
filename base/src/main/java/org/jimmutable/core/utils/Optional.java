@@ -11,7 +11,7 @@ import java.util.Objects;
  */
 public class Optional
 {
-	static public String getOptional(String value, String unset_value, String default_value)
+	static public <T extends Object> T getOptional(T value, T unset_value, T default_value)
 	{
 		if ( Objects.equals(value, unset_value) ) return default_value;
 		return value;
@@ -24,7 +24,7 @@ public class Optional
 	static public char getOptional(char value, char unset_value, char default_value) { return value != unset_value ? value : default_value; } 
 	
 	
-	static public boolean has(String value, String unset_value)
+	static public <T extends Object> boolean has(T value, T unset_value)
 	{
 		return !Objects.equals(value, unset_value);
 	}
