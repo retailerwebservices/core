@@ -161,6 +161,7 @@ public class BuilderTest extends TestCase
         super( testName );
         
         JimmutableTypeNameRegister.registerAllTypes();
+        ObjectParseTree.registerTypeName(BuilderTest.TestObject.class);
     }
 
     /**

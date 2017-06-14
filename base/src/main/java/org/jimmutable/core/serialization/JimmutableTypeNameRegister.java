@@ -42,7 +42,5 @@ public class JimmutableTypeNameRegister
 		
 		ObjectParseTree.registerTypeName(ItemKey.class);
 		ObjectParseTree.registerTypeName(ItemSpecifications.class);
-		
-		ObjectParseTree.registerTypeName(BuilderTest.TestObject.class);
 	}
 }
