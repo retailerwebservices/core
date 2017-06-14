@@ -1,6 +1,7 @@
 package org.jimmutable.core.serialization.reader;
 
 import java.lang.reflect.Constructor;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
@@ -77,7 +78,7 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 		if ( field_name.equals(FieldName.FIELD_NAME_PRIMITIVE_VALUE_BASE64) )
 		{
 			field_name = FieldName.FIELD_NAME_PRIMITIVE_VALUE;
-			this.value = new String(Base64.getDecoder().decode(value));
+			this.value = new String(Base64.getDecoder().decode(value), StandardCharsets.UTF_8);
 		}
 	}
 	

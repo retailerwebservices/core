@@ -89,6 +89,13 @@ public class PrimativeReadWriteTest extends TestCase
     
     public void testStings()
     {
+    	testObject(createAcidString());
+    	
+    	if (true)
+    	{
+    		return;
+    	}
+    	
     	testObject("Hello World");
     	testObject("");
     	
@@ -102,7 +109,6 @@ public class PrimativeReadWriteTest extends TestCase
     	
     	// The acid string...
     	testObject(createNonBase64AcidString());
-    	testObject(createAcidString());
     }
     
     static public String createAcidString()
@@ -147,19 +153,39 @@ public class PrimativeReadWriteTest extends TestCase
     
     private void testObject(Format format, Object obj)
     {
-    	/*if ( obj instanceof Long )
-    	{
-    		System.out.println(String.format("%s: %d", format, obj));
-    	}*/
     	String serialized_data = ObjectWriter.serialize(format, obj);
     	assert(serialized_data != null);
     	
-    	if ( obj.equals("") )
-    	{
-    		System.out.println(serialized_data);
-    	}
-    	
     	Object from_reader = ObjectParseTree.deserialize(serialized_data);
+    	
+    	/*if ( obj instanceof String )
+    	{
+    		String orig = (String)obj;
+    		String news = (String)from_reader;
+    		
+    		System.out.println("orig.length = "+orig.length());
+    		System.out.println("news.length = "+news.length());
+    		
+    		
+    		for ( int i = 0; i < orig.length(); i++ )
+    		{
+    			char orig_ch = orig.charAt(i);
+    			char new_ch = news.charAt(i);
+    			
+    			if ( orig_ch != new_ch )
+    			{
+    				System.out.println("Difference on character "+i);
+    				
+    				int code1 = (int)orig_ch;
+    				int code2 = (int)new_ch;
+    				
+    				System.out.println("orig :"+code1+", new: "+code2);
+    				
+    				break;
+    			}
+    		}
+    	}*/
+    	
     	
     	assertEquals(obj,from_reader);
     }

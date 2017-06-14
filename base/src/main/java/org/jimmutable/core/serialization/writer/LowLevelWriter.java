@@ -3,6 +3,7 @@ package org.jimmutable.core.serialization.writer;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import javax.xml.namespace.QName;
@@ -235,7 +236,8 @@ public class LowLevelWriter
 	static public String base64EncodeString(String str)
 	{
 		Validator.notNull(str);
-		return Base64.getEncoder().encodeToString(str.getBytes());
+		
+		return Base64.getEncoder().encodeToString(str.getBytes(StandardCharsets.UTF_8));
 	}
 	
 	/**
