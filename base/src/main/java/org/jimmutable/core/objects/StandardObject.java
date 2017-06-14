@@ -15,8 +15,8 @@ import org.jimmutable.core.utils.Validator;
  * 
  * <p>Standard objects all support:
  * <ul>
- * 	<li>XML Serialization (read & write)</li>
- *  <li>JSON Serialization (read & write)</li>
+ * 	<li>XML Serialization (read &amp; write)</li>
+ *  <li>JSON Serialization (read &amp; write)</li>
  *  <li>Hashing, comparison, equality testing (i.e. can be included in any of the standard Java collection implementations, including {@code Set} and {@code Map})</li>
  *  <li>Standardized normalization of data field values</li>
  *  <li>Standardized validation of data field values</li>
@@ -104,7 +104,7 @@ abstract public class StandardObject<T extends StandardObject<T>> implements Com
 	
 	/**
 	 * Default implementation of {@link Object#toString() toString()} that returns a
-	 * {@link #toJSON() JSON} representation of the object
+	 * toJSON() representation of the object
 	 */
 	@Override
 	public String toString()

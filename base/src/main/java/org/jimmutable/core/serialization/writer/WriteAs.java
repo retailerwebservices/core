@@ -12,7 +12,7 @@ import org.jimmutable.core.utils.Validator;
 /**
  * A "WriteAs" in an instruction write an Object in a certain way
  * 
- * For example, imagine that you are serializing a collection, List<Float> foo.
+ * For example, imagine that you are serializing a collection, List&lt;Float&gt; foo.
  * Do you want to write:
  * 
  * foo : [0.2, 1.7, 0.8]

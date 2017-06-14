@@ -115,7 +115,6 @@ abstract public class Stringable extends StandardImmutableObject<Stringable>
 	 * 
 	 * @author jim.kane
 	 *
-	 * @param <T>
 	 */
 	static abstract public class Converter<S extends Stringable> extends ReadAs
 	{

@@ -75,7 +75,7 @@ abstract public class FieldMap<K,V> implements Map<K,V>, Field
      * Constructs a collection containing the elements of the specified {@link Map},
      * in the order they are returned by the {@link Iterable#iterator() iterator}.
      *
-     * @param objs The {@code Map} whose elements are to be placed into this map
+     * @param initial_values The {@code Map} whose elements are to be placed into this map
      * 
      * @throws NullPointerException if the specified {@code Map} is {@code null}
 	 */

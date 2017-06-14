@@ -11,7 +11,7 @@ import java.util.List;
  * <p><b>Note:</b> {@link ArrayList}, and consequently {@code FieldArrayList} is
  * not thread safe. This is generally not a concern once "{@link #freeze() frozen}"
  * but if the construction process is multi-threaded, consider
- * {@link FieldCopyOnWriteArrayList}.
+ * FieldCopyOnWriteArrayList.
  * 
  * <p>In the standard case (construction in one thread), {@code FieldArrayList} will
  * work well.
@@ -21,7 +21,6 @@ import java.util.List;
  * @param <E> The type of elements in this list
  * 
  * @see FieldList
- * @see FieldCopyOnWriteArrayList
  */
 final public class FieldArrayList<E> extends FieldList<E>
 {

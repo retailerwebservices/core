@@ -6,15 +6,15 @@ import org.jimmutable.core.exceptions.ImmutableException;
 import org.jimmutable.core.objects.StandardImmutableObject;
 
 /**
- * An interface to represent a member of a {@link StandardImmtuableObject} that
- * requires custom code to {@link StandardImmutableObject#freeze() freeze} it.
+ * An interface to represent a member of a StandardImmtuableObject that
+ * requires custom code to StandardImmutableObject  freeze it.
  * 
  * <p>{@code StandardImmutableObject} does not require that it's members implement
  * {@code Field}, but it is useful as a declarative interface as a way for a
  * developer to signal adherence to the behaviors defined by {@code Field}
- * (i.e. well-behaved {@link #freeze() freezing).
+ * (i.e. well-behaved freeze().
  * 
- * <p>Most notably, most {@link Collection} or {@link Map} implementations in the
+ * <p>Most notably, most {@link Collection} or Map implementations in the
  * JDK will have a matching wrapper that also implements {@code Field}.
  * 
  * @author Jim Kane

@@ -1088,7 +1088,7 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 	 * being said, most (nee all) well designed readers of serialized data
 	 * "trap" errors: thought must be given as to what to do when this happens.
 	 * 
-	 * @param serialized_data
+	 * @param document
 	 *            The data to read from
 	 * @return The object previously serialized
 	 * 

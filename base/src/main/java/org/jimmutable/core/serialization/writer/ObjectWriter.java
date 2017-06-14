@@ -177,7 +177,7 @@ public class ObjectWriter
 	 * Convenience method for writing stringables. Equivalent to
 	 * writeString(field_name, stringable.toString())
 	 * 
-	 * @param field_name
+	 * @param field
 	 *            The field name of the stringable to be written
 	 * @param stringable
 	 *            The stringable to write.

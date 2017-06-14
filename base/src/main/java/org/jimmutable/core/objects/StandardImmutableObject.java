@@ -11,11 +11,11 @@ import org.jimmutable.core.serialization.writer.ObjectWriter;
  * that want to guarantee immutability.
  * 
  * <p>A standard immutable object may only be modified <em>before</em> it is
- * {@link #complete() complete}.
+ * complete().
  * 
  * <p><b>Note:</b> It is important that the normalization code goes into
- * {@link #normalize()}, the validation code into {@link #validate()}, and the
- * freezing code into {@link #freeze()}. The latter is particularly important as
+ * normalize(), the validation code into {@link #validate()}, and the
+ * freezing code into freeze(). The latter is particularly important as
  * deep cloning (and hence building) rely upon the ability to control the timing
  * of these operations. 
  * 
@@ -36,7 +36,7 @@ abstract public class StandardImmutableObject<T extends StandardImmutableObject<
 	
 	/**
 	 * Declare that an object is ready to use. In addition to normal
-	 * {@link super#complete() completion}, {@link #freeze()} is
+	 * complete() completion, {@link #freeze()} is
 	 * called to toggle immutability.
 	 * 
 	 * <p>{@link #isComplete()} is guaranteed to return {@code true}

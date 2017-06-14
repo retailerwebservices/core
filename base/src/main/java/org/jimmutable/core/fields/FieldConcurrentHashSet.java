@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>Why does one need a thread safe immutable set? Well... if your
  * <em>construction</em> code (when the object is mutable) is threaded then it is
  * <em>much</em> safer to use a concurrent backing store. In Java, it is nigh
- * impossible to guarantee the mutable -> immutable transition in a multi-threaded
+ * impossible to guarantee the mutable -&gt; immutable transition in a multi-threaded
  * context absent a concurrent backing store.
  * 
  * <p>In general, however (when the field is being created in single threaded code),

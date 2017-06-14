@@ -18,8 +18,8 @@ import java.util.LinkedList;
  * <p>Java has a number of really quirky mutability issues... For example, think
  * about the following code:
  * <pre><code>
- * List<String> my_list = new ArrayList();
- * Iterator<String> itr = my_list.iterator();
+ * List my_list = new ArrayList();
+ * Iterator itr = my_list.iterator();
  *  
  * my_list.add("foo");
  * my_list.add("bar");

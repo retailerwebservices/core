@@ -145,7 +145,7 @@ public class Validator
 	 * Guarantee that a collection contains no nulls (i.e. throw a
 	 * ValidationException if the collection contains one or more null values)
 	 * 
-	 * @param c
+	 * @param collection
 	 *            The collection to test
 	 */
 	static public void containsNoNulls(Collection<?> collection)

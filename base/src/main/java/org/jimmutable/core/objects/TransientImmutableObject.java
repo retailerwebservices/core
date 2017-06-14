@@ -36,7 +36,7 @@ abstract public class TransientImmutableObject<T extends TransientImmutableObjec
 	
 	/**
 	 * Declare that an object is ready to use. In addition to normal
-	 * {@link super#complete() completion}, {@link #freeze()} is
+	 * complete(), {@link #freeze()} is
 	 * called to toggle immutability.
 	 * 
 	 * <p>{@link #isComplete()} is guaranteed to return {@code true}
