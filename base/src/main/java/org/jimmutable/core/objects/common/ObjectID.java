@@ -4,6 +4,13 @@ import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
 
+/**
+ * A stringable class used to represent a numerical Object ID. ID(s) are 12
+ * digits long and are pretty printed as XXXX-YYYY-ZZZZ
+ * 
+ * @author jim.kane
+ *
+ */
 public class ObjectID  extends Stringable
 {
 	static public final MyConverter CONVERTER = new MyConverter();
@@ -64,6 +71,10 @@ public class ObjectID  extends Stringable
 		}
 	}
 	
+	/**
+	 * Get the value of the ID as a long
+	 * @return The valud of the ID as a long
+	 */
 	public long getSimpleLongValue()
 	{
 		return long_value;
@@ -83,7 +94,12 @@ public class ObjectID  extends Stringable
 			}
 		}
 	}
-	
+
+	/**
+	 * Generate a new, random ObjectID
+	 * 
+	 * @return A new, random ObjectID
+	 */
 	static public ObjectID randomID()
 	{
 		long value = (long)(Math.random()*9999_9999_9999l);
