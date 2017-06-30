@@ -74,11 +74,6 @@ public class TimezoneID extends Stringable
 		}
 	}
 	
-	static public ObjectID randomID()
-	{
-		long value = (long)(Math.random()*9999_9999_9999l);
-		return new ObjectID(""+value);
-	} 
 	
 	
 	/**
