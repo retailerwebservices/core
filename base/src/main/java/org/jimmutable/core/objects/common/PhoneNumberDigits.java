@@ -5,6 +5,12 @@ import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Optional;
 import org.jimmutable.core.utils.Validator;
 
+/**
+ * A class the encapsulate the "digits" part of a phone number
+ * 
+ * @author jim.kane
+ *
+ */
 public class PhoneNumberDigits extends Stringable
 {
 	static public final MyConverter CONVERTER = new MyConverter();

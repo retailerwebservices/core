@@ -13,6 +13,12 @@ import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.utils.Comparison;
 import org.jimmutable.core.utils.Validator;
 
+/**
+ * Class that encapsulates a phone number (digits + type)
+ * 
+ * @author jim.kane
+ *
+ */
 public class PhoneNumber extends StandardImmutableObject<PhoneNumber>
 {
 	static public final TypeName TYPE_NAME = new TypeName("jimmutable.common.PhoneNumber"); public TypeName getTypeName() { return TYPE_NAME; }
@@ -22,6 +28,11 @@ public class PhoneNumber extends StandardImmutableObject<PhoneNumber>
 	
 	private PhoneNumberDigits digits; // required
 	private PhoneNumberType type; // required
+	
+	public PhoneNumber(String digits, PhoneNumberType type)
+	{
+		this(new PhoneNumberDigits(digits), type);
+	}
 	
 	public PhoneNumber(PhoneNumberDigits digits, PhoneNumberType type)
 	{

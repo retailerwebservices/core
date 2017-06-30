@@ -6,6 +6,8 @@ import org.jimmutable.core.examples.book.BookDeckMap;
 import org.jimmutable.core.examples.book.BookDeckSet;
 import org.jimmutable.core.examples.product_data.ItemKey;
 import org.jimmutable.core.examples.product_data.ItemSpecifications;
+import org.jimmutable.core.objects.common.PhoneNumber;
+import org.jimmutable.core.objects.common.PhoneNumberDeck;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 
 
@@ -41,5 +43,8 @@ public class JimmutableTypeNameRegister
 
 		ObjectParseTree.registerTypeName(ItemKey.class);
 		ObjectParseTree.registerTypeName(ItemSpecifications.class);
+		
+		ObjectParseTree.registerTypeName(PhoneNumber.class);
+		ObjectParseTree.registerTypeName(PhoneNumberDeck.class);
 	}
 }
