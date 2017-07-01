@@ -175,4 +175,111 @@ public class Validator
 	{
 	    if (one == two) throw new ValidationException();
 	}
+	
+	static public interface ValidCharacters
+	{
+		public boolean isValid(char ch);
+	}
+	
+	static private class ValidCharactersLetters implements ValidCharacters
+	{
+		public boolean isValid(char ch)
+		{
+			if ( ch >= 'a' && ch <= 'z' ) return true;
+			if ( ch >= 'A' && ch <= 'Z' ) return true;
+			
+			return false;
+		}
+	}
+	
+	static private class ValidCharactersLowerCaseLetters implements ValidCharacters
+	{
+		public boolean isValid(char ch)
+		{
+			if ( ch >= 'a' && ch <= 'z' ) return true;
+			
+			return false;
+		}
+	}
+	
+	static private class ValidCharactersUpperCaseLetters implements ValidCharacters
+	{
+		public boolean isValid(char ch)
+		{
+			if ( ch >= 'A' && ch <= 'Z' ) return true;
+			
+			return false;
+		}
+	}
+	
+	static private class ValidCharactersNumbers implements ValidCharacters
+	{
+		public boolean isValid(char ch)
+		{
+			if ( ch >= '0' && ch <= '9' ) return true;
+			
+			return false;
+		}
+	}
+	
+	static private class ValidCharactersWhitespace implements ValidCharacters
+	{
+		public boolean isValid(char ch)
+		{
+			return Character.isWhitespace(ch);
+		}
+	}
+	
+	static public class ValidCharactersOthers implements ValidCharacters
+	{
+		private char chars[];
+		
+		private ValidCharactersOthers(char... valid_chars)
+		{
+			this.chars = valid_chars;
+		}
+		
+		public boolean isValid(char ch)
+		{
+			for ( int i = 0; i < chars.length; i++ )
+			{
+				if ( ch == chars[i] ) return true;
+			}
+			return false;
+		}
+	}
+	
+	static public ValidCharacters LETTERS = new ValidCharactersLetters();
+	static public ValidCharacters LOWERCASE_LETTERS = new ValidCharactersLowerCaseLetters();
+	static public ValidCharacters UPPERCASE_LETTERS = new ValidCharactersUpperCaseLetters();
+	static public ValidCharacters NUMBERS = new ValidCharactersNumbers();
+	static public ValidCharacters WHITESPACE = new ValidCharactersWhitespace();
+	static public ValidCharacters SPACES = new ValidCharactersOthers(' ');
+	static public ValidCharacters DOT = new ValidCharactersOthers('.');
+	static public ValidCharacters DASH = new ValidCharactersOthers('-');
+	static public ValidCharacters UNDERSCORE = new ValidCharactersOthers('_');
+	
+	
+	static public void containsOnlyValidCharacters(String str, ValidCharacters... allowed_characters )
+	{
+		if ( str == null ) return;
+		
+		char chars[] = str.toCharArray();
+		
+		for ( char ch : chars )
+		{
+			boolean is_allowed = false;
+			
+			for ( ValidCharacters filter : allowed_characters )
+			{
+				if ( filter.isValid(ch) ) 
+				{
+					is_allowed = true;
+					continue;
+				}
+			}
+			
+			if ( !is_allowed ) throw new ValidationException(String.format("Illegal character %c in string %s", ch, str));
+		}
+	}
 }
