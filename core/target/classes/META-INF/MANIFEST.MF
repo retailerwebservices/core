@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Built-By: jim.kane
+Build-Jdk: 1.8.0_73
+Created-By: Maven Integration for Eclipse
+Main-Class: org.jimmutable.core.examples.product_data.OldSpecXMLConver
+ ter
+
