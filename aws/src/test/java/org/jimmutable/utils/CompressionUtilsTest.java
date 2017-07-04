@@ -1,8 +1,7 @@
 package org.jimmutable.utils;
 
-import java.util.Random;
-
 import org.jimmutable.aws.utils.CompressionUtils;
+import org.jimmutable.core.TestingUtils;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -38,7 +37,7 @@ public class CompressionUtilsTest extends TestCase
 		
 		for ( int i = 0; i < 100; i++ )
 		{
-			assertCompressionWorks(randomBytes());
+			assertCompressionWorks(TestingUtils.createRandomByteArray(10*1024));
 		}
 	}
 	
@@ -49,50 +48,8 @@ public class CompressionUtilsTest extends TestCase
 		assertCompressionWorksString("");
 		assertCompressionWorksString("Hello World");
 		
-		assertCompressionWorksString(createAcidString());
-		assertCompressionWorksString(createNonBase64AcidString());
-	}
-	
-	static public String createAcidString()
-	{
-		StringBuilder ret = new StringBuilder();
-
-		ret.append("\n");
-
-		for ( int i = 0; i < 10000; i++ )
-		{
-			ret.append((char)i);
-		}
-
-		return ret.toString();
-	}
-
-	static public String createNonBase64AcidString()
-	{
-		StringBuilder ret = new StringBuilder();
-
-		ret.append("\n");
-
-		for ( int i = 0; i < 10000; i++ )
-		{
-			char ch = (char)i;
-			if ( i > 32 ) { ret.append(ch); }
-			if ( ch == '\t' ) { ret.append(ch); }
-			if ( ch == '\n' ) { ret.append(ch); }
-			if ( ch == '\r' ) { ret.append(ch); }
-		}
-
-		return ret.toString();
-	}
-	
-	static private byte[] randomBytes()
-	{
-		Random r = new Random();
-		
-		byte ret[] = new byte[r.nextInt(10*1024)];
-		r.nextBytes(ret);
-		
-		return ret;
+		assertCompressionWorksString(TestingUtils.createAcidString());
+		assertCompressionWorksString(TestingUtils.createNonBase64AcidString());
 	}
 	
 	private void assertCompressionWorks(byte original_data[])

@@ -2,6 +2,7 @@ package org.jimmutable.core.objects;
 
 import java.util.Objects;
 
+import org.jimmutable.core.TestingUtils;
 import org.jimmutable.core.examples.book.BindingType;
 import org.jimmutable.core.examples.book.Book;
 import org.jimmutable.core.examples.product_data.BrandCode;
@@ -259,8 +260,8 @@ public class BuilderTest extends TestCase
     {
     	testOneString("foo");
     	testOneString(null);
-    	testOneString(PrimativeReadWriteTest.createAcidString());
-    	testOneString(PrimativeReadWriteTest.createNonBase64AcidString());
+    	testOneString(TestingUtils.createAcidString());
+    	testOneString(TestingUtils.createNonBase64AcidString());
     }
     
     public void testEnum()
@@ -342,7 +343,7 @@ public class BuilderTest extends TestCase
     	testOneChar(Character.MIN_VALUE);
     	
     	// really pound on it...
-    	String str = PrimativeReadWriteTest.createAcidString();
+    	String str = TestingUtils.createAcidString();
     	
     	for ( char ch : str.toCharArray() )
     	{

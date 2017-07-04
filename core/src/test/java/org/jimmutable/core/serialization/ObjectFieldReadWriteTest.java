@@ -2,9 +2,7 @@ package org.jimmutable.core.serialization;
 
 import java.util.Objects;
 
-import org.jimmutable.core.serialization.FieldName;
-import org.jimmutable.core.serialization.Format;
-import org.jimmutable.core.serialization.TypeName;
+import org.jimmutable.core.TestingUtils;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.serialization.writer.StandardWritable;
@@ -97,8 +95,8 @@ public class ObjectFieldReadWriteTest extends TestCase
     	testStringField(String.format("Hello: %c", (char)0));
     	
     	// The acid string...
-    	testStringField(PrimativeReadWriteTest.createNonBase64AcidString());
-    	testStringField(PrimativeReadWriteTest.createAcidString());
+    	testStringField(TestingUtils.createNonBase64AcidString());
+    	testStringField(TestingUtils.createAcidString());
     }
     
     private void testStringField(String value)

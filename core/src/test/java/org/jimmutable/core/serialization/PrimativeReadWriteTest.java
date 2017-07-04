@@ -1,6 +1,6 @@
 package org.jimmutable.core.serialization;
 
-import org.jimmutable.core.serialization.Format;
+import org.jimmutable.core.TestingUtils;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
 
@@ -89,7 +89,7 @@ public class PrimativeReadWriteTest extends TestCase
     
     public void testStings()
     {
-    	testObject(createAcidString());
+    	testObject(TestingUtils.createAcidString());
     	
     	if (true)
     	{
@@ -108,39 +108,7 @@ public class PrimativeReadWriteTest extends TestCase
     	testObject("Hello There \u00a9");
     	
     	// The acid string...
-    	testObject(createNonBase64AcidString());
-    }
-    
-    static public String createAcidString()
-    {
-    	StringBuilder ret = new StringBuilder();
-    	
-    	ret.append("\n");
-    	
-    	for ( int i = 0; i < 10_000; i++ )
-    	{
-    		ret.append((char)i);
-    	}
-    	
-    	return ret.toString();
-    }
-    
-    static public String createNonBase64AcidString()
-    {
-    	StringBuilder ret = new StringBuilder();
-    	
-    	ret.append("\n");
-    	
-    	for ( int i = 0; i < 10_000; i++ )
-    	{
-    		char ch = (char)i;
-    		if ( i > 32 ) { ret.append(ch); }
-    		if ( ch == '\t' ) { ret.append(ch); }
-    		if ( ch == '\n' ) { ret.append(ch); }
-    		if ( ch == '\r' ) { ret.append(ch); }
-    	}
-    	
-    	return ret.toString();
+    	testObject(TestingUtils.createNonBase64AcidString());
     }
     
     private void testObject(Object obj)
