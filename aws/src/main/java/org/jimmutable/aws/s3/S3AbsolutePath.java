@@ -73,4 +73,17 @@ public class S3AbsolutePath extends Stringable
 			}
 		}
 	}
+	
+	public S3BucketName getSimpleBucketName() { return bucket_name; }
+	public S3Path getSimplePath() { return path; }
+	
+	
+	public String createURL(boolean use_https)
+	{
+		return String.format("%s://s3-us-west-2.amazonaws.com/%s/%s", 
+				use_https ? "https" : "http", 
+				getSimpleBucketName().getSimpleValue(), 
+				getSimplePath().getSimpleValue()
+			);
+	}
 }

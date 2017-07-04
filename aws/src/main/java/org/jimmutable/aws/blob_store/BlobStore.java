@@ -1,7 +1,5 @@
 package org.jimmutable.aws.blob_store;
 
-import java.io.File;
-
 import org.apache.logging.log4j.LogManager;
 import org.jimmutable.aws.environment.ApplicationEnvironment;
 import org.jimmutable.aws.environment.CloudResource;
@@ -10,10 +8,11 @@ import org.jimmutable.aws.s3.S3AbsolutePath;
 import org.jimmutable.aws.s3.S3BucketName;
 import org.jimmutable.aws.s3.S3DefaultClientCreator;
 import org.jimmutable.aws.s3.S3Path;
-import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.utils.Validator;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
@@ -68,28 +67,6 @@ public class BlobStore extends CloudResource
 	}
 	
 	/**
-	 * Upload a file to the blob store
-	 * @param src The file to upload
-	 * @param base_path The base path (directory) to upload the file to
-	 * @param fixed_portion_of_name The fixed (prefix) portion of the file name
-	 * @param extension The extension
-	 * @param default_value The value to return in the event of an error
-	 * 
-	 * @return The 
-	 */
-	public S3AbsolutePath upload(File src, S3Path base_path, String fixed_portion_of_name, String extension, S3AbsolutePath default_value)
-	{ 
-		try
-		{
-			return upload(new BlobStoreUploadRequest(src, base_path, fixed_portion_of_name, extension), default_value);
-		}
-		catch(ValidationException e)
-		{
-			return default_value;
-		}
-	}
-	
-	/**
 	 * Find a unused blob path (matching the parameters of a give request)
 	 * 
 	 * @param request A valid upload request
@@ -129,6 +106,8 @@ public class BlobStore extends CloudResource
 	 */
 	public S3AbsolutePath upload(BlobStoreUploadRequest request, S3AbsolutePath default_value)
 	{
+		if ( isReadOnly() ) return default_value;
+		
 		Validator.notNull(request);
 		if ( !request.getSimpleSourceFile().exists() ) return default_value;
 		
@@ -137,9 +116,18 @@ public class BlobStore extends CloudResource
 			S3Path dest_path = getUnusedPath(request, null);
 			if ( dest_path == null ) return default_value;
 
-			TransferManager manager =  TransferManagerBuilder.defaultTransferManager();
+			TransferManager manager =  TransferManagerBuilder.standard().withS3Client(client).build();
 			
-			Upload transfer = manager.upload(getSimpleS3BucketNameString(), dest_path.getSimpleValue(), request.getSimpleSourceFile());
+			
+			PutObjectRequest put_request = new PutObjectRequest(getSimpleS3BucketNameString(), dest_path.getSimpleValue(), request.getSimpleSourceFile());
+
+			ObjectMetadata meta = new ObjectMetadata();
+			meta.setContentLength(request.getSimpleSourceFile().length());
+			meta.setContentType(request.getSimpleMimeType());
+			
+			put_request.setMetadata(meta);
+			
+			Upload transfer = manager.upload(put_request);
 			
 			transfer.waitForCompletion();
 			

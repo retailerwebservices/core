@@ -5,30 +5,36 @@ import java.util.Objects;
 import java.util.Random;
 
 import org.jimmutable.aws.s3.S3Path;
+import org.jimmutable.aws.utils.MimeTypes;
 import org.jimmutable.core.objects.TransientImmutableObject;
 import org.jimmutable.core.utils.Comparison;
 import org.jimmutable.core.utils.Validator;
-
-import com.amazonaws.util.ComparableUtils;
 
 public class BlobStoreUploadRequest extends TransientImmutableObject<BlobStoreUploadRequest>
 {
 	private S3Path base_path; // required
 	private String fixed_portion_of_name; // required
 	private String extension; // required
+	private String mime_type; // required
 	
 	private File src; // required
 	
 	public BlobStoreUploadRequest(File src, S3Path base_path, String fixed_portion_of_name, String extension)
 	{
+		this(src,base_path, fixed_portion_of_name, extension, MimeTypes.getMimeType(extension));
+	}
+	
+	public BlobStoreUploadRequest(File src, S3Path base_path, String fixed_portion_of_name, String extension, String mime_type)
+	{
 		if ( fixed_portion_of_name == null ) fixed_portion_of_name = "";
 		
-		Validator.notNull(src,base_path,fixed_portion_of_name,extension);
+		Validator.notNull(src,base_path,fixed_portion_of_name,extension, mime_type);
 		
 		this.src = src;
 		this.base_path = base_path;
 		this.fixed_portion_of_name = fixed_portion_of_name.trim().toLowerCase();
 		this.extension = extension.trim().toLowerCase();
+		this.mime_type = mime_type;
 		
 		complete();
 	}
@@ -37,6 +43,7 @@ public class BlobStoreUploadRequest extends TransientImmutableObject<BlobStoreUp
 	public S3Path getSimpleBasePath() { return base_path; }
 	public String getSimpleFixedPortionOfName() { return fixed_portion_of_name; }
 	public String getSimpleExtension() { return extension; }
+	public String getSimpleMimeType() { return mime_type; }
 
 	public int compareTo(BlobStoreUploadRequest o) 
 	{
@@ -60,7 +67,7 @@ public class BlobStoreUploadRequest extends TransientImmutableObject<BlobStoreUp
 	@Override
 	public void validate() 
 	{
-		Validator.notNull(base_path, fixed_portion_of_name, extension);
+		Validator.notNull(base_path, fixed_portion_of_name, extension, mime_type);
 		Validator.containsOnlyValidCharacters(this.fixed_portion_of_name, Validator.LOWERCASE_LETTERS, Validator.NUMBERS, Validator.DASH);
 		Validator.containsOnlyValidCharacters(this.extension, Validator.LOWERCASE_LETTERS, Validator.NUMBERS);	
 	}
@@ -82,6 +89,7 @@ public class BlobStoreUploadRequest extends TransientImmutableObject<BlobStoreUp
 		if ( !getSimpleBasePath().equals(other.getSimpleBasePath()) ) return false;
 		if ( !getSimpleFixedPortionOfName().equals(other.getSimpleFixedPortionOfName()) ) return false;
 		if ( !getSimpleExtension().equals(other.getSimpleExtension()) ) return false;
+		if ( !getSimpleMimeType().equals(other.getSimpleMimeType()) ) return false;
 		
 		return true;
 	}
@@ -113,7 +121,7 @@ public class BlobStoreUploadRequest extends TransientImmutableObject<BlobStoreUp
 		
 		for ( int i = 0; i < 9; i++ )
 		{
-			builder.append('a'+r.nextInt(25));
+			builder.append((char)('a'+r.nextInt(25)));
 		}
 		
 		builder.append(".");
