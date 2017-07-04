@@ -31,17 +31,8 @@ public class HostName extends Stringable
 		Validator.notNull(getSimpleValue());
 		Validator.min(getSimpleValue().length(), 1);
 		
-		char chars[] = getSimpleValue().toCharArray();
-		for ( char ch : chars )
-		{
-			if ( ch >= 'a' && ch <= 'z' ) continue;
-			if ( ch >= '0' && ch <= '9' ) continue;
-			if ( ch == '_' ) continue;
-			if ( ch == '-' ) continue;
-			if ( ch == '.' ) continue;
-			
-			throw new ValidationException(String.format("Illegal character \'%c\' in host name %s.  Only lower case letters, numbers, underscore (_), dash (-) and dot (.) are allowed", ch, getSimpleValue()));
-		}
+		
+		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.LOWERCASE_LETTERS, Validator.NUMBERS, Validator.DASH, Validator.UNDERSCORE, Validator.DOT);
 	}
 	
 	static public class MyConverter extends Stringable.Converter<HostName>

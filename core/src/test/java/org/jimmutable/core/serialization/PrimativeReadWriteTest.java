@@ -1,8 +1,8 @@
 package org.jimmutable.core.serialization;
 
-import org.jimmutable.core.TestingUtils;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
+import org.jimmutable.core.utils.TestingUtils;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

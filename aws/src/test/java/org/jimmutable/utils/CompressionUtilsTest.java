@@ -1,7 +1,7 @@
 package org.jimmutable.utils;
 
 import org.jimmutable.aws.utils.CompressionUtils;
-import org.jimmutable.core.TestingUtils;
+import org.jimmutable.core.utils.TestingUtils;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

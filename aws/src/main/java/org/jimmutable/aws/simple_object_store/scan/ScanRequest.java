@@ -2,6 +2,8 @@ package org.jimmutable.aws.simple_object_store.scan;
 
 import org.jimmutable.aws.s3.S3Path;
 import org.jimmutable.aws.simple_object_store.SimpleObjectStore;
+import org.jimmutable.core.objects.TransientImmutableObject;
+import org.jimmutable.core.utils.Comparison;
 import org.jimmutable.core.utils.Validator;
 
 public class ScanRequest 

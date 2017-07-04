@@ -2,7 +2,6 @@ package org.jimmutable.core.objects;
 
 import java.util.Objects;
 
-import org.jimmutable.core.TestingUtils;
 import org.jimmutable.core.examples.book.BindingType;
 import org.jimmutable.core.examples.book.Book;
 import org.jimmutable.core.examples.product_data.BrandCode;
@@ -19,6 +18,7 @@ import org.jimmutable.core.serialization.reader.ObjectParseTree.OnError;
 import org.jimmutable.core.serialization.reader.ReadAs;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.serialization.writer.WriteAs;
+import org.jimmutable.core.utils.TestingUtils;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

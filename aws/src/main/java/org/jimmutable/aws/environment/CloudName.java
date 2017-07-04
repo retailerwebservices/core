@@ -28,15 +28,8 @@ public class CloudName extends Stringable
 		Validator.notNull(getSimpleValue());
 		Validator.min(getSimpleValue().length(), 1);
 		
-		char chars[] = getSimpleValue().toCharArray();
-		for ( char ch : chars )
-		{
-			if ( ch >= 'a' && ch <= 'z' ) continue;
-			if ( ch >= '0' && ch <= '9' ) continue;
-			if ( ch == '-' ) continue;
-			
-			throw new ValidationException(String.format("Illegal character \'%c\' in cloud name %s.  Only lower case letters, numbers, and dash (-) are allowed.", ch, getSimpleValue()));
-		}
+		
+		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.LOWERCASE_LETTERS, Validator.NUMBERS, Validator.DASH);
 		
 		if ( getSimpleValue().startsWith("-") ) throw new ValidationException(String.format("Cloud name %s is invalid, bucket names may not start with a dash (-) ", getSimpleValue()));
 		if ( getSimpleValue().endsWith("-") ) throw new ValidationException(String.format("Cloud name %s is invalid, bucket names may not end with a dash (-) ", getSimpleValue()));

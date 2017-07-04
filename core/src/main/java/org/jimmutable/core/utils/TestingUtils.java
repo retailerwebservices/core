@@ -1,4 +1,4 @@
-package org.jimmutable.core;
+package org.jimmutable.core.utils;
 
 import java.util.Random;
 

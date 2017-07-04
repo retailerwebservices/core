@@ -72,17 +72,9 @@ public class S3Path extends Stringable
 	{
 		Validator.notNull(getSimpleValue());
 		
-		char chars[] = getSimpleValue().toCharArray();
-		for ( char ch : chars )
-		{
-			if ( ch >= 'a' && ch <= 'z' ) continue;
-			if ( ch >= '0' && ch <= '9' ) continue;
-			if ( ch == '-' ) continue;
-			if ( ch == '.' ) continue;
-			if ( ch == '/' ) continue;
-			
-			throw new ValidationException(String.format("Illegal character \'%c\' in S3ObjectPath %s.  Only lower case letters, numbers, dash (-) and dot (.) are allowed.", ch, getSimpleValue()));
-		}
+		
+		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.LOWERCASE_LETTERS, Validator.NUMBERS, Validator.DASH, Validator.DOT, Validator.FORWARD_SLASH);
+		
 		
 		if ( getSimpleValue().startsWith(".") ) throw new ValidationException(String.format("S3ObjectPath %s is invalid, object names may not start with a dot (.) ", getSimpleValue()));
 		if ( getSimpleValue().startsWith("-") ) throw new ValidationException(String.format("S3ObjectPath %s is invalid, object names may not start with a dash (-) ", getSimpleValue()));
