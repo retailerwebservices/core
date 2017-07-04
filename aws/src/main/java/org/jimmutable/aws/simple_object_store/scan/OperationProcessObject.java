@@ -1,14 +1,11 @@
 package org.jimmutable.aws.simple_object_store.scan;
 
+import org.jimmutable.aws.s3.S3Path;
+import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.threading.OperationRunnable;
-import org.jimmutable.core.threading.OperationRunnable.Result;
 import org.jimmutable.core.utils.Validator;
 
-import com.amazonaws.services.s3.internal.Constants;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.amazonaws.util.IOUtils;
 
 public class OperationProcessObject extends OperationRunnable
 {
@@ -28,7 +25,17 @@ public class OperationProcessObject extends OperationRunnable
 		if ( shouldStop() ) 
 			return Result.STOPPED;
 		
-		scan_operation.getSimpleRequest().getSimpleScanListener().processObject(scan_operation, object_summary);
+		S3Path path = new S3Path(object_summary.getKey());
+		
+		boolean include_object = scan_operation.getSimpleRequest().getSimpleScanListener().shouldLoadObject(scan_operation, path, object_summary);
+		
+		if ( include_object )
+		{
+			StandardObject obj = scan_operation.getSimpleRequest().getSimpleObjectStore().get(path, null);
+			
+			if ( obj != null )  
+				scan_operation.getSimpleRequest().getSimpleScanListener().onLoadObject(scan_operation, path, object_summary, obj);
+		}
 		
 		if ( shouldStop() ) 
 			return Result.STOPPED;

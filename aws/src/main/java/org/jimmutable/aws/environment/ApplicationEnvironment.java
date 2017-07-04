@@ -3,6 +3,7 @@ package org.jimmutable.aws.environment;
 import org.apache.logging.log4j.LogManager;
 import org.jimmutable.aws.keys.AWSStaticCredentials;
 import org.jimmutable.aws.utils.PropertiesReader;
+import org.jimmutable.core.utils.Validator;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
@@ -24,16 +25,8 @@ abstract public class ApplicationEnvironment
 		
 		PropertiesReader r = new PropertiesReader(PROPERTIES_FILE_NAME);
 		
-		String cloud_name_str = r.readString("cloud_name", null);
-		
-		if ( cloud_name_str == null )
-		{
-			LogManager.getRootLogger().error(String.format("The ~/%s must specify a cloud_name", PROPERTIES_FILE_NAME));
-			System.exit(1);
-			return;
-		}
-		
-		cloud_name = new CloudName(cloud_name_str);
+		cloud_name = loadLoadNameFromPropertiesFile(r, null);
+		Validator.notNull(cloud_name);
 		
 		String aws_id = r.readString("aws_id", null);
 		String aws_secret = r.readString("aws_secret", null);
@@ -64,5 +57,29 @@ abstract public class ApplicationEnvironment
 		}
 
 		public void refresh() {}
+	}
+	
+	/**
+	 * This function loads the cloud name from the properties file. Unit testing
+	 * environment overide this function to return CloudName.UNIT_TEST
+	 * 
+	 * @param r
+	 *            The properties reader to read from
+	 * @param default_value
+	 *            The value to return if the cloud name can not be loaded
+	 * @return The cloud name of the environment
+	 */
+	public CloudName loadLoadNameFromPropertiesFile(PropertiesReader r, CloudName default_value)
+	{
+		String cloud_name_str = r.readString("cloud_name", null);
+		
+		if ( cloud_name_str == null )
+		{
+			LogManager.getRootLogger().error(String.format("The ~/%s must specify a cloud_name", PROPERTIES_FILE_NAME));
+			System.exit(1);
+			return default_value;
+		}
+		
+		return new CloudName(cloud_name_str);
 	}
 }

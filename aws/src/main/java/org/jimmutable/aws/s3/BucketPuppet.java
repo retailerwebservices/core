@@ -168,6 +168,7 @@ public class BucketPuppet
 		
 		BucketLifecycleConfiguration current_lifecyle_configuration = client.getBucketLifecycleConfiguration(desired_configuration.getSimpleS3BucketNameString());
 		
+		if ( current_lifecyle_configuration == null ) return true;
 		if ( current_lifecyle_configuration.getRules().size() != 1 ) return true;
 		
 		BucketLifecycleConfiguration.Rule cur_rule = current_lifecyle_configuration.getRules().get(0);

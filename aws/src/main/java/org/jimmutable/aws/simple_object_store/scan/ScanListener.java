@@ -1,5 +1,8 @@
 package org.jimmutable.aws.simple_object_store.scan;
 
+import org.jimmutable.aws.s3.S3Path;
+import org.jimmutable.core.objects.StandardObject;
+
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 /**
@@ -14,12 +17,26 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 public interface ScanListener 
 {	
 	/**
-	 * Invoked whenever an object is listed.  Implementations must take care to be thread safe[
+	 * Invoked whenever an object is listed.  Return true if the object should be loaded, false if the object should be skipped
 	 * 
 	 * @param scan The scan operation
-	 * @param object_summary The object summary of an S3 object that has been listed
+	 * @param path The path of the object
+	 * @param object_summary The full object summary of an S3 object that has been listed
+	 * 
+	 * @return True if the object should be loaded, false if the object should be skipped
 	 */
-	public void processObject(OperationScan scan, S3ObjectSummary object_summary);
+	public boolean shouldLoadObject(OperationScan scan, S3Path path, S3ObjectSummary object_summary);
+	
+	/**
+	 * Called after an object has been loaded from S3
+	 * 
+	 * @param scan The scan operation
+	 * @param path The path the object was loaded from
+	 * @param object_summary The full object summary of the S3 object this object was load from
+	 * @param obj The object that was loaded
+	 * 
+	 */
+	public void onLoadObject(OperationScan scan, S3Path path, S3ObjectSummary object_summary, StandardObject obj);
 
 	/**
 	 * Called when the scan, and all operations in the scan thread pool are

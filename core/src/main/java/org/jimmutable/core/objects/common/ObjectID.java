@@ -17,6 +17,11 @@ public class ObjectID  extends Stringable
 	
 	private long long_value;
 	
+	public ObjectID(long value)
+	{ 
+		super(String.format("%d", value));
+	}
+	
 	public ObjectID(String code)
 	{
 		super(code);

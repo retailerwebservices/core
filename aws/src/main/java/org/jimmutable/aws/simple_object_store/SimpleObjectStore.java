@@ -65,7 +65,7 @@ public class SimpleObjectStore extends CloudResource
 	
 	public S3BucketName getSimpleS3BucketName()
 	{
-		return new S3BucketName(String.format("%s.%s.store.digitalpanda", getSimpleCloudName().getSimpleValue(), store_name.getSimpleValue()));
+		return new S3BucketName(String.format("%s.%s.simple-object-store", getSimpleCloudName().getSimpleValue(), store_name.getSimpleValue()));
 	}
 
 	public String getSimpleS3BucketNameString()
@@ -92,9 +92,18 @@ public class SimpleObjectStore extends CloudResource
 			return false;
 		}
 		
+		S3Path dest_path = obj.getStorableS3Path();
+		
+		if ( !dest_path.getOptionalExtension("").equals("xml") )
+		{
+			LogManager.getRootLogger().error(String.format("Unable to upsert SimpleObjectStorable because destination path %s does not end in .xml", dest_path.getSimpleValue()));
+			return false;
+		}
+		
+		
 		if ( isReadOnly() )
 		{
-			LogManager.getRootLogger().debug("Attempt to write "+obj.getSimplePath()+" to a read only SimpleObjectStore");
+			LogManager.getRootLogger().debug("Attempt to write "+obj.getStorableS3Path()+" to a read only SimpleObjectStore");
 			return false;
 		}
 		
@@ -104,7 +113,7 @@ public class SimpleObjectStore extends CloudResource
 			
 			if ( compressed_data == null )
 			{
-				LogManager.getRootLogger().error("Unable to compress the XML serialization of "+obj.getSimplePath()+": This is very unusual");
+				LogManager.getRootLogger().error("Unable to compress the XML serialization of "+obj.getStorableS3Path()+": This is very unusual");
 				return false;
 			}
 			
@@ -114,13 +123,13 @@ public class SimpleObjectStore extends CloudResource
 			meta.setContentLength(compressed_data.length);
 			meta.setContentEncoding("gzip");
 			
-			client.putObject(getSimpleS3BucketNameString(), obj.getSimplePath().getSimpleValue(), input, meta);
+			client.putObject(getSimpleS3BucketNameString(), dest_path.getSimpleValue(), input, meta);
 			
 			return true;
 		}
 		catch(Exception e)
 		{
-			LogManager.getRootLogger().error("Failure to write object "+obj.getSimplePath(),e);
+			LogManager.getRootLogger().error("Failure to write object "+obj.getStorableS3Path(),e);
 			return false;
 		}
 	}
@@ -196,6 +205,7 @@ public class SimpleObjectStore extends CloudResource
 	public boolean delete(S3Path path)
 	{
 		if ( path == null ) return false;
+		if ( isReadOnly() ) return false;
 		
 		try
 		{

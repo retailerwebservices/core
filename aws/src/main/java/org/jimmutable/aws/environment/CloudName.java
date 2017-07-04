@@ -1,13 +1,13 @@
 package org.jimmutable.aws.environment;
 
-import org.jimmutable.aws.s3.S3BucketName;
-import org.jimmutable.aws.s3.S3BucketName.MyConverter;
 import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
 
 public class CloudName extends Stringable
 {
+	static public CloudName UNIT_TEST_CLOUD = new CloudName("unit-test");
+	
 	static public final MyConverter CONVERTER = new MyConverter();
 	
 	public CloudName(String code)
