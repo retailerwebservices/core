@@ -13,6 +13,19 @@ import org.jimmutable.core.exceptions.ValidationException;
  */
 public class Validator 
 {
+	static public final ValidCharacters LETTERS = new ValidCharactersLetters();
+	static public final ValidCharacters LOWERCASE_LETTERS = new ValidCharactersLowerCaseLetters();
+	static public final ValidCharacters UPPERCASE_LETTERS = new ValidCharactersUpperCaseLetters();
+	static public final ValidCharacters NUMBERS = new ValidCharactersNumbers();
+	static public final ValidCharacters COMMON_WHITESPACE = new ValidCharactersOthers(' ','\n','\r','\t'); // limits the characters to common whitespace
+	static public final ValidCharacters SPACE = new ValidCharactersOthers(' ');
+	static public final ValidCharacters DOT = new ValidCharactersOthers('.');
+	static public final ValidCharacters DASH = new ValidCharactersOthers('-');
+	static public final ValidCharacters UNDERSCORE = new ValidCharactersOthers('_');
+	static public final ValidCharacters FORWARD_SLASH = new ValidCharactersOthers('/');
+	static public final ValidCharacters BACKWARD_SLASH = new ValidCharactersOthers('\\');
+	static public final ValidCharacters COLON = new ValidCharactersOthers(':');
+	
 	/**
 	 * Guarantee that obj is not null (i.e. thrown a ValidationException if obj 
 	 * is null)
@@ -248,17 +261,6 @@ public class Validator
 			return false;
 		}
 	}
-	
-	static public ValidCharacters LETTERS = new ValidCharactersLetters();
-	static public ValidCharacters LOWERCASE_LETTERS = new ValidCharactersLowerCaseLetters();
-	static public ValidCharacters UPPERCASE_LETTERS = new ValidCharactersUpperCaseLetters();
-	static public ValidCharacters NUMBERS = new ValidCharactersNumbers();
-	static public ValidCharacters WHITESPACE = new ValidCharactersWhitespace();
-	static public ValidCharacters SPACES = new ValidCharactersOthers(' ');
-	static public ValidCharacters DOT = new ValidCharactersOthers('.');
-	static public ValidCharacters DASH = new ValidCharactersOthers('-');
-	static public ValidCharacters UNDERSCORE = new ValidCharactersOthers('_');
-	
 	
 	static public void containsOnlyValidCharacters(String str, ValidCharacters... allowed_characters )
 	{
