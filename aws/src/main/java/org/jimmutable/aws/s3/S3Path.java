@@ -161,7 +161,7 @@ public class S3Path extends Stringable
 	/**
 	 * Does this path have a "last" part?
 	 * 
-	 * @return
+	 * @return True if the path has a last part, false otherwise
 	 */
 	public boolean hasLastPart() 
 	{
@@ -203,6 +203,8 @@ public class S3Path extends Stringable
 	 * Get the "extension" of the last part of the path. For example, the path
 	 * foo/bar/baz.html.jpg.txt has the extension.txt
 	 * 
+	 * @param default_value The value to return if the path does not have an extension
+	 * 
 	 * @return the extension of the path (if the path has an extension,
 	 *         default_value otherwise)
 	 */
@@ -220,7 +222,7 @@ public class S3Path extends Stringable
 	/**
 	 * Does this path have a parent?
 	 * 
-	 * @return
+	 * @return True if this path has a parent, false otherwise
 	 */
 	public boolean hasParent()
 	{

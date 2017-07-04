@@ -81,8 +81,8 @@ public class SimpleObjectStore extends CloudResource
 	 * everything in RAM (as opposed to on disk). If you are working with
 	 * extremely large objects, this implementation may need to be revisited.
 	 * 
-	 * @param obj
-	 * @return
+	 * @param obj The object to upsert
+	 * @return True if the upsert was a success, false otherwise
 	 */
 	public boolean upsert(SimpleObjectStorable obj)
 	{
@@ -131,7 +131,7 @@ public class SimpleObjectStore extends CloudResource
 	 * @param path The path to read from
 	 * @param default_value The value to return if the object can not be read (for any reason)
 	 * 
-	 * @return
+	 * @return The standard object read from the specified path
 	 */
 	public StandardObject get(S3Path path, StandardObject default_value)
 	{
@@ -243,7 +243,7 @@ public class SimpleObjectStore extends CloudResource
 	 *            The scan listener
 	 * @param processing_threads
 	 *            The number of object processign threads to use
-	 * @return The result of the scan operation
+	 * 
 	 */
 	public void startScanAsycn(S3Path path, ScanListener listener, int processing_threads)
 	{

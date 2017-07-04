@@ -3,8 +3,8 @@ package org.jimmutable.aws.utils;
 import java.io.File;
 import java.io.FileReader;
 import java.util.Properties;
-import java.util.logging.LogManager;
 
+import org.apache.logging.log4j.LogManager;
 import org.jimmutable.core.utils.FileUtils;
 import org.jimmutable.core.utils.Validator;
 

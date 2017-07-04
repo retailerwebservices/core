@@ -16,8 +16,8 @@ public interface ScanListener
 	/**
 	 * Invoked whenever an object is listed.  Implementations must take care to be thread safe[
 	 * 
-	 * @param store The store being scanned
-	 * @param path The path that has been listed
+	 * @param scan The scan operation
+	 * @param object_summary The object summary of an S3 object that has been listed
 	 */
 	public void processObject(OperationScan scan, S3ObjectSummary object_summary);
 
@@ -25,8 +25,8 @@ public interface ScanListener
 	 * Called when the scan, and all operations in the scan thread pool are
 	 * complete
 	 * 
-	 * @param store
-	 *            The store that the scan was run in
+	 * @param scan
+	 *            The scan operation
 	 */
 	public void onScanComplete(OperationScan scan);
 	
