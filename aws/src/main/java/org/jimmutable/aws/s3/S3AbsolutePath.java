@@ -9,12 +9,23 @@ import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
 
+/**
+ * Class used to represent an absolute path (bucket + path) in S3
+ * 
+ * @author jim.kane
+ *
+ */
 public class S3AbsolutePath extends Stringable
 {
 	static public final MyConverter CONVERTER = new MyConverter();
 	
 	private transient S3BucketName bucket_name;
 	private transient S3Path path;
+	
+	public S3AbsolutePath(S3BucketName bucket, S3Path path)
+	{
+		super(String.format("%s:%s", bucket.getSimpleValue(), path.getSimpleValue()));
+	}
 	
 	public S3AbsolutePath(String code)
 	{
