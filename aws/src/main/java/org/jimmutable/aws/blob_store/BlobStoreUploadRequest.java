@@ -30,6 +30,7 @@ public class BlobStoreUploadRequest extends TransientImmutableObject<BlobStoreUp
 		complete();
 	}
 	
+	public File getSimpleSourceFile() { return src; }
 	public S3Path getSimpleBasePath() { return base_path; }
 	public String getSimpleFixedPortionOfName() { return fixed_portion_of_name; }
 	public String getSimpleExtension() { return extension; }
@@ -74,6 +75,7 @@ public class BlobStoreUploadRequest extends TransientImmutableObject<BlobStoreUp
 		
 		BlobStoreUploadRequest other = (BlobStoreUploadRequest)obj;
 		
+		if ( !src.getAbsolutePath().equals(other.getSimpleSourceFile().getAbsolutePath()) ) return false;
 		if ( !getSimpleBasePath().equals(other.getSimpleBasePath()) ) return false;
 		if ( !getSimpleFixedPortionOfName().equals(other.getSimpleFixedPortionOfName()) ) return false;
 		if ( !getSimpleExtension().equals(other.getSimpleExtension()) ) return false;
