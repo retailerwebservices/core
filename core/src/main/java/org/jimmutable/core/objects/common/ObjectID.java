@@ -1,25 +1,38 @@
 package org.jimmutable.core.objects.common;
 
+import java.util.Random;
+
 import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
 
 /**
- * A stringable class used to represent a numerical Object ID. ID(s) are 12
- * digits long and are pretty printed as XXXX-YYYY-ZZZZ
+ * A stringable class used to represent a numerical Object Id. Id(s) are 16
+ * digit long string printed in lower case hex with dashes separating the string
+ * into 4 groups for easy reading.
+ * 
+ * Negatives object id(s) are not allowed (normalized to positive)
+ * 
+ * Some example Id(s)
+ * 
+ * 42fb-e16d-95ac-8274
+ * 10c1-4296-742d-5e8d
+ * 2232-f768-2d2f-86d6
  * 
  * @author jim.kane
  *
  */
 public class ObjectID  extends Stringable
 {
+	static private Random random = new Random();
+	
 	static public final MyConverter CONVERTER = new MyConverter();
 	
 	private long long_value;
 	
 	public ObjectID(long value)
 	{ 
-		super(String.format("%d", value));
+		super(prettyPrintObjectId(value));
 	}
 	
 	public ObjectID(String code)
@@ -38,47 +51,17 @@ public class ObjectID  extends Stringable
 	{
 		Validator.notNull(getSimpleValue());
 		
-		char chars[] = getSimpleValue().toCharArray();
+		long_value = parseObjectId(getSimpleValue(),-1);
 		
-		StringBuilder clean_value = new StringBuilder();
+		if ( long_value < 0 ) 
+			throw new ValidationException(String.format("Invalid ObjectId %s",getSimpleValue()));
 		
-		for ( char ch : chars )
-		{
-			if ( ch == '-' ) continue;
-			
-			if ( ch >= '0' && ch <= '9' )
-			{
-				clean_value.append(ch);
-				if ( clean_value.length() == 12 ) break; // maximum number of digits is 12
-				continue;
-			}
-			
-			throw new ValidationException(String.format("Illegal character \'%c\' in object id %s.  Only numbers and dashes (-) are allowed.", ch, getSimpleValue()));
-		}
-		
-		try
-		{
-			long_value = Long.parseUnsignedLong(clean_value.toString());
-			
-			String normalized_value = String.format("%012d", long_value);
-			
-			normalized_value = String.format("%s-%s-%s",
-					normalized_value.substring(0, 4),
-					normalized_value.substring(4, 8),
-					normalized_value.substring(8, normalized_value.length())
-					);
-			
-			setValue(normalized_value);
-		}
-		catch(Exception e)
-		{
-			throw new ValidationException(String.format("Invalid object id %s",getSimpleValue()));
-		}
+		setValue(prettyPrintObjectId(long_value));
 	}
 	
 	/**
-	 * Get the value of the ID as a long
-	 * @return The valud of the ID as a long
+	 * Get the value of the Id as a long
+	 * @return The value of the Id as a long
 	 */
 	public long getSimpleLongValue()
 	{
@@ -101,13 +84,98 @@ public class ObjectID  extends Stringable
 	}
 
 	/**
-	 * Generate a new, random ObjectID
+	 * Generate a new, random ObjectId
 	 * 
-	 * @return A new, random ObjectID
+	 * @return A new, random ObjectId
 	 */
 	static public ObjectID randomID()
 	{
-		long value = (long)(Math.random()*9999_9999_9999l);
-		return new ObjectID(""+value);
+		return new ObjectID(random.nextLong());
+	}
+	
+	/**
+	 * Parse a pretty printed object id
+	 * 
+	 * @param pretty_printed_object_id
+	 *            A pretty printed object id
+	 * @param default_value
+	 *            The value to return if the pretty printed ID can not be parsed.
+	 *            Because negative object id(s) are not allowed, using -1 as a
+	 *            default value is a good way to test if the parse worked. (i.e. the
+	 *            only way to get -1 back from this function is if the parse failed)
+	 * @return the long object id, or default_value if the input can not be parsed
+	 */
+	static public long parseObjectId(String pretty_printed_object_id, long default_value)
+	{
+		if ( pretty_printed_object_id == null || pretty_printed_object_id.length() == 0 ) return default_value;
+		
+		if ( pretty_printed_object_id.startsWith("0x") ) 
+			pretty_printed_object_id = pretty_printed_object_id.substring(2);
+		
+		StringBuilder tmp = new StringBuilder();
+		
+		char chars[] = pretty_printed_object_id.toCharArray();
+		
+		for ( char ch : chars )
+		{
+			if ( ch >= '0' && ch <= '9' ) { tmp.append(ch); continue; }
+			if ( ch >= 'a' && ch <= 'f' ) { tmp.append(ch); continue; }
+			if ( ch >= 'A' && ch <= 'F' ) { tmp.append(ch); continue; }
+			
+			if ( ch == '-' ) continue;
+			if ( ch == '_' ) continue;
+			if ( ch == '.' ) continue;
+			if ( ch == ' ' ) continue;
+			if ( ch == '\t' ) continue;
+			if ( ch == '\r' ) continue;
+			if ( ch == '\n' ) continue;
+			
+			
+			return default_value;
+		}
+		
+		try
+		{
+			return Long.parseLong(tmp.toString(), 16);
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			return default_value;
+		}
+	}
+	
+	/**
+	 * Given an object id as a long (value), return the pretty printed version of it
+	 * 
+	 * Negative object id(s) will be normalized to positive
+	 * 
+	 * @param value
+	 *            The object id (as a long)
+	 * @return A pretty printed version of the object id.
+	 */
+	static public String prettyPrintObjectId(long value)
+	{
+		if ( value < 0 ) value = -value;
+		
+		String str = String.format("%016x", value);
+		
+		char chars[] = str.toCharArray();
+		
+		StringBuilder ret = new StringBuilder();
+		
+		for ( int i = 0; i < chars.length; i++ )
+		{
+			ret.append(chars[i]);
+			
+			if ( i == 3 || i == 7 || i == 11 ) ret.append('-');
+		}
+		
+		return ret.toString();
+	}
+	
+	static public void main(String args[])
+	{
+		 
 	}
 }
