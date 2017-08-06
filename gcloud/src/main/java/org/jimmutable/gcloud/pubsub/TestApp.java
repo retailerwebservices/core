@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.jimmutable.gcloud.ProjectID;
+import org.jimmutable.gcloud.ProjectId;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
@@ -58,10 +58,10 @@ public class TestApp
 	    
 	    if ( false )
 	    {
-	    		PubSubConfigurationUtils.createTopicIfNeeded(new ProjectID(projectId), new TopicID("jim-dev-topic"));
-	    		PubSubConfigurationUtils.createTopicIfNeeded(new ProjectID(projectId), new TopicID("jim-dev-topic-2"));
-	    		PubSubConfigurationUtils.createTopicIfNeeded(new ProjectID(projectId), new TopicID("jim-dev-topic-3"));
-	    		PubSubConfigurationUtils.createTopicIfNeeded(new ProjectID(projectId), new TopicID("jim-dev-topic-4"));
+	    		PubSubConfigurationUtils.createTopicIfNeeded(new ProjectId(projectId), new TopicId("jim-dev-topic"));
+	    		PubSubConfigurationUtils.createTopicIfNeeded(new ProjectId(projectId), new TopicId("jim-dev-topic-2"));
+	    		PubSubConfigurationUtils.createTopicIfNeeded(new ProjectId(projectId), new TopicId("jim-dev-topic-3"));
+	    		PubSubConfigurationUtils.createTopicIfNeeded(new ProjectId(projectId), new TopicId("jim-dev-topic-4"));
 	    }
 	    
 	    
@@ -69,7 +69,7 @@ public class TestApp
 	    {
 	    		PullSubscriptionDefinition def;
 
-	    		def = new PullSubscriptionDefinition(new ProjectID(projectId), new SubscriptionID("jim-dev-sub"), new ProjectID(projectId), new TopicID("jim-dev-topic"));
+	    		def = new PullSubscriptionDefinition(new ProjectId(projectId), new SubscriptionId("jim-dev-sub"), new ProjectId(projectId), new TopicId("jim-dev-topic"));
 	    		PubSubConfigurationUtils.createSubscriptionIfNeeded(def);
 	    		
 	    		/*def = new PullSubscriptionDefinition(new ProjectID(projectId), new SubscriptionID("jim-dev-sub"), new ProjectID(projectId), new TopicID("jim-dev-topic-2"));

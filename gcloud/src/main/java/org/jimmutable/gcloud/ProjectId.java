@@ -5,13 +5,13 @@ import org.jimmutable.core.utils.Validator;
 
 import com.google.cloud.ServiceOptions;
 
-public class ProjectID extends Stringable
+public class ProjectId extends Stringable
 {
-	static public ProjectID CURRENT_PROJECT = new ProjectID(ServiceOptions.getDefaultProjectId());
+	static public ProjectId CURRENT_PROJECT = new ProjectId(ServiceOptions.getDefaultProjectId());
 	
 	static public final MyConverter CONVERTER = new MyConverter();
 	
-	public ProjectID(String code)
+	public ProjectId(String code)
 	{
 		super(code);
 	}
@@ -33,13 +33,13 @@ public class ProjectID extends Stringable
 		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.LOWERCASE_LETTERS, Validator.NUMBERS, Validator.DASH);
 	}
 	
-	static public class MyConverter extends Stringable.Converter<ProjectID>
+	static public class MyConverter extends Stringable.Converter<ProjectId>
 	{
-		public ProjectID fromString(String str, ProjectID default_value)
+		public ProjectId fromString(String str, ProjectId default_value)
 		{
 			try
 			{
-				return new ProjectID(str);
+				return new ProjectId(str);
 			}
 			catch(Exception e)
 			{

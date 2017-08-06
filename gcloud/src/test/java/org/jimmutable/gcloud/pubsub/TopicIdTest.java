@@ -1,19 +1,19 @@
-package pubsub;
+package org.jimmutable.gcloud.pubsub;
 
-import org.jimmutable.gcloud.pubsub.TopicID;
+import org.jimmutable.gcloud.pubsub.TopicId;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-public class TopicIDTest  extends TestCase 
+public class TopicIdTest  extends TestCase 
 {
 	 /**
   * Create the test case
   *
   * @param testName name of the test case
   */
- public TopicIDTest( String testName )
+ public TopicIdTest( String testName )
  {
      super( testName );
  }
@@ -23,15 +23,15 @@ public class TopicIDTest  extends TestCase
   */
  public static Test suite()
  {
-     return new TestSuite( TopicIDTest.class );
+     return new TestSuite( TopicIdTest.class );
  }
  
  public void testTopicID()
  {
-	   testStringConvert("some-id", new TopicID("some-id"));
-	   testStringConvert("some-id-1234", new TopicID("some-id-1234"));
-	   testStringConvert("SOME-id", new TopicID("some-id"));
-	   testStringConvert(" SOME-id ", new TopicID("some-id"));
+	   testStringConvert("some-id", new TopicId("some-id"));
+	   testStringConvert("some-id-1234", new TopicId("some-id-1234"));
+	   testStringConvert("SOME-id", new TopicId("some-id"));
+	   testStringConvert(" SOME-id ", new TopicId("some-id"));
 	   
 	   testContsructorFailure(null);
 	   testContsructorFailure("");
@@ -44,9 +44,9 @@ public class TopicIDTest  extends TestCase
 	   testContsructorFailure("foo/bar");
  }
 
- private void testStringConvert(String str, TopicID expected_result)
+ private void testStringConvert(String str, TopicId expected_result)
  {
-	 TopicID result = TopicID.CONVERTER.fromString(str, null);
+	 TopicId result = TopicId.CONVERTER.fromString(str, null);
 
 	   assertEquals(result, expected_result);
  }
@@ -55,7 +55,7 @@ public class TopicIDTest  extends TestCase
  {
 	   try
 	   {
-		   TopicID result = new TopicID(str);
+		   TopicId result = new TopicId(str);
 		   assert(false);
 	   }
 	   catch(Exception e)

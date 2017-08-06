@@ -2,13 +2,13 @@ package org.jimmutable.gcloud.pubsub;
 
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
-import org.jimmutable.gcloud.pubsub.TopicID.MyConverter;
+import org.jimmutable.gcloud.pubsub.TopicId.MyConverter;
 
-public class SubscriptionID extends Stringable
+public class SubscriptionId extends Stringable
 {
 	static public final MyConverter CONVERTER = new MyConverter();
 	
-	public SubscriptionID(String code)
+	public SubscriptionId(String code)
 	{
 		super(code);
 	}
@@ -30,13 +30,13 @@ public class SubscriptionID extends Stringable
 		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.LOWERCASE_LETTERS, Validator.NUMBERS, Validator.DASH);
 	}
 	
-	static public class MyConverter extends Stringable.Converter<SubscriptionID>
+	static public class MyConverter extends Stringable.Converter<SubscriptionId>
 	{
-		public SubscriptionID fromString(String str, SubscriptionID default_value)
+		public SubscriptionId fromString(String str, SubscriptionId default_value)
 		{
 			try
 			{
-				return new SubscriptionID(str);
+				return new SubscriptionId(str);
 			}
 			catch(Exception e)
 			{

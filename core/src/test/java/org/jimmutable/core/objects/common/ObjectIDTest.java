@@ -61,11 +61,11 @@ public class ObjectIDTest extends TestCase
 
     	// Test the random ID function
     	{
-    		Set<ObjectID> ids = new HashSet();
+    		Set<ObjectId> ids = new HashSet();
 
     		for ( int i = 0; i < 10_000; i++ )
     		{
-    			ObjectID cur = ObjectID.randomID();
+    			ObjectId cur = ObjectId.randomID();
     			assertEquals(19,cur.getSimpleValue().length());
 
     			ids.add(cur);
@@ -79,7 +79,7 @@ public class ObjectIDTest extends TestCase
     {
     	try
     	{
-    		new ObjectID(value);
+    		new ObjectId(value);
     		assert(false);
     	}
     	catch(ValidationException e)
@@ -92,7 +92,7 @@ public class ObjectIDTest extends TestCase
     {
     	try
     	{ 
-    		ObjectID test = new ObjectID(parse);
+    		ObjectId test = new ObjectId(parse);
     		
     		assertEquals(expected_string_value, test.getSimpleValue());
     		assertEquals(expected_long_value, test.getSimpleLongValue());

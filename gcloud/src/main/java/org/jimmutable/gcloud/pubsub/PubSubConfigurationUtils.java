@@ -1,7 +1,7 @@
 package org.jimmutable.gcloud.pubsub;
 
 import org.jimmutable.core.utils.Validator;
-import org.jimmutable.gcloud.ProjectID;
+import org.jimmutable.gcloud.ProjectId;
 
 import com.google.cloud.pubsub.v1.PagedResponseWrappers.ListSubscriptionsPagedResponse;
 import com.google.cloud.pubsub.v1.PagedResponseWrappers.ListTopicsPagedResponse;
@@ -27,7 +27,7 @@ public class PubSubConfigurationUtils
 	 *            The topic id
 	 * @return true if the topic existed (or was created), false if an error occours
 	 */
-	static public boolean createTopicIfNeeded(ProjectID project_id, TopicID topic_id)
+	static public boolean createTopicIfNeeded(ProjectId project_id, TopicId topic_id)
 	{
 		Validator.notNull(project_id, topic_id);
 		
@@ -68,7 +68,7 @@ public class PubSubConfigurationUtils
 	 * @return true if the topic exists, false if the topic does not exist,
 	 *         default_value in the event of an error
 	 */
-	static public Boolean getComplexTopicExists(ProjectID project_id, TopicID topic_id, Boolean default_value)
+	static public Boolean getComplexTopicExists(ProjectId project_id, TopicId topic_id, Boolean default_value)
 	{
 		Validator.notNull(project_id, topic_id);
 		
@@ -166,7 +166,7 @@ public class PubSubConfigurationUtils
 	 *            The TopicID
 	 * @return A TopicName corresponding to the spedcified project and topic id
 	 */
-	static public TopicName createTopicName(ProjectID project_id, TopicID topic_id)
+	static public TopicName createTopicName(ProjectId project_id, TopicId topic_id)
 	{
 		Validator.notNull(project_id, topic_id);
 		

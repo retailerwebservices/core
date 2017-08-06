@@ -22,7 +22,7 @@ import org.jimmutable.core.utils.Validator;
  * @author jim.kane
  *
  */
-public class ObjectID  extends Stringable
+public class ObjectId  extends Stringable
 {
 	static private Random random = new Random();
 	
@@ -30,12 +30,12 @@ public class ObjectID  extends Stringable
 	
 	private long long_value;
 	
-	public ObjectID(long value)
+	public ObjectId(long value)
 	{ 
 		super(prettyPrintObjectId(value));
 	}
 	
-	public ObjectID(String code)
+	public ObjectId(String code)
 	{
 		super(code);
 	}
@@ -68,13 +68,13 @@ public class ObjectID  extends Stringable
 		return long_value;
 	}
 	
-	static public class MyConverter extends Stringable.Converter<ObjectID>
+	static public class MyConverter extends Stringable.Converter<ObjectId>
 	{
-		public ObjectID fromString(String str, ObjectID default_value)
+		public ObjectId fromString(String str, ObjectId default_value)
 		{
 			try
 			{
-				return new ObjectID(str);
+				return new ObjectId(str);
 			}
 			catch(Exception e)
 			{
@@ -88,9 +88,9 @@ public class ObjectID  extends Stringable
 	 * 
 	 * @return A new, random ObjectId
 	 */
-	static public ObjectID randomID()
+	static public ObjectId randomID()
 	{
-		return new ObjectID(random.nextLong());
+		return new ObjectId(random.nextLong());
 	}
 	
 	/**
@@ -172,10 +172,5 @@ public class ObjectID  extends Stringable
 		}
 		
 		return ret.toString();
-	}
-	
-	static public void main(String args[])
-	{
-		 
 	}
 }

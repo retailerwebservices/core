@@ -1,17 +1,17 @@
-package org.jimmutable.gcloud;
+package org.jimmutable.core.objects.common;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-public class ProjectIDTest extends TestCase 
+public class KindTest extends TestCase 
 {
 	 /**
    * Create the test case
    *
    * @param testName name of the test case
    */
-  public ProjectIDTest( String testName )
+  public KindTest( String testName )
   {
       super( testName );
   }
@@ -21,15 +21,15 @@ public class ProjectIDTest extends TestCase
    */
   public static Test suite()
   {
-      return new TestSuite( ProjectIDTest.class );
+      return new TestSuite( KindTest.class );
   }
   
-  public void testProjectID()
+  public void testBucketName()
   {
-	   testStringConvert("some-id", new ProjectId("some-id"));
-	   testStringConvert("some-id-1234", new ProjectId("some-id-1234"));
-	   testStringConvert("SOME-id", new ProjectId("some-id"));
-	   testStringConvert(" SOME-id ", new ProjectId("some-id"));
+	   testStringConvert("foo", new Kind("foo"));
+	   testStringConvert("FOO", new Kind("foo"));
+	   
+	   testStringConvert("Foo-248", new Kind("foo-248"));
 	   
 	   testContsructorFailure(null);
 	   testContsructorFailure("");
@@ -37,14 +37,13 @@ public class ProjectIDTest extends TestCase
 	   testContsructorFailure("foo_bar");
 	   testContsructorFailure(".foo");
 	   testContsructorFailure("foo.");
+	   testContsructorFailure("foo.bar");
 	   testContsructorFailure("foo..bar");
-	   testContsructorFailure("foo..bar");
-	   testContsructorFailure("foo/bar");
   }
 
-  private void testStringConvert(String str, ProjectId expected_result)
+  private void testStringConvert(String str, Kind expected_result)
   {
-	  ProjectId result = ProjectId.CONVERTER.fromString(str, null);
+	  Kind result = Kind.CONVERTER.fromString(str, null);
 
 	   assertEquals(result, expected_result);
   }
@@ -53,7 +52,8 @@ public class ProjectIDTest extends TestCase
   {
 	   try
 	   {
-		   ProjectId result = new ProjectId(str);
+		   Kind result = new Kind(str);
+		   System.out.println("Should be invalid (but was not) "+str);
 		   assert(false);
 	   }
 	   catch(Exception e)

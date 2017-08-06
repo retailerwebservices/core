@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
-import org.jimmutable.gcloud.ProjectID;
+import org.jimmutable.gcloud.ProjectId;
 
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.protobuf.ByteString;
@@ -14,9 +14,9 @@ import com.google.pubsub.v1.TopicName;
 
 public class StandardObjectPublisher 
 {
-	static private Map<TopicID, Publisher> my_publishers = new ConcurrentHashMap();
+	static private Map<TopicId, Publisher> my_publishers = new ConcurrentHashMap();
 	
-	static public boolean publishObject(TopicID topic, StandardObject object)
+	static public boolean publishObject(TopicId topic, StandardObject object)
 	{
 		if ( topic == null ) return false; // can't send anything to a null topic
 		if ( object == null ) return false; // can't send a null object
@@ -46,15 +46,15 @@ public class StandardObjectPublisher
 		}
 	}
 	
-	synchronized static public boolean ensureTopicSetup(TopicID topic_id)
+	synchronized static public boolean ensureTopicSetup(TopicId topic_id)
 	{
 		if ( topic_id == null ) return false; // can't setup a  null topic
 		if ( my_publishers.containsKey(topic_id) ) return true; // topic is already setup and ready to go
 		
-		boolean topic_ready = PubSubConfigurationUtils.createTopicIfNeeded(ProjectID.CURRENT_PROJECT, topic_id);
+		boolean topic_ready = PubSubConfigurationUtils.createTopicIfNeeded(ProjectId.CURRENT_PROJECT, topic_id);
 		if ( !topic_ready ) return false;
 		
-		TopicName topic_name = PubSubConfigurationUtils.createTopicName(ProjectID.CURRENT_PROJECT, topic_id);
+		TopicName topic_name = PubSubConfigurationUtils.createTopicName(ProjectId.CURRENT_PROJECT, topic_id);
 				
 		try
 		{

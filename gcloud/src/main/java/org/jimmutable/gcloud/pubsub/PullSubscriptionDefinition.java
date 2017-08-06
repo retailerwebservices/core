@@ -5,20 +5,20 @@ import java.util.Objects;
 import org.jimmutable.core.objects.TransientImmutableObject;
 import org.jimmutable.core.utils.Comparison;
 import org.jimmutable.core.utils.Validator;
-import org.jimmutable.gcloud.ProjectID;
+import org.jimmutable.gcloud.ProjectId;
 
 import com.google.pubsub.v1.SubscriptionName;
 import com.google.pubsub.v1.TopicName;
 
 public class PullSubscriptionDefinition extends TransientImmutableObject<PullSubscriptionDefinition>
 {
-	private ProjectID subscription_project;
-	private SubscriptionID subscription_id;
+	private ProjectId subscription_project;
+	private SubscriptionId subscription_id;
 	
-	private ProjectID topic_project_id;
-	private TopicID topic_id;
+	private ProjectId topic_project_id;
+	private TopicId topic_id;
 	
-	public PullSubscriptionDefinition(ProjectID subscription_project, SubscriptionID subscription_id, ProjectID topic_project, TopicID topic_id)
+	public PullSubscriptionDefinition(ProjectId subscription_project, SubscriptionId subscription_id, ProjectId topic_project, TopicId topic_id)
 	{
 		this.subscription_project = subscription_project;
 		this.subscription_id = subscription_id;
@@ -27,11 +27,11 @@ public class PullSubscriptionDefinition extends TransientImmutableObject<PullSub
 		this.topic_id = topic_id;
 	}
 	
-	public ProjectID getSimpleSubscriptionProjectID() { return subscription_project; }
-	public SubscriptionID getSimpleSubscriptionID() { return subscription_id; }
+	public ProjectId getSimpleSubscriptionProjectID() { return subscription_project; }
+	public SubscriptionId getSimpleSubscriptionID() { return subscription_id; }
 	
-	public ProjectID getSimpleTopicProjectID() { return topic_project_id; }
-	public TopicID getSimpleTopicID() { return topic_id; }
+	public ProjectId getSimpleTopicProjectID() { return topic_project_id; }
+	public TopicId getSimpleTopicID() { return topic_id; }
 
 	public int compareTo(PullSubscriptionDefinition o) 
 	{
