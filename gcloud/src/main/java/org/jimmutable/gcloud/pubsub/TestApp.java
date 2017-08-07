@@ -4,16 +4,24 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jimmutable.gcloud.ProjectId;
+
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.ServiceOptions;
+import com.google.cloud.pubsub.v1.PagedResponseWrappers.ListSubscriptionsPagedResponse;
 import com.google.cloud.pubsub.v1.PagedResponseWrappers.ListTopicsPagedResponse;
 import com.google.cloud.pubsub.v1.Publisher;
+import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.protobuf.ByteString;
+import com.google.pubsub.v1.ListSubscriptionsRequest;
 import com.google.pubsub.v1.ListTopicsRequest;
 import com.google.pubsub.v1.ProjectName;
 import com.google.pubsub.v1.PubsubMessage;
+import com.google.pubsub.v1.PushConfig;
+import com.google.pubsub.v1.Subscription;
+import com.google.pubsub.v1.SubscriptionName;
 import com.google.pubsub.v1.Topic;
 import com.google.pubsub.v1.TopicName;
 
@@ -26,10 +34,9 @@ public class TestApp
 		// Create a topic...
 		
 		String topicId = "jim-dev-topic";
+		String subscriptionId = "jim-dev-sub";
 
 		
-	    
-	    
 	    // Create a new topic
 	    if ( false )
 		{
@@ -49,23 +56,68 @@ public class TestApp
 		    }
 	    }
 	    
-	    // Does a topic exist?
 	    if ( false )
 	    {
-	    		TopicName topic_that_exists = TopicName.create(projectId, topicId);
-	    		TopicName topic_that_does_not_exist = TopicName.create(projectId, "some-random-topic");
-	    		
-	    		System.out.println(topicExists(topic_that_exists, false));
-	    		
-	    		System.out.println(topicExists(topic_that_does_not_exist, false));
+	    		PubSubConfigurationUtils.createTopicIfNeeded(new ProjectId(projectId), new TopicId("jim-dev-topic"));
+	    		PubSubConfigurationUtils.createTopicIfNeeded(new ProjectId(projectId), new TopicId("jim-dev-topic-2"));
+	    		PubSubConfigurationUtils.createTopicIfNeeded(new ProjectId(projectId), new TopicId("jim-dev-topic-3"));
+	    		PubSubConfigurationUtils.createTopicIfNeeded(new ProjectId(projectId), new TopicId("jim-dev-topic-4"));
 	    }
 	    
+	    
+	    if ( true )
+	    {
+	    		PullSubscriptionDefinition def;
+
+	    		def = new PullSubscriptionDefinition(new ProjectId(projectId), new SubscriptionId("jim-dev-sub"), new ProjectId(projectId), new TopicId("jim-dev-topic"));
+	    		PubSubConfigurationUtils.createSubscriptionIfNeeded(def);
+	    		
+	    		/*def = new PullSubscriptionDefinition(new ProjectID(projectId), new SubscriptionID("jim-dev-sub"), new ProjectID(projectId), new TopicID("jim-dev-topic-2"));
+	    		PubSubConfigurationUtils.createSubscriptionIfNeeded(def);
+	    		
+	    		def = new PullSubscriptionDefinition(new ProjectID(projectId), new SubscriptionID("jim-dev-sub"), new ProjectID(projectId), new TopicID("jim-dev-topic-2"));
+	    		PubSubConfigurationUtils.createSubscriptionIfNeeded(def);
+	    		
+	    		def = new PullSubscriptionDefinition(new ProjectID(projectId), new SubscriptionID("jim-dev-sub2"), new ProjectID(projectId), new TopicID("jim-dev-topic-3"));
+	    		PubSubConfigurationUtils.createSubscriptionIfNeeded(def);*/
+	    }
+
+	    
+	    
 	    // Send one message
+	    if ( false )
 	    {
 	    		sendOneMessage(projectId, topicId, "Hello World");
 	    		sendOneMessage(projectId, topicId, "Somewhere, over the rainbow...");
 	    }
+	    
+	    // Create a subscription
+	    if ( false )
+	    {
+	    	try 
+	    	{
+	    		SubscriptionAdminClient subscriptionAdminClient = SubscriptionAdminClient.create();
+	    				
+	    		TopicName topicName = TopicName.create(projectId, topicId);
+	    		
+	    		// eg. subscriptionId = "my-test-subscription"
+	    		SubscriptionName subscriptionName = SubscriptionName.create(projectId, subscriptionId);
+	    		
+	    		// create a pull subscription with default acknowledgement deadline
+	    		Subscription subscription = subscriptionAdminClient.createSubscription(subscriptionName, topicName, PushConfig.getDefaultInstance(), 0);
+	    		
+	    		System.out.println("Created new subscription "+subscription);
+	    	}
+	    	catch(Exception e)
+	    	{
+	    		e.printStackTrace();
+	    	}
+	    }
+	    
+	   
 	}
+	
+	
 	
 	static private void sendOneMessage(String projectId, String topicId, String message_str) throws Exception
 	{
@@ -112,42 +164,5 @@ public class TestApp
 				publisher.shutdown();
 			}
 		}
-	}
-	
-	
-	static public boolean topicExists(TopicName topic_name, boolean default_value)
-	{
-		try
-		{
-			
-			
-			TopicAdminClient topicAdminClient = TopicAdminClient.create();
-			
-			 ListTopicsRequest listTopicsRequest =
-				      ListTopicsRequest.newBuilder()
-				          .setProjectWithProjectName(ProjectName.create(topic_name.getProject()))
-				          .setPageSize(1000)
-				          .build();
-			
-			 // Assumption: No project of ours will ever have more than 1,000 topics...
-			 
-			 ListTopicsPagedResponse response = topicAdminClient.listTopics(listTopicsRequest);
-			 
-			  Iterable<Topic> topics = response.iterateAll();
-			  
-			  for (Topic topic : topics) 
-			  {
-			    if ( topic.getNameAsTopicName().getTopic().equalsIgnoreCase(topic_name.getTopic()) ) 
-			    		return true;
-			  }
-			  
-			  return false;
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-			return default_value;
-		}
-		
 	}
 }

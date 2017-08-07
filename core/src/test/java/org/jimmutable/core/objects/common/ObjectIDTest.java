@@ -37,30 +37,41 @@ public class ObjectIDTest extends TestCase
     	assertFailure(null);
     	assertFailure("");
     	assertFailure("hello");
+
+    	assertToString("0", "0000-0000-0000-0000",0);
+    	assertToString("1", "0000-0000-0000-0001",1);
     	
-    	assertToString("0", "0000-0000-0000",0);
-    	assertToString("1", "0000-0000-0001",1);
     	
-    	assertToString("1234-5678-9012", "1234-5678-9012",1234_5678_9012l);
-    	assertToString("123456789012", "1234-5678-9012",1234_5678_9012l);
-    	assertToString("  123456789012  ", "1234-5678-9012",1234_5678_9012l);
-    	assertToString("-1234-5678-9012-", "1234-5678-9012",1234_5678_9012l);
+    	assertToString("42fb-e16d-95ac-8274", "42fb-e16d-95ac-8274",0x42fb_e16d_95ac_8274l);
+    	assertToString("42fb.e16d.95ac.8274", "42fb-e16d-95ac-8274",0x42fb_e16d_95ac_8274l);
+    	assertToString("42fbe16d95ac8274", "42fb-e16d-95ac-8274",0x42fb_e16d_95ac_8274l);
+    	assertToString("42fbe16d95ac8274", "42fb-e16d-95ac-8274",0x42fb_e16d_95ac_8274l);
+    	assertToString("0x42fbe16d95ac8274", "42fb-e16d-95ac-8274",0x42fb_e16d_95ac_8274l);
     	
-    	assertToString("12345678901234", "1234-5678-9012",1234_5678_9012l);
+    	assertToString("c1-4296-742d-5e8d", "00c1-4296-742d-5e8d",0x00c1_4296_742d_5e8dl);
+    	assertToString("C1-4296-742D-5E8D", "00c1-4296-742d-5e8d",0x00c1_4296_742d_5e8dl);
+  
     	
+    	assertToString("2232-f768-2d2f-86d6", "2232-f768-2d2f-86d6",0x2232_f768_2d2f_86d6l);
+    	assertToString(" 2232-f768-2d2f-86d6 ", "2232-f768-2d2f-86d6",0x2232_f768_2d2f_86d6l);
+    	
+   
+    	assertToString(" 2232f768- 2D2F  86d6 ", "2232-f768-2d2f-86d6",0x2232_f768_2d2f_86d6l);
+    	
+
     	// Test the random ID function
     	{
-	    	Set<ObjectID> ids = new HashSet();
-	    	
-	    	for ( int i = 0; i < 10_000; i++ )
-	    	{
-	    		ObjectID cur = ObjectID.randomID();
-	    		assertEquals(14,cur.getSimpleValue().length());
-	    		
-	    		ids.add(cur);
-	    	}
-	    	
-	    	assertEquals(ids.size(),10_000);
+    		Set<ObjectId> ids = new HashSet();
+
+    		for ( int i = 0; i < 10_000; i++ )
+    		{
+    			ObjectId cur = ObjectId.randomID();
+    			assertEquals(19,cur.getSimpleValue().length());
+
+    			ids.add(cur);
+    		}
+
+    		assertEquals(ids.size(),10_000);
     	}
     }
     
@@ -68,7 +79,7 @@ public class ObjectIDTest extends TestCase
     {
     	try
     	{
-    		new ObjectID(value);
+    		new ObjectId(value);
     		assert(false);
     	}
     	catch(ValidationException e)
@@ -81,7 +92,7 @@ public class ObjectIDTest extends TestCase
     {
     	try
     	{ 
-    		ObjectID test = new ObjectID(parse);
+    		ObjectId test = new ObjectId(parse);
     		
     		assertEquals(expected_string_value, test.getSimpleValue());
     		assertEquals(expected_long_value, test.getSimpleLongValue());
