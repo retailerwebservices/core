@@ -4,6 +4,12 @@ import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
 import org.jimmutable.gcloud.pubsub.TopicId.MyConverter;
 
+/**
+ * Stringable class used to enforce our limitations on subscription id
+ * 
+ * @author kanej
+ *
+ */
 public class SubscriptionId extends Stringable
 {
 	static public final MyConverter CONVERTER = new MyConverter();

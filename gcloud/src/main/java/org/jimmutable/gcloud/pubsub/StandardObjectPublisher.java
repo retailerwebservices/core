@@ -1,5 +1,6 @@
 package org.jimmutable.gcloud.pubsub;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -59,6 +60,11 @@ public class StandardObjectPublisher
 			
 			String message = object.serialize(Format.JSON);
 			
+			// Note: during development, compressing the messages was tested. On small JSON
+			// formatted messages (like StandardMessageOnUpsert) gzipping the data made it
+			// larger (as opposed to smaller). As a result, the decision was made *not* to
+			// compress message data
+			
 			ByteString data = ByteString.copyFromUtf8(message);
 			PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setData(data).build();
 			publisher.publish(pubsubMessage);
@@ -107,6 +113,53 @@ public class StandardObjectPublisher
 			try { Thread.currentThread().sleep(1000); } catch(Exception e2) {} // the 1 second delay is to give the google cloud some breathing room before we try again to setup the publisher
 			return false;
 		}
+	}
+
+	/**
+	 * Shutdown and close all publishers. Outside of certain specialized situations,
+	 * you should not need to call this method.
+	 * 
+	 * This method is needed when you are about to hard terminate a process and have
+	 * a need to make sure than any messages that are batched "make it out" before
+	 * the process is hard terminated. This most frequently comes up in batch (cron)
+	 * jobs you are about to call System.exit
+	 * 
+	 * This method may take some time to execute. (Several seconds)
+	 * 
+	 * If you call shutdown() in one thread, other threads will still (later) be
+	 * able to send messages, but no guarantee is made about their messages being
+	 * published.
+	 * 
+	 * Creating a new topic while simultaneously shutting down the publisher in
+	 * another thread will have unpredictable results. That being said, that is,
+	 * seemingly, an unbelievably rare occurrence.
+	 * 
+	 * @return true if the shutdown was accomplished without error, false otherwise
+	 * 
+	 */
+	static public boolean shutdown()
+	{
+		System.out.println("Shutting down standard object publisher");
+		
+		Map<TopicId, Publisher> old_publishers = new HashMap(my_publishers);
+		my_publishers.clear();
+		
+		boolean shutdown_ok = true;
+		
+		for ( Publisher publisher : old_publishers.values() )
+		{
+			try
+			{
+				publisher.shutdown();
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+				shutdown_ok = false;
+			}
+		}
+		
+		return shutdown_ok;
 	}
 }
  
