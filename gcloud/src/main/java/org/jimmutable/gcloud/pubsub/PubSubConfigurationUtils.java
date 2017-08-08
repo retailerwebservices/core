@@ -104,8 +104,11 @@ public class PubSubConfigurationUtils
 	static public boolean createSubscriptionIfNeeded(PullSubscriptionDefinition subscription_definition)
 	{
 		Validator.notNull(subscription_definition);
+		
 		try 
 		{
+			createTopicIfNeeded(subscription_definition.getSimpleTopicProjectID(), subscription_definition.getSimpleTopicID());
+			
 			SubscriptionAdminClient client = SubscriptionAdminClient.create();
 			
 			ListSubscriptionsRequest listSubscriptionsRequest =
