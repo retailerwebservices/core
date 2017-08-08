@@ -1,34 +1,22 @@
 package org.jimmutable.gcloud.pubsub;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
+import org.jimmutable.core.objects.StandardObject;
+import org.jimmutable.core.objects.common.Kind;
+import org.jimmutable.core.objects.common.ObjectId;
+import org.jimmutable.gcloud.GCloudTypeNameRegister;
 import org.jimmutable.gcloud.ProjectId;
+import org.jimmutable.gcloud.pubsub.messages.StandardMessageOnUpsert;
 
-import com.google.api.core.ApiFuture;
-import com.google.api.core.ApiFutures;
 import com.google.cloud.ServiceOptions;
-import com.google.cloud.pubsub.v1.PagedResponseWrappers.ListSubscriptionsPagedResponse;
-import com.google.cloud.pubsub.v1.PagedResponseWrappers.ListTopicsPagedResponse;
-import com.google.cloud.pubsub.v1.Publisher;
-import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
-import com.google.protobuf.ByteString;
-import com.google.pubsub.v1.ListSubscriptionsRequest;
-import com.google.pubsub.v1.ListTopicsRequest;
-import com.google.pubsub.v1.ProjectName;
-import com.google.pubsub.v1.PubsubMessage;
-import com.google.pubsub.v1.PushConfig;
-import com.google.pubsub.v1.Subscription;
-import com.google.pubsub.v1.SubscriptionName;
-import com.google.pubsub.v1.Topic;
 import com.google.pubsub.v1.TopicName;
 
 public class TestApp 
 {
 	static public void main(String args[]) throws Exception
 	{
+		GCloudTypeNameRegister.registerAllTypes();
+		
 		String projectId = ServiceOptions.getDefaultProjectId();
 		
 		// Create a topic...
@@ -64,8 +52,19 @@ public class TestApp
 	    		PubSubConfigurationUtils.createTopicIfNeeded(new ProjectId(projectId), new TopicId("jim-dev-topic-4"));
 	    }
 	    
-	    
 	    if ( true )
+	    {
+	    		PullSubscriptionDefinition def;
+
+	    		def = new PullSubscriptionDefinition(ProjectId.CURRENT_PROJECT, new SubscriptionId("jim-dev-sub"), ProjectId.CURRENT_PROJECT, new TopicId("jim-dev-topic"));
+	    	
+	    		StandardObjectReceiver.startListening(def, new TestReceiver());
+	    		
+	    		new SendOneMessagePerSec().run();
+	    }
+	    
+	    
+	    if ( false )
 	    {
 	    		PullSubscriptionDefinition def;
 
@@ -81,88 +80,41 @@ public class TestApp
 	    		def = new PullSubscriptionDefinition(new ProjectID(projectId), new SubscriptionID("jim-dev-sub2"), new ProjectID(projectId), new TopicID("jim-dev-topic-3"));
 	    		PubSubConfigurationUtils.createSubscriptionIfNeeded(def);*/
 	    }
-
-	    
-	    
-	    // Send one message
-	    if ( false )
-	    {
-	    		sendOneMessage(projectId, topicId, "Hello World");
-	    		sendOneMessage(projectId, topicId, "Somewhere, over the rainbow...");
-	    }
-	    
-	    // Create a subscription
-	    if ( false )
-	    {
-	    	try 
-	    	{
-	    		SubscriptionAdminClient subscriptionAdminClient = SubscriptionAdminClient.create();
-	    				
-	    		TopicName topicName = TopicName.create(projectId, topicId);
-	    		
-	    		// eg. subscriptionId = "my-test-subscription"
-	    		SubscriptionName subscriptionName = SubscriptionName.create(projectId, subscriptionId);
-	    		
-	    		// create a pull subscription with default acknowledgement deadline
-	    		Subscription subscription = subscriptionAdminClient.createSubscription(subscriptionName, topicName, PushConfig.getDefaultInstance(), 0);
-	    		
-	    		System.out.println("Created new subscription "+subscription);
-	    	}
-	    	catch(Exception e)
-	    	{
-	    		e.printStackTrace();
-	    	}
-	    }
-	    
-	   
 	}
 	
 	
-	
-	static private void sendOneMessage(String projectId, String topicId, String message_str) throws Exception
+	static private class SendOneMessagePerSec implements Runnable
 	{
-		TopicName topicName = TopicName.create(projectId, topicId);
+		long counter = 0;
 		
-		Publisher publisher = null;
-		
-		List<ApiFuture<String>> messageIdFutures = new ArrayList();
-
-		try 
+		public void run()
 		{
-			// Create a publisher instance with default settings bound to the topic
-			publisher = Publisher.defaultBuilder(topicName).build();
-
-			List<String> messages = Arrays.asList(message_str);
-
-			// schedule publishing one message at a time : messages get automatically batched
-			for (String message : messages) 
+			TopicId topic_id = new TopicId("jim-dev-topic"); 
+			
+			while(true)
 			{
-				ByteString data = ByteString.copyFromUtf8(message);
-				PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setData(data).build();
-
-				// Once published, returns a server-assigned message id (unique within the topic)
-				ApiFuture<String> messageIdFuture = publisher.publish(pubsubMessage);
-				messageIdFutures.add(messageIdFuture);
-			}
-		} 
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
-		finally 
-		{
-			// wait on any pending publish requests.
-			List<String> messageIds = ApiFutures.allAsList(messageIdFutures).get();
-
-			for (String messageId : messageIds) 
-			{
-				System.out.println("published with message ID: " + messageId);
-			}
-
-			if (publisher != null) {
-				// When finished with the publisher, shutdown to free up resources.
-				publisher.shutdown();
+				StandardMessageOnUpsert message = new StandardMessageOnUpsert(new Kind("one-per-sec-test"),new ObjectId(++counter));
+				
+				StandardObjectPublisher.publishObject(topic_id, message);
+				
+				try { Thread.currentThread().sleep(1000); } catch(Exception e) { e.printStackTrace(); }
 			}
 		}
+	}
+	
+	static private class TestReceiver implements StandardObjectListener
+	{
+
+		public void onMessageReceived(StandardObject message) 
+		{
+			if ( message instanceof StandardMessageOnUpsert) 
+			{
+				StandardMessageOnUpsert upsert_message = (StandardMessageOnUpsert)message;
+				
+				System.out.printf("Upsert Message Rec %s:%s\n", upsert_message.getSimpleKind(), upsert_message.getSimpleObjectId());
+			}
+		}
+		
 	}
 }
+
