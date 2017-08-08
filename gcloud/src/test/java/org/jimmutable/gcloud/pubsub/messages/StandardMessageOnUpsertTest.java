@@ -69,4 +69,22 @@ public class StandardMessageOnUpsertTest extends TestCase
 		
 		assertEquals(new StandardMessageOnUpsert(new Kind("foo"),new ObjectId(1)), obj);
 	}
+	
+	public void testSerializationXML() {
+	
+		/*
+		 * This is not really necessary. Code already exists to verify the other (XML or JSON) if only one is tested
+		 */
+		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n"
+			     , "<?xml version=\'1.0\' encoding=\'UTF-8\'?><object>"
+			     , "  <type_hint>jimmutable.gcloud.StandardMessageOnUpsert</type_hint>"
+			     , "  <kind>foo</kind>"
+			     , "  <object_id>0000-0000-0000-0001</object_id>"
+			     , "</object>"
+			);
+
+			StandardMessageOnUpsert obj = (StandardMessageOnUpsert)StandardObject.deserialize(obj_string);
+			
+			assertEquals(new StandardMessageOnUpsert(new Kind("foo"),new ObjectId(1)), obj);
+	}
 }
