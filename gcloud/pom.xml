@@ -26,6 +26,28 @@
     	<artifactId>core</artifactId>
     	<version>0.0.7</version>
     </dependency>
+
+    <dependency>
+    	<groupId>com.google.appengine</groupId>
+    	<artifactId>appengine-api-1.0-sdk</artifactId>
+    	<version>1.9.54</version>
+    </dependency>
+    <dependency>
+    	<groupId>com.google.appengine</groupId>
+    	<artifactId>appengine-testing</artifactId>
+    	<version>1.9.54</version>
+    </dependency>
+    <dependency>
+    	<groupId>com.google.appengine</groupId>
+    	<artifactId>appengine-api-stubs</artifactId>
+    	<version>1.9.54</version>
+    </dependency>
+    <dependency>
+    	<groupId>com.google.appengine</groupId>
+    	<artifactId>appengine-tools-sdk</artifactId>
+    	<version>1.9.54</version>
+    </dependency>
+    
     <dependency>
     	<groupId>com.google.cloud</groupId>
     	<artifactId>google-cloud-pubsub</artifactId>
@@ -36,5 +58,6 @@
     	<artifactId>google-auth-library-credentials</artifactId>
     	<version>0.7.1</version>
     </dependency>
+    
   </dependencies>
 </project>
