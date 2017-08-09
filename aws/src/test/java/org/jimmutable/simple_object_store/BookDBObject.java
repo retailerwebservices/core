@@ -8,7 +8,6 @@ import java.util.Objects;
 import org.jimmutable.aws.s3.S3Path;
 import org.jimmutable.aws.simple_object_store.SimpleObjectStorable;
 import org.jimmutable.core.examples.book.BindingType;
-import org.jimmutable.core.examples.book.Book;
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.fields.FieldList;
 import org.jimmutable.core.objects.StandardImmutableObject;
