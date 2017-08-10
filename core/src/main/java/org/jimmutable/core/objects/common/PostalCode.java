@@ -36,10 +36,10 @@ public class PostalCode extends Stringable {
 
 	final private void normalizeDash() 
 	{
-		CharSequence cs1 = "-";
-		if (getSimpleValue().contains(cs1)) return;
+		CharSequence dash = "-";
+		if (getSimpleValue().contains(dash)) return;
 		if (getSimpleValue().length() == 9)
-			setValue(getSimpleValue().substring(0, 5) + cs1 + getSimpleValue().substring(5));
+			setValue(getSimpleValue().substring(0, 5) + dash + getSimpleValue().substring(5));
 	}
 
 	static public class MyConverter extends Stringable.Converter<PostalCode> 
