@@ -31,14 +31,14 @@ public class KindTest extends TestCase
 	   
 	   testStringConvert("Foo-248", new Kind("foo-248"));
 	   
-	   testContsructorFailure(null);
-	   testContsructorFailure("");
-	   testContsructorFailure(" ");
-	   testContsructorFailure("foo_bar");
-	   testContsructorFailure(".foo");
-	   testContsructorFailure("foo.");
-	   testContsructorFailure("foo.bar");
-	   testContsructorFailure("foo..bar");
+	   testConstructorFailure(null);
+	   testConstructorFailure("");
+	   testConstructorFailure(" ");
+	   testConstructorFailure("foo_bar");
+	   testConstructorFailure(".foo");
+	   testConstructorFailure("foo.");
+	   testConstructorFailure("foo.bar");
+	   testConstructorFailure("foo..bar");
   }
 
   private void testStringConvert(String str, Kind expected_result)
@@ -48,7 +48,7 @@ public class KindTest extends TestCase
 	   assertEquals(result, expected_result);
   }
 
-  private void testContsructorFailure(String str)
+  private void testConstructorFailure(String str)
   {
 	   try
 	   {

@@ -30,10 +30,10 @@ public class EmailAddressTest extends TestCase
     	testStringConvert("foo.bar@gmail.com", new EmailAddress("foo.bar@gmail.com"));
     	testStringConvert(" FOO.bar@gmail.COM  ", new EmailAddress("foo.bar@gmail.com"));
     	
-    	testContsructorFailure("foo");
-    	testContsructorFailure("google.com");
-    	testContsructorFailure("foo@google");
-    	testContsructorFailure("foo@.google.com");
+    	testConstructorFailure("foo");
+    	testConstructorFailure("google.com");
+    	testConstructorFailure("foo@google");
+    	testConstructorFailure("foo@.google.com");
     }
     
     private void testStringConvert(String str, EmailAddress expected_result)
@@ -43,7 +43,7 @@ public class EmailAddressTest extends TestCase
  	   assertEquals(result, expected_result);
     }
 
-    private void testContsructorFailure(String str)
+    private void testConstructorFailure(String str)
     {
  	   try
  	   {
