@@ -1,19 +1,17 @@
-package org.jimmutable.gcloud.pubsub;
-
-import org.jimmutable.gcloud.pubsub.SubscriptionId;
+package org.jimmutable.core.objects.common;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-public class SubscriptionIdTest extends TestCase 
-{
-	 /**
+public class PostalCodeTest extends TestCase {
+
+ /*
   * Create the test case
   *
   * @param testName name of the test case
   */
- public SubscriptionIdTest( String testName )
+ public PostalCodeTest( String testName )
  {
      super( testName );
  }
@@ -23,15 +21,16 @@ public class SubscriptionIdTest extends TestCase
   */
  public static Test suite()
  {
-     return new TestSuite( SubscriptionIdTest.class );
+     return new TestSuite( PostalCodeTest.class );
  }
  
- public void testSubscriptionID()
+ public void testPostalCode()
  {
-	   testStringConvert("some-id", new SubscriptionId("some-id"));
-	   testStringConvert("some-id-1234", new SubscriptionId("some-id-1234"));
-	   testStringConvert("SOME-id", new SubscriptionId("some-id"));
-	   testStringConvert(" SOME-id ", new SubscriptionId("some-id"));
+	   testStringConvert("99999", new PostalCode("99999"));
+	   testStringConvert("99999-9999", new PostalCode("99999-9999"));
+	   testStringConvert("999999999", new PostalCode("99999-9999"));
+	   testStringConvert(" 99999 ", new PostalCode("99999"));
+	   testStringConvert("K1A 0B1", new PostalCode("K1A 0B1"));
 	   
 	   testConstructorFailure(null);
 	   testConstructorFailure("");
@@ -42,11 +41,12 @@ public class SubscriptionIdTest extends TestCase
 	   testConstructorFailure("foo..bar");
 	   testConstructorFailure("foo..bar");
 	   testConstructorFailure("foo/bar");
+	   testConstructorFailure("12345678901234567890123456789012345678901234567890123456789012345");
  }
 
- private void testStringConvert(String str, SubscriptionId expected_result)
+ private void testStringConvert(String str, PostalCode expected_result)
  {
-	 SubscriptionId result = SubscriptionId.CONVERTER.fromString(str, null);
+	 PostalCode result = PostalCode.CONVERTER.fromString(str, null);
 
 	   assertEquals(result, expected_result);
  }
@@ -55,12 +55,14 @@ public class SubscriptionIdTest extends TestCase
  {
 	   try
 	   {
-		   SubscriptionId result = new SubscriptionId(str);
+		   PostalCode result = new PostalCode(str);
 		   assert(false);
 	   }
 	   catch(Exception e)
 	   {
 		   assert(true);
 	   }
- }
+ }	
+	
+	
 }

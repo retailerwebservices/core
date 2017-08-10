@@ -1,15 +1,9 @@
 package org.jimmutable.core.objects.common;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.validator.EmailValidator;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
-import org.joda.time.DateTimeZone;
 
 public class EmailAddress extends Stringable
 {
