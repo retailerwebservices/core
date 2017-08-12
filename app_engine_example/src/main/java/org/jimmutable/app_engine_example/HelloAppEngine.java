@@ -49,18 +49,17 @@ public class HelloAppEngine extends HttpServlet
 		IndexSpec indexSpec = IndexSpec.newBuilder().setName(index_name).build();
 		Index index = SearchServiceFactory.getSearchService().getIndex(indexSpec);
 		
-		//putDocument(index, "PA6-5000", "jim.kane@gmail.com", "digitalpanda.com", "the rain in spain stays mainly on the plains");
-		//putDocument(index, "PA6-5001", "aaron.thomas@gmail.com", "gmail.com", "now is a time when all good men come to the aid of their country");
-		//putDocument(index, "PA6-5002", "john.kennedy@gmail.com", "gmail.com", "Ask not what your country can do for you, but what you can do for your country");
-		
-		
+		putDocument(index, "PA6-5000", "jim.kane@gmail.com", "shadofax@lotr.com", "digitalpanda.com", "the rain in spain stays mainly on the plains");
+		putDocument(index, "PA6-5001", "aaron.thomas@gmail.com", "golem@lotr.com", "gmail.com", "now is a time when all good men come to the aid of their country");
+		putDocument(index, "PA6-5002", "john.kennedy@gmail.com", "frodo@lotr.com", "gmail.com", "Ask not what your country can do for you, but what you can do for your country");
 		
 		 SortOptions sortOptions = SortOptions.newBuilder()
 			      .addSortExpression(SortExpression.newBuilder()
+			    		  .setExpression("domain")
 			          .setDirection(SortExpression.SortDirection.ASCENDING)
 			          .setDefaultValue(""))
 			      .addSortExpression(SortExpression.newBuilder()
-				          .setExpression("email")
+			    		  	  .setExpression("email")
 				          .setDirection(SortExpression.SortDirection.DESCENDING)
 				          .setDefaultValue(""))
 			      .setLimit(1000)
@@ -70,7 +69,7 @@ public class HelloAppEngine extends HttpServlet
 			      .setSortOptions(sortOptions)
 			      .build();
 		
-		 Query query = Query.newBuilder().setOptions(options).build("");
+		 Query query = Query.newBuilder().setOptions(options).build("shadofax");
 
 
 		 Results<ScoredDocument> results = index.search(query);
@@ -81,14 +80,14 @@ public class HelloAppEngine extends HttpServlet
 		 }
 	}
 	
-	static public void putDocument(Index index, String doc_id, String email, String domain, String content)
+	static public void putDocument(Index index, String doc_id, String email, String email2, String domain, String content)
 	{
 		Document doc = Document.newBuilder()
 				// Setting the document identifer is optional.
 				// If omitted, the search service will create an identifier.
 				.setId(doc_id.toLowerCase())
 				.addField(Field.newBuilder().setName("content").setText(content))
-				.addField(Field.newBuilder().setName("email").setText(email))
+				.addField(Field.newBuilder().setName("email").setText(email+" "+email2))
 				.addField(Field.newBuilder().setName("domain").setAtom(domain))
 				.build();
 	
