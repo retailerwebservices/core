@@ -4,8 +4,6 @@ import org.jimmutable.core.fields.FieldHashMap;
 import org.jimmutable.core.fields.FieldMap;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.serialization.FieldDefinition;
-import org.jimmutable.core.serialization.FieldName;
-import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.TypeName;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.core.serialization.reader.ReadAs;
@@ -24,7 +22,7 @@ public class ItemSpecifications extends StandardImmutableObject<ItemSpecificatio
 	static public final TypeName TYPE_NAME = new TypeName("jimmutable.examples.ItemSpecifications"); public TypeName getTypeName() { return TYPE_NAME; }
 	
 	static public final FieldDefinition.StandardObject FIELD_ITEM_KEY = new FieldDefinition.StandardObject("item_key", null);
-	static public final FieldDefinition.Map FIELD_ATTRIBUTES = new FieldDefinition.Map("attributes",new FieldHashMap());
+	static public final FieldDefinition.Map FIELD_ATTRIBUTES = new FieldDefinition.Map("attributes",new FieldHashMap<>());
 	
 	private ItemKey item_key; // required
 	private FieldMap<ItemAttribute,String> attributes;
@@ -32,7 +30,7 @@ public class ItemSpecifications extends StandardImmutableObject<ItemSpecificatio
 	public ItemSpecifications(ObjectParseTree reader)
 	{
 		item_key = (ItemKey)reader.getObject(FIELD_ITEM_KEY);
-		attributes = reader.getMap(FIELD_ATTRIBUTES, new FieldHashMap(), ItemAttribute.CONVERTER, ReadAs.STRING, ObjectParseTree.OnError.SKIP);
+		attributes = reader.getMap(FIELD_ATTRIBUTES, new FieldHashMap<>(), ItemAttribute.CONVERTER, ReadAs.STRING, ObjectParseTree.OnError.SKIP);
 	}
 
 	public void write(ObjectWriter writer) 
