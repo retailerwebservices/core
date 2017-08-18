@@ -1,8 +1,8 @@
-account.email=preston.mccumber@digitalpanda.com
+account.email=trevor.box@digitalpanda.com
 eclipse.preferences.version=1
 include.optional.configuration.files=true
 project.bucket=
 project.id=platform-test-174921
 project.previousVersion.stop=true
 project.promote=true
-project.version=
+project.version=999
