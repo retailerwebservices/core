@@ -26,7 +26,10 @@ public class LogManager extends java.util.logging.Logger {
 		super(name, null);
 
 		super.setParent(super.getLogger(name));
-		for (Handler h : super.getParent().getHandlers()) {
+//		for (Handler h : super.getParent().getHandlers()) {
+//			h.setFormatter(singleLineFormatter);
+//		}
+		for (Handler h : super.getHandlers()) {
 			h.setFormatter(singleLineFormatter);
 		}
 		// ConsoleHandler consoleHandler = new ConsoleHandler();

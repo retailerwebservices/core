@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 //import org.apache.log4j.Logger;
 //import org.apache.log4j.Logger;
 import org.jimmutable.app_engine_example.util.LogManager;
+import org.jimmutable.app_engine_example.util.LogSupplier;
 import org.jimmutable.app_engine_example.util.LogWrapper;
 //import org.jimmutable.app_engine_example.util.LogSupplier;
 //import org.jimmutable.app_engine_example.util.LogSupplier;
@@ -62,16 +63,18 @@ public class LoggingExample extends HttpServlet {
 			Integer.parseInt("boo");
 		} catch (NumberFormatException e) {
 			// log4j.error(e);
-			// logger.severe(e);
+//			logger.severe(e);
+//			LogWrapper.warning(old, e);
+			old.severe(new LogSupplier(e));
 			// old.severe("old " + e.getMessage());
 			// old.severe("old " + e.getLocalizedMessage());
 
 		}
 
-		logger.warning("This is %s message from the new method.", new Object[] { "a" });
+//		logger.warning("manager warning %s.", new Object[] { "a" });
 
 		// old.warning("old " + "old message");
-		LogWrapper.warning(old, "do %s mi", new Object[] { "re" });
+//		LogWrapper.warning(old, "wrapper warning", null);
 
 		// for (int i = 0; i < 10; i++) {
 		// logger.finer("Testing finer " + i + "!");

@@ -65,6 +65,9 @@ public class LogWrapper {
 	 */
 	public static void warning(Logger logger, Exception e) {
 		if (logger.isLoggable(Level.WARNING)) {
+			for (Handler h : logger.getParent().getHandlers()) {
+				h.setFormatter(singleLineFormatter);
+			}
 			logger.warning(exceptionFormat(e));
 		}
 	}
