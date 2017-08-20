@@ -207,6 +207,23 @@ public class StorageSnippets {
     // [END getBlobFromStringsWithMetageneration]
     return blob;
   }
+  
+  /** - Preston
+   * Example of getting information on a blob, only if its generation matches a value,
+   * otherwise a {@link StorageException} is thrown.
+   */
+  // [TARGET get(String, String, BlobGetOption...)]
+  // [VARIABLE "my_unique_bucket"]
+  // [VARIABLE "my_blob_name"]
+  // [VARIABLE 42]
+  public Blob getBlobFromStringsWithGeneration(String bucketName, String blobName,
+      long blobGeneration) {
+    // [START getBlobFromStringsWithGeneration]
+	  BlobId blobId = BlobId.of(bucketName, blobName);
+	  Blob blob = storage.get(blobId, BlobGetOption.generationMatch(blobGeneration));
+    // [END getBlobFromStringsWithMetageneration]
+    return blob;
+  }
 
   /**
    * Example of getting information on a blob.

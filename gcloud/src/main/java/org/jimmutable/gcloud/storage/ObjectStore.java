@@ -50,10 +50,10 @@ public class ObjectStore
 			bucket = storage.get(bucket_name);
 			if (bucket != null)
 			{
-				System.out.println("Bucket found. Create not needed");
+				System.out.println("Bucket " + bucket_name + " found. Create not needed");
 			} else
 			{
-				System.out.println("Bucket not found. Create needed");
+				System.out.println("Bucket " + bucket_name + "not found. Create needed");
 			}
 		} catch (StorageException se)
 		{
@@ -124,12 +124,8 @@ public class ObjectStore
 
 	public void printBucketInfo()
 	{
-
 		System.out.println("Location is " + bucket.getLocation());
 		System.out.println("Storage Class is " + bucket.getStorageClass().toString());
-		BucketInfo bucket_info = BucketInfo.of(bucket.getName());
-		System.out.println("Versioning enabled setting: " + bucket_info.versioningEnabled());
-
 	}
 
 	public void createBlobWithText(String blob_name, String blob_data)
@@ -145,10 +141,20 @@ public class ObjectStore
 		Blob blob = storage.get(blobId);
 		return blob;
 	}
-
-	public Blob getBlobWithGeneration(String blob_name, long blob_generation)
+	
+	public Page<Blob> getBlobs(String blob_name)
 	{
-		Blob blob = storage.get(bucket.getName(), blob_name, BlobGetOption.generationMatch(blob_generation));
+		Page<Blob> blobs;
+		blobs = storage.list(bucket.getName(), BlobListOption.versions(true));
+		return blobs;
+	}
+
+	public Blob getBlobWithGeneration(String blob_name, long blob_generation) throws StorageException
+	{
+//		Blob blob = storage.get(bucket.getName(), blob_name, BlobGetOption.generationMatch(blob_generation));  // This doens't work
+		System.out.println("\nAttempting to read with name " + blob_name + " and generation " + blob_generation);
+		  BlobId blobId = BlobId.of(bucket.getName(), blob_name, blob_generation);
+		  Blob blob = storage.get(blobId);
 		if (blob != null)
 			System.out.println("Read of object with generation " + blob_generation + " successful");
 		return blob;
@@ -161,6 +167,7 @@ public class ObjectStore
 		System.out.println("Content Type is " + blob.getContentType());
 		System.out.println("Deleted at: " + blob.getDeleteTime());
 		System.out.println("Generation is " + blob.getGeneration());
+		System.out.println("MetaGeneration is " + blob.getMetageneration());
 	}
 
 	public void printBlobInfo(String blob_name)
