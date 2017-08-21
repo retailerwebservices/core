@@ -17,80 +17,56 @@
 package org.jimmutable.app_engine_example;
 
 import java.io.IOException;
+
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-//import org.apache.log4j.Logger;
-//import org.apache.log4j.Logger;
-import org.jimmutable.app_engine_example.util.LogManager;
 import org.jimmutable.app_engine_example.util.LogSupplier;
-import org.jimmutable.app_engine_example.util.LogWrapper;
-//import org.jimmutable.app_engine_example.util.LogSupplier;
-//import org.jimmutable.app_engine_example.util.LogSupplier;
 
 public class LoggingExample extends HttpServlet {
 	private static final long serialVersionUID = -4907844515014487767L;
 
-	// private static final LogManager logger = new
-	// LogManager(LoggingExample.class.getName());
-	private static final LogManager logger = new LogManager(LoggingExample.class.getName());
-	private static final Logger old = Logger.getLogger(LoggingExample.class.getName());
+	private static final Logger logger = Logger.getLogger(LoggingExample.class.getName());
 
-	// private static final org.apache.log4j.Logger log4j =
-	// org.apache.log4j.Logger.getLogger(LoggingExample.class);
-	// private static final Logger logger =
-	// Logger.getLogger(LoggingExample.class.getName());
+	public void init() throws ServletException {
+		logger.setLevel(Level.ALL); // all different logging levels can be displayed
+	}
 
 	@Override
-	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		response.setContentType("text/plain");
-		response.getWriter().println("Test LogManager!");
+	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
-		// logger.setParent(Logger.getLogger(LoggingExample.class.getName()));
+		Map<String, ?> params = request.getParameterMap();
 
-		// log4j.fatal("<<<<<<<<LOG4j>>>>>>");
+		params.forEach((level, value) -> {
+			String msg = request.getParameter(level);
+			try {
+				logger.log(Level.parse(level), new LogSupplier("This is the formatted message: %s", msg));
 
-		// logger.setLevel(Level.ALL);
+			} catch (Exception e) {
+				logger.severe(new LogSupplier(e));
+			}
+		});
 
-		// logger.fine(new LogSupplier("%sTHIS IS THE NEW LOGMANAGER", new Object[] {
-		// "a" }));
-
-		try {
-			Integer.parseInt("boo");
-		} catch (NumberFormatException e) {
-			// log4j.error(e);
-//			logger.severe(e);
-//			LogWrapper.warning(old, e);
-			old.severe(new LogSupplier(e));
-			// old.severe("old " + e.getMessage());
-			// old.severe("old " + e.getLocalizedMessage());
-
+		if (request.getRequestURL().toString().contains("localhost")) {
+			request.setAttribute("logUrl", "See console output...");
+		} else {
+			request.setAttribute("logUrl",
+					"See the logs in <a	href=\"https://console.cloud.google.com/logs/viewer?project=platform-test-174921\">https://console.cloud.google.com/logs/viewer?project=platform-test-174921</a>");
 		}
 
-//		logger.warning("manager warning %s.", new Object[] { "a" });
+		request.getRequestDispatcher("/logging.jsp").forward(request, response);
 
-		// old.warning("old " + "old message");
-//		LogWrapper.warning(old, "wrapper warning", null);
+	}
 
-		// for (int i = 0; i < 10; i++) {
-		// logger.finer("Testing finer " + i + "!");
-		// logger.fine("Testing fine " + i + "!!");
-		//
-		// logger.info("Testing info " + i + "!!!");
-		//
-		// // this.getClass().getCanonicalName()
-		//
-		// logger.isLoggable(Level.INFO);
-		//
-		// // LogManager.config("Hey, some bucket does not exist, name %s", bucket_id);
-		//
-		// logger.warning("Testing warning " + i + "!!!!");
-		// logger.severe("Testing severe " + i + "!!!!!");
-		// }
+	@Override
+	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+		request.getRequestDispatcher("/logging.jsp").forward(request, response);
 
 	}
 

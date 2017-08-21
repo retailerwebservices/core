@@ -4,44 +4,60 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.IllegalFormatException;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 public class LogSupplier implements Supplier<String> {
+
+	private static Logger logger = Logger.getLogger(LogSupplier.class.getName());
 
 	private String format;
 	private Object[] args;
 	private Exception exception;
 
+	/**
+	 * 
+	 * @param format
+	 * @param args
+	 * @see
+	 */
 	public LogSupplier(String format, Object... args) {
 		this.format = format;
 		this.args = args;
 	}
 
+	/**
+	 * Log an Exception
+	 * 
+	 * @param e
+	 *            the Exception
+	 */
 	public LogSupplier(Exception e) {
 		this.exception = e;
 	}
 
 	private String exceptionFormat(Exception e) {
 		if (e == null) {
-			throw new RuntimeException("Cannot format a null Exception");
+			logger.warning("Null Exception!");
+			return "null";
 		}
 		StringWriter sw = new StringWriter();
 		e.printStackTrace(new PrintWriter(sw));
 		return sw.toString();
-
 	}
 
 	private String stringFormat(String format, Object... args) {
-
 		if (format == null || args == null) {
-			throw new RuntimeException("String format or args are null");
+			logger.warning("Null format or args!");
+			return "null";
 		}
-
 		StringBuilder sb = new StringBuilder();
 		try {
-			return sb.append(String.format(format, args)).toString();
+			 sb.append(String.format(format, args));
 		} catch (IllegalFormatException e) {
-			throw new RuntimeException(e);
+			logger.warning(exceptionFormat(e));
+			return format;
 		}
+		return sb.toString();
 	}
 
 	@Override
@@ -52,5 +68,4 @@ public class LogSupplier implements Supplier<String> {
 			return stringFormat(this.format, this.args);
 		}
 	}
-
 }
