@@ -4,8 +4,9 @@
 </head>
 <body>
 	<div>
-		Read more about the different logging <a
-			href="https://docs.oracle.com/javase/7/docs/api/java/util/logging/Level.html">levels.</a>
+		See the <a
+			href="https://digitalpanda.atlassian.net/wiki/spaces/SD/pages/6717457/Logging">logging</a>
+		Confluence page as well.
 	</div>
 	<h3>SEVERE</h3>
 	<form method="post">
