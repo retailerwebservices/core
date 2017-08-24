@@ -27,7 +27,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jimmutable.app_engine_example.util.LogSupplier;
+import org.jimmutable.gcloud.logging.LogSupplier;
+
+
 
 public class LoggingExample extends HttpServlet {
 	private static final long serialVersionUID = -4907844515014487767L;

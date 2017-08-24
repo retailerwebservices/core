@@ -12,7 +12,6 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.DurationFieldType;
 
-
 /**
  * An easy to use abstraction for working with a day (e.g. 12/25/2017)
  * 
@@ -27,12 +26,11 @@ import org.joda.time.DurationFieldType;
  * @author kanej
  *
  */
-public class Day extends Stringable
-{
+public class Day extends Stringable {
 	static private DateTimeZone US_EASTERN = DateTimeZone.forID("US/Eastern");
 
 	static public final MyConverter CONVERTER = new MyConverter();
-	
+
 	private DateTime mid_day_est;
 
 	/**
@@ -44,8 +42,7 @@ public class Day extends Stringable
 	 * @param mm_dd_yyyy
 	 *            A date, formated as mm/dd/yyyy (e.g. 2/8/1981)
 	 */
-	public Day(String mm_dd_yyyy)
-	{
+	public Day(String mm_dd_yyyy) {
 		super(mm_dd_yyyy);
 	}
 
@@ -62,8 +59,7 @@ public class Day extends Stringable
 	 * @param year
 	 *            The year (e.g. 2017)
 	 */
-	public Day(int month, int day, int year)
-	{
+	public Day(int month, int day, int year) {
 		super(String.format("%d/%d/%d", month, day, year));
 	}
 
@@ -73,142 +69,149 @@ public class Day extends Stringable
 	 * @param date_time
 	 *            The day as a Joda Time DateTime object
 	 */
-	public Day(DateTime date_time)
-	{
+	public Day(DateTime date_time) {
 		this(date_time.getMonthOfYear(), date_time.getDayOfMonth(), date_time.getYear());
 	}
 
-	
-	public void normalize() 
-	{
+	public void normalize() {
 		normalizeTrim();
 	}
 
-	
-	public void validate() 
-	{
+	public void validate() {
 		Validator.notNull(getSimpleValue());
-		
+
 		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.NUMBERS, Validator.FORWARD_SLASH);
-		
+
 		String parts[] = getSimpleValue().split("/");
-		
-		if ( parts.length != 3 ) 
+
+		if (parts.length != 3)
 			throw new ValidationException("Invalid day format, must be mm/dd/yyyy");
-		
-		if ( parts[2].length() != 4 )
+
+		if (parts[2].length() != 4)
 			throw new ValidationException("Invalid day format, year must be 4 digits, e.g. 1972, *not* 72");
-		
-		try
-		{
+
+		try {
 			int month = Integer.parseInt(parts[0]);
 			int day = Integer.parseInt(parts[1]);
 			int year = Integer.parseInt(parts[2]);
-			
+
 			mid_day_est = new DateTime(year, month, day, 12, 0, 0, US_EASTERN);
+		} catch (Exception e) {
+			throw new ValidationException("Invalid day format, must be mm/dd/yyyy (and be a valid date)");
 		}
-		catch(Exception e)
-		{
-			throw new ValidationException("Invalid day format, must be mm/dd/yyyy (and be a valid date)"); 
-		}
+
+		// TODO ask jim about this, if you set after validation you will get a exception
+		// becuase it is already marked as complete
+		// super.setValue(String.format("%d/%d/%d",
+		// this.getSimpleMonthOfYear(),this.getSimpleDayOfMonth(),this.getSimpleYear()));
 	}
-	
-	public int getSimpleYear() { return mid_day_est.getYear(); }
-	public int getSimpleDayOfMonth() { return mid_day_est.getDayOfMonth(); }
-	public int getSimpleMonthOfYear() { return mid_day_est.getMonthOfYear(); }
+
+	public int getSimpleYear() {
+		return mid_day_est.getYear();
+	}
+
+	public int getSimpleDayOfMonth() {
+		return mid_day_est.getDayOfMonth();
+	}
+
+	public int getSimpleMonthOfYear() {
+		return mid_day_est.getMonthOfYear();
+	}
 
 	/**
 	 * Get the month name (e.g. February)
 	 * 
 	 * @return The full name of the month (e.g. January, November)
 	 */
-	public String getSimpleMonthName() { return mid_day_est.toString("MMMM", Locale.US); }
-	
+	public String getSimpleMonthName() {
+		return mid_day_est.toString("MMMM", Locale.US);
+	}
+
 	/**
 	 * Get the three letter name of the month, e.g. Feb
 	 * 
 	 * @return The three letter abbreviation of the month (e.g. Jan, Feb, ...)
 	 */
-	public String getSimpleThreeLetterMonthName() { return mid_day_est.toString("MMM", Locale.US); }
-	
+	public String getSimpleThreeLetterMonthName() {
+		return mid_day_est.toString("MMM", Locale.US);
+	}
+
 	/**
 	 * Get the day name (e.g. Sunday)
 	 * 
 	 * @return The full name of the day (e.g. Monday, Tuesday)
 	 */
-	
-	public String getSimpleDayName() {  return mid_day_est.toString("EEEE", Locale.US); }
+
+	public String getSimpleDayName() {
+		return mid_day_est.toString("EEEE", Locale.US);
+	}
 
 	/**
 	 * Get the three letter name of the day, e.g. Mon, Tue
 	 * 
 	 * @return The three letter abbreviation of the month (e.g. Mon, Tue, ...)
 	 */
-	
-	public String getSimpleThreeLetterDayName() {  return mid_day_est.toString("EEE", Locale.US); }
-	
-	public java.util.Date createSimpleDate()
-	{
+
+	public String getSimpleThreeLetterDayName() {
+		return mid_day_est.toString("EEE", Locale.US);
+	}
+
+	public java.util.Date createSimpleDate() {
+
 		return mid_day_est.toDate();
 	}
-	
-	public java.util.Date createSimpleDate(DateTimeZone time_zone)
-	{
+
+	public java.util.Date createSimpleDate(DateTimeZone time_zone) {
 		return createSimpleJodaTimeDateTime(time_zone).toDate();
 	}
-	
-	public Day createSimpleAddDays(int number_of_days_to_add)
-	{
+
+	public Day createSimpleAddDays(int number_of_days_to_add) {
 		return new Day(mid_day_est.withFieldAdded(DurationFieldType.days(), number_of_days_to_add));
 	}
-	
-	public Day createSimpleAddMonths(int number_of_months_to_add)
-	{
+
+	public Day createSimpleAddMonths(int number_of_months_to_add) {
 		return new Day(mid_day_est.withFieldAdded(DurationFieldType.months(), number_of_months_to_add));
 	}
-	
-	public Day createSimpleAddYears(int number_of_years_to_add)
-	{
+
+	public Day createSimpleAddYears(int number_of_years_to_add) {
 		return new Day(mid_day_est.withFieldAdded(DurationFieldType.years(), number_of_years_to_add));
 	}
-	
-	public int compareTo(Stringable o) 
-	{
-		if ( o instanceof Day )
-		{
-			Day other = (Day)o;
-			
+
+	public int compareTo(Stringable o) {
+		if (o instanceof Day) {
+			Day other = (Day) o;
+
 			return getSimpleJodaTimeDateTime().compareTo(other.getSimpleJodaTimeDateTime());
 		}
-		
+
 		return super.compareTo(o);
 	}
 
-	
-	public Day createSimpleTomorrow() { return createSimpleAddDays(1); }
-	public Day createSimpleYesterday() { return createSimpleAddDays(-1); }
-	
-	public DateTime getSimpleJodaTimeDateTime() { return mid_day_est; }
-	
-	public DateTime createSimpleJodaTimeDateTime(DateTimeZone time_zone) 
-	{ 
-		Validator.notNull(time_zone);
-		return new DateTime(mid_day_est.getYear(), mid_day_est.getMonthOfYear(), mid_day_est.getDayOfMonth(), 12, 0, 0, time_zone); 
+	public Day createSimpleTomorrow() {
+		return createSimpleAddDays(1);
 	}
-	
-	static public class MyConverter extends Stringable.Converter<Day>
-	{
-		public Day fromString(String str, Day default_value)
-		{
-			try
-			{
+
+	public Day createSimpleYesterday() {
+		return createSimpleAddDays(-1);
+	}
+
+	public DateTime getSimpleJodaTimeDateTime() {
+		return mid_day_est;
+	}
+
+	public DateTime createSimpleJodaTimeDateTime(DateTimeZone time_zone) {
+		Validator.notNull(time_zone);
+		return new DateTime(mid_day_est.getYear(), mid_day_est.getMonthOfYear(), mid_day_est.getDayOfMonth(), 12, 0, 0,
+				time_zone);
+	}
+
+	static public class MyConverter extends Stringable.Converter<Day> {
+		public Day fromString(String str, Day default_value) {
+			try {
 				return new Day(str);
-			}
-			catch(Exception e)
-			{
+			} catch (Exception e) {
 				return default_value;
 			}
 		}
 	}
 }
-

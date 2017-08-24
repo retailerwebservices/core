@@ -1,7 +1,8 @@
-package org.jimmutable.app_engine_example.util;
+package org.jimmutable.gcloud.logging;
 
 import static org.junit.Assert.assertEquals;
 
+import org.jimmutable.gcloud.logging.LogSupplier;
 import org.junit.Test;
 
 public class TestLogSupplier {

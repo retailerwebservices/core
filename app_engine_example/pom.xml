@@ -38,6 +38,16 @@
 	<dependencies>
 		<!-- Compile/runtime dependencies -->
 		<dependency>
+			<groupId>org.jimmutable</groupId>
+			<artifactId>core</artifactId>
+			<version>0.0.7-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jimmutable</groupId>
+			<artifactId>gcloud</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
 			<groupId>com.google.appengine</groupId>
 			<artifactId>appengine-api-1.0-sdk</artifactId>
 			<version>${appengine.version}</version>

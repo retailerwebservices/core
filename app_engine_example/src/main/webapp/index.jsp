@@ -41,6 +41,12 @@
 		<tr>
 			<td><a href='/logging'>Logging Servlet Example</a></td>
 		</tr>
+		<tr>
+			<td><a href='/searchIndex'>Search Index Example</a></td>
+		</tr>
+		<tr>
+			<td><a href='/indexManager'>Index Manager Example</a></td>
+		</tr>
 	</table>
 
 </body>

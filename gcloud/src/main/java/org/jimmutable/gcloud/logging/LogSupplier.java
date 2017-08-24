@@ -1,4 +1,4 @@
-package org.jimmutable.app_engine_example.util;
+package org.jimmutable.gcloud.logging;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -6,6 +6,13 @@ import java.util.IllegalFormatException;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
+/**
+ * Use this for all java.util.logging.Logger methods with a Supplier<String>
+ * constructor
+ * 
+ * @author trevorbox
+ *
+ */
 public class LogSupplier implements Supplier<String> {
 
 	private static Logger logger = Logger.getLogger(LogSupplier.class.getName());
@@ -15,10 +22,11 @@ public class LogSupplier implements Supplier<String> {
 	private Exception exception;
 
 	/**
+	 * Log a String with format and optional object arguments
 	 * 
 	 * @param format
 	 * @param args
-	 * @see
+	 * @see java.lang.String.format
 	 */
 	public LogSupplier(String format, Object... args) {
 		this.format = format;
@@ -26,7 +34,7 @@ public class LogSupplier implements Supplier<String> {
 	}
 
 	/**
-	 * Log an Exception
+	 * Log an Exception and its stacktrace
 	 * 
 	 * @param e
 	 *            the Exception
@@ -52,7 +60,7 @@ public class LogSupplier implements Supplier<String> {
 		}
 		StringBuilder sb = new StringBuilder();
 		try {
-			 sb.append(String.format(format, args));
+			sb.append(String.format(format, args));
 		} catch (IllegalFormatException e) {
 			logger.warning(exceptionFormat(e));
 			return format;
