@@ -144,8 +144,6 @@ final public class SearchExampleLibraryPatron extends StandardImmutableObject<Se
 	@Override
 	public void validate() {
 
-		this.birth_date.validate();
-
 		Validator.notNull(this.id);
 		Validator.notNull(this.first_name);
 		Validator.notNull(this.last_name);
