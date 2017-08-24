@@ -4,6 +4,10 @@ appengine-standard-archetype
 This is a generated App Engine Standard Java application from the appengine-standard-archetype archetype.
 
 
+
+
+
+
 * Java 7
 * [Maven](https://maven.apache.org/download.cgi) (at least 3.3.9)
 * [Gradle](https://gradle.org/gradle-download/) (optional)
@@ -18,6 +22,8 @@ This skeleton is ready to run.
 
 
     mvn appengine:run
+
+    eclipse maven goals: clean package appengine:run -DcloudSdkPath="<google-cloud-sdk dir>"
 
 
     mvn appengine:deploy
