@@ -30,7 +30,7 @@ public class TestSearchExampleLibraryPatron {
 		/* required */
 		builder.set(SearchExampleLibraryPatron.FIELD_FIRST_NAME, "First");
 		builder.set(SearchExampleLibraryPatron.FIELD_LAST_NAME, "Last");
-		builder.set(SearchExampleLibraryPatron.FIELD_NUM_BOOKS, -1);
+		builder.set(SearchExampleLibraryPatron.FIELD_NUM_BOOKS, 0);
 		builder.set(SearchExampleLibraryPatron.FIELD_DOCUMENT_ID, new DocumentId("TestLibraryPatron"));
 		builder.set(SearchExampleLibraryPatron.FIELD_INDEX_ID, new IndexId("TestIndexId"));
 		builder.set(SearchExampleLibraryPatron.FIELD_OBJECT_ID, new ObjectId(000000001));
