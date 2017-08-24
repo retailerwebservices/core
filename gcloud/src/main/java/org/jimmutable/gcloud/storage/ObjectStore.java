@@ -6,7 +6,13 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.zip.GZIPOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -19,6 +25,8 @@ import java.io.IOException;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.google.api.gax.paging.Page;
+import com.google.cloud.RestorableState;
+import com.google.cloud.WriteChannel;
 import com.google.cloud.storage.Acl;
 import com.google.cloud.storage.Acl.Role;
 import com.google.cloud.storage.Acl.User;
@@ -31,6 +39,8 @@ import com.google.cloud.storage.Bucket.BlobWriteOption;
 import com.google.cloud.storage.Storage.BlobGetOption;
 import com.google.cloud.storage.Storage.BlobListOption;
 import com.google.cloud.storage.Storage.BlobSourceOption;
+import com.google.cloud.storage.Storage.BucketField;
+import com.google.cloud.storage.Storage.BucketGetOption;
 import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageClass;
@@ -141,7 +151,7 @@ public class ObjectStore
 		Blob blob = storage.get(blobId);
 		return blob;
 	}
-	
+
 	public Page<Blob> getBlobs(String blob_name)
 	{
 		Page<Blob> blobs;
@@ -151,10 +161,11 @@ public class ObjectStore
 
 	public Blob getBlobWithGeneration(String blob_name, long blob_generation) throws StorageException
 	{
-//		Blob blob = storage.get(bucket.getName(), blob_name, BlobGetOption.generationMatch(blob_generation));  // This doens't work
+		// Blob blob = storage.get(bucket.getName(), blob_name,
+		// BlobGetOption.generationMatch(blob_generation)); // This doesn't work
 		System.out.println("\nAttempting to read with name " + blob_name + " and generation " + blob_generation);
-		  BlobId blobId = BlobId.of(bucket.getName(), blob_name, blob_generation);
-		  Blob blob = storage.get(blobId);
+		BlobId blobId = BlobId.of(bucket.getName(), blob_name, blob_generation);
+		Blob blob = storage.get(blobId);
 		if (blob != null)
 			System.out.println("Read of object with generation " + blob_generation + " successful");
 		return blob;
@@ -210,6 +221,57 @@ public class ObjectStore
 		Acl acl = storage.createAcl(blobId, Acl.of(User.ofAllUsers(), Role.READER));
 	}
 
+//	public void upsertBlobWithChecksum(String blob_name, String content, int content_length)
+//	{
+//		Crc32c crc32c = new Crc32c();
+//		crc32c.update(content.getBytes(UTF_8), 0, content_length);
+//		String checksum = Long.toString(crc32c.getValue());		
+//		
+//		BlobId blobId = BlobId.of(bucket.getName(), blob_name);
+//		BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setCrc32c(checksum).setContentType("text/plain").build();
+//		Blob blob = storage.create(blobInfo, content.getBytes(UTF_8));
+//	}
+	
+	private String calculateChecksum(byte[] content)
+	{
+
+		Crc32c crc32c = new Crc32c();
+		crc32c.update(content, 0, content.length);
+		return Long.toString(crc32c.getValue());
+	}
+	
+	private String calculateChecksumFromFile(String filename)
+	{
+		InputStream fis = null;
+		try
+		{
+			fis = new FileInputStream(filename);
+		} catch (FileNotFoundException e1)
+		{
+			e1.printStackTrace();
+		}
+	    Crc32c crc32c = new Crc32c();
+		
+	    try 
+		{
+		 byte[] buffer = new byte[1024];
+	     int numRead;
+	     do {
+	      numRead = fis.read(buffer);
+	      if (numRead > 0) {
+	        
+	    	  crc32c.update(buffer, 0, numRead);
+	        }
+	      } while (numRead != -1);
+	     fis.close();
+		}
+		catch (IOException e)
+		{
+			
+		}
+	     return Long.toString(crc32c.getValue());
+	}
+	
 	public void uploadFileToBlob(String filename, String blob_name, String content_type)
 			throws FileNotFoundException, IOException
 	{
@@ -238,15 +300,127 @@ public class ObjectStore
 		{
 			fis.close();
 		}
-
+		
 		byte[] bytes = bos.toByteArray();
-
+		
 		BlobId blobId = BlobId.of(bucket.getName(), blob_name);
 		BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(content_type).build();
 		Blob blob = storage.create(blobInfo, bytes);
 		System.out.println("File " + filename + " uploaded to bucket " + bucket.getName());
 	}
 
+	public void uploadBigFileToBlob(String filename, String blob_name, String content_type)
+	{
+		Path path = Paths.get(filename);
+
+		String checksum = calculateChecksumFromFile(filename);
+		Long file_size = 0L;	
+		BlobId blobId = BlobId.of(bucket.getName(), blob_name);
+		BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
+				.setCrc32c(checksum)
+				.setContentType(content_type)
+				.build();
+		// RestorableState<WriteChannel> data_state;
+
+	
+		try (WriteChannel writer = storage.writer(blobInfo, Storage.BlobWriteOption.crc32cMatch()))
+		{
+			file_size = Files.size(path);
+			writer.setChunkSize(100000);
+			byte[] buffer = new byte[1024];
+			try (InputStream input = Files.newInputStream(path))
+			{
+				int limit;
+				while ((limit = input.read(buffer)) >= 0)
+				{
+					try
+					{
+						writer.write(ByteBuffer.wrap(buffer, 0, limit));
+					} catch (Exception ex)
+					{
+						// data_state = writer.capture();
+						System.out.println("IO Exception on file");
+//						writer.close();
+//						validateBlobSize(blobId, file_size);
+						break;
+					}
+				}
+			}
+		} 
+		catch (NoSuchFileException nsf)
+		{
+			System.out.println("No Such File" + filename);
+			return;
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+			System.out.println("IO Exception on file");
+			return;
+		}
+//		System.out.println("Blob was created");
+//		validateBlobSize(blobId, file_size);
+	}
+
+	public void validateBlobSize(BlobId blobId, long expected_size /*, String expected_crc32c */)
+	{
+		Blob blob = storage.get(blobId);
+		if(blob.getSize() != expected_size)
+		{
+			System.out.println("File is incomplete");
+			// TODO: delete the incomplete file
+		}
+		
+	}
+	
+	public void uploadBigFileToBlobWithCRC32C(String filename, String blob_name, String content_type)
+	{
+		Path path = Paths.get(filename);
+		BlobId blobId = BlobId.of(bucket.getName(), blob_name);
+		
+		BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(content_type).build();
+		// RestorableState<WriteChannel> data_state;
+
+		Long file_size = 0L;
+		try (WriteChannel writer = storage.writer(blobInfo, Storage.BlobWriteOption.crc32cMatch()))
+		{
+			file_size = Files.size(path);
+			writer.setChunkSize(100000);
+			byte[] buffer = new byte[1024];
+			try (InputStream input = Files.newInputStream(path))
+			{
+				int limit;
+				while ((limit = input.read(buffer)) >= 0)
+				{
+					try
+					{
+						writer.write(ByteBuffer.wrap(buffer, 0, limit));
+					} catch (Exception ex)
+					{
+						// data_state = writer.capture();
+						System.out.println("IO Exception on file");
+//						writer.close();
+//						validateBlobSize(blobId, file_size);
+						break;
+					}
+				}
+			}
+		} 
+		catch (NoSuchFileException nsf)
+		{
+			System.out.println("No Such File" + filename);
+			return;
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+			System.out.println("IO Exception on file");
+			return;
+		}
+//		System.out.println("Blob was created");
+		validateBlobSize(blobId, file_size);
+	}
+	
 	public void uploadStringToBlob(String blob_name, String content) throws IOException
 	{
 		InputStream in = new ByteArrayInputStream(content.getBytes(UTF_8));
@@ -295,6 +469,11 @@ public class ObjectStore
 		InputStream in = new ByteArrayInputStream(content.getBytes(UTF_8));
 		BlobId blobId = BlobId.of(bucket.getName(), blob_name);
 		BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(content_type).build();
+		
+		
+		BlobInfo.Builder b = BlobInfo.newBuilder(blobId);
+	
+		
 		Blob blob = storage.create(blobInfo, in);
 	}
 

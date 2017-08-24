@@ -5,7 +5,6 @@
 	<groupId>org.jimmutable</groupId>
 	<artifactId>gcloud</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
 
 	<name>gcloud</name>
 	<url>http://maven.apache.org</url>

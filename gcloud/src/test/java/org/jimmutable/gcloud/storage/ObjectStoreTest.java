@@ -67,6 +67,7 @@ public class ObjectStoreTest extends TestCase
 			bucket = objStore.getBucket();
 			if (bucket != null)
 			{
+				bucket.exists();
 				objStore.printBucketInfo();
 			}
 			// objStore.createBlob("MyBlobTextName","This is my test blob data of type
@@ -93,19 +94,26 @@ public class ObjectStoreTest extends TestCase
 //			objStore.listBlobsAllVersions("Test HTML");
 //			Blob blob = objStore.getBlob("Test HTML data");
 //			System.out.println(blob);
-			Page<Blob> blobs = objStore.getBlobs("Test HTML data");
-			long gen = 0;
-			for (Blob loopBlob : blobs.iterateAll())
-			{
-				objStore.printBlobInfo(loopBlob);
-				if (loopBlob.getDeleteTime() != null)
-				{
-					gen = loopBlob.getGeneration();
-					break;
-				}
-			}
-			Blob blob = objStore.getBlobWithGeneration("Test HTML data", gen);
-			objStore.printBlobInfo(blob);
+//			Page<Blob> blobs = objStore.getBlobs("Test HTML data");
+//			long gen = 0;
+//			for (Blob loopBlob : blobs.iterateAll())
+//			{
+//				objStore.printBlobInfo(loopBlob);
+//				if (loopBlob.getDeleteTime() != null)
+//				{
+//					gen = loopBlob.getGeneration();
+//					break;
+//				}
+//			}
+//			Blob blob = objStore.getBlobWithGeneration("Test HTML data", gen);
+//			objStore.printBlobInfo(blob);
+//			objStore.uploadBigFileToBlob("/Users/preston/CentOS-7-x86_64-Minimal-1611.iso",
+//					"CentOS.iso", "application/octet-stream");
+			objStore.uploadBigFileToBlob("/Users/preston/SampleDataForGAE.pdf", "Sample.pdf", "application/pdf");
+//			objStore.uploadBigFileToBlobWithCRC32C("/Users/preston/CentOS-7-x86_64-Minimal-1611.iso",
+//					"CentOS.iso", "application/octet-stream");
+//			objStore.uploadBigFileToBlob("/Users/preston/ubuntu-16.04.3-desktop-amd64.iso",
+//					"Big Object", "application/octet-stream");  // first test took about 10 mins
 			assert (true);
 		} catch (StorageException se)
 		{
