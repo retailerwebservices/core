@@ -19,6 +19,14 @@
 		<servlet-name>IndexManagerExample</servlet-name>
 		<servlet-class>org.jimmutable.app_engine_example.IndexManagerExample</servlet-class>
 	</servlet>
+	<servlet>
+		<servlet-name>SearchExample</servlet-name>
+		<servlet-class>org.jimmutable.app_engine_example.SearchExample</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>GcsExample</servlet-name>
+		<servlet-class>org.jimmutable.app_engine_example.GcsExampleServlet</servlet-class>
+	</servlet>
 
 
 	<servlet-mapping>
@@ -37,6 +45,24 @@
 		<servlet-name>IndexManagerExample</servlet-name>
 		<url-pattern>/indexManager</url-pattern>
 	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>SearchExample</servlet-name>
+		<url-pattern>/search</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>GcsExample</servlet-name>
+		<url-pattern>/gcs/*</url-pattern>
+	</servlet-mapping>
+
+
+
+
+
+
+
+
+
+
 	<welcome-file-list>
 		<welcome-file>index.jsp</welcome-file>
 	</welcome-file-list>

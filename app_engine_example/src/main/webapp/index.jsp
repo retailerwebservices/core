@@ -47,6 +47,12 @@
 		<tr>
 			<td><a href='/indexManager'>Index Manager Example</a></td>
 		</tr>
+		<tr>
+			<td><a href='/search'>Search Example</a></td>
+		</tr>
+		<tr>
+			<td><a href='/gcs'>GCS example</a></td>
+		</tr>
 	</table>
 
 </body>

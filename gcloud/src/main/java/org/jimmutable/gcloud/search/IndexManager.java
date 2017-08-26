@@ -28,6 +28,12 @@ import com.google.appengine.api.search.SearchException;
 import com.google.appengine.api.search.SearchServiceFactory;
 import com.google.appengine.api.search.StatusCode;
 
+/**
+ * Use this class to upsert, delete and get a document from a search Index
+ * 
+ * @author trevorbox
+ *
+ */
 public class IndexManager {
 
 	private static final Logger logger = Logger.getLogger(IndexManager.class.getName());
