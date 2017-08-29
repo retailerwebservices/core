@@ -8,6 +8,10 @@
     <servlet-name>HelloAppEngine</servlet-name>
     <servlet-class>org.jimmutable.app_engine_example.HelloAppEngine</servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>TestStorage</servlet-name>
+    <servlet-class>org.jimmutable.app_engine_example.TestStorage</servlet-class>
+  </servlet>
   <servlet-mapping>
     <servlet-name>HelloAppEngine</servlet-name>
     <url-pattern>/hello</url-pattern>
