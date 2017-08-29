@@ -79,9 +79,8 @@ public class ObjectStoreTest extends TestCase
 			// test_object_name_comp, "application/pdf");
 			// objStore.uploadAndCompressStringToBlob("Test Compressed Text file",
 			// "text/plain","This is test data. It could be XML, JSON, etc.");
-			// objStore.uploadStringToBlob("Test uncompressed text file", "This is test
-			// data. It could be XML, JSON, etc.");
-			// objStore.uploadJSONToBlob("Test JSON File", JSON_data);
+			 objStore.uploadStringToBlob("Test uncompressed text file", "This is test	data. It could be XML, JSON, etc.");
+//			 objStore.uploadJSONToBlob("Test JSON File", JSON_data);
 //			 objStore.uploadHTMLToBlob("Test HTML data", HTML_data);
 			// Created additional generation
 //			 objStore.uploadHTMLToBlob("Test HTML data", HTML_data);
@@ -109,7 +108,7 @@ public class ObjectStoreTest extends TestCase
 //			objStore.printBlobInfo(blob);
 //			objStore.uploadBigFileToBlob("/Users/preston/CentOS-7-x86_64-Minimal-1611.iso",
 //					"CentOS.iso", "application/octet-stream");
-			objStore.uploadBigFileToBlob("/Users/preston/SampleDataForGAE.pdf", "Sample.pdf", "application/pdf");
+//			objStore.uploadBigFileToBlob("/Users/preston/SampleDataForGAE.pdf", "Sample.pdf", "application/pdf"); // not working currently
 //			objStore.uploadBigFileToBlobWithCRC32C("/Users/preston/CentOS-7-x86_64-Minimal-1611.iso",
 //					"CentOS.iso", "application/octet-stream");
 //			objStore.uploadBigFileToBlob("/Users/preston/ubuntu-16.04.3-desktop-amd64.iso",

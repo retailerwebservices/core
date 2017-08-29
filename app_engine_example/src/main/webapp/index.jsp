@@ -34,6 +34,9 @@
     <tr>
       <td><a href='/hello'>The servlet</a></td>
     </tr>
+    <tr>
+    	  <td><a href = '/storage'>Test Storage</a></td>
+    </tr>
   </table>
 
 </body>
