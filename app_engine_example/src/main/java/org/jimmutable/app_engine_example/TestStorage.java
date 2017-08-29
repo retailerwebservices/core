@@ -57,11 +57,11 @@ public class TestStorage extends HttpServlet
 		
 		
 		// Instantiates a client
-		bucket = storage.create(BucketInfo.newBuilder(bucket_name)
-				// See here for possible values: http://g.co/cloud/storage/docs/storage-classes
-				.setStorageClass(StorageClass.REGIONAL)
-				// Possible values: http://g.co/cloud/storage/docs/bucket-locations#location-mr
-				.setLocation("us-east1").setVersioningEnabled(true).build());
+//		bucket = storage.create(BucketInfo.newBuilder(bucket_name)
+//				// See here for possible values: http://g.co/cloud/storage/docs/storage-classes
+//				.setStorageClass(StorageClass.REGIONAL)
+//				// Possible values: http://g.co/cloud/storage/docs/bucket-locations#location-mr
+//				.setLocation("us-east1").setVersioningEnabled(true).build());
 
 		System.out.printf("Bucket %s created.%n", bucket.getName());
 		
