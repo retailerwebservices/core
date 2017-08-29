@@ -6,22 +6,22 @@ import org.jimmutable.core.utils.Validator;
 
 public class StorageKeyExtension extends Stringable{
 
-	private static final String APPLICATION = "APPLICATION/";
-	private static final String HTML="html";
-	private static final String HTM="htm";
-	private static final String CSS="css";
-	private static final String JS="js";
-	private static final String JSON="json";
-	private static final String XML="xml";
-	private static final String JPEG="jpeg";
-	private static final String JPG="jpg";
-	private static final String GIF="gif";
-	private static final String PNG="png";
-	private static final String PDF="pdf";
-	private static final String XSLX="xslx";
-	private static final String CSV="csv";
-	private static final String TXT="txt";
-	private static final String UNKNOWN="OCTET-STREAM";
+	public static final String APPLICATION = "APPLICATION/";
+	public static final String HTML="html";
+	public static final String HTM="htm";
+	public static final String CSS="css";
+	public static final String JS="js";
+	public static final String JSON="json";
+	public static final String XML="xml";
+	public static final String JPEG="jpeg";
+	public static final String JPG="jpg";
+	public static final String GIF="gif";
+	public static final String PNG="png";
+	public static final String PDF="pdf";
+	public static final String XSLX="xslx";
+	public static final String CSV="csv";
+	public static final String TXT="txt";
+	public static final String UNKNOWN="OCTET-STREAM";
 	public StorageKeyExtension(String value){
 		super(value);
 	}
