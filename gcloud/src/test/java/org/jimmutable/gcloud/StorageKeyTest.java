@@ -8,7 +8,7 @@ public class StorageKeyTest extends TestCase {
 		StorageKey key = new StorageKey("alpha/1234.txt");
 		assertEquals("alpha",key.getSimpleKind());
 		assert(key.getSimpleId().contains("1234"));
-		assertEquals(StorageKeyExtension.APPLICATION+StorageKeyExtension.TXT,key.getSimpleExtension());
+		assertEquals(StorageKeyExtension.TEXT+StorageKeyExtension.TXT,key.getSimpleExtension());
 	}
 	public void testFancyParsing(){
 		Kind kind = new Kind("alpha");
@@ -17,6 +17,6 @@ public class StorageKeyTest extends TestCase {
 		StorageKey key = new StorageKey(kind, objectId,extension);
 		assertEquals("alpha",key.getSimpleKind());
 		assert(key.getSimpleId().contains("1234"));
-		assertEquals(StorageKeyExtension.APPLICATION+StorageKeyExtension.TXT,key.getSimpleExtension());
+		assertEquals(StorageKeyExtension.TEXT+StorageKeyExtension.TXT,key.getSimpleExtension());
 	}
 }

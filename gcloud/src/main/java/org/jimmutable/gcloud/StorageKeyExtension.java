@@ -6,7 +6,11 @@ import org.jimmutable.core.utils.Validator;
 
 public class StorageKeyExtension extends Stringable{
 
-	public static final String APPLICATION = "APPLICATION/";
+	public static final String APPLICATION = "application/";
+	public static final String TEXT = "text";
+	public static final String IMAGE = "image";
+	public static final String AUDIO = "audio";
+	public static final String VIDEO = "video";
 	public static final String HTML="html";
 	public static final String HTM="htm";
 	public static final String CSS="css";
@@ -28,20 +32,20 @@ public class StorageKeyExtension extends Stringable{
 
 	public String getSimpleMimeType() {
 		switch(getSimpleValue()){
-		case HTML: return APPLICATION+HTML;
-		case HTM: return APPLICATION+HTM;
-		case CSS: return APPLICATION+CSS;
+		case HTML: return TEXT+HTML;
+		case HTM: return TEXT+HTM;
+		case CSS: return TEXT+CSS;
 		case JS: return APPLICATION+JS;
 		case JSON: return APPLICATION+JSON;
 		case XML: return APPLICATION+XML;
-		case JPEG: return APPLICATION+JPEG;
-		case JPG: return APPLICATION+JPG;
-		case GIF: return APPLICATION+GIF;
-		case PNG: return APPLICATION+PNG;
+		case JPEG: return IMAGE+JPEG;
+		case JPG: return IMAGE+JPG;
+		case GIF: return IMAGE+GIF;
+		case PNG: return IMAGE+PNG;
 		case PDF: return APPLICATION+PDF;
 		case XSLX: return APPLICATION+XSLX;
-		case CSV: return APPLICATION+CSV;
-		case TXT: return APPLICATION+TXT;
+		case CSV: return TEXT+CSV;
+		case TXT: return TEXT+TXT;
 		default: return APPLICATION+UNKNOWN;
 		}
 
