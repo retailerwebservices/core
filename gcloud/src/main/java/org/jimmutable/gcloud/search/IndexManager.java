@@ -84,10 +84,12 @@ public class IndexManager {
 			try {
 				index.delete(index_id.getSimpleValue());
 				logger.info(new LogSupplier("Deleted documentId %s in indexId %s", index_id.getSimpleValue(),
-						document_id.getSimpleValue()));
+						document_id.getSimpleValue()).get());
 				break;
 			} catch (RuntimeException e) {
-				logger.log(Level.SEVERE, e, new LogSupplier("Failed to delete documentId %s in indexId %s"));
+				logger.log(Level.SEVERE, new LogSupplier("Failed to delete documentId %s in indexId %s",
+						index_id.getSimpleValue(), document_id.getSimpleValue()).get(), e);
+
 				Thread.sleep(delay * 1000);
 				delay *= 2; // easy exponential backoff
 			}
@@ -131,7 +133,7 @@ public class IndexManager {
 				index.put(writer.createDocument());
 				logger.info(new LogSupplier("Upserted documentId %s into indexId %s",
 						indexable.getSimpleSearchDocumentId().getSimpleValue(),
-						indexable.getSimpleSearchIndexId().getSimpleValue()));
+						indexable.getSimpleSearchIndexId().getSimpleValue()).get());
 			} catch (PutException e) {
 				if ((StatusCode.TRANSIENT_ERROR.equals(e.getOperationResult().getCode())
 						|| StatusCode.CONCURRENT_TRANSACTION_ERROR.equals(e.getOperationResult().getCode())
@@ -139,22 +141,23 @@ public class IndexManager {
 						|| StatusCode.TIMEOUT_ERROR.equals(e.getOperationResult().getCode()))
 						&& ++attempts < maxRetry) { // retrying
 
-					logger.log(Level.WARNING, e, new LogSupplier(
+					logger.log(Level.WARNING, new LogSupplier(
 							"Upsert for documentId %s into indexId %s failed with status code %s. Retrying in %d seconds...",
 							indexable.getSimpleSearchDocumentId().getSimpleValue(),
 							indexable.getSimpleSearchIndexId().getSimpleValue(),
-							e.getOperationResult().getCode().name(), delay));
+							e.getOperationResult().getCode().name(), delay).get(), e);
 
 					Thread.sleep(delay * 1000);
 					delay *= 2; // easy exponential backoff
 					continue;
 				} else {
 
-					logger.log(Level.SEVERE, e,
+					logger.log(Level.SEVERE,
 							new LogSupplier("Upsert for documentId %s into indexId %s failed with status code %s",
 									indexable.getSimpleSearchDocumentId().getSimpleValue(),
 									indexable.getSimpleSearchIndexId().getSimpleValue(),
-									e.getOperationResult().getCode().name()));
+									e.getOperationResult().getCode().name()).get(),
+							e);
 
 					// PutException is a RuntimeException
 					throw e;

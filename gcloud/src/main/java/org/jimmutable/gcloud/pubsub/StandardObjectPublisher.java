@@ -3,10 +3,12 @@ package org.jimmutable.gcloud.pubsub;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.gcloud.ProjectId;
+import org.jimmutable.gcloud.logging.LogSupplier;
 
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.protobuf.ByteString;
@@ -16,15 +18,16 @@ import com.google.pubsub.v1.TopicName;
 /**
  * Easy to use class for sending StandardObject(s) as messages
  * 
- * The code is optimized to be able to send at any rate.  
+ * The code is optimized to be able to send at any rate.
  * 
  * @author kanej
  *
  */
-public class StandardObjectPublisher 
-{
+public class StandardObjectPublisher {
+	private static Logger logger = Logger.getLogger(StandardObjectPublisher.class.getName());
+
 	static private Map<TopicId, Publisher> my_publishers = new ConcurrentHashMap();
-	
+
 	/**
 	 * Publish an object to a topic.
 	 * 
@@ -43,37 +46,35 @@ public class StandardObjectPublisher
 	 * 
 	 * @return true if the object was published, false otherwise
 	 */
-	static public boolean publishObject(TopicId topic, StandardObject object)
-	{
-		if ( topic == null ) return false; // can't send anything to a null topic
-		if ( object == null ) return false; // can't send a null object
-		
-		if ( !my_publishers.containsKey(topic) )
-		{
+	static public boolean publishObject(TopicId topic, StandardObject object) {
+		if (topic == null)
+			return false; // can't send anything to a null topic
+		if (object == null)
+			return false; // can't send a null object
+
+		if (!my_publishers.containsKey(topic)) {
 			ensureTopicSetup(topic);
 		}
-		
-		try
-		{
+
+		try {
 			Publisher publisher = my_publishers.get(topic);
-			if ( publisher == null ) return false; // A serious error has occurred, unable to send the message
-			
+			if (publisher == null)
+				return false; // A serious error has occurred, unable to send the message
+
 			String message = object.serialize(Format.JSON);
-			
+
 			// Note: during development, compressing the messages was tested. On small JSON
 			// formatted messages (like StandardMessageOnUpsert) gzipping the data made it
 			// larger (as opposed to smaller). As a result, the decision was made *not* to
 			// compress message data
-			
+
 			ByteString data = ByteString.copyFromUtf8(message);
 			PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setData(data).build();
 			publisher.publish(pubsubMessage);
-			
+
 			return true;
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
+		} catch (Exception e) {
+			logger.severe(new LogSupplier(e).get());
 			return false;
 		}
 	}
@@ -90,27 +91,30 @@ public class StandardObjectPublisher
 	 * @return true if the topic is "good to go" false if an error occurs
 	 * 
 	 */
-	synchronized static public boolean ensureTopicSetup(TopicId topic_id)
-	{
-		if ( topic_id == null ) return false; // can't setup a  null topic
-		if ( my_publishers.containsKey(topic_id) ) return true; // topic is already setup and ready to go
-		
+	synchronized static public boolean ensureTopicSetup(TopicId topic_id) {
+		if (topic_id == null)
+			return false; // can't setup a null topic
+		if (my_publishers.containsKey(topic_id))
+			return true; // topic is already setup and ready to go
+
 		boolean topic_ready = PubSubConfigurationUtils.createTopicIfNeeded(ProjectId.CURRENT_PROJECT, topic_id);
-		if ( !topic_ready ) return false;
-		
+		if (!topic_ready)
+			return false;
+
 		TopicName topic_name = PubSubConfigurationUtils.createTopicName(ProjectId.CURRENT_PROJECT, topic_id);
-				
-		try
-		{
+
+		try {
 			Publisher publisher = Publisher.defaultBuilder(topic_name).build();
 			my_publishers.put(topic_id, publisher);
-			
+
 			return true;
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-			try { Thread.currentThread().sleep(1000); } catch(Exception e2) {} // the 1 second delay is to give the google cloud some breathing room before we try again to setup the publisher
+		} catch (Exception e) {
+			logger.severe(new LogSupplier(e).get());
+			try {
+				Thread.currentThread().sleep(1000);
+			} catch (Exception e2) {
+			} // the 1 second delay is to give the google cloud some breathing room before we
+				// try again to setup the publisher
 			return false;
 		}
 	}
@@ -137,29 +141,23 @@ public class StandardObjectPublisher
 	 * @return true if the shutdown was accomplished without error, false otherwise
 	 * 
 	 */
-	static public boolean shutdown()
-	{
-		System.out.println("Shutting down standard object publisher");
-		
+	static public boolean shutdown() {
+		logger.info("Shutting down standard object publisher");
+
 		Map<TopicId, Publisher> old_publishers = new HashMap(my_publishers);
 		my_publishers.clear();
-		
+
 		boolean shutdown_ok = true;
-		
-		for ( Publisher publisher : old_publishers.values() )
-		{
-			try
-			{
+
+		for (Publisher publisher : old_publishers.values()) {
+			try {
 				publisher.shutdown();
-			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
+			} catch (Exception e) {
+				logger.severe(new LogSupplier(e).get());
 				shutdown_ok = false;
 			}
 		}
-		
+
 		return shutdown_ok;
 	}
 }
- 

@@ -28,6 +28,10 @@ public class PubSubExample
 	
 	static public void main(String args[])
 	{
+		
+		
+		//System.setProperty("GOOGLE_APPLICATION_CREDENTIALS", "/Users/trevorbox/eclipse-workspace/maven.1502923603553/gcloud/platform-test-f5374a172bb5.json");
+		
 		ExampleUtils.setupExample();
 		
 		PullSubscriptionDefinition def;

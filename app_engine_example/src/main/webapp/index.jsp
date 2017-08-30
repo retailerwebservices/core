@@ -53,6 +53,9 @@
 		<tr>
 			<td><a href='/gcs'>GCS example</a></td>
 		</tr>
+		<tr>
+			<td><a href='/testps'>testps example</a></td>
+		</tr>
 	</table>
 
 </body>

@@ -3,7 +3,7 @@ package org.jimmutable.gcloud.logging;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.IllegalFormatException;
-import java.util.function.Supplier;
+//import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 /**
@@ -13,7 +13,7 @@ import java.util.logging.Logger;
  * @author trevorbox
  *
  */
-public class LogSupplier implements Supplier<String> {
+public class LogSupplier {
 
 	private static Logger logger = Logger.getLogger(LogSupplier.class.getName());
 
@@ -68,7 +68,6 @@ public class LogSupplier implements Supplier<String> {
 		return sb.toString();
 	}
 
-	@Override
 	public String get() {
 		if (this.exception != null) {
 			return exceptionFormat(this.exception);

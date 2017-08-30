@@ -27,7 +27,10 @@
 		<servlet-name>GcsExample</servlet-name>
 		<servlet-class>org.jimmutable.app_engine_example.GcsExampleServlet</servlet-class>
 	</servlet>
-
+	<servlet>
+		<servlet-name>TestPS</servlet-name>
+		<servlet-class>org.jimmutable.app_engine_example.TestPS</servlet-class>
+	</servlet>
 
 	<servlet-mapping>
 		<servlet-name>HelloAppEngine</servlet-name>
@@ -53,15 +56,10 @@
 		<servlet-name>GcsExample</servlet-name>
 		<url-pattern>/gcs/*</url-pattern>
 	</servlet-mapping>
-
-
-
-
-
-
-
-
-
+	<servlet-mapping>
+		<servlet-name>TestPS</servlet-name>
+		<url-pattern>/testps</url-pattern>
+	</servlet-mapping>
 
 	<welcome-file-list>
 		<welcome-file>index.jsp</welcome-file>

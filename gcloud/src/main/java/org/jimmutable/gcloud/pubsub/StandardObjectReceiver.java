@@ -4,9 +4,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
 
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.utils.Validator;
+import org.jimmutable.gcloud.logging.LogSupplier;
 
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.MessageReceiver;
@@ -22,8 +24,8 @@ import com.google.pubsub.v1.SubscriptionName;
  * @author kanej
  *
  */
-public class StandardObjectReceiver 
-{
+public class StandardObjectReceiver {
+	private static Logger logger = Logger.getLogger(StandardObjectReceiver.class.getName());
 	static private Map<SubscriptionName, MyReceiver> receivers = new ConcurrentHashMap();
 
 	/**
@@ -39,81 +41,68 @@ public class StandardObjectReceiver
 	 * 
 	 * @return True if listening has begin, false otherwise.
 	 */
-	synchronized static public boolean startListening(PullSubscriptionDefinition def, StandardObjectListener listener)
-	{
+	synchronized static public boolean startListening(PullSubscriptionDefinition def, StandardObjectListener listener) {
 		Validator.notNull(def, listener);
-		
+
 		SubscriptionName subscription_name = def.createSimpleSubscriptionName();
-		
+
 		// Are we already listening to this subscription?
-		if ( receivers.containsKey(subscription_name) )
-		{
+		if (receivers.containsKey(subscription_name)) {
 			receivers.get(subscription_name).addListener(listener);
 			return true;
 		}
-		
-		try
-		{
+
+		try {
 			MyReceiver rec = new MyReceiver(listener);
-			
+
 			PubSubConfigurationUtils.createSubscriptionIfNeeded(def);
-			
+
 			Subscriber subscriber = Subscriber.defaultBuilder(subscription_name, rec).build();
 			subscriber.startAsync();
 			return true;
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
+		} catch (Exception e) {
+			logger.severe(new LogSupplier(e).get());
 			return false;
 		}
 	}
-	
-	
-	static private class MyReceiver implements MessageReceiver
-	{
+
+	static private class MyReceiver implements MessageReceiver {
 		private List<StandardObjectListener> listeners = new CopyOnWriteArrayList();
-		
-		public MyReceiver()
-		{
-			
+
+		public MyReceiver() {
+
 		}
-		
-		public MyReceiver(StandardObjectListener listener)
-		{
+
+		public MyReceiver(StandardObjectListener listener) {
 			addListener(listener);
 		}
-		
-		public void addListener(StandardObjectListener listener)
-		{
-			if ( listener == null ) return;
-			if ( listeners.contains(listener) ) return;
-			
+
+		public void addListener(StandardObjectListener listener) {
+			if (listener == null)
+				return;
+			if (listeners.contains(listener))
+				return;
+
 			listeners.add(listener);
 		}
-		
-		public void receiveMessage(PubsubMessage message, AckReplyConsumer consumer) 
-		{
+
+		public void receiveMessage(PubsubMessage message, AckReplyConsumer consumer) {
 			consumer.ack();
-			
+
 			String data = message.getData().toStringUtf8();
-			
-			try
-			{
+
+			try {
 				StandardObject obj = StandardObject.deserialize(data);
-				
-				for ( StandardObjectListener listener : listeners )
+
+				for (StandardObjectListener listener : listeners)
 					listener.onMessageReceived(obj);
-			}
-			catch(Exception e)
-			{
-				System.out.println("Unable to read message");
-				System.out.println(data);
-				e.printStackTrace();
+			} catch (Exception e) {
+				logger.info("Unable to read message");
+				logger.info(data);
+				logger.severe(new LogSupplier(e).get());
 				return;
 			}
 		}
 	}
-	
-	
+
 }
