@@ -31,7 +31,8 @@ final public class BookDeckMap extends StandardImmutableMapDeck<BookDeckMap, Str
 	
 	public BookDeckMap()
 	{
-		this(Collections.emptyMap());
+		//TODO Trevor
+		this(Collections.<String, Book>emptyMap());
 	}
 	
 	public BookDeckMap(Map<String,Book> initial_contents)

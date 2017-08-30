@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import org.jimmutable.core.exceptions.ImmutableException;
+
 
 
 /**
@@ -49,6 +51,15 @@ import java.util.LinkedList;
  */
 abstract public class FieldCollection<E> implements Field, Collection<E> 
 {
+	
+	//TODO Trevor
+	 public void assertNotFrozen() 
+	{
+		if (isFrozen())
+			throw new ImmutableException();
+	}
+	
+	
 	transient volatile private boolean is_frozen;
 	
 	/*

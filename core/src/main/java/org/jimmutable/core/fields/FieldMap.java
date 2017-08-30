@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.jimmutable.core.exceptions.ImmutableException;
+
 
 /**
  * An implementation of a {@link Collection} that begins life as mutable but
@@ -33,6 +35,12 @@ import java.util.TreeMap;
  */
 abstract public class FieldMap<K,V> implements Map<K,V>, Field
 {
+	//TODO Trevor
+	 public void assertNotFrozen() 
+		{
+			if (isFrozen())
+				throw new ImmutableException();
+		}
 	transient volatile private boolean is_frozen;
 	
 	/*
