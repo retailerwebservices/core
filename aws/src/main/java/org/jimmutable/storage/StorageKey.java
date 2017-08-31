@@ -1,8 +1,11 @@
 package org.jimmutable.storage;
 
+import java.io.File;
+
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
+import org.jimmutable.core.utils.Validator;
 
 
 public class StorageKey extends Stringable{
@@ -10,29 +13,77 @@ public class StorageKey extends Stringable{
 	ObjectId id;
 	StorageKeyExtension extension;
 
-	public StorageKey(String value) {
+	/** 
+	 * @param 
+	 * Creates a new Storage Key based on the string that is passed in.
+	 * Therefore if the String passed in is "Alpha/123.txt"
+	 * then
+	 * 		the Kind will be "Alpha"
+	 * 		the Object Id will be "123"
+	 * 		the extension will be "txt"
+	 */
+	public StorageKey(String value) 
+	{
 		super(value);
 	}
-	public StorageKey(Kind kind, ObjectId objectId, String extension) {
-		this(String.format("%s/%s.%s", kind.getSimpleValue(),objectId.getSimpleValue(),extension));
+	
+	/**
+	 * @param kind
+	 * 		the Kind used for the StorageKey
+	 * @param objectId
+	 * 		the ObjectId used for the StorageKey
+	 * @param extension
+	 * 		the extension of the StorageKey
+	 */
+	public StorageKey(Kind kind, ObjectId objectId, String extension) 
+	{
+		this(checkValidationFirst(kind, objectId, extension));
+	}
+	/**
+	 * 
+	 * /**
+	 * @param kind
+	 * 		the Kind used for the StorageKey
+	 * @param objectId
+	 * 		the ObjectId used for the StorageKey
+	 * @param extension
+	 * 		the extension of the StorageKey
+	 *
+	 * @return if Everything validates it will return a string that concatenates all of the parameters simple values. {alpha,123,"txt"}->"alpha/123.txt"
+	 */
+	private static String checkValidationFirst(Kind kind, ObjectId objectId, String extension) {
+		Validator.notNull(kind,objectId,extension);
+		return String.format("%s/%s.%s", kind.getSimpleValue(),objectId.getSimpleValue(),extension);
 	}
 
 	@Override
-	public void normalize() {
+	public void normalize() 
+	{
 		normalizeLowerCase();
 	}
 
 	@Override
-	public void validate() {
-		String simpleValue = getSimpleValue();
-		int placeOfDot = simpleValue.indexOf(".");
-		int placeOfSlash = simpleValue.lastIndexOf("/");
-		kind = new Kind(simpleValue.substring(0, placeOfSlash));
-		id = new ObjectId(simpleValue.substring(placeOfSlash+1,placeOfDot));
-		extension = new StorageKeyExtension(simpleValue.substring(placeOfDot+1));		
+	public void validate() 
+	{
+		Validator.notNull(getSimpleValue());
+		String[] breakonslash = getSimpleValue().split(File.separator);
+		kind = new Kind(breakonslash[0]);
+		String[] breakondot = breakonslash[1].split("\\.");
+		id = new ObjectId(breakondot[0]);
+		extension= new StorageKeyExtension(breakondot[1]);
+		
 	}
-	final public String getSimpleKind() { return kind.getSimpleValue(); }
-	final public String getSimpleId() { return id.getSimpleValue(); }
-	final public String getSimpleExtension() { return extension.getSimpleMimeType(); }
+	/**
+	 * @return The Kind associated with the storage Key
+	 */
+	 public Kind getSimpleKind() { return kind; }
+	/**
+	 * @return The ObjectId associated with the storage Key
+	 */
+	 public ObjectId getSimpleId() { return id; }
+	/**
+	 * @return The Extension associated with the storage Key
+	 */
+	 public StorageKeyExtension getSimpleExtension() { return extension; }
 
 }
