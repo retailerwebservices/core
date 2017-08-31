@@ -56,7 +56,7 @@ public class GeneralResponseOK extends JSONServletResponse
 
 	@Override
 	public int getSimpleHTTPResponseCode() { return HTTP_STATUS_CODE_OK; }
-	public String getOptionalMessage(String default_value) { return message; }
+	public String getOptionalMessage(String default_value) { return message; }  // CODE REVIEW: This implementation is wrong.  It won't return default_value if object is unset
 
 	@Override
 	public void freeze() {}

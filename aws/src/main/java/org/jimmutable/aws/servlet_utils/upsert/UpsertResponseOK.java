@@ -10,6 +10,15 @@ import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.utils.Comparison;
 
+/**
+ * CODE REVIEW: 
+ * 
+ * NEEDS JAVA DOC
+ * 
+ * @author kanej
+ *
+ */
+
 public class UpsertResponseOK extends JSONServletResponse
 {
 	static public final TypeName TYPE_NAME = new TypeName("jimmutable.aws.servlet_utils.common_objects.UpsertResponseOK"); public TypeName getTypeName() { return TYPE_NAME; }
@@ -17,7 +26,7 @@ public class UpsertResponseOK extends JSONServletResponse
 	static public final FieldDefinition.StandardObject FIELD_OBJECT = new FieldDefinition.StandardObject("object", null);
 	static public final FieldDefinition.String FIELD_MESSAGE = new FieldDefinition.String("message", null);
 
-	static private final int HTTP_STATUS_CODE_OK = 200;
+	static private final int HTTP_STATUS_CODE_OK = 200; // CODE REVEIW: Put this in JSONServeletResponse as a static public
 	
 	private String message;  // optional
 	private StandardImmutableObject object; // optional
@@ -56,8 +65,8 @@ public class UpsertResponseOK extends JSONServletResponse
 
 	@Override
 	public int getSimpleHTTPResponseCode() { return HTTP_STATUS_CODE_OK; }
-	public String getOptionalMessage(String default_value) { return message; }
-	public StandardImmutableObject getOptionalObject(String default_value) { return object; }
+	public String getOptionalMessage(String default_value) { return message; }  // CODE REVIEW: This implementation is wrong.  It won't return default_value if object is unset
+	public StandardImmutableObject getOptionalObject(String default_value) { return object; } // CODE REVIEW: This implementation is wrong.  It won't return default_value if object is unset
 	
 	@Override
 	public void freeze() {}
@@ -80,6 +89,7 @@ public class UpsertResponseOK extends JSONServletResponse
 
 		UpsertResponseOK other = (UpsertResponseOK) obj;
 
+		// CODE REVIEW: Use Objects.equals
 		if ( !getOptionalMessage(null).equals(other.getOptionalMessage(null)) ) return false;
 		if ( getOptionalObject(null) != other.getOptionalObject(null) ) return false;
 
