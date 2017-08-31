@@ -1,6 +1,15 @@
 package org.jimmutable.storage;
 
 import junit.framework.TestCase;
+
+/** 
+ * Code reviw:
+ * 
+ * Spacing.
+ * 
+ * Also, always test null
+ */
+
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 public class StorageKeyTest extends TestCase {
