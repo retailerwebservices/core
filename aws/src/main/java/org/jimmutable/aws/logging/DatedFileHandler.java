@@ -13,15 +13,13 @@ import java.util.logging.LogRecord;
 import org.jimmutable.aws.StartupSingleton;
 
 /**
- * CODE REVIEW
  * 
- * Class needs JavaDoc comments
+ * Creates a special file logging output handler that outputs logs to a new file
+ * each day in StartupSingleton.LOG_DIR. Uses SingleLineFormatter.
  * 
- * 
- * @author kanej
+ * @author trevorbox
  *
  */
-
 public class DatedFileHandler extends Handler
 {
 
@@ -34,24 +32,29 @@ public class DatedFileHandler extends Handler
 		FILE_DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("US/Arizona"));
 	}
 
+	/**
+	 * Hijacks a FileHandler to write to a dated file within
+	 * StartupSingleton.LOG_DIR
+	 */
 	@Override
 	public synchronized void publish(LogRecord r)
 	{
-		// CODE REVIEW: What if r is null?
-		 
-		if (isLoggable(r))
+		if (r != null)
 		{
-			FileHandler f;
-			try
+			if (isLoggable(r))
 			{
-				f = new FileHandler(fileName(r), true);
-				f.setFormatter(formatter);
-				f.publish(r);
-				f.close(); // if this is not closed you will get multiple writes to different logs
-			} catch (SecurityException | IOException e)
-			{
-				e.printStackTrace();
-				this.reportError(null, e, ErrorManager.WRITE_FAILURE);
+				FileHandler f;
+				try
+				{
+					f = new FileHandler(fileName(r), true);
+					f.setFormatter(formatter);
+					f.publish(r);
+					f.close(); // if this is not closed you will get multiple writes to different logs
+				} catch (SecurityException | IOException e)
+				{
+					e.printStackTrace();
+					this.reportError(null, e, ErrorManager.WRITE_FAILURE);
+				}
 			}
 		}
 	}
@@ -67,10 +70,22 @@ public class DatedFileHandler extends Handler
 		super.setLevel(Level.OFF);
 	}
 
+	/**
+	 * Get the filename based on the record's timestamp, else will use the current
+	 * timestamp
+	 * 
+	 * @param r
+	 * @return
+	 */
 	private String fileName(LogRecord r)
 	{
-		// CODE REVEIEW: What if r is null?
-		date.setTime(r.getMillis());
+		if (r != null)
+		{
+			date.setTime(r.getMillis());
+		} else
+		{
+			date.setTime(System.currentTimeMillis());
+		}
 		return String.format("%s/%s-%s.log", StartupSingleton.LOG_DIR, StartupSingleton.APP_NAME,
 				FILE_DATE_FORMAT.format(date));
 	}

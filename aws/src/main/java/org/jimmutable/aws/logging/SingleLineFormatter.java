@@ -5,19 +5,20 @@ import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Formatter;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 /**
- * Code review
+ * Used to set a handler's output format to a nice single line, instead of the
+ * default two
  * 
- * Class needs javadoc comments
- * @author kanej
+ * @author trevorbox
  *
  */
 public class SingleLineFormatter extends Formatter
 {
 	private static final String format = "%s %-7s %s %s %s %s\n";
-	private final Date dat = new Date(); // CODE REVIEW: dat -> date
+	private final Date date = new Date();
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd HH:mm:ss");
 
 	public SingleLineFormatter()
@@ -27,32 +28,37 @@ public class SingleLineFormatter extends Formatter
 
 	public synchronized String format(LogRecord record)
 	{
-		// CODE REVEIW: What if record is null?
-		this.dat.setTime(record.getMillis());
-		String source;
-		if (record.getSourceClassName() != null)
+		if (record != null)
 		{
-			source = record.getSourceClassName();
-			if (record.getSourceMethodName() != null)
+			this.date.setTime(record.getMillis());
+			String source;
+			if (record.getSourceClassName() != null)
 			{
-				source += " " + record.getSourceMethodName();
+				source = record.getSourceClassName();
+				if (record.getSourceMethodName() != null)
+				{
+					source += " " + record.getSourceMethodName();
+				}
+			} else
+			{
+				source = record.getLoggerName();
 			}
-		} else
-		{
-			source = record.getLoggerName();
+			String message = formatMessage(record);
+			String throwable = "";
+			if (record.getThrown() != null)
+			{
+				StringWriter sw = new StringWriter();
+				PrintWriter pw = new PrintWriter(sw);
+				pw.println();
+				record.getThrown().printStackTrace(pw);
+				pw.close();
+				throwable = sw.toString();
+			}
+			return String.format(format, dateFormat.format(date), record.getLevel(), source, record.getLoggerName(),
+					message, throwable);
 		}
-		String message = formatMessage(record);
-		String throwable = "";
-		if (record.getThrown() != null)
-		{
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			pw.println();
-			record.getThrown().printStackTrace(pw);
-			pw.close();
-			throwable = sw.toString();
-		}
-		return String.format(format, dateFormat.format(dat), record.getLevel(), source, record.getLoggerName(), message,
-				throwable);
+		date.setTime(System.currentTimeMillis());
+		return String.format(format, dateFormat.format(date), Level.SEVERE, SingleLineFormatter.class.getName(),
+				"format", "LogRecord is null!", "");
 	}
 }
