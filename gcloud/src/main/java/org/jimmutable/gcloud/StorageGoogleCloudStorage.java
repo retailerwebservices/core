@@ -18,7 +18,7 @@ public class StorageGoogleCloudStorage extends Storage {
 	}
 
 	@Override
-	public boolean upsert(StorageKey key, Bytes[] bytes, boolean hint_content_likely_to_be_compressible) {
+	public boolean upsert(StorageKey key, byte[] bytes, boolean hint_content_likely_to_be_compressible) {
 		// TODO Auto-generated method stub
 		return false;
 	}
