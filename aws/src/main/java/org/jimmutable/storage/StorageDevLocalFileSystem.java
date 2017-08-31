@@ -22,7 +22,7 @@ public class StorageDevLocalFileSystem extends Storage{
 		
 		if ( !ApplicationId.hasOptionalDevApplicationId() )
 		{
-			System.err.println("Hey -- you are trying to instantiate a dev local file system. This should not be happening in production. If you are a developer and you are trying to run this through eclipse, you need to setup the environment configurations in your ");
+			System.err.println("Hey -- you are trying to instantiate a dev local file system. This should not be happening in production. If you are a developer and you are trying to run this through eclipse, you need to setup the environment configurations in your run configurations");
 			throw new RuntimeException();
 		}
 		prefix = System.getProperty("user.home")+"/jimmtuable_aws_dev/"+ApplicationId.getOptionalDevApplicationId(new ApplicationId("Development"))+"/";		
