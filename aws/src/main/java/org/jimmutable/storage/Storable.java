@@ -5,7 +5,16 @@ import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.serialization.Format;
 
-
+/**
+ * CODE REVIEW
+ * 
+ * Code needs javadoc
+ * 
+ * Follow spacing conventions
+ * 
+ * @author kanej
+ *
+ */
 public abstract class Storable {
 	abstract public Kind getSimpleKind();
 	abstract public ObjectId getSimpleObjectId();
