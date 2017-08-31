@@ -7,9 +7,24 @@ import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.utils.Validator;
 import org.jimmutable.core.objects.common.Kind;
 
+/**
+ * CODE REVIEW
+ * 
+ * JavaDoc
+ * 
+ * Spacing/indenting
+ * 
+ * 
+ * @author kanej
+ *
+ */
+
 public abstract class Storage {
+	
 	Storage instance = null;
-	private boolean is_readOnly=false;
+	
+	private boolean is_readOnly=false; // code review: our variable names are always lower case
+	
 	public Storage(boolean is_readOnly) {
 		this.is_readOnly=is_readOnly;
 	}
@@ -56,6 +71,7 @@ public abstract class Storage {
 		return delete(obj.createStorageKey());
 	}
 	
+	// This method can be public
 	protected boolean isReadOnly()
 	{
 		return is_readOnly;
