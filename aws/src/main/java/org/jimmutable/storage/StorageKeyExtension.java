@@ -4,6 +4,15 @@ import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
 
+
+/**
+ * CODE REVIEW:
+ * 
+ * Class needs to follow spacing/indent guidlines
+ * 
+ * @author kanej
+ *
+ */
 public class StorageKeyExtension extends Stringable{
 
 	public static final String APPLICATION = "application/";
@@ -26,10 +35,25 @@ public class StorageKeyExtension extends Stringable{
 	public static final String CSV="csv";
 	public static final String TXT="txt";
 	public static final String UNKNOWN="OCTET-STREAM";
+	
 	public StorageKeyExtension(String value){
 		super(value);
 	}
 
+	/**
+	 * CODE REVIEW:
+	 * 
+	 * There is no need for the static public final variables (above) combined with this class.  The code would b emuch easier to read if you just wrote:
+	 * 
+	 * switch(getSimpleValue())
+	 * {
+	 *    case "html": return "text/html";
+	 * }
+	 * 
+	 * Plus: your mime types are not right.  This function would return "texthtml" for "html", which is *not* the mime type.  Should return "text/html"
+	 * 
+	 * @return
+	 */
 	public String getSimpleMimeType() {
 		switch(getSimpleValue()){
 		case HTML: return TEXT+HTML;
@@ -51,15 +75,30 @@ public class StorageKeyExtension extends Stringable{
 
 	}
 	
+	/**
+	 * Code review: I did not specify this in my story, but normalize should also strip leading periods (.).  Why? Because coders will, all the time, try to say new StorageKeyExtension(".pdf")... and we can handle this gracefully.
+	 * 
+	 * When doing this strip, remember that normalize runs *before* validate.  As a result, you need to test to see if getSimpleValue() is null (it could be...)
+	 */
 	@Override
 	public void normalize() {
 		normalizeLowerCase();
 	}
 
 	@Override
+	
+	/**
+	 * Code review
+	 * 
+	 * You should use Validator.containsOnlyValidCharacters(str, allowed_characters);, not a manual test.
+	 * 
+	 */
+	
 	public void validate() {
 		Validator.notNull(getSimpleValue());
 		Validator.min(getSimpleValue().length(), 1);
+	
+		
 		
 		char chars[] = getSimpleValue().toCharArray();
 		for ( char ch : chars )
