@@ -24,7 +24,7 @@ public abstract class Storage {
 	}
 
 	public abstract boolean exists(StorageKey key, boolean default_value);
-	public abstract boolean upsert(StorageKey key, Bytes bytes[], boolean hint_content_likely_to_be_compressible);
+	public abstract boolean upsert(StorageKey key, byte bytes[], boolean hint_content_likely_to_be_compressible);
 	public abstract byte[] getCurrentVersion(StorageKey key, byte[] default_value);
 	public abstract boolean delete(StorageKey key);
 	public abstract Iterable<StorageKey> list(Kind kind);
@@ -55,7 +55,7 @@ public abstract class Storage {
 		return delete(obj.createStorageKey());
 	}
 	
-	boolean isReadOnly()
+	protected boolean isReadOnly()
 	{
 		return is_readOnly;
 	}
