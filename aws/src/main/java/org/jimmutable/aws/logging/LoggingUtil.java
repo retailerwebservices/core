@@ -26,7 +26,7 @@ public class LoggingUtil
 	 */
 	public static void updateRootLoggingLevel(Level level)
 	{
-
+		// CODE REVIEW: What if level is null?
 		for (Handler h : Logger.getLogger(ROOT_LOGGER).getHandlers())
 		{
 			h.setLevel(level);
@@ -46,6 +46,7 @@ public class LoggingUtil
 	 */
 	public static void addRootHandler(Handler handler)
 	{
+		// CODE REVIEW: What if handler is null?
 		Logger.getLogger(ROOT_LOGGER).addHandler(handler);
 	}
 
@@ -57,6 +58,8 @@ public class LoggingUtil
 	 */
 	public static void setRootLoggingFormatter(Formatter formatter)
 	{
+		// CODE REVIEW: What if formatter is null?
+		
 		for (Handler h : Logger.getLogger(ROOT_LOGGER).getHandlers())
 		{
 			h.setFormatter(formatter);

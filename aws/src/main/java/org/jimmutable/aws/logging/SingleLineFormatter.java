@@ -7,10 +7,17 @@ import java.util.Date;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
+/**
+ * Code review
+ * 
+ * Class needs javadoc comments
+ * @author kanej
+ *
+ */
 public class SingleLineFormatter extends Formatter
 {
 	private static final String format = "%s %-7s %s %s %s %s\n";
-	private final Date dat = new Date();
+	private final Date dat = new Date(); // CODE REVIEW: dat -> date
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd HH:mm:ss");
 
 	public SingleLineFormatter()
@@ -20,7 +27,7 @@ public class SingleLineFormatter extends Formatter
 
 	public synchronized String format(LogRecord record)
 	{
-
+		// CODE REVEIW: What if record is null?
 		this.dat.setTime(record.getMillis());
 		String source;
 		if (record.getSourceClassName() != null)

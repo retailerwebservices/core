@@ -12,6 +12,16 @@ import java.util.logging.LogRecord;
 
 import org.jimmutable.aws.StartupSingleton;
 
+/**
+ * CODE REVIEW
+ * 
+ * Class needs JavaDoc comments
+ * 
+ * 
+ * @author kanej
+ *
+ */
+
 public class DatedFileHandler extends Handler
 {
 
@@ -27,6 +37,8 @@ public class DatedFileHandler extends Handler
 	@Override
 	public synchronized void publish(LogRecord r)
 	{
+		// CODE REVIEW: What if r is null?
+		 
 		if (isLoggable(r))
 		{
 			FileHandler f;
@@ -57,6 +69,7 @@ public class DatedFileHandler extends Handler
 
 	private String fileName(LogRecord r)
 	{
+		// CODE REVEIEW: What if r is null?
 		date.setTime(r.getMillis());
 		return String.format("%s/%s-%s.log", StartupSingleton.LOG_DIR, StartupSingleton.APP_NAME,
 				FILE_DATE_FORMAT.format(date));
