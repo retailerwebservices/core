@@ -38,7 +38,9 @@ public class GeneralResponseOKTest extends TestCase
 		assert(result.getOptionalMessage(null) == null);
 		
 		result = new GeneralResponseOK("Test Message");
-		assert(result.getOptionalMessage(null).equals("Test Message"));
+		assert(result.getOptionalMessage(null).equals("Test Message")); 
+		
+		// CODE REVIEW: Test an object with no (null) message as well
 	}
 
 	public void testBuilder()
@@ -56,6 +58,8 @@ public class GeneralResponseOKTest extends TestCase
 		
 		builder.set(GeneralResponseOK.FIELD_MESSAGE, "Test Message");
 		builder.create(null);
+		
+		// CODE REVIEW: You need some asserts here to test the builder worked... That being said, we don't generally test the builder out, because its all auotmated... As long as serialization is working, the builder will work
 		
 	}
 	 

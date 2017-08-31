@@ -8,13 +8,19 @@ import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.utils.Comparison;
 
+/**
+ * CODE REVIEW: Needs javadoc comments
+ * @author kanej
+ *
+ */
+
 public class GeneralResponseOK extends JSONServletResponse
 {
 	static public final TypeName TYPE_NAME = new TypeName("jimmutable.aws.servlet_utils.common_objects.GeneralResponseOK"); public TypeName getTypeName() { return TYPE_NAME; }
 	
 	static public final FieldDefinition.String FIELD_MESSAGE = new FieldDefinition.String("message", null);
 
-	static private final int HTTP_STATUS_CODE_OK = 200;
+	static private final int HTTP_STATUS_CODE_OK = 200;  // CODE REVEIW: Put this in JSONServeletResponse as a static public
 	
 	private String message;  // optional
 
@@ -73,6 +79,9 @@ public class GeneralResponseOK extends JSONServletResponse
 
 		GeneralResponseOK other = (GeneralResponseOK) obj;
 
+		// CODE REVIEW: This code can throw a NullPointerException (if, for example, this class does not have  messsage)
+		// Suggest you use Objects.equals instead
+		
 		if (!getOptionalMessage(null).equals(other.getOptionalMessage(null)))
 			return false;
 
