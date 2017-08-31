@@ -1,11 +1,12 @@
-package org.jimmutable.gcloud;
+package org.jimmutable.storage;
+
+
 
 import java.io.ByteArrayInputStream;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.utils.Validator;
 import org.jimmutable.core.objects.common.Kind;
 
-import com.google.appengine.repackaged.com.google.common.primitives.Bytes;
 public abstract class Storage {
 	Storage instance = null;
 	private boolean is_readOnly=false;

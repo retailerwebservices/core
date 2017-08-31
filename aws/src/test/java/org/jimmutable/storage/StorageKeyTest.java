@@ -1,4 +1,4 @@
-package org.jimmutable.gcloud;
+package org.jimmutable.storage;
 
 import junit.framework.TestCase;
 import org.jimmutable.core.objects.common.Kind;

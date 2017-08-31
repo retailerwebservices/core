@@ -1,6 +1,6 @@
-package org.jimmutable.gcloud;
+package org.jimmutable.storage;
 
-import org.jimmutable.core.objects.Stringable;
+
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.serialization.Format;
@@ -13,5 +13,4 @@ public abstract class Storable {
 	public StorageKey createStorageKey() {
 		return new StorageKey(getSimpleKind(), getSimpleObjectId(), StorageKeyExtension.XML);
 	}
-
 }

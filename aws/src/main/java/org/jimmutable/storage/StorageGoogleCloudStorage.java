@@ -1,8 +1,6 @@
-package org.jimmutable.gcloud;
+package org.jimmutable.storage;
 
 import org.jimmutable.core.objects.common.Kind;
-
-import com.google.appengine.repackaged.com.google.common.primitives.Bytes;
 
 public class StorageGoogleCloudStorage extends Storage {
 

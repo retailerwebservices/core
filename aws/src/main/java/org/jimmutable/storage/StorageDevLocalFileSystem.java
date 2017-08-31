@@ -1,21 +1,16 @@
-package org.jimmutable.gcloud;
+package org.jimmutable.storage;
+
+import org.jimmutable.core.objects.common.Kind;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.utils.Validator;
-
-import com.google.appengine.repackaged.com.google.common.io.Files;
-import com.google.appengine.repackaged.com.google.common.primitives.Bytes;
-
-import sun.misc.IOUtils;
 
 public class StorageDevLocalFileSystem extends Storage{
 	
@@ -27,10 +22,10 @@ public class StorageDevLocalFileSystem extends Storage{
 		
 		if ( !ApplicationId.hasOptionalDevApplicationId() )
 		{
-			System.err.println("Hey -- you are trying to instantiate a dev local file system...");
+			System.err.println("Hey -- you are trying to instantiate a dev local file system. This should not be happening in production. If you are a developer and you are trying to run this through eclipse, you need to setup the environment configurations in your ");
 			throw new RuntimeException();
 		}
-		prefix = System.getProperty("user.home")+"/dev/storage/"+ApplicationId.getOptionalDevApplicationId(new ApplicationId("Development"))+"/";		
+		prefix = System.getProperty("user.home")+"/jimmtuable_aws_dev/"+ApplicationId.getOptionalDevApplicationId(new ApplicationId("Development"))+"/";		
 	}
 
 	@Override
