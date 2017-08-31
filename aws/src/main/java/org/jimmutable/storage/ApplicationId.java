@@ -4,15 +4,10 @@ import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
 
 public class ApplicationId extends Stringable{
-	private static String DEV_CURRENT_APPLICATION_ID = null;
+	private static final ApplicationId DEV_CURRENT_APPLICATION_ID = createDevCurrentApplicationId();
 
 	public ApplicationId(String value) {
 		super(value);
-		String devEnvironment = System.getenv("DEV_APPLICATION_ID");
-		if ( devEnvironment != null ) 
-		{
-			DEV_CURRENT_APPLICATION_ID= devEnvironment;
-		}
 	}
 
 	@Override
@@ -27,20 +22,38 @@ public class ApplicationId extends Stringable{
 	{
 		Validator.notNull(getSimpleValue());
 		Validator.min(getSimpleValue().length(), 1);
-		
+		Validator.max(getSimpleValue().length(), 64);
 		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.UNDERSCORE,Validator.LOWERCASE_LETTERS,Validator.NUMBERS);
 
 	}
+	/**
+	 * @param default_value
+	 * @return either the current Application Id for Development or the default_value passed in 
+	 */
 	
-	public static String getOptionalDevApplicationId(ApplicationId default_value) {
+	public static ApplicationId getOptionalDevApplicationId(ApplicationId default_value) {
 		if(DEV_CURRENT_APPLICATION_ID==null) 
 		{
-			return default_value.getSimpleValue();
+			return default_value;
 		}
 		return DEV_CURRENT_APPLICATION_ID;
 	}
 
-	public static boolean hasOptionalDevApplicationId() {
+	/**
+	 * @return true if there is a current Development Application Id else false
+	 */
+	
+	public static boolean hasOptionalDevApplicationId() 
+	{
 		return DEV_CURRENT_APPLICATION_ID!=null;
+	}
+	
+	/**
+	 * @return either the Dev Application Id Environmental Variable or null
+	 */
+	public static ApplicationId createDevCurrentApplicationId() 
+	{
+		String devEnvironment = System.getenv("DEV_APPLICATION_ID");
+		return new ApplicationId(devEnvironment);
 	}
 }
