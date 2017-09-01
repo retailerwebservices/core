@@ -2,7 +2,11 @@ package org.jimmutable.storage;
 
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
-
+/**
+ * @author andrew.towe
+ * This class exists to help us with the handling of Developer vs. Production application. 
+ * Any Developer application will use the OptionalDevApplicationId
+ */
 public class ApplicationId extends Stringable{
 	private static final ApplicationId DEV_CURRENT_APPLICATION_ID = createDevCurrentApplicationId();
 

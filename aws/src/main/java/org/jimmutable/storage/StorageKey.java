@@ -7,7 +7,14 @@ import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.utils.Validator;
 
-
+/**
+ * 
+ * @author andrew.towe
+ *	This class is designed to help us with how we store objects. 
+ *	All storage objects will need a storage key. 
+ *	Keys have three parts to them: the Kind, the Object Id, and the Extension of the storage object.
+ *	
+ */
 public class StorageKey extends Stringable{
 	Kind kind;
 	ObjectId id;
