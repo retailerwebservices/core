@@ -2,7 +2,12 @@ package org.jimmutable.storage;
 
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
-
+/**
+ * 
+ * @author andrew.towe
+ *	This class exists to help us manage the extensions of each of our storable objects. 
+ *	This class handles the mimetypes.
+ */
 public class StorageKeyExtension extends Stringable
 {	
 	public StorageKeyExtension(String value)
