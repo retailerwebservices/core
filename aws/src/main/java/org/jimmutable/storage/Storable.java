@@ -13,11 +13,16 @@ import org.jimmutable.core.serialization.Format;
 
 public abstract class Storable
 {
+	// CODE REVIEW: These methods need javadoc
+	
 	abstract public Kind getSimpleKind();
 	abstract public ObjectId getSimpleObjectId();
 	abstract public String serialize(Format format);
+	
+	// Code review: space this out (I did it for you)
+	
 	public StorageKey createStorageKey()
 	{
-		return new StorageKey(getSimpleKind(), getSimpleObjectId(), "xml");
+		return new StorageKey(getSimpleKind(), getSimpleObjectId(), "xml"); // CODE REVEIW: The third paramater should be StorageKeyExtension, not a string. Since it will be used so much, I suggest creating a static private final StorageKeyExtension XML = new StorageKeyExtension("xml"); in StorageKeyExtension
 	}
 }
