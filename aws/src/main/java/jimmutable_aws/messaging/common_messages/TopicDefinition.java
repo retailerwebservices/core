@@ -6,7 +6,8 @@ import org.jimmutable.storage.ApplicationId;
 
 /**
  * 
- * @author andrew.towe this class is designed to help us Define our Topics.
+ * @author andrew.towe 
+ * this class is designed to help us Define our Topics.
  */
 public class TopicDefinition extends Stringable
 {
