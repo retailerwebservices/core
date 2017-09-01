@@ -15,6 +15,15 @@ import org.jimmutable.core.utils.Validator;
  *	Keys have three parts to them: the Kind, the Object Id, and the Extension of the storage object.
  *	
  */
+
+/**
+ * CODE REVIEW: 
+ * 
+ * Fix your spacing, { go on newlines,
+ * @author kanej
+ *
+ */
+
 public class StorageKey extends Stringable{
 	Kind kind;
 	ObjectId id;
@@ -25,7 +34,7 @@ public class StorageKey extends Stringable{
 	 * Creates a new Storage Key based on the string that is passed in.
 	 * Therefore if the String passed in is "Alpha/123.txt"
 	 * then
-	 * 		the Kind will be "Alpha"
+	 * 		the Kind will be "alph"
 	 * 		the Object Id will be "123"
 	 * 		the extension will be "txt"
 	 */
@@ -42,9 +51,13 @@ public class StorageKey extends Stringable{
 	 * @param extension
 	 * 		the extension of the StorageKey
 	 */
-	public StorageKey(Kind kind, ObjectId objectId, String extension) 
-	{
-		this(checkValidationFirst(kind, objectId, extension));
+	
+	// CODE REVIEW: Our field names are lower case with words separated by _
+	// The extension should be be a StorageKeyExtension object
+	
+	public StorageKey(Kind kind, ObjectId object_id, StorageKeyExtension extension) 
+	{	
+		this(createStringFromComponents(kind, object_id, extension));
 	}
 	/**
 	 * 
@@ -58,9 +71,15 @@ public class StorageKey extends Stringable{
 	 *
 	 * @return if Everything validates it will return a string that concatenates all of the parameters simple values. {alpha,123,"txt"}->"alpha/123.txt"
 	 */
-	private static String checkValidationFirst(Kind kind, ObjectId objectId, String extension) {
-		Validator.notNull(kind,objectId,extension);
-		return String.format("%s/%s.%s", kind.getSimpleValue(),objectId.getSimpleValue(),extension);
+	
+	// CODE REVIEW: Make your method names indicative of what the function does
+	// I fixed your spacing for you
+	// static goes before private
+	
+	static private String createStringFromComponents(Kind kind, ObjectId object_id, StorageKeyExtension extension) 
+	{
+		Validator.notNull(kind,object_id,extension);
+		return String.format("%s/%s.%s", kind.getSimpleValue(), object_id.getSimpleValue(), extension);
 	}
 
 	@Override
@@ -72,12 +91,21 @@ public class StorageKey extends Stringable{
 	@Override
 	public void validate() 
 	{
+		// CODE REVIEW: Space your statements apart
+		// CODE REVIEW: You need to check the return of split.  What if the string does not have a / in it?  Also, your unit test should test things like new StorageKey("foo") which would show this problem...
+		// CODE REVIEW: You can't use File.separator ... on windows the seperator is "\" which will break everything.  Hard code "/" here
+		
 		Validator.notNull(getSimpleValue());
+		
 		String[] breakonslash = getSimpleValue().split(File.separator);
 		kind = new Kind(breakonslash[0]);
+		
 		String[] breakondot = breakonslash[1].split("\\.");
 		id = new ObjectId(breakondot[0]);
+		
 		extension= new StorageKeyExtension(breakondot[1]);
+		
+		// CODE REVIEW: at the end here you need to SET the value.  So something like setValue(createStringFromComponents(getSimpelKind(), getSimpleId(), getSimpleExtension());
 		
 	}
 	/**
@@ -87,6 +115,7 @@ public class StorageKey extends Stringable{
 	/**
 	 * @return The ObjectId associated with the storage Key
 	 */
+	 // CODE REVIEW: The method name should be getSimpleObjectId()
 	 public ObjectId getSimpleId() { return id; }
 	/**
 	 * @return The Extension associated with the storage Key
