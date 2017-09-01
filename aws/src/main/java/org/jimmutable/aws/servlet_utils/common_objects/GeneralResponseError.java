@@ -58,7 +58,16 @@ public class GeneralResponseError extends JSONServletResponse
 
 	@Override
 	public int getSimpleHTTPResponseCode() { return HTTP_STATUS_CODE_ERROR; }
-	public String getOptionalMessage(String default_value) { return message; }  // CODE REVIEW: This implementation is wrong.  It won't return default_value if object is unset
+	public String getOptionalMessage(String default_value) 
+	{ 
+		if( message == null) {
+			return message;
+		}
+		else
+		{
+			return default_value;
+		}
+	}
 
 	@Override
 	public void freeze() {}

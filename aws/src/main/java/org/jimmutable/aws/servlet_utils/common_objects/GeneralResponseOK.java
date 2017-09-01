@@ -7,6 +7,7 @@ import org.jimmutable.core.serialization.TypeName;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.utils.Comparison;
+import org.jimmutable.core.utils.Optional;
 
 /**
  * CODE REVIEW: Needs javadoc comments
@@ -20,7 +21,7 @@ public class GeneralResponseOK extends JSONServletResponse
 	
 	static public final FieldDefinition.String FIELD_MESSAGE = new FieldDefinition.String("message", null);
 
-	static private final int HTTP_STATUS_CODE_OK = 200;  // CODE REVEIW: Put this in JSONServeletResponse as a static public
+	static public final int HTTP_STATUS_CODE_OK = 200;
 	
 	private String message;  // optional
 
@@ -56,7 +57,11 @@ public class GeneralResponseOK extends JSONServletResponse
 
 	@Override
 	public int getSimpleHTTPResponseCode() { return HTTP_STATUS_CODE_OK; }
-	public String getOptionalMessage(String default_value) { return message; }  // CODE REVIEW: This implementation is wrong.  It won't return default_value if object is unset
+	public String getOptionalMessage(String default_value)
+	{ 
+		return Optional.getOptional(message, null, default_value);
+	
+	}
 
 	@Override
 	public void freeze() {}
@@ -78,12 +83,7 @@ public class GeneralResponseOK extends JSONServletResponse
 			return false;
 
 		GeneralResponseOK other = (GeneralResponseOK) obj;
-
-		// CODE REVIEW: This code can throw a NullPointerException (if, for example, this class does not have  messsage)
-		// Suggest you use Objects.equals instead
-		
-		if (!getOptionalMessage(null).equals(other.getOptionalMessage(null)))
-			return false;
+		if ( !Objects.equals(getOptionalMessage(null), other.getOptionalMessage(null)) ) return false;
 
 		return true;
 	}

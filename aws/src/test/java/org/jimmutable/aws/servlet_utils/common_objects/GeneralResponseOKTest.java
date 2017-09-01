@@ -1,6 +1,5 @@
 package org.jimmutable.aws.servlet_utils.common_objects;
 
-import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
@@ -38,29 +37,8 @@ public class GeneralResponseOKTest extends TestCase
 		assert(result.getOptionalMessage(null) == null);
 		
 		result = new GeneralResponseOK("Test Message");
-		assert(result.getOptionalMessage(null).equals("Test Message")); 
-		
-		// CODE REVIEW: Test an object with no (null) message as well
-	}
-
-	public void testBuilder()
-	{
-		Builder builder = new Builder(GeneralResponseOK.TYPE_NAME);
-		
-		try
-		{
-			builder.create(null);
-		}
-		catch(Exception e)
-		{
-			assert(false);
-		}
-		
-		builder.set(GeneralResponseOK.FIELD_MESSAGE, "Test Message");
-		builder.create(null);
-		
-		// CODE REVIEW: You need some asserts here to test the builder worked... That being said, we don't generally test the builder out, because its all auotmated... As long as serialization is working, the builder will work
-		
+		assert(result.getOptionalMessage(null).equals("Test Message"));
+		assert(result.getOptionalMessage("default").equals("Test Message"));
 	}
 	 
 	public void testSerialization()
