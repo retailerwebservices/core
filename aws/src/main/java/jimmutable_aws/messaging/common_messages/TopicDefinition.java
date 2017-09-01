@@ -3,13 +3,16 @@ package jimmutable_aws.messaging.common_messages;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
 import org.jimmutable.storage.ApplicationId;
+
 /**
  * 
- * @author andrew.towe
- * this class is designed to help us Define our Topics. 
+ * @author andrew.towe this class is designed to help us Define our Topics.
  */
 public class TopicDefinition extends Stringable
 {
+
+	private ApplicationId application_id;
+	private TopicId topic_id;
 
 	public TopicDefinition( String value )
 	{
@@ -23,6 +26,7 @@ public class TopicDefinition extends Stringable
 
 	private static String createStringFromComponents( ApplicationId application_id, TopicId topic_id )
 	{
+		Validator.notNull(application_id, topic_id);
 		return application_id.getSimpleValue() + "/" + topic_id.getSimpleValue();
 	}
 
@@ -37,6 +41,22 @@ public class TopicDefinition extends Stringable
 	public void validate()
 	{
 		Validator.notNull(getSimpleValue());
+
+		String[] breakonslash = getSimpleValue().split("/");
+		Validator.min(breakonslash.length, 2);
+		application_id = new ApplicationId(breakonslash[0]);
+		topic_id = new TopicId(breakonslash[1]);
+		
+	}
+
+	public ApplicationId getSimpleApplicationId()
+	{
+		return application_id;
+	}
+
+	public TopicId getSimpleTopicId()
+	{
+		return topic_id;
 	}
 
 }
