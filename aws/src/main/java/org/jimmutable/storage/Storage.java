@@ -1,23 +1,32 @@
 package org.jimmutable.storage;
 
-
-
-import java.io.ByteArrayInputStream;
-import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.utils.Validator;
 import org.jimmutable.core.objects.common.Kind;
 
+/**
+ * 
+ * @author andrew.towe
+ * This class is the parent of our file storage handlers. 
+ * It is designed to handle all updates, insertions, checking of existence, listing of objects, and deletions.
+ */
+
+
 public abstract class Storage {
 	Storage instance = null;
-	private boolean is_readOnly=false;
+	private boolean is_readonly=false;
 	public Storage(boolean is_readOnly) {
-		this.is_readOnly=is_readOnly;
+		this.is_readonly=is_readOnly;
 	}
-	public Storage getSimpleInstance() {
-		if(instance ==null) {
-			if(ApplicationId.hasOptionalDevApplicationId()) {
+	public Storage getSimpleInstance() 
+	{
+		if(instance ==null) 
+		{
+			if(ApplicationId.hasOptionalDevApplicationId()) 
+			{
 				instance = new StorageDevLocalFileSystem(isReadOnly());
-			}else {
+			}
+			else 
+			{
 				instance = new StorageGoogleCloudStorage(isReadOnly());
 			}
 		}
@@ -30,11 +39,13 @@ public abstract class Storage {
 	public abstract boolean delete(StorageKey key);
 	public abstract Iterable<StorageKey> list(Kind kind);
 
-	public boolean upsert(Storable obj) {
+	public boolean upsert(Storable obj) 
+	{
 		Validator.notNull(obj);
 		return upsert(obj.createStorageKey(),null,true);
 	}
-	public boolean exists(Storable obj, boolean default_value) {
+	public boolean exists(Storable obj, boolean default_value) 
+	{
 		if ( obj == null ) return default_value;
 		
 		try
@@ -56,9 +67,9 @@ public abstract class Storage {
 		return delete(obj.createStorageKey());
 	}
 	
-	protected boolean isReadOnly()
+	public boolean isReadOnly()
 	{
-		return is_readOnly;
+		return is_readonly;
 	}
 
 }
