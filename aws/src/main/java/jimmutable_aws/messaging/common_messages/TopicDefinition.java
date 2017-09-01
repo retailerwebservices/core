@@ -30,6 +30,7 @@ public class TopicDefinition extends Stringable
 	public void normalize()
 	{
 		normalizeTrim();
+		normalizeLowerCase();
 	}
 
 	@Override
