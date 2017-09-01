@@ -33,8 +33,10 @@ public class StorageGoogleCloudStorage extends Storage {
 		return false;
 	}
 
+
 	@Override
-	public Iterable<StorageKey> list(Kind kind) {
+	public Iterable<StorageKey> listComplex( Kind kind, Iterable<StorageKey> default_value )
+	{
 		// TODO Auto-generated method stub
 		return null;
 	}

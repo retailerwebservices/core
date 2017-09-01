@@ -109,7 +109,7 @@ public class StorageDevLocalFileSystemTest extends TestCase {
 		sdlfs.upsert(new StorageKey("gamma/4.txt"),"Hello from the other side".getBytes(),false);
 		sdlfs.upsert(new StorageKey("gamma/5.txt"),"Hello from the other side".getBytes(),false);
 		sdlfs.upsert(new StorageKey("gamma/6.txt"),"Hello from the other side".getBytes(),false);
-		Iterable<StorageKey> l =sdlfs.list(new Kind("gamma"));
+		Iterable<StorageKey> l =sdlfs.listComplex(new Kind("gamma"), null);
 		int count = 0;
 		for (StorageKey storageKey : l) 
 		{
