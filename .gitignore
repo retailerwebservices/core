@@ -1,2 +1,3 @@
 base/target/
 core/target/
+app_engine_example/WEB-INF/appengine-generated
