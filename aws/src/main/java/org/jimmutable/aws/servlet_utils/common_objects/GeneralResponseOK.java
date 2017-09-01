@@ -10,38 +10,49 @@ import org.jimmutable.core.utils.Comparison;
 import org.jimmutable.core.utils.Optional;
 
 /**
- * CODE REVIEW: Needs javadoc comments
- * @author kanej
- *
+ * GeneralResponseOK
+ * Used to indicate a successful response to a request. 
+ * 
+ * @author Preston McCumber
+ * @date Sep 1, 2017
  */
 
 public class GeneralResponseOK extends JSONServletResponse
 {
-	static public final TypeName TYPE_NAME = new TypeName("jimmutable.aws.servlet_utils.common_objects.GeneralResponseOK"); public TypeName getTypeName() { return TYPE_NAME; }
-	
+	static public final TypeName TYPE_NAME = new TypeName(
+			"jimmutable.aws.servlet_utils.common_objects.GeneralResponseOK");
+
+	public TypeName getTypeName()
+	{
+		return TYPE_NAME;
+	}
+
 	static public final FieldDefinition.String FIELD_MESSAGE = new FieldDefinition.String("message", null);
 
 	static public final int HTTP_STATUS_CODE_OK = 200;
-	
-	private String message;  // optional
 
-	public GeneralResponseOK() {};
-	
-	public GeneralResponseOK(String message)
+	private String message; // optional
+
+	public GeneralResponseOK()
+	{
+	};
+
+	public GeneralResponseOK( String message )
 	{
 		this.message = message;
 		complete();
 	}
-	
-	public GeneralResponseOK(ObjectParseTree t)
+
+	public GeneralResponseOK( ObjectParseTree t )
 	{
 		this.message = t.getString(FIELD_MESSAGE);
 	}
 
 	@Override
-	public int compareTo(JSONServletResponse obj)
+	public int compareTo( JSONServletResponse obj )
 	{
-		if (!(obj instanceof GeneralResponseOK))	return 0;
+		if ( !(obj instanceof GeneralResponseOK) )
+			return 0;
 
 		GeneralResponseOK other = (GeneralResponseOK) obj;
 		int ret = Comparison.startCompare();
@@ -50,25 +61,37 @@ public class GeneralResponseOK extends JSONServletResponse
 	}
 
 	@Override
-	public void write(ObjectWriter writer)
+	public void write( ObjectWriter writer )
 	{
 		writer.writeString(FIELD_MESSAGE, getOptionalMessage(null));
 	}
 
 	@Override
-	public int getSimpleHTTPResponseCode() { return HTTP_STATUS_CODE_OK; }
-	public String getOptionalMessage(String default_value)
-	{ 
+	public int getSimpleHTTPResponseCode()
+	{
+		return HTTP_STATUS_CODE_OK;
+	}
+
+	public String getOptionalMessage( String default_value )
+	{
 		return Optional.getOptional(message, null, default_value);
-	
+
 	}
 
 	@Override
-	public void freeze() {}
+	public void freeze()
+	{
+	}
+
 	@Override
-	public void normalize() {}
+	public void normalize()
+	{
+	}
+
 	@Override
-	public void validate() {}
+	public void validate()
+	{
+	}
 
 	@Override
 	public int hashCode()
@@ -77,13 +100,14 @@ public class GeneralResponseOK extends JSONServletResponse
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals( Object obj )
 	{
-		if (!(obj instanceof GeneralResponseOK))
+		if ( !(obj instanceof GeneralResponseOK) )
 			return false;
 
 		GeneralResponseOK other = (GeneralResponseOK) obj;
-		if ( !Objects.equals(getOptionalMessage(null), other.getOptionalMessage(null)) ) return false;
+		if ( !Objects.equals(getOptionalMessage(null), other.getOptionalMessage(null)) )
+			return false;
 
 		return true;
 	}

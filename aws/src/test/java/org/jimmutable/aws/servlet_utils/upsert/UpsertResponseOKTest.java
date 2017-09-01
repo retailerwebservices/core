@@ -1,6 +1,5 @@
 package org.jimmutable.aws.servlet_utils.upsert;
 
-import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
@@ -29,8 +28,8 @@ public class UpsertResponseOKTest extends TestCase
 		try
 		{
 			result = new UpsertResponseOK();
-
-		} catch(Exception e) {
+		} catch( Exception e ) 
+		{
 			assert(false);
 		}
 
@@ -40,26 +39,8 @@ public class UpsertResponseOKTest extends TestCase
 		UpsertResponseOK data_object = new UpsertResponseOK();
 		result = new UpsertResponseOK("Test Message", data_object );
 		assert(result.getOptionalMessage(null).equals("Test Message"));
+		assert(result.getOptionalMessage("default").equals("Test Message"));
 		assert(result.getOptionalObject(null) == data_object);
-	}
-
-	public void testBuilder()
-	{
-		Builder builder = new Builder(UpsertResponseOK.TYPE_NAME);
-		
-		try
-		{
-			builder.create(null);
-		}
-		catch(Exception e)
-		{
-			assert(false);
-		}
-		
-		builder.set(UpsertResponseOK.FIELD_MESSAGE, "Test Message");
-		UpsertResponseOK data_object = new UpsertResponseOK();
-		builder.set(UpsertResponseOK.FIELD_OBJECT, data_object);
-		builder.create(null);
 	}
 	 
 	public void testSerialization()

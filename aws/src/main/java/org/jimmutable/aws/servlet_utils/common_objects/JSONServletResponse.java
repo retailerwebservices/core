@@ -3,11 +3,11 @@ package org.jimmutable.aws.servlet_utils.common_objects;
 import org.jimmutable.core.objects.StandardImmutableObject;
 
 /**
- * CODE REVIEW
+ * JSONServletResponse
+ * Abstraction to standardize JSON servlet responses as an immutable object class
  * 
- * Needs javadoc comments
- * @author kanej
- *
+ * @author Preston McCumber
+ * Sep 1, 2017
  */
 
 public abstract class JSONServletResponse extends StandardImmutableObject<JSONServletResponse>

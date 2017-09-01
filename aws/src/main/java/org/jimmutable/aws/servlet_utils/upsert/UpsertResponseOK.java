@@ -12,43 +12,53 @@ import org.jimmutable.core.utils.Comparison;
 import org.jimmutable.core.utils.Optional;
 
 /**
- * Class UpsertResponseOK
+ * UpsertResponseOK
+ * Used to indicate successful response to update/insert request
  * 
  * @author Preston McCumber
- * Aug 31, 2017
+ * @date Sep 1, 2017
  */
-
 public class UpsertResponseOK extends JSONServletResponse
 {
-	static public final TypeName TYPE_NAME = new TypeName("jimmutable.aws.servlet_utils.common_objects.UpsertResponseOK"); public TypeName getTypeName() { return TYPE_NAME; }
-	
-	static public final FieldDefinition.StandardObject FIELD_OBJECT = new FieldDefinition.StandardObject("object", null);
+	static public final TypeName TYPE_NAME = new TypeName(
+			"jimmutable.aws.servlet_utils.common_objects.UpsertResponseOK");
+
+	public TypeName getTypeName()
+	{
+		return TYPE_NAME;
+	}
+
+	static public final FieldDefinition.StandardObject FIELD_OBJECT = new FieldDefinition.StandardObject("object",
+			null);
 	static public final FieldDefinition.String FIELD_MESSAGE = new FieldDefinition.String("message", null);
 
 	static public final int HTTP_STATUS_CODE_OK = 200;
-	
-	private String message;  // optional
+
+	private String message; // optional
 	private StandardImmutableObject object; // optional
-	
-	public UpsertResponseOK() {};
-	
-	public UpsertResponseOK(String message, StandardImmutableObject object)
+
+	public UpsertResponseOK()
+	{
+	};
+
+	public UpsertResponseOK( String message, StandardImmutableObject object )
 	{
 		this.message = message;
 		this.object = object;
 		complete();
 	}
 
-	public UpsertResponseOK(ObjectParseTree t)
+	public UpsertResponseOK( ObjectParseTree t )
 	{
 		this.message = t.getString(FIELD_MESSAGE);
-		this.object = (StandardImmutableObject)t.getObject(FIELD_OBJECT);
+		this.object = (StandardImmutableObject) t.getObject(FIELD_OBJECT);
 	}
-	
+
 	@Override
-	public int compareTo(JSONServletResponse obj)
+	public int compareTo( JSONServletResponse obj )
 	{
-		if ( !(obj instanceof UpsertResponseOK) ) return 0;
+		if ( !(obj instanceof UpsertResponseOK) )
+			return 0;
 
 		UpsertResponseOK other = (UpsertResponseOK) obj;
 		int ret = Comparison.startCompare();
@@ -57,35 +67,46 @@ public class UpsertResponseOK extends JSONServletResponse
 	}
 
 	@Override
-	public void write(ObjectWriter writer)
+	public void write( ObjectWriter writer )
 	{
 		writer.writeString(FIELD_MESSAGE, getOptionalMessage(null));
 	}
 
 	@Override
-	public int getSimpleHTTPResponseCode() { return HTTP_STATUS_CODE_OK; }
-	
+	public int getSimpleHTTPResponseCode()
+	{
+		return HTTP_STATUS_CODE_OK;
+	}
+
 	/**
 	 * 
 	 * @param unset_value
 	 * @return
 	 */
-	public String getOptionalMessage(String default_value) 
-	{ 
+	public String getOptionalMessage( String default_value )
+	{
 		return Optional.getOptional(message, null, default_value);
 	}
-	
-	public StandardImmutableObject getOptionalObject(String default_value) 
+
+	public StandardImmutableObject getOptionalObject( String default_value )
 	{
 		return (StandardImmutableObject) Optional.getOptional(object, null, default_value);
 	}
-	
+
 	@Override
-	public void freeze() {}
+	public void freeze()
+	{
+	}
+
 	@Override
-	public void normalize() {}
+	public void normalize()
+	{
+	}
+
 	@Override
-	public void validate() {}
+	public void validate()
+	{
+	}
 
 	@Override
 	public int hashCode()
@@ -94,14 +115,16 @@ public class UpsertResponseOK extends JSONServletResponse
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals( Object obj )
 	{
-		if (!(obj instanceof UpsertResponseOK))
+		if ( !(obj instanceof UpsertResponseOK) )
 			return false;
 
 		UpsertResponseOK other = (UpsertResponseOK) obj;
-		if ( !Objects.equals(getOptionalMessage(null), other.getOptionalMessage(null)) ) return false;
-		if ( !Objects.equals(getOptionalObject(null), other.getOptionalObject(null)) ) return false;
+		if ( !Objects.equals(getOptionalMessage(null), other.getOptionalMessage(null)) )
+			return false;
+		if ( !Objects.equals(getOptionalObject(null), other.getOptionalObject(null)) )
+			return false;
 
 		return true;
 	}
