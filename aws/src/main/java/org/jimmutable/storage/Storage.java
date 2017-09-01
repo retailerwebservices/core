@@ -22,7 +22,9 @@ public abstract class Storage
 		this.is_readonly = is_readOnly;
 	}
 
-	// CODE REVIEW: this method definitely needs javadoc
+	/**
+	 * @return either an instance of StorageDevLocalFileSystem if on a development application, otherwise will return a StorageGoogleCloudStorage
+	 */
 	public Storage getSimpleInstance()
 	{
 		if ( instance == null )
