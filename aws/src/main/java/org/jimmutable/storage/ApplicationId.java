@@ -7,10 +7,12 @@ import org.jimmutable.core.utils.Validator;
  * This class exists to help us with the handling of Developer vs. Production application. 
  * Any Developer application will use the OptionalDevApplicationId
  */
-public class ApplicationId extends Stringable{
+public class ApplicationId extends Stringable
+{
 	private static final ApplicationId DEV_CURRENT_APPLICATION_ID = createDevCurrentApplicationId();
 
-	public ApplicationId(String value) {
+	public ApplicationId(String value) 
+	{
 		super(value);
 	}
 
@@ -35,8 +37,9 @@ public class ApplicationId extends Stringable{
 	 * @return either the current Application Id for Development or the default_value passed in 
 	 */
 	
-	public static ApplicationId getOptionalDevApplicationId(ApplicationId default_value) {
-		if(DEV_CURRENT_APPLICATION_ID==null) 
+	public static ApplicationId getOptionalDevApplicationId(ApplicationId default_value) 
+	{
+		if ( DEV_CURRENT_APPLICATION_ID == null ) 
 		{
 			return default_value;
 		}

@@ -43,9 +43,17 @@ public class StorageKeyExtension extends Stringable
 	public void normalize() 
 	{
 		Validator.notNull(getSimpleValue());
-		if(getSimpleValue().contains("."))
-		{//we want to strip out any leading ".". so that we do not confuse ourselves. 
-			setValue(getSimpleValue().substring(1));
+		
+		// CODE REVIEW: You can not do this becuase validate has *not* guaranteed that value is null
+		// TRY it out: StorageKeyExtension(null) will throw an NPE here
+		// I have fixed it for you, just remember this
+		
+		if( getSimpleValue() != null )
+		{
+			// we want to strip out any leading ".". so that we do not confuse ourselves. 
+			
+			while( getSimpleValue().startsWith(".") )
+				setValue(getSimpleValue().substring(1));
 		}
 		normalizeLowerCase();
 	}
