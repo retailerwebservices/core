@@ -3,6 +3,7 @@ package org.jimmutable.aws.logging;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 /**
@@ -28,12 +29,13 @@ public class LoggingUtil
 	{
 		if (level != null)
 		{
-			for (Handler h : Logger.getLogger(ROOT_LOGGER).getHandlers())
+			Logger rootLogger = LogManager.getLogManager().getLogger(ROOT_LOGGER);
+			rootLogger.setLevel(level);
+			for (Handler h : rootLogger.getHandlers())
 			{
 				h.setLevel(level);
 			}
 		}
-
 	}
 
 	/**
