@@ -11,6 +11,9 @@ import org.jimmutable.storage.ApplicationId;
  * @author andrew.towe
  * This class exists to help us define our queues and how they relate to the application
  */
+
+//CODE REVIEW: This javadoc is not adequate.  Queues are resources that are owned by an application.  A queue definition defines the application that owns a queue along with the id of the topic
+
 public class QueueDefinition extends Stringable
 {
 	ApplicationId application_id;
@@ -49,6 +52,7 @@ public class QueueDefinition extends Stringable
 		application_id = new ApplicationId(breakonslash[0]);
 		queue_id = new QueueId(breakonslash[1]);
 		
+		// CODE REVIEW: You need to set the value here using createStringFromComponents, test this in unit test
 	}
 
 	public ApplicationId getSimpleApplicationId()
