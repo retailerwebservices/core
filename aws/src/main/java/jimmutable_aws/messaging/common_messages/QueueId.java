@@ -4,12 +4,13 @@ import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.core.utils.Validator;
 /**
- * 
+ * This Class is to help us handle all of our queue items
+ * To make a Queueid, the value must be between 3 and 64 characters. 
+ * Only Alphanumerics and dashes are accepted. All Upper case letters will be made into lower case. 
  * @author andrew.towe
- *	This Class is to help us handle all of our queue items
+ *	
  */
 
-// CODE REVIEW: The javadoc comment for this class is not correct.  This class is a stringable that enforces our limitations on queue id(s)... namely, min of 3 characters, max of 64 characters, a-z, 0-9 and dashes
 
 public class QueueId extends Stringable
 {
@@ -32,8 +33,8 @@ public class QueueId extends Stringable
 		Validator.notNull(getSimpleValue());
 		Validator.min(getSimpleValue().length(), 3);
 		Validator.max(getSimpleValue().length(), 64);
-		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.UNDERSCORE, Validator.LOWERCASE_LETTERS,
-				Validator.NUMBERS); // CODE REVEIW: This is not right.  - are allowed, not _
+		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.DASH, Validator.LOWERCASE_LETTERS,
+				Validator.NUMBERS);
 
 	}
 }
