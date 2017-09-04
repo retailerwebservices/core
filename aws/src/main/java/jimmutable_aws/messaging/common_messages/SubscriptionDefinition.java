@@ -6,11 +6,13 @@ import org.jimmutable.core.utils.Validator;
 import org.jimmutable.storage.ApplicationId;
 
 /**
+ * Subscription Definitions are how we bridge the gap between a topic and a queue and go between applications
+ * Subscriptions have a Topic Definition and a Queue Definition 
+ * 
  * @author andrew.towe
- * This class helps us defind our subscriptions. It is based on topic of the subscription and a queue
  */
 
-//CODE REVIEW: This javadoc is not adequate.  Subscriptions are resources that are *not* owned by an application (subscriptions are frequently between applications).  A subscription definition connects a topic with a queue (hence, it is a pair of topic and queue
+
 
 
 public class SubscriptionDefinition extends Stringable
@@ -51,8 +53,8 @@ public class SubscriptionDefinition extends Stringable
 		Validator.min(breakonslash.length, 4);
 		topic_definition = new TopicDefinition(breakonslash[0] + "/" + breakonslash[1]);
 		queue_definition = new QueueDefinition(breakonslash[2] + "/" + breakonslash[3]);
-
-		// CODE REVEIEW: You need to set the value here with createStringFromComponents.  A good example would be  foo / bar / baz / quz -> foo/bar/baz/quz
+		
+		setValue(createStringFromComponents(topic_definition, queue_definition));
 	}
 
 	public TopicDefinition getSimpleApplicationId()

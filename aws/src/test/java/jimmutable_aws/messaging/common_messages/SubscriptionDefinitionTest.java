@@ -13,5 +13,9 @@ public class SubscriptionDefinitionTest extends TestCase
 				new TopicDefinition(new ApplicationId("Development1"), new TopicId("flight_speed_of_a_swallow")),
 				new QueueDefinition(new ApplicationId("Development2"), new QueueId("123456")));
 		assertEquals("development1/flight_speed_of_a_swallow/development2/123456", subdef.getSimpleValue());
+
+		subdef = new SubscriptionDefinition(new TopicDefinition("Development1/flight_speed_of_a_swallow"),
+				new QueueDefinition("Development2/123456"));
+		assertEquals("development1/flight_speed_of_a_swallow/development2/123456", subdef.getSimpleValue());
 	}
 }
