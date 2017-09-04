@@ -5,12 +5,13 @@ import org.jimmutable.core.utils.Validator;
 import org.jimmutable.storage.ApplicationId;
 
 /**
- * 
+ * Topic's are resources that are owned by an application.  A topic definition defines the application that owns a topic along with the id of the topic
+ * Topic Definitions have 2 components to them, the Application Id and the Topic Id
+ * The Topic Definition is formatted at [ApplicationId/TopicId]
  * @author andrew.towe 
- * this class is designed to help us Define our Topics.
  */
 
-//CODE REVIEW: This javaod is not adequate.  Topic's are resources that are owned by an application.  A topic definition defines the application that owns a topic along with the id of the topic
+
 
 public class TopicDefinition extends Stringable
 {
@@ -51,7 +52,7 @@ public class TopicDefinition extends Stringable
 		application_id = new ApplicationId(breakonslash[0]);
 		topic_id = new TopicId(breakonslash[1]);
 		
-		// CODE REVIEW: You need to set the value here using createStringFromComponents
+		setValue(createStringFromComponents(application_id, topic_id));
 	}
 
 	public ApplicationId getSimpleApplicationId()
