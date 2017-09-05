@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 
@@ -17,7 +18,7 @@ import org.junit.Test;
 public class TestLogging
 {
 
-	private static Logger rootLogger = Logger.getLogger("");
+	private static Logger logger = Logger.getLogger(TestLogging.class.getName());
 	private static OutputStream logCapturingStream;
 	private static StreamHandler customLogHandler;
 
@@ -28,15 +29,13 @@ public class TestLogging
 		// to instantiate the singleton in our main method as well.
 		StartupSingleton.setupOnce();
 
-		// initialize the root logging level
-		// LoggingUtil.updateRootLoggingLevel(Level.INFO);
 		logCapturingStream = new ByteArrayOutputStream();
-		Formatter rootFormatter = rootLogger.getHandlers()[0].getFormatter();
+		Formatter rootFormatter = LogManager.getLogManager().getLogger("").getHandlers()[0].getFormatter();
 
 		assertEquals("org.jimmutable.aws.logging.SingleLineFormatter", rootFormatter.getClass().getName());
 
 		customLogHandler = new StreamHandler(logCapturingStream, rootFormatter);
-		rootLogger.addHandler(customLogHandler);
+		logger.addHandler(customLogHandler);
 	}
 
 	private String getTestCapturedLog()
@@ -46,15 +45,15 @@ public class TestLogging
 	}
 
 	@Test
-	public void testRootLoggingLevel()
+	public void testLoggingLevel()
 	{
 		final String notExpected = "Info 1";
 
 		LoggingUtil.updateRootLoggingLevel(Level.WARNING);
-		rootLogger.info(notExpected); // this should not print
+		logger.info(notExpected); // this should not print
 		LoggingUtil.updateRootLoggingLevel(Level.INFO);
-		rootLogger.info("Info 2");
-		rootLogger.severe("Severe 1");
+		logger.info("Info 2");
+		logger.severe("Severe 1");
 
 		String capturedLog = getTestCapturedLog();
 
@@ -77,7 +76,7 @@ public class TestLogging
 			Integer.parseInt("foggle");
 		} catch (NumberFormatException e)
 		{
-			rootLogger.log(Level.WARNING, "myMessage", e);
+			logger.log(Level.WARNING, "myMessage", e);
 		}
 
 		String capturedLog = getTestCapturedLog();
@@ -90,7 +89,7 @@ public class TestLogging
 	@After
 	public void after()
 	{
-		rootLogger.removeHandler(customLogHandler);
+		logger.removeHandler(customLogHandler);
 	}
 
 }

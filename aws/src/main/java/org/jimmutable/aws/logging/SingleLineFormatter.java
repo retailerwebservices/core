@@ -17,7 +17,7 @@ import java.util.logging.LogRecord;
  */
 public class SingleLineFormatter extends Formatter
 {
-	private static final String format = "%s %-7s %s %s %s %s\n";
+	private static final String format = "%s %-7s %s %s %s\n";
 	private final Date date = new Date();
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd HH:mm:ss");
 
@@ -54,11 +54,10 @@ public class SingleLineFormatter extends Formatter
 				pw.close();
 				throwable = sw.toString();
 			}
-			return String.format(format, dateFormat.format(date), record.getLevel(), source, record.getLoggerName(),
-					message, throwable);
+			return String.format(format, dateFormat.format(date), record.getLevel(), source, message, throwable);
 		}
 		date.setTime(System.currentTimeMillis());
-		return String.format(format, dateFormat.format(date), Level.SEVERE, SingleLineFormatter.class.getName(),
-				"format", "LogRecord is null!", "");
+		return String.format(format, dateFormat.format(date), Level.SEVERE,
+				SingleLineFormatter.class.getName() + " format", "LogRecord is null!", "");
 	}
 }

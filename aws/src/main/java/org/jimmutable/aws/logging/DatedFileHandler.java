@@ -86,7 +86,7 @@ public class DatedFileHandler extends Handler
 		{
 			date.setTime(System.currentTimeMillis());
 		}
-		return String.format("%s/%s-%s.log", StartupSingleton.LOG_DIR, StartupSingleton.APP_NAME,
-				FILE_DATE_FORMAT.format(date));
+		return String.format("%s/%s-%s.log", StartupSingleton.getSimpleLoggingDirectory(),
+				StartupSingleton.getSimpleLoggingFileName(), FILE_DATE_FORMAT.format(date));
 	}
 }
