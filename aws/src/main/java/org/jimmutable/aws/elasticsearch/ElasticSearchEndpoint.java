@@ -15,14 +15,14 @@ public class ElasticSearchEndpoint extends TransientImmutableObject<ElasticSearc
 
 	private String host;
 	private int port;
-	private static final String CURRENT = System.getProperty("elasticsearch.endpoint");
+	private String CURRENT;
 
 	/**
 	 * Sets up the localhost:9200 endpoint
 	 */
 	public ElasticSearchEndpoint()
 	{
-
+		CURRENT = System.getProperty("elasticsearch.endpoint");
 		String tmp_host = null;
 		Integer tmp_port = null;
 
