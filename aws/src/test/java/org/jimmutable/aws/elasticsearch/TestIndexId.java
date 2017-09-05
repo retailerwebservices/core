@@ -1,49 +1,57 @@
 package org.jimmutable.aws.elasticsearch;
 
-import static org.junit.Assert.assertEquals;
+import org.jimmutable.core.objects.Stringable;
 
-import org.jimmutable.core.exceptions.ValidationException;
-import org.junit.Test;
+import org.jimmutable.util.StringableTestOld;
 
-public class TestIndexId
-{
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
-	@Test
-	public void testConverter()
-	{
+public class TestIndexId extends StringableTestOld {
+
+	public TestIndexId(String testName) {
+		super(testName);
+	}
+
+	/**
+	 * @return the suite of tests being tested
+	 */
+	public static Test suite() {
+		return new TestSuite(TestIndexId.class);
+	}
+
+	public void testConverter() {
 		IndexId defaulted = IndexId.CONVERTER.fromString("no.no.no", new IndexId("yes"));
 		assertEquals(defaulted.getSimpleValue(), "yes");
-
 	}
 
-	@Test(expected = ValidationException.class)
-	public void invalidMaxLength()
-	{
+	public void inValid() {
+		assertNotValid(null);
+		assertNotValid("foo/bar");
+		assertNotValid("foo:bar");
+		assertNotValid("");
+		assertNotValid("foo!");
+
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < 65; i++)
-		{
+		for (int i = 0; i < 65; i++) {
 			sb.append('a');
 		}
-		new IndexId(sb.toString());
+
+		assertNotValid(sb.toString());
+
+		assertNotValid("12");
+
 	}
 
-	@Test(expected = ValidationException.class)
-	public void invalidMinLength()
-	{
-		new IndexId("12");
+	public void valid() {
+		assertValid("ABB1924", "abb1924");
+		assertValid("abb1924", "abb1924");
+		assertValid("aBb1924", "abb1924");
 	}
 
-	@Test(expected = ValidationException.class)
-	public void invalidChar()
-	{
-		new IndexId("1.23456");
-	}
-
-	@Test
-	public void valid()
-	{
-		IndexId i = new IndexId("123456");
-		assertEquals("123456", i.getSimpleValue());
+	@Override
+	public Stringable fromString(String src) {
+		return new IndexId(src);
 	}
 
 }
