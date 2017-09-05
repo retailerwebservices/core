@@ -109,11 +109,11 @@ public class QueryStringFragment extends Stringable
 	 */
 	public String getSimpleEncodedValue() { return encoded_value; }
 	
-	static public String URLEncode(String value)
+	static public String URLEncode(String decoded_value)
 	{
 		try
 		{
-			return URLEncoder.encode(value, "UTF-8");
+			return URLEncoder.encode(decoded_value, "UTF-8");
 		}
 		catch(Exception e)
 		{
@@ -121,11 +121,14 @@ public class QueryStringFragment extends Stringable
 		}
 	}
 	
-	static public String URLDecode(String value)
+	/** 
+	 * Decodes a URL encoded 
+	 */
+	static public String URLDecode(String encoded_value)
 	{
 		try
 		{
-			return URLDecoder.decode(value, "UTF-8");
+			return URLDecoder.decode(encoded_value, "UTF-8");
 		}
 		catch(Exception e)
 		{
