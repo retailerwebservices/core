@@ -21,7 +21,7 @@ import org.jimmutable.core.utils.Optional;
 public class UpsertResponseOK extends JSONServletResponse
 {
 	static public final TypeName TYPE_NAME = new TypeName(
-			"jimmutable.aws.servlet_utils.common_objects.UpsertResponseOK");
+			"jimmutable.aws.servlet_utils.upsert.UpsertResponseOK");
 
 	public TypeName getTypeName()
 	{
@@ -63,6 +63,7 @@ public class UpsertResponseOK extends JSONServletResponse
 		UpsertResponseOK other = (UpsertResponseOK) obj;
 		int ret = Comparison.startCompare();
 		ret = Comparison.continueCompare(ret, getOptionalMessage(null), other.getOptionalMessage(null));
+		ret = Comparison.continueCompare(ret, getOptionalObject(null), other.getOptionalObject(null));
 		return ret;
 	}
 
@@ -70,6 +71,7 @@ public class UpsertResponseOK extends JSONServletResponse
 	public void write( ObjectWriter writer )
 	{
 		writer.writeString(FIELD_MESSAGE, getOptionalMessage(null));
+		writer.writeObject(FIELD_OBJECT, getOptionalObject(null));
 	}
 
 	@Override
@@ -78,11 +80,6 @@ public class UpsertResponseOK extends JSONServletResponse
 		return HTTP_STATUS_CODE_OK;
 	}
 
-	/**
-	 * 
-	 * @param unset_value
-	 * @return
-	 */
 	public String getOptionalMessage( String default_value )
 	{
 		return Optional.getOptional(message, null, default_value);

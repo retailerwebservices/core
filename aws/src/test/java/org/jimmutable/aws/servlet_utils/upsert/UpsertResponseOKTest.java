@@ -47,11 +47,11 @@ public class UpsertResponseOKTest extends TestCase
 	{
 		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s"
 			     , "{"
-			     , "  \"type_hint\" : \"jimmutable.aws.servlet_utils.common_objects.UpsertResponseOK\","
+			     , "  \"type_hint\" : \"jimmutable.aws.servlet_utils.upsert.UpsertResponseOK\","
 			     , "  \"message\" : \"Test Message\" ,"
 			     , "  \"object\" : "
 			     , "{"
-			     , "  \"type_hint\" : \"jimmutable.aws.servlet_utils.common_objects.UpsertResponseOK\", "
+			     , "  \"type_hint\" : \"jimmutable.aws.servlet_utils.upsert.UpsertResponseOK\", "
 			     , "   \"message\" : \"Nested test message\" "
 			     , "}"
 			     , "}"

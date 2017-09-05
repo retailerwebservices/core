@@ -33,7 +33,7 @@ public class UpsertResponseValidationErrorTest extends TestCase
 			assert (false);
 		}
 
-		assert (result.getSimpleHTTPResponseCode() == 500);
+		assert (result.getSimpleHTTPResponseCode() == UpsertResponseValidationError.HTTP_STATUS_CODE_ERROR);
 		assert (result.getOptionalErrorMessage(null) == null);
 
 		result = new UpsertResponseValidationError("Test Message", "TestFieldName");
