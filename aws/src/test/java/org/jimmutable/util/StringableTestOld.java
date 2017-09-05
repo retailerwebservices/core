@@ -1,0 +1,34 @@
+package org.jimmutable.util;
+
+import org.jimmutable.core.examples.product_data.BrandCode;
+import org.jimmutable.core.exceptions.ValidationException;
+import org.jimmutable.core.objects.Stringable;
+
+import junit.framework.TestCase;
+
+abstract public class StringableTestOld extends TestCase {
+	abstract public Stringable fromString(String src);
+
+	public StringableTestOld(String testName) {
+		super(testName);
+	}
+
+	public void assertNotValid(String src_code) {
+		try {
+			Stringable test = fromString(src_code);
+			assert (false); // failure, should have not been valid
+		} catch (ValidationException e) {
+			// This is what we expect
+		}
+	}
+
+	public void assertValid(String src_code, String expected_value) {
+		try {
+			Stringable test = fromString(src_code);
+			assertEquals(test.getSimpleValue(), expected_value);
+		} catch (Exception e) {
+			e.printStackTrace();
+			assert (false);
+		}
+	}
+}
