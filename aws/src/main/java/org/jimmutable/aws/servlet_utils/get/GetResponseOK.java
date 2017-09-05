@@ -12,7 +12,7 @@ import org.jimmutable.core.utils.Comparison;
 
 /**
  * GetResponseOK
- * Used to indicate successful response to get request
+ * Used to indicate successful response to GET request
  * 
  * @author Preston McCumber
  * @date Sep 1, 2017
