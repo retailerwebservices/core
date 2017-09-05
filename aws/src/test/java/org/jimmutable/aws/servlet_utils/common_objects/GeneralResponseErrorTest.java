@@ -33,7 +33,7 @@ public class GeneralResponseErrorTest extends TestCase
 			assert (false);
 		}
 
-		assert (result.getSimpleHTTPResponseCode() == 500);
+		assert (result.getSimpleHTTPResponseCode() == GeneralResponseError.HTTP_STATUS_CODE_ERROR);
 		assert (result.getOptionalMessage(null) == null);
 
 		result = new GeneralResponseError("Test Message");
