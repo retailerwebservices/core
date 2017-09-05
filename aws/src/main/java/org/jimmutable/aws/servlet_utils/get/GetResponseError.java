@@ -11,8 +11,8 @@ import org.jimmutable.core.utils.Comparison;
 import org.jimmutable.core.utils.Optional;
 
 /**
- * GetResponseError Used for a standardized immutable object error response to a
- * GET request
+ * GetResponseError Used for a standardized immutable object error response to
+ * a GET request
  * 
  * Message field is optional
  * 
@@ -22,8 +22,7 @@ import org.jimmutable.core.utils.Optional;
 
 public class GetResponseError extends JSONServletResponse
 {
-	static public final TypeName TYPE_NAME = new TypeName(
-			"jimmutable.aws.servlet_utils.get.GetResponseError");
+	static public final TypeName TYPE_NAME = new TypeName("jimmutable.aws.servlet_utils.get.GetResponseError");
 
 	public TypeName getTypeName()
 	{
