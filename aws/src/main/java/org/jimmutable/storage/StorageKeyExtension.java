@@ -11,6 +11,7 @@ import org.jimmutable.core.utils.Validator;
 public class StorageKeyExtension extends Stringable
 {
 	public static StorageKeyExtension XML = new StorageKeyExtension("xml");
+	public static StorageKeyExtension JSON = new StorageKeyExtension("json");
 
 	public StorageKeyExtension( String value )
 	{
