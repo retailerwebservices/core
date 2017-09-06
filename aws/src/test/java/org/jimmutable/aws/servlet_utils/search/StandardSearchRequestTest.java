@@ -35,11 +35,14 @@ public class StandardSearchRequestTest extends TestCase
 			assert (false);
 		}
 
-		result = new StandardSearchRequest("Test Query 2", 0, 0);
+		result = new StandardSearchRequest("Test Query 2");
 		assert (result.getSimpleQueryString().equals("Test Query 2"));
 		assert (result.getSimpleMaxResults() == StandardSearchRequest.DEFAULT_MAX_RESULTS);
 		assert (result.getSimpleStartResultsAfter() == StandardSearchRequest.DEFAULT_START_RESULTS_AFTER);
 		
+		result = new StandardSearchRequest("Test Query 3", 0, 0);
+		assert (result.getSimpleMaxResults() == 0);
+		assert (result.getSimpleStartResultsAfter() == 0);
 	}
 
 	public void testSerialization()

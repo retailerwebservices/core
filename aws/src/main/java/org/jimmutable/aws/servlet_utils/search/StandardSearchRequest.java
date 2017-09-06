@@ -8,10 +8,11 @@ import org.jimmutable.core.serialization.TypeName;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.utils.Comparison;
+import org.jimmutable.core.utils.Validator;
 
-// TODO: update class description
 /**
  * StandardSearchRequest 
+ * Container for passing general search information
  * 
  * @author Preston McCumber
  * @date Sep 5, 2017
@@ -29,7 +30,7 @@ public class StandardSearchRequest extends StandardImmutableObject<StandardSearc
 	static public int DEFAULT_MAX_RESULTS = 100;
 	static public int DEFAULT_START_RESULTS_AFTER = 0;
 
-	static public final FieldDefinition.String FIELD_QUERY_STRING = new FieldDefinition.String("query", null);
+	static public final FieldDefinition.String FIELD_QUERY_STRING = new FieldDefinition.String("query", "");
 	static public final FieldDefinition.Integer FIELD_MAX_RESULTS = new FieldDefinition.Integer("max_results",
 			DEFAULT_MAX_RESULTS);
 	static public final FieldDefinition.Integer FIELD_START_RESULTS_AFTER = new FieldDefinition.Integer(
@@ -49,24 +50,15 @@ public class StandardSearchRequest extends StandardImmutableObject<StandardSearc
 	public StandardSearchRequest( String query_string, int max_results, int start_results_after )
 	{
 		this.query_string = query_string;
-
-		if ( max_results != 0 )
-		{
-			this.max_results = max_results;
-		} else
-		{
-			this.max_results = DEFAULT_MAX_RESULTS;
-		}
-		
-		if ( start_results_after != 0 )
-		{
-			this.start_results_after = start_results_after;
-		} else
-		{
-			this.start_results_after = DEFAULT_START_RESULTS_AFTER;
-		}
+		this.max_results = max_results;
+		this.start_results_after = start_results_after;
 		
 		complete();
+	}
+	
+	public StandardSearchRequest( String query_string )
+	{
+		this(query_string, DEFAULT_MAX_RESULTS, DEFAULT_START_RESULTS_AFTER );
 	}
 
 	public String getSimpleQueryString()
@@ -116,6 +108,7 @@ public class StandardSearchRequest extends StandardImmutableObject<StandardSearc
 	@Override
 	public void validate()
 	{
+		Validator.notNull(query_string);
 	}
 
 	@Override
