@@ -1,15 +1,10 @@
 package org.jimmutable.storage;
 
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.Comparator;
-
-import javax.imageio.ImageIO;
 
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.storage.ApplicationId;
