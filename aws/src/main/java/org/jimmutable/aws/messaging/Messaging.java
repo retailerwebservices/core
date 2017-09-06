@@ -1,4 +1,4 @@
-package jimmutable_aws.messaging.common_messages;
+package org.jimmutable.aws.messaging;
 
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.storage.ApplicationId;
@@ -37,14 +37,13 @@ public abstract class Messaging
 	 * 
 	 * @param topic that you want the message to be sent to 
 	 * @param message the object you want sent
-	 * @return true is sending message succeeded, false otherwise. 
+	 * @return true if sending message succeeded, false otherwise. 
 	 */
 
 	abstract public boolean sendAsync( TopicDefinition topic, StandardImmutableObject message );
 	
 	/**
-	 * 
-	 * This method will begin listeining for messages
+	 * This method will begin listening for messages
 	 * This method will not create any duplicate Listeners
 	 * Can be very slow, you should call this method very infrequently
 	 * 

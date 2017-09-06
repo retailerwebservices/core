@@ -1,4 +1,4 @@
-package jimmutable_aws.messaging.common_messages;
+package org.jimmutable.aws.messaging;
 
 import java.util.Objects;
 
@@ -19,7 +19,7 @@ import org.jimmutable.core.utils.Validator;
  * @author kanej
  *
  */
-public class StandardMessageOnUpsert extends StandardImmutableObject<StandardMessageOnUpsert>
+public class StandardMessageOnUpsert extends StandardImmutableObject<StandardMessageOnUpsert> 
 {
 	static public final TypeName TYPE_NAME = new TypeName("jimmutable.gcloud.StandardMessageOnUpsert"); public TypeName getTypeName() { return TYPE_NAME; }
 	

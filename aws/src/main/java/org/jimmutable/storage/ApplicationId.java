@@ -61,6 +61,9 @@ public class ApplicationId extends Stringable
 	public static ApplicationId createDevCurrentApplicationId() 
 	{
 		String devEnvironment = System.getenv("DEV_APPLICATION_ID");
+		if(devEnvironment==null) {
+			return null;
+		}
 		return new ApplicationId(devEnvironment);
 	}
 }

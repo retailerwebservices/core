@@ -1,4 +1,4 @@
-package jimmutable_aws.messaging.common_messages;
+package org.jimmutable.aws.messaging;
 
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;

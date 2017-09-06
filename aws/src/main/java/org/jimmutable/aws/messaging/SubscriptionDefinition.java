@@ -1,4 +1,4 @@
-package jimmutable_aws.messaging.common_messages;
+package org.jimmutable.aws.messaging;
 
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
@@ -62,7 +62,11 @@ public class SubscriptionDefinition extends Stringable
 		return topic_definition;
 	}
 
-	public QueueDefinition getSimpleTopicId()
+	public TopicDefinition getSimpleTopicId()
+	{
+		return topic_definition;
+	}
+	public QueueDefinition getSimpleQueueId()
 	{
 		return queue_definition;
 	}
