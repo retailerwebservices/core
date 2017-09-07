@@ -86,18 +86,14 @@ public class MessagingDevLocalFileSystem extends Messaging
 	@Override
 	public boolean startListening( SubscriptionDefinition subscription, MessageListener listener )
 	{
-		File subscription_path = new File(root.getAbsolutePath() + "/" + subscription.getSimpleTopicId().getSimpleValue());
+		File subscription_path = new File(root.getAbsolutePath() + "/" + subscription.getSimpleValue());
 		if ( !subscription_path.exists() )
 		{
 			subscription_path.mkdirs();
 		}
-		for ( File dir : subscription_path.listFiles() )
-		{
-			for ( File sub_dir : dir.listFiles() )
-			{
-				new Thread(new ListenForMessageRunnable(sub_dir, listener)).start();
-			}
-		}
+		
+		new Thread(new ListenForMessageRunnable(subscription_path, listener)).start();
+		
 		return true;
 	}
 
@@ -188,8 +184,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 			try
 			{
 				WatchService watcher = my_dir.getFileSystem().newWatchService();
-				my_dir.register(watcher, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY);
-
+				my_dir.register(watcher, StandardWatchEventKinds.ENTRY_CREATE);
 				WatchKey watckKey = watcher.take();
 
 				List<WatchEvent<?>> events = watckKey.pollEvents();

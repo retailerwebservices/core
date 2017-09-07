@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Random;
 
@@ -51,7 +50,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 		}
 
 		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("Knights_in_Monty_Python")), new QueueId("NIII")));
-		Thread.sleep(1000);// have it wait a second
+		Thread.sleep(10);// have it wait a blip
 
 		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
 		{
@@ -96,33 +95,25 @@ public class MessageDevLocalFileSystemTest extends TestCase
 
 	public static void testStartListening() throws InterruptedException
 	{
-		String mainpath = System.getProperty("user.home") + "/jimmtuable_aws_dev/" + ApplicationId.getOptionalDevApplicationId(appId) + "/messaging/development/monty_python_jokes";
-		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
-		{
-			for ( String queue_queue_id : Arrays.asList("queue1", "queue2") )
-			{
-				String filepath = mainpath + "/" + queue_application_id + "/" + queue_queue_id;
-				File f = new File(filepath);
-				f.mkdirs();
-			}
-		}
+		String mainpath = System.getProperty("user.home") + "/jimmtuable_aws_dev/" + ApplicationId.getOptionalDevApplicationId(appId) + "/messaging/development/monty_python_jokes/development/the-holy-grail";
 		TestMessageListener listener = new TestMessageListener();
+
+		// start listening with the listener that we want to listen with
 		assertTrue(messagingdevlocalfilesystem.startListening(new SubscriptionDefinition(new TopicDefinition(appId, new TopicId("monty_python_jokes")), new QueueDefinition(appId, new QueueId("the-holy-grail"))), listener));
-		Thread.sleep(30000);// have it wait a minute so we can setup the
+		Thread.sleep(4500);// have it wait a minute so we can setup the listener
+
+		// send the message
 		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty_python_jokes")), new QueueId("the-holy-grail")));
-		Thread.sleep(60000);// have it wait a minute so it can detect changes.
+		Thread.sleep(6000);// have it wait a minute so it can detect changes.
+
+		// make sure that the listener picked up the message
 		assertTrue(listener.messageDetected);
 		assertEquals("the-holy-grail", new String(listener.messageContent));
 
-		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
-		{
-			for ( String queue_queue_id : Arrays.asList("queue1", "queue2") )
-			{
-				String filepath = mainpath + "/" + queue_application_id + "/" + queue_queue_id;
-				File f = new File(filepath);
-				assertEquals(0, f.listFiles().length);
-			}
-		}
+		// make sure we deleted the message after we heard it. 
+		File f = new File(mainpath);
+		assertEquals(0, f.listFiles().length);
+
 	}
 
 	public static void testSendAllAndShutdown() throws InterruptedException
@@ -143,29 +134,29 @@ public class MessageDevLocalFileSystemTest extends TestCase
 			messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty_python_jokes")), new QueueId("" + r.nextInt()));// putting in a bunch of random information
 		}
 		messagingdevlocalfilesystem.sendAllAndShutdown();
-		int[] initialResults=new int[4];
-		int i=0;
+		int[] initialResults = new int[4];
+		int i = 0;
 		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
 		{
 			for ( String queue_queue_id : Arrays.asList("queue1", "queue2") )
 			{
 				String filepath = mainpath + "/" + queue_application_id + "/" + queue_queue_id;
 				File f = new File(filepath);
-				initialResults[i++]=f.listFiles().length;
+				initialResults[i++] = f.listFiles().length;
 			}
 		}
-		Thread.sleep(60000);
-		i=0;
+		Thread.sleep(1);//have it wait a millisecond to let things catchup
+		i = 0;
 		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
 		{
 			for ( String queue_queue_id : Arrays.asList("queue1", "queue2") )
 			{
 				String filepath = mainpath + "/" + queue_application_id + "/" + queue_queue_id;
 				File f = new File(filepath);
-				assertTrue(initialResults[i++]<f.listFiles().length);
+				assertTrue(initialResults[i++] < f.listFiles().length);
 			}
 		}
-		
+
 	}
 
 	@Override
