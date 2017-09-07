@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.jimmutable.aws.messaging.MessageListener;
 import org.jimmutable.aws.messaging.MessageStandardObject;
@@ -129,7 +130,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 			}
 		}
 		Random r = new Random();
-		for ( int i = 0; i < 100; i++ )
+		for ( int i = 0; i < 10; i++ )
 		{
 			messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty_python_jokes")), new QueueId("" + r.nextInt()));// putting in a bunch of random information
 		}
@@ -145,7 +146,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 				initialResults[i++] = f.listFiles().length;
 			}
 		}
-		Thread.sleep(1);//have it wait a millisecond to let things catchup
+		Thread.sleep(10);//have it wait a millisecond to let things catchup
 		i = 0;
 		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
 		{
@@ -156,7 +157,17 @@ public class MessageDevLocalFileSystemTest extends TestCase
 				assertTrue(initialResults[i++] < f.listFiles().length);
 			}
 		}
-
+		
+		//try to send messages after shutdown
+		boolean error_thrown=false;
+		try 
+		{
+			messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty_python_jokes")), new QueueId("" + r.nextInt()));// putting in a bunch of random information
+		}
+		catch(RejectedExecutionException e) {
+			error_thrown=true;
+		}
+		assertTrue(error_thrown);
 	}
 
 	@Override
