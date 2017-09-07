@@ -167,7 +167,7 @@ public class SearchResponseOK extends JSONServletResponse
 	}
 
 	@Override
-	public void normalize() /* */
+	public void normalize()
 	{
 		if ( start_of_next_page_of_results == 0 )
 		{
