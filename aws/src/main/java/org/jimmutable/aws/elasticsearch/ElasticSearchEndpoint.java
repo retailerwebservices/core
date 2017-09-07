@@ -8,6 +8,12 @@ import org.jimmutable.core.objects.TransientImmutableObject;
 import org.jimmutable.core.utils.Comparison;
 import org.jimmutable.core.utils.Validator;
 
+/**
+ * A host and port for Elasticsearch
+ * 
+ * @author trevorbox
+ *
+ */
 public class ElasticSearchEndpoint extends TransientImmutableObject<ElasticSearchEndpoint>
 {
 
@@ -26,24 +32,19 @@ public class ElasticSearchEndpoint extends TransientImmutableObject<ElasticSearc
 		String tmp_host = null;
 		Integer tmp_port = null;
 
-		if (CURRENT != null)
-		{
+		if (CURRENT != null) {
 			String[] host_port = CURRENT.split(":", -1);
-			if (host_port.length == 2)
-			{
+			if (host_port.length == 2) {
 				tmp_host = host_port[0];
-				try
-				{
+				try {
 					tmp_port = Integer.parseInt(host_port[1]);
-				} catch (NumberFormatException e)
-				{
+				} catch (NumberFormatException e) {
 					logger.log(Level.SEVERE, "Port is not a valid integer", e);
 				}
 			}
 		}
 
-		if (tmp_host == null || tmp_host.isEmpty() || tmp_port == null)
-		{
+		if (tmp_host == null || tmp_host.isEmpty() || tmp_port == null) {
 			tmp_host = "localhost";
 			tmp_port = 9200;
 		}
@@ -105,12 +106,10 @@ public class ElasticSearchEndpoint extends TransientImmutableObject<ElasticSearc
 
 		ElasticSearchEndpoint other = (ElasticSearchEndpoint) obj;
 
-		if (!this.getSimpleHost().equals(other.getSimpleHost()))
-		{
+		if (!this.getSimpleHost().equals(other.getSimpleHost())) {
 			return false;
 		}
-		if (this.getSimplePort() != other.getSimplePort())
-		{
+		if (this.getSimplePort() != other.getSimplePort()) {
 			return false;
 		}
 

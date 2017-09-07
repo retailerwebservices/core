@@ -17,7 +17,7 @@ import org.jimmutable.core.utils.Comparison;
 import org.jimmutable.core.utils.Validator;
 
 /**
- * An Index and its fields
+ * A search Index and its fields
  * 
  * @author trevorbox
  *
