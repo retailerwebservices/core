@@ -127,6 +127,7 @@ public class SearchResponseOKTest extends TestCase
 			);
 		
 		SearchResponseOK obj = (SearchResponseOK) StandardObject.deserialize(obj_string);
+		assert (obj.getSimpleSearchRequest().getSimpleQueryString().equals("TestSearchRequest"));
 		assert (obj.getSimpleFirstResultIdx() == 1);
 		assert (obj.getSimpleHasMoreResults() == true);
 		assert (obj.getSimpleHasPreviousResults() == true);

@@ -12,7 +12,6 @@ import org.jimmutable.core.serialization.reader.ReadAs;
 import org.jimmutable.core.serialization.reader.ObjectParseTree.OnError;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.serialization.writer.WriteAs;
-import org.jimmutable.core.serialization.writer.WriteAs.MapWriteAs;
 import org.jimmutable.core.utils.Comparison;
 import org.jimmutable.core.utils.Validator;
 
@@ -112,7 +111,7 @@ public class SearchResponseOK extends JSONServletResponse
 	public void write( ObjectWriter writer )
 	{
 		writer.writeObject(FIELD_SEARCH_REQUEST, getSimpleSearchRequest());
-		writer.writeCollection(FIELD_RESULTS, getSimpleResults(), MapWriteAs.OBJECT);
+		writer.writeCollection(FIELD_RESULTS, getSimpleResults(), WriteAs.OBJECT);
 		writer.writeInt(FIELD_FIRST_RESULT_IDX, getSimpleFirstResultIdx());
 		writer.writeBoolean(FIELD_HAS_MORE_RESULTS, getSimpleHasMoreResults());
 		writer.writeBoolean(FIELD_HAS_PREVIOUS_RESULTS, getSimpleHasPreviousResults());
@@ -185,8 +184,7 @@ public class SearchResponseOK extends JSONServletResponse
 	public void validate()
 	{
 		Validator.notNull(search_request);
-		// Validator.notNull(results);
-
+		Validator.notNull(results);
 	}
 
 	@Override
@@ -207,8 +205,8 @@ public class SearchResponseOK extends JSONServletResponse
 		if ( !Objects.equals(getSimpleSearchRequest(), other.getSimpleSearchRequest()) )
 			return false;
 
-		// if ( !Objects.equals(getSimpleResults(), other.getSimpleResults()) )
-		// return false;
+		 if ( !Objects.equals(getSimpleResults(), other.getSimpleResults()) )
+			return false;
 
 		if ( getSimpleFirstResultIdx() != other.getSimpleFirstResultIdx() )
 			return false;
