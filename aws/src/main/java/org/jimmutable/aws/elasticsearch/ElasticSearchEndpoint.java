@@ -24,7 +24,7 @@ public class ElasticSearchEndpoint extends TransientImmutableObject<ElasticSearc
 	private String CURRENT;
 
 	/**
-	 * defaults to localhost:9200 if environment variable is unset or invalid
+	 * defaults to localhost:9300 if environment variable is unset or invalid
 	 */
 	public ElasticSearchEndpoint()
 	{
@@ -46,7 +46,7 @@ public class ElasticSearchEndpoint extends TransientImmutableObject<ElasticSearc
 
 		if (tmp_host == null || tmp_host.isEmpty() || tmp_port == null) {
 			tmp_host = "localhost";
-			tmp_port = 9200;
+			tmp_port = 9300;
 		}
 
 		this.host = tmp_host;

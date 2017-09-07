@@ -16,9 +16,11 @@ public class IndexDefinition extends Stringable
 
 	public static final MyConverter CONVERTER = new MyConverter();
 
+	private static final String SEPARATOR = "_";
+
 	public IndexDefinition(ApplicationId applicationId, IndexId indexId)
 	{
-		super(String.format("%s/%s", applicationId.getSimpleValue(), indexId.getSimpleValue()));
+		super(String.format("%s%s%s", applicationId.getSimpleValue(), SEPARATOR, indexId.getSimpleValue()));
 	}
 
 	public IndexDefinition(String value)
@@ -38,11 +40,11 @@ public class IndexDefinition extends Stringable
 
 		Validator.notNull(super.getSimpleValue());
 
-		String[] values = super.getSimpleValue().split("\\/");
+		String[] values = super.getSimpleValue().split(SEPARATOR);
 
 		if (values.length != 2) {
 			throw new ValidationException(
-					String.format("Expected the format applicationId/indexId but the definition was set to %s",
+					String.format("Expected the format applicationId_indexId but the definition was set to %s",
 							super.getSimpleValue()));
 		}
 

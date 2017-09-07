@@ -14,6 +14,7 @@ public class TestIndexDefinition extends StringableTest
 		assertNotValid("foo:bar");
 		assertNotValid("");
 		assertNotValid("foo!");
+		assertNotValid("foo/bar");
 
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < 65; i++) {
@@ -29,7 +30,7 @@ public class TestIndexDefinition extends StringableTest
 	@Test
 	public void valid()
 	{
-		assertValid("foo/bar", "foo/bar");
+		assertValid("foo_bar", "foo_bar");
 	}
 
 	@Override
