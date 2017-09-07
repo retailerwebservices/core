@@ -111,7 +111,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 		assertTrue(listener.messageDetected);
 		assertEquals("the-holy-grail", new String(listener.messageContent));
 
-		// make sure we deleted the message after we heard it. 
+		// make sure we deleted the message after we heard it.
 		File f = new File(mainpath);
 		assertEquals(0, f.listFiles().length);
 
@@ -146,7 +146,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 				initialResults[i++] = f.listFiles().length;
 			}
 		}
-		Thread.sleep(10);//have it wait a millisecond to let things catchup
+		Thread.sleep(10);// have it wait a millisecond to let things catchup
 		i = 0;
 		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
 		{
@@ -157,15 +157,16 @@ public class MessageDevLocalFileSystemTest extends TestCase
 				assertTrue(initialResults[i++] < f.listFiles().length);
 			}
 		}
-		
-		//try to send messages after shutdown
-		boolean error_thrown=false;
-		try 
+
+		// try to send messages after shutdown
+		boolean error_thrown = false;
+		try
 		{
 			messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty_python_jokes")), new QueueId("" + r.nextInt()));// putting in a bunch of random information
 		}
-		catch(RejectedExecutionException e) {
-			error_thrown=true;
+		catch ( RejectedExecutionException e )
+		{
+			error_thrown = true;
 		}
 		assertTrue(error_thrown);
 	}
