@@ -27,7 +27,8 @@ public class StartupSingleton
 	private static final String system_property_logging_level = "logging.level";
 
 	// default
-	private static String LOG_DIR = String.format("%s%slogs", System.getProperty("user.home"), File.separator);
+	private static String LOG_DIR = String.format("%s%s%s%slogs", System.getProperty("user.home"), File.separator,
+			"jummutable_aws_dev", File.separator);
 	// default
 	private static String FILE_NAME = "application.name";
 	// default
@@ -81,42 +82,33 @@ public class StartupSingleton
 	 */
 	public static void setupOnce()
 	{
-		if (instance == null)
-		{
+		if (instance == null) {
 			instance = new StartupSingleton();
 
 			String log_dir = System.getProperty(system_property_logging_dir);
-			if (log_dir != null)
-			{
+			if (log_dir != null) {
 				LOG_DIR = log_dir;
 			}
 
 			String file_name = System.getProperty(system_property_logging_file_name);
-			if (file_name != null)
-			{
+			if (file_name != null) {
 				FILE_NAME = file_name;
 			}
 
 			String log_level = System.getProperty(system_property_logging_level);
-			if (log_level != null)
-			{
-				try
-				{
+			if (log_level != null) {
+				try {
 					LOG_LEVEL = Level.parse(log_level);
-				} catch (IllegalArgumentException e)
-				{
+				} catch (IllegalArgumentException e) {
 					logger.log(Level.WARNING, String.format("Failed to parse the log level %s", log_level), e);
 				}
 			}
 
 			File dir = new File(LOG_DIR);
-			if (!dir.exists())
-			{
-				try
-				{
-					dir.mkdir();
-				} catch (Exception e)
-				{
+			if (!dir.exists()) {
+				try {
+					dir.mkdirs();
+				} catch (Exception e) {
 					logger.log(Level.SEVERE, String.format("Failed to create logs dir %s", LOG_DIR), e);
 				}
 			}

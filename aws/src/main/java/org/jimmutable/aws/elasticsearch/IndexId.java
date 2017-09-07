@@ -1,9 +1,14 @@
 package org.jimmutable.aws.elasticsearch;
 
-import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
 
+/**
+ * The search index id
+ * 
+ * @author trevorbox
+ *
+ */
 public class IndexId extends Stringable
 {
 
@@ -28,20 +33,8 @@ public class IndexId extends Stringable
 		Validator.min(super.getSimpleValue().length(), 3);
 		Validator.max(super.getSimpleValue().length(), 64);
 
-		char chars[] = getSimpleValue().toCharArray();
-		for (char ch : chars)
-		{
-			if (ch >= 'a' && ch <= 'z')
-				continue;
-			if (ch >= '0' && ch <= '9')
-				continue;
-			if (ch == '-')
-				continue;
-
-			throw new ValidationException(String.format(
-					"Illegal character \'%c\' in %s.  Only lower case letters, numbers, and dashed are allowed", ch,
-					super.getSimpleValue()));
-		}
+		Validator.containsOnlyValidCharacters(super.getSimpleValue(), Validator.LOWERCASE_LETTERS, Validator.DASH,
+				Validator.NUMBERS);
 
 	}
 
@@ -49,11 +42,9 @@ public class IndexId extends Stringable
 	{
 		public IndexId fromString(String str, IndexId default_value)
 		{
-			try
-			{
+			try {
 				return new IndexId(str);
-			} catch (Exception e)
-			{
+			} catch (Exception e) {
 				return default_value;
 			}
 		}

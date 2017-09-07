@@ -1,27 +1,16 @@
 package org.jimmutable.aws.elasticsearch;
 
 import org.jimmutable.core.objects.Stringable;
-
 import org.jimmutable.util.StringableTest;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-
-public class TestIndexId extends StringableTest
+public class TestIndexDefinition extends StringableTest
 {
-
-	@Test
-	public void testConverter()
-	{
-		IndexId defaulted = IndexId.CONVERTER.fromString("no.no.no", new IndexId("yes"));
-		assertEquals(defaulted.getSimpleValue(), "yes");
-	}
 
 	@Test
 	public void inValid()
 	{
 		assertNotValid(null);
-		assertNotValid("foo/bar");
 		assertNotValid("foo:bar");
 		assertNotValid("");
 		assertNotValid("foo!");
@@ -31,7 +20,7 @@ public class TestIndexId extends StringableTest
 			sb.append('a');
 		}
 
-		assertNotValid(sb.toString());
+		assertNotValid(sb.append("/").append("theindexId").toString());
 
 		assertNotValid("12");
 
@@ -40,15 +29,13 @@ public class TestIndexId extends StringableTest
 	@Test
 	public void valid()
 	{
-		assertValid("ABB1924", "abb1924");
-		assertValid("abb1924", "abb1924");
-		assertValid("aBb1924", "abb1924");
+		assertValid("foo/bar", "foo/bar");
 	}
 
 	@Override
 	public Stringable fromString(String src)
 	{
-		return new IndexId(src);
+		return new IndexDefinition(src);
 	}
 
 }

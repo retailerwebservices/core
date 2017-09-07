@@ -9,59 +9,52 @@ import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 
 import org.jimmutable.aws.StartupSingleton;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-import junit.extensions.TestSetup;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-public class TestLogging extends TestCase {
+public class TestLogging
+{
 
 	private static Logger logger = Logger.getLogger(TestLogging.class.getName());
 	private static OutputStream logCapturingStream;
 	private static StreamHandler customLogHandler;
 
-	/**
-	 * Create the test case
-	 *
-	 * @param testName
-	 *            name of the test case
-	 */
-	public TestLogging(String testName) {
-		super(testName);
+	@Before
+	public void setUp()
+	{
+		// This loads the LoggingUtil class to setup logging how we want. We will need
+		// to instantiate the singleton in our main method as well.
+		StartupSingleton.setupOnce();
+
+		logCapturingStream = new ByteArrayOutputStream();
+		Formatter rootFormatter = LogManager.getLogManager().getLogger("").getHandlers()[0].getFormatter();
+
+		assertEquals("org.jimmutable.aws.logging.SingleLineFormatter", rootFormatter.getClass().getName());
+
+		customLogHandler = new StreamHandler(logCapturingStream, rootFormatter);
+		logger.addHandler(customLogHandler);
 	}
 
-	/**
-	 * @return the suite of tests being tested
-	 */
-	public static Test suite() {
-		return new TestSetup(new TestSuite(TestLogging.class)) {
-			protected void setUp() throws Exception {
-				// This loads the LoggingUtil class to setup logging how we want. We will need
-				// to instantiate the singleton in our main method as well.
-				StartupSingleton.setupOnce();
-
-				logCapturingStream = new ByteArrayOutputStream();
-				Formatter rootFormatter = LogManager.getLogManager().getLogger("").getHandlers()[0].getFormatter();
-
-				assertEquals("org.jimmutable.aws.logging.SingleLineFormatter", rootFormatter.getClass().getName());
-
-				customLogHandler = new StreamHandler(logCapturingStream, rootFormatter);
-				logger.addHandler(customLogHandler);
-			}
-
-			protected void tearDown() throws Exception {
-				logger.removeHandler(customLogHandler);
-			}
-		};
+	@After
+	public void tearDown()
+	{
+		logger.removeHandler(customLogHandler);
 	}
 
-	private String getTestCapturedLog() {
+	private String getTestCapturedLog()
+	{
 		customLogHandler.flush();
 		return logCapturingStream.toString();
 	}
 
-	public void testLoggingLevel() {
+	@Test
+	public void testLoggingLevel()
+	{
 		final String notExpected = "Info 1";
 
 		LoggingUtil.updateRootLoggingLevel(Level.WARNING);
@@ -82,7 +75,9 @@ public class TestLogging extends TestCase {
 
 	}
 
-	public void textExceptionOutput() {
+	@Test
+	public void textExceptionOutput()
+	{
 
 		try {
 			Integer.parseInt("foggle");

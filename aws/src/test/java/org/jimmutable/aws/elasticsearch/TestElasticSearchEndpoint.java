@@ -1,50 +1,43 @@
 package org.jimmutable.aws.elasticsearch;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-public class TestElasticSearchEndpoint extends TestCase {
+import org.junit.Test;
 
-	/**
-	 * Create the test case
-	 *
-	 * @param testName
-	 *            name of the test case
-	 */
-	public TestElasticSearchEndpoint(String testName) {
-		super(testName);
-	}
+public class TestElasticSearchEndpoint
+{
 
-	/**
-	 * @return the suite of tests being tested
-	 */
-	public static Test suite() {
-		return new TestSuite(TestElasticSearchEndpoint.class);
-	}
-
-	public void testNoEnvironmentvariable() {
+	@Test
+	public void testNoEnvironmentvariable()
+	{
 		System.setProperty("elasticsearch.endpoint", "");
 		ElasticSearchEndpoint e = new ElasticSearchEndpoint();
 		assertEquals("localhost", e.getSimpleHost());
 		assertEquals(9200, e.getSimplePort());
 	}
 
-	public void testEnvironmentvariable() {
+	@Test
+	public void testEnvironmentvariable()
+	{
 		System.setProperty("elasticsearch.endpoint", "my.host.name:1234");
 		ElasticSearchEndpoint e = new ElasticSearchEndpoint();
 		assertEquals("my.host.name", e.getSimpleHost());
 		assertEquals(1234, e.getSimplePort());
 	}
 
-	public void equals() {
+	@Test
+	public void equals()
+	{
 		System.setProperty("elasticsearch.endpoint", "my.host.name:1234");
 		ElasticSearchEndpoint e = new ElasticSearchEndpoint();
 		ElasticSearchEndpoint e2 = new ElasticSearchEndpoint();
 		assertEquals(e, e2);
 	}
 
-	public void notEquals() {
+	@Test
+	public void notEquals()
+	{
 		System.setProperty("elasticsearch.endpoint", "my.host.name:1234");
 		ElasticSearchEndpoint e = new ElasticSearchEndpoint();
 		System.setProperty("elasticsearch.endpoint", "my.host.name:");
@@ -52,7 +45,9 @@ public class TestElasticSearchEndpoint extends TestCase {
 		assertTrue(!e.equals(e2));
 	}
 
-	public void defaultedIfBadVariable() {
+	@Test
+	public void defaultedIfBadVariable()
+	{
 		// invalid port
 		System.setProperty("elasticsearch.endpoint", "my.host.name:");
 		ElasticSearchEndpoint e2 = new ElasticSearchEndpoint();

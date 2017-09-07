@@ -1,29 +1,67 @@
 package org.jimmutable.aws.elasticsearch;
 
+import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.Stringable;
+import org.jimmutable.core.utils.Validator;
+import org.jimmutable.storage.ApplicationId;
 
+/**
+ * Search index definition applicaitonid/indexid
+ * 
+ * @author trevorbox
+ *
+ */
 public class IndexDefinition extends Stringable
 {
 
-	
+	public static final MyConverter CONVERTER = new MyConverter();
+
+	public IndexDefinition(ApplicationId applicationId, IndexId indexId)
+	{
+		super(String.format("%s/%s", applicationId.getSimpleValue(), indexId.getSimpleValue()));
+	}
+
 	public IndexDefinition(String value)
 	{
 		super(value);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	public void normalize()
 	{
-		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void validate()
 	{
-		// TODO Auto-generated method stub
-		
+
+		Validator.notNull(super.getSimpleValue());
+
+		String[] values = super.getSimpleValue().split("\\/");
+
+		if (values.length != 2) {
+			throw new ValidationException(
+					String.format("Expected the format applicationId/indexId but the definition was set to %s",
+							super.getSimpleValue()));
+		}
+
+		// run the validation
+		ApplicationId.getOptionalDevApplicationId(new ApplicationId(values[0]));
+		new IndexId(values[1]);
+
+	}
+
+	static public class MyConverter extends Stringable.Converter<IndexDefinition>
+	{
+		public IndexDefinition fromString(String str, IndexDefinition default_value)
+		{
+			try {
+				return new IndexDefinition(str);
+			} catch (Exception e) {
+				return default_value;
+			}
+		}
 	}
 
 }
