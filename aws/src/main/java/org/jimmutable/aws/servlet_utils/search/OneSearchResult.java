@@ -19,6 +19,8 @@ import org.jimmutable.core.utils.Validator;
 /**
  * OneSearchResult Represents a single search result
  * 
+ * Stores FieldName, String pairs in a HashMap. HashMap can be empty.
+ * 
  * @author Preston McCumber
  * @date Sep 6, 2017
  */
@@ -33,7 +35,7 @@ public class OneSearchResult extends StandardImmutableMapDeck<OneSearchResult, F
 		return TYPE_NAME;
 	}
 
-	static public final FieldDefinition.Map FIELD_RESULT = new FieldDefinition.Map("result", new FieldHashMap());
+	static public final FieldDefinition.Map FIELD_RESULT = new FieldDefinition.Map("result", new FieldHashMap<FieldName, String>());
 
 	private FieldMap<FieldName, String> result; // required
 
@@ -57,7 +59,7 @@ public class OneSearchResult extends StandardImmutableMapDeck<OneSearchResult, F
 
 	public OneSearchResult( ObjectParseTree t )
 	{
-		this.result = t.getMap(FIELD_RESULT, new FieldHashMap(), ReadAs.OBJECT, ReadAs.STRING, OnError.SKIP);
+		this.result = t.getMap(FIELD_RESULT, new FieldHashMap<FieldName, String>(), ReadAs.OBJECT, ReadAs.STRING, OnError.SKIP);
 	}
 
 	@Override

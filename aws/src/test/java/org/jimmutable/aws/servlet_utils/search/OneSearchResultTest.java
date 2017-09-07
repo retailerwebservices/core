@@ -27,14 +27,14 @@ public class OneSearchResultTest extends TestCase
 		ObjectParseTree.registerTypeName(OneSearchResult.class);
 		return new TestSuite(OneSearchResultTest.class);
 	}
-	
+
 	public void testOneSearchResultTest()
 	{
 		OneSearchResult result = null;
 		Map<FieldName, String> input_data = new FieldHashMap<>();
 		input_data.put(new FieldName("test_key"), "Test Value");
 		input_data.put(new FieldName("test_key2"), "Test Value2");
-		
+
 		try
 		{
 			result = new OneSearchResult(input_data);
@@ -44,11 +44,20 @@ public class OneSearchResultTest extends TestCase
 			assert (false);
 		}
 
-		assert (result.getSimpleContents().size() == 2 );
+		assert (result.getSimpleContents().size() == 2);
+
+		// Test with no Map passed in. Should allow it.
+		try
+		{
+			result = new OneSearchResult();
+		} catch ( Exception e )
+		{
+			assert (false);
+		}
 	}
-	
-	 public void testSerialization()
-	 {
+
+	public void testSerialization()
+	{
 		 String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s"
 			     , "{"
 			     , "  \"type_hint\" : \"jimmutable.aws.servlet_utils.search.OneSearchResult\","
@@ -68,15 +77,15 @@ public class OneSearchResultTest extends TestCase
 			     , "    \"value\" : \"Test Value\""
 			     , "  } ]"
 			     , "}"
-			);
-
+		);
+		 
 		OneSearchResult obj = (OneSearchResult) StandardObject.deserialize(obj_string);
-		
-		assertEquals( obj.getSimpleContents().size(), 2 );
-		assert ( obj.getSimpleContents().containsValue("Test Value2") );
-		assert ( obj.getSimpleContents().containsValue("Test Value") );
-		assert ( obj.getSimpleContents().containsKey(new FieldName("test_key")) );
-		assert ( obj.getSimpleContents().containsKey(new FieldName("test_key2")) );
-		
-	 }
+
+		assertEquals(obj.getSimpleContents().size(), 2);
+		assert (obj.getSimpleContents().containsValue("Test Value2"));
+		assert (obj.getSimpleContents().containsValue("Test Value"));
+		assert (obj.getSimpleContents().containsKey(new FieldName("test_key")));
+		assert (obj.getSimpleContents().containsKey(new FieldName("test_key2")));
+
+	}
 }
