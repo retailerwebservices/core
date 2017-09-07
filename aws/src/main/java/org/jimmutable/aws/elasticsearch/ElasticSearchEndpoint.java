@@ -24,7 +24,7 @@ public class ElasticSearchEndpoint extends TransientImmutableObject<ElasticSearc
 	private String CURRENT;
 
 	/**
-	 * Sets up the localhost:9200 endpoint
+	 * defaults to localhost:9200 if environment variable is unset or invalid
 	 */
 	public ElasticSearchEndpoint()
 	{
