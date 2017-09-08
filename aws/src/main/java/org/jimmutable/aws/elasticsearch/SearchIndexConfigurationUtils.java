@@ -3,6 +3,8 @@ package org.jimmutable.aws.elasticsearch;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
@@ -18,6 +20,7 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.*;
@@ -57,76 +60,9 @@ public class SearchIndexConfigurationUtils
 		return response;
 	}
 
-	// static private class DefaultType
-	// {
-	// public DefaultType(IndexType tweet)
-	// {
-	// this.tweet = tweet;
-	// }
-	//
-	// private IndexType tweet;
-	//
-	// static private class IndexType
-	// {
-	// private Properties properties;
-	//
-	// static class Properties
-	// {
-	// private Message message;
-	//
-	// static class Message
-	// {
-	// private String type;
-	// }
-	// }
-	//
-	// }
-	// }
-
-	static private class DefaultType
-	{
-		public DefaultType(IndexType tweet)
-		{
-			this.setTweet(tweet);
-		}
-
-		public IndexType getTweet()
-		{
-			return tweet;
-		}
-
-		public void setTweet(IndexType tweet)
-		{
-			this.tweet = tweet;
-		}
-
-		private IndexType tweet;
-
-	}
-
-	static public class IndexType
-	{
-		private String string;
-
-		public IndexType(String string)
-		{
-			this.setString(string);
-		}
-
-		public String getString()
-		{
-			return string;
-		}
-
-		public void setString(String string)
-		{
-			this.string = string;
-		}
-
-	}
-
 	public boolean indexProperlyConfigured(SearchIndexDefinition index) throws IOException
 	{
+
 		if (indexExists(index)) {
 			// GetSettingsResponse response = client.admin().indices()
 			// .prepareGetSettings(index.getSimpleIndex().getSimpleValue()).get();
@@ -139,19 +75,39 @@ public class SearchIndexConfigurationUtils
 
 			System.out.println(response2.mappings().size());
 
-			System.out.println(
-					response2.getMappings().get(index.getSimpleIndex().getSimpleValue()).get("tweet").source());
+			// {"tweet":{"properties":{"message":{"type":"text"}}}}
 
-			System.out.println(response2.getMappings().get(index.getSimpleIndex().getSimpleValue()).get("tweet"));
+			String json = response2.getMappings().get(index.getSimpleIndex().getSimpleValue()).get("tweet").source()
+					.string();
+
+			Map<String, String> nameType = new HashMap<String, String>();
+
+			System.out.println("current json " + json);
 
 			ObjectMapper mapper = new ObjectMapper();
+			JsonNode root = mapper.readTree(json);
+			
+			
+
+			System.out.println("root " + root.textValue());
+
+			JsonNode properties = root.path("tweet").path("properties");
+
+			System.out.println("properties " + properties.textValue());
+
+			// System.out.println(
+			// response2.getMappings().get(index.getSimpleIndex().getSimpleValue()).get("tweet").source());
+			//
+			// System.out.println(response2.getMappings().get(index.getSimpleIndex().getSimpleValue()).get("tweet"));
+			//
+			// ObjectMapper mapper = new ObjectMapper();
 
 			// DefaultType type = mapper.readValue(
 			// response2.getMappings().get(index.getSimpleIndex().getSimpleValue()).get("tweet").source().string(),
 			// DefaultType.class);
 
-			DefaultType type = new DefaultType(new IndexType("blaa"));
-			System.out.println(mapper.writeValueAsString(type));
+			// DefaultType type = new DefaultType(new IndexType("blaa"));
+			// System.out.println(mapper.writeValueAsString(type));
 
 			response2.mappings().forEach(cursor -> {
 				// System.out.println(String.format("%s %s %s %s", cursor.index, cursor.key,

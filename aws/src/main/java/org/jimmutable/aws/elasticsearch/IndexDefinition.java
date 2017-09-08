@@ -16,7 +16,7 @@ public class IndexDefinition extends Stringable
 
 	public static final MyConverter CONVERTER = new MyConverter();
 
-	private static final String SEPARATOR = "_";
+	private static final String SEPARATOR = ":";
 
 	public IndexDefinition(ApplicationId applicationId, IndexId indexId)
 	{
@@ -44,12 +44,12 @@ public class IndexDefinition extends Stringable
 
 		if (values.length != 2) {
 			throw new ValidationException(
-					String.format("Expected the format applicationId_indexId but the definition was set to %s",
+					String.format("Expected the format applicationId:indexId but the definition was set to %s",
 							super.getSimpleValue()));
 		}
 
 		// run the validation
-		ApplicationId.getOptionalDevApplicationId(new ApplicationId(values[0]));
+		new ApplicationId(values[0]);
 		new IndexId(values[1]);
 
 	}

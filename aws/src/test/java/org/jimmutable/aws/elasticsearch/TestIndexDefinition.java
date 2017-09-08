@@ -10,8 +10,7 @@ public class TestIndexDefinition extends StringableTest
 	@Test
 	public void inValid()
 	{
-		assertNotValid(null);
-		assertNotValid("foo:bar");
+		assertNotValid(null);;
 		assertNotValid("");
 		assertNotValid("foo!");
 		assertNotValid("foo/bar");
@@ -30,7 +29,7 @@ public class TestIndexDefinition extends StringableTest
 	@Test
 	public void valid()
 	{
-		assertValid("foo_bar", "foo_bar");
+		assertValid("foo:bar", "foo:bar");
 	}
 
 	@Override

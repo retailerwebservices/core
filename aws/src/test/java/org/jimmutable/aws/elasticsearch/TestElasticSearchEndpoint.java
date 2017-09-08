@@ -14,7 +14,7 @@ public class TestElasticSearchEndpoint
 		System.setProperty("elasticsearch.endpoint", "");
 		ElasticSearchEndpoint e = new ElasticSearchEndpoint();
 		assertEquals("localhost", e.getSimpleHost());
-		assertEquals(9200, e.getSimplePort());
+		assertEquals(9300, e.getSimplePort());
 	}
 
 	@Test
@@ -51,13 +51,13 @@ public class TestElasticSearchEndpoint
 		// invalid port
 		System.setProperty("elasticsearch.endpoint", "my.host.name:");
 		ElasticSearchEndpoint e2 = new ElasticSearchEndpoint();
-		assertEquals(9200, e2.getSimplePort());
+		assertEquals(9300, e2.getSimplePort());
 		assertEquals("localhost", e2.getSimpleHost());
 
 		// invalid host
 		System.setProperty("elasticsearch.endpoint", ":1234");
 		ElasticSearchEndpoint e = new ElasticSearchEndpoint();
-		assertEquals(9200, e.getSimplePort());
+		assertEquals(9300, e.getSimplePort());
 		assertEquals("localhost", e.getSimpleHost());
 	}
 

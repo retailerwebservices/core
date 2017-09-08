@@ -40,7 +40,7 @@ public class TestSearchIndexDefinition
 		b.add(SearchIndexDefinition.FIELD_FIELDS,
 				new SearchIndexFieldDefinition(new FieldName("meatballs"), SearchIndexFieldType.TEXT));
 
-		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, new IndexDefinition("foo/bar"));
+		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, new IndexDefinition("foo:bar"));
 
 		SearchIndexDefinition def = (SearchIndexDefinition) b.create(null);
 
@@ -48,7 +48,7 @@ public class TestSearchIndexDefinition
 		assertEquals(2, def.getSimpleFields().size());
 		assertTrue(def.getSimpleFields()
 				.contains(new SearchIndexFieldDefinition(new FieldName("spaghetti"), SearchIndexFieldType.BOOLEAN)));
-		assertEquals("foo/bar", def.getSimpleIndex().getSimpleValue());
+		assertEquals("foo:bar", def.getSimpleIndex().getSimpleValue());
 
 	}
 
@@ -70,14 +70,14 @@ public class TestSearchIndexDefinition
 
 		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
 
-		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, new IndexDefinition("foo/bar"));
+		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, new IndexDefinition("foo:bar"));
 
 		SearchIndexDefinition def = (SearchIndexDefinition) b.create(null);
 
 		assertNotNull(def);
 		assertEquals(0, def.getSimpleFields().size());
 
-		assertEquals("foo/bar", def.getSimpleIndex().getSimpleValue());
+		assertEquals("foo:bar", def.getSimpleIndex().getSimpleValue());
 
 	}
 
@@ -103,7 +103,7 @@ public class TestSearchIndexDefinition
 		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s"
 			     , "{"
 			     , "  \"type_hint\" : \"org.jimmutable.aws.elasticsearch.SearchIndexDefinition\","
-			     , "  \"index\" : \"foo/bar\","
+			     , "  \"index\" : \"foo:bar\","
 			     , "  \"fields\" : [ {"
 			     , "    \"type_hint\" : \"org.jimmutable.aws.elasticsearch.SearchIndexFieldDefinition\","
 			     , "    \"name\" : {"
@@ -153,7 +153,7 @@ public class TestSearchIndexDefinition
 		SearchIndexDefinition obj = (SearchIndexDefinition) StandardObject.deserialize(obj_string);
 
 		assertNotNull(obj);
-		assertEquals("foo/bar", obj.getSimpleIndex().getSimpleValue());
+		assertEquals("foo:bar", obj.getSimpleIndex().getSimpleValue());
 		assertEquals(6, obj.getSimpleFields().size());
 		assertTrue(obj.getSimpleFields().contains(new SearchIndexFieldDefinition(new FieldName("uno"), SearchIndexFieldType.DAY)));
 		assertTrue(obj.getSimpleFields().contains(new SearchIndexFieldDefinition(new FieldName("dos"), SearchIndexFieldType.ATOM)));	
