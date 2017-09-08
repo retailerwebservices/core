@@ -16,7 +16,7 @@ import org.jimmutable.core.utils.Optional;
  * Used to indicate successful response to update/insert request
  * 
  * @author Preston McCumber
- * @date Sep 1, 2017
+ * Sep 1, 2017
  */
 public class UpsertResponseOK extends JSONServletResponse
 {

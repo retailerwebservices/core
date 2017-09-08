@@ -16,7 +16,7 @@ import org.jimmutable.core.utils.Optional;
  * Message field is optional
  * 
  * @author Preston McCumber
- * @date Sep 1, 2017
+ * Sep 1, 2017
  */
 
 public class GeneralResponseError extends JSONServletResponse

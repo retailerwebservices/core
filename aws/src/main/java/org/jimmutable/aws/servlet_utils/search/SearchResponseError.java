@@ -16,7 +16,7 @@ import org.jimmutable.core.utils.Validator;
  * request
  * 
  * @author Preston McCumber
- * @date Sep 7, 2017
+ * Sep 7, 2017
  */
 public class SearchResponseError extends JSONServletResponse
 {

@@ -20,7 +20,7 @@ import org.jimmutable.core.utils.Validator;
  * pass results
  * 
  * @author Preston McCumber
- * @date Sep 5, 2017
+ * Sep 5, 2017
  */
 public class SearchResponseOK extends JSONServletResponse
 {

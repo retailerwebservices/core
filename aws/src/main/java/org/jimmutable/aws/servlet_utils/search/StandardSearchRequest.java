@@ -15,7 +15,7 @@ import org.jimmutable.core.utils.Validator;
  * Container for passing general search information
  * 
  * @author Preston McCumber
- * @date Sep 5, 2017
+ * Sep 5, 2017
  */
 public class StandardSearchRequest extends StandardImmutableObject<StandardSearchRequest>
 {

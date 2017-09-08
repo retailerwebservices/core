@@ -16,7 +16,7 @@ import org.jimmutable.core.utils.Optional;
  * Used for a standardized validation error response to an update/insert request
  * 
  * @author Preston McCumber
- * @date Sep 1, 2017
+ * Sep 1, 2017
  */
 public class UpsertResponseValidationError extends JSONServletResponse
 {

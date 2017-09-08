@@ -15,7 +15,7 @@ import org.jimmutable.core.utils.Comparison;
  * Used to indicate successful response to GET request
  * 
  * @author Preston McCumber
- * @date Sep 1, 2017
+ * Sep 1, 2017
  */
 public class GetResponseOK extends JSONServletResponse
 {
