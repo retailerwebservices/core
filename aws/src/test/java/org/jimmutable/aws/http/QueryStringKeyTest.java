@@ -1,4 +1,4 @@
-package http;
+package org.jimmutable.aws.http;
 
 import org.jimmutable.aws.http.QueryStringKey;
 import org.jimmutable.core.utils.StringableTester;
