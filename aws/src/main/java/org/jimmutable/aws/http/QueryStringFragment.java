@@ -99,7 +99,7 @@ public class QueryStringFragment extends Stringable
 	 * 
 	 * @return The decoded value of the fragment
 	 */
-	public String getSimpleDecodedValue() { return decoded_value; }
+	public String getSimpleFragmentDecodedValue() { return decoded_value; }
 	
 	/**
 	 * The encoded value of the fragment.
@@ -107,7 +107,7 @@ public class QueryStringFragment extends Stringable
 	 * @return The URL encoded value of the fragment. Generally, this is *not* the
 	 *         value you want, you want the decoded value...
 	 */
-	public String getSimpleEncodedValue() { return encoded_value; }
+	public String getSimpleFragmentEncodedValue() { return encoded_value; }
 	
 	static public String URLEncode(String decoded_value)
 	{

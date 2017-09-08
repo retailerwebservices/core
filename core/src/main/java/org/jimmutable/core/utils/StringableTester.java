@@ -14,7 +14,7 @@ public class StringableTester<S extends Stringable>
 		this.converter = converter;
 	}
 
-	public S assertValidStringable(String value, String normalized_value)
+	public S assertValid(String value, String normalized_value)
 	{
 		S ret = converter.fromString(value, null);
 		
@@ -26,7 +26,16 @@ public class StringableTester<S extends Stringable>
 		return ret;
 	}
 	
-	public void assertInvalidStringable(String value)
+	public S assertValid(String value)
+	{
+		S ret = converter.fromString(value, null);
+		
+		assert(ret != null);
+		
+		return ret;
+	}
+	
+	public void assertInvalid(String value)
 	{
 		assert(null == converter.fromString(value, null));
 	}

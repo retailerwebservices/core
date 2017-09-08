@@ -13,20 +13,21 @@ public class QueryStringKeyTest extends TestCase
 	@Test
 	public void testValid()
 	{
-		tester.assertValidStringable("foo", "foo");
-		tester.assertValidStringable("FOO", "foo");
+		tester.assertValid("foo", "foo");
+		tester.assertValid("FOO", "foo");
 		
-		tester.assertValidStringable("foo_bar", "foobar");
-		tester.assertValidStringable("abcdefghijklmnopqrstuvwxyz0123456789-", "abcdefghijklmnopqrstuvwxyz0123456789-");
+		tester.assertValid("foo_bar", "foobar");
+		tester.assertValid("abcdefghijklmnopqrstuvwxyz0123456789-", "abcdefghijklmnopqrstuvwxyz0123456789-");
 		
-		tester.assertValidStringable("FoO-BAR","foo-bar");
-		tester.assertValidStringable(" fo o", "foo");
+		tester.assertValid("FoO-BAR","foo-bar");
+		tester.assertValid(" fo o", "foo");
 	}
 	
+	@Test
 	public void testInvalid()
 	{
-		tester.assertInvalidStringable(null);
-		tester.assertInvalidStringable("");
-		tester.assertInvalidStringable("&&!(#$");
+		tester.assertInvalid(null);
+		tester.assertInvalid("");
+		tester.assertInvalid("&&!(#$");
 	}
 }
