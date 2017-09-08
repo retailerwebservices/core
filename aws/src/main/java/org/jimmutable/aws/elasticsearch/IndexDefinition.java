@@ -18,9 +18,14 @@ public class IndexDefinition extends Stringable
 
 	private static final String SEPARATOR = ":";
 
-	public IndexDefinition(ApplicationId applicationId, IndexId indexId)
+	private transient ApplicationId applicationId;
+	private transient IndexId indexId;
+	private transient IndexVersion indexVersion;
+
+	public IndexDefinition(ApplicationId applicationId, IndexId indexId, IndexVersion indexVersion)
 	{
-		super(String.format("%s%s%s", applicationId.getSimpleValue(), SEPARATOR, indexId.getSimpleValue()));
+		super(String.format("%s%s%s%s%s", applicationId.getSimpleValue(), SEPARATOR, indexId.getSimpleValue(),
+				SEPARATOR, indexVersion.getSimpleValue()));
 	}
 
 	public IndexDefinition(String value)
@@ -42,15 +47,20 @@ public class IndexDefinition extends Stringable
 
 		String[] values = super.getSimpleValue().split(SEPARATOR);
 
-		if (values.length != 2) {
-			throw new ValidationException(
-					String.format("Expected the format applicationId:indexId but the definition was set to %s",
-							super.getSimpleValue()));
+		if (values.length != 3) {
+			throw new ValidationException(String.format(
+					"Expected the format applicationId:indexId:indexVersion but the definition was set to %s",
+					super.getSimpleValue()));
 		}
 
 		// run the validation
-		new ApplicationId(values[0]);
-		new IndexId(values[1]);
+		this.applicationId = new ApplicationId(values[0]);
+		this.indexId = new IndexId(values[1]);
+		this.indexVersion = new IndexVersion(values[2]);
+
+		// Set the value (normalizes everything)
+		super.setValue(String.format("%s%s%s%s%s", this.applicationId.getSimpleValue(), SEPARATOR,
+				this.indexId.getSimpleValue(), SEPARATOR, this.indexVersion.getSimpleValue()));
 
 	}
 
