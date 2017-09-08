@@ -13,8 +13,14 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import javax.management.RuntimeErrorException;
+
 import org.jimmutable.core.objects.StandardImmutableObject;
+import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.ObjectId;
+import org.jimmutable.core.serialization.Format;
+import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.storage.ApplicationId;
 import org.jimmutable.storage.StorageKeyExtension;
 
@@ -52,11 +58,10 @@ public class MessagingDevLocalFileSystem extends Messaging
 
 	/**
 	 * @param topic
-	 * 		the topic that you want the message you want the message to go to
+	 *            the topic that you want the message you want the message to go to
 	 * @param message
-	 * 		the message you want to send
-	 * @return 
-	 * 		true if the thread was created, false otherwise.
+	 *            the message you want to send
+	 * @return true if the thread was created, false otherwise.
 	 */
 	@SuppressWarnings("rawtypes")
 	@Override
@@ -74,34 +79,33 @@ public class MessagingDevLocalFileSystem extends Messaging
 
 		return true;
 	}
-	
+
 	/**
 	 * @param subscription
-	 * 		the subscription you want to listen to
+	 *            the subscription you want to listen to
 	 * @param listener
-	 * 		the listener you want to handle the message
-	 * @return 
-	 * 		true if the threads were created, false otherwise.
+	 *            the listener you want to handle the message
+	 * @return true if the threads were created, false otherwise.
 	 */
 	@Override
 	public boolean startListening( SubscriptionDefinition subscription, MessageListener listener )
 	{
 		File subscription_path = new File(root.getAbsolutePath() + "/" + subscription.getSimpleValue());
-		if ( !subscription_path.exists() )
+		if ( !subscription_path.exists() )// if subscription does not exist, make it.
 		{
 			subscription_path.mkdirs();
 		}
-		
+
 		new Thread(new ListenForMessageRunnable(subscription_path, listener)).start();
-		
+
 		return true;
 	}
 
 	/**
-	 * Single thread executor finishes all current threads, then shuts down.
-	 * Single thread executor will not accept any new threads after this method is run. 
+	 * Single thread executor finishes all current threads, then shuts down. Single
+	 * thread executor will not accept any new threads after this method is run.
 	 */
-	
+
 	@Override
 	public void sendAllAndShutdown()
 	{
@@ -111,7 +115,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 	class SendMessageRunnable implements Runnable
 	{
 		@SuppressWarnings("rawtypes")
-		private StandardImmutableObject message;
+		private StandardObject message;
 		private TopicDefinition topic;
 
 		@SuppressWarnings("rawtypes")
@@ -126,7 +130,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 		{
 			if ( topic == null )
 			{
-				topic = new TopicDefinition("");
+				throw new RuntimeException("Topic cannot be empty");
 			}
 			Random rng = new Random();
 			ObjectId objectId = new ObjectId(rng.nextLong());
@@ -135,34 +139,46 @@ public class MessagingDevLocalFileSystem extends Messaging
 
 			try
 			{
-				String pathname = root.getAbsolutePath() + "/" + topic.getSimpleApplicationId().getSimpleValue() + "/" + topic.getSimpleTopicId().getSimpleValue();
+				String pathname = root.getAbsolutePath() + "/" + topic.getSimpleValue();
 				File pfile = new File(pathname);
-				for ( File file_header : pfile.listFiles() )
-				{
-					if ( !file_header.isHidden() )
-					{
-						for ( File sub_file_header : file_header.listFiles() )
-						{
-							if ( !sub_file_header.isHidden() )
-							{
-								File file = new File(sub_file_header.getAbsolutePath() + "/" + objectId.getSimpleValue() + "." + StorageKeyExtension.JSON);
-								fos = new FileOutputStream(file.getAbsolutePath());
-								fos.write(message.toString().getBytes());
-								fos.close();
-							}
-						}
 
+				File[] listFiles = pfile.listFiles();
+				if ( listFiles != null )
+				{
+					for ( File file_header : listFiles )
+					{
+						listFiles = pfile.listFiles();
+						if ( !file_header.isHidden() && listFiles != null )
+						{
+							for ( File sub_file_header : file_header.listFiles() )
+							{
+								if ( !sub_file_header.isHidden() )
+								{
+									File file = new File(sub_file_header.getAbsolutePath() + "/" + objectId.getSimpleValue() + "." + StorageKeyExtension.JSON);
+									fos = new FileOutputStream(file.getAbsolutePath());
+									fos.write(ObjectWriter.serialize(Format.JSON_PRETTY_PRINT, message).getBytes());
+									fos.close();
+								}
+							}
+
+						}
+						else {
+							System.out.println("No Topics to send to. No message sent.");
+						}
 					}
+				}
+				else
+				{
+					System.out.println("No Topics to send to. No message sent.");
 				}
 
 			}
 			catch ( Exception e )
 			{
-				System.out.println("Sending message Failed.");
+				System.out.println("Sending message Failed: " + e + "\n");
+				e.printStackTrace();
 			}
-
 		}
-
 	}
 
 	class ListenForMessageRunnable implements Runnable
@@ -195,7 +211,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 
 						Path message_path = my_dir.resolve(((Path) event.context()));
 						File f = new File(message_path.toString());
-						listener.onMessageReceived(readFile(f));
+						listener.onMessageReceived(StandardObject.deserialize(readFile(f)));
 						f.delete();
 
 					}
@@ -203,11 +219,11 @@ public class MessagingDevLocalFileSystem extends Messaging
 			}
 			catch ( Exception e )
 			{
-				System.out.println(e.getStackTrace());
+				e.printStackTrace();
 			}
 		}
 
-		private MessageStandardObject readFile( File f )
+		private String readFile( File f )
 		{
 			FileInputStream fis = null;
 			byte[] bytesArray = new byte[(int) f.length()];
@@ -215,7 +231,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 			{
 				fis = new FileInputStream(f);
 				fis.read(bytesArray); // read file into bytes[]
-				return new MessageStandardObject(bytesArray);
+				return new String(bytesArray);
 			}
 			catch ( Exception e )
 			{

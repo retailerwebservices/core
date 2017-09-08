@@ -13,14 +13,17 @@ import java.util.Random;
 import java.util.concurrent.RejectedExecutionException;
 
 import org.jimmutable.aws.messaging.MessageListener;
-import org.jimmutable.aws.messaging.MessageStandardObject;
 import org.jimmutable.aws.messaging.MessagingDevLocalFileSystem;
 import org.jimmutable.aws.messaging.QueueDefinition;
 import org.jimmutable.aws.messaging.QueueId;
+import org.jimmutable.aws.messaging.StandardMessageOnUpsert;
 import org.jimmutable.aws.messaging.SubscriptionDefinition;
 import org.jimmutable.aws.messaging.TopicDefinition;
 import org.jimmutable.aws.messaging.TopicId;
 import org.jimmutable.core.objects.StandardObject;
+import org.jimmutable.core.objects.common.Kind;
+import org.jimmutable.core.objects.common.ObjectId;
+import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.storage.ApplicationId;
 
 import junit.framework.TestCase;
@@ -35,6 +38,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 	{
 		appId = new ApplicationId("Development");
 		messagingdevlocalfilesystem = new MessagingDevLocalFileSystem();
+		ObjectParseTree.registerTypeName(StandardMessageOnUpsert.class);
 	}
 
 	public static void testSendAsync() throws InterruptedException
@@ -50,8 +54,8 @@ public class MessageDevLocalFileSystemTest extends TestCase
 			}
 		}
 
-		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("Knights_in_Monty_Python")), new QueueId("NIII")));
-		Thread.sleep(10);// have it wait a blip
+		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("Knights_in_Monty_Python")), new StandardMessageOnUpsert(new Kind("niii"), new ObjectId(123456789))));
+		Thread.sleep(1000);// have it wait a second
 
 		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
 		{
@@ -60,9 +64,38 @@ public class MessageDevLocalFileSystemTest extends TestCase
 				String filepath = mainpath + "/" + queue_application_id + "/" + queue_queue_id;
 				File f = new File(filepath);
 				File[] listFiles = f.listFiles();
-				assertEquals(1, listFiles.length);
-				assertEquals("niii", readFile(listFiles[0]));
+				assertEquals(1, listFiles.length);// prove that the message got there.
+				assertTrue(readFile(listFiles[0]).contains("niii"));
+
 			}
+		}
+	}
+
+	public static void testSendAsyncWithNoSubfolders() throws InterruptedException
+	{
+		String mainpath = System.getProperty("user.home") + "/jimmtuable_aws_dev/" + ApplicationId.getOptionalDevApplicationId(appId) + "/messaging/development/knights_in_monty_python";
+
+		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("Knights_in_Monty_Python")), new StandardMessageOnUpsert(new Kind("niii"), new ObjectId(123456789))));
+		Thread.sleep(1000);// have it wait a second
+
+		String filepath = mainpath;
+		File f = new File(filepath);
+		assertNull(f.listFiles());// prove that no the message got there.
+
+		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
+		{
+			filepath = mainpath + "/" + queue_application_id;
+			f = new File(filepath);
+			f.mkdirs();
+		}
+		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("Knights_in_Monty_Python")), new StandardMessageOnUpsert(new Kind("niii"), new ObjectId(123456789))));
+		Thread.sleep(1000);// have it wait a second
+
+		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
+		{
+			filepath = mainpath + "/" + queue_application_id;
+			f = new File(filepath);
+			assertEquals(0,f.listFiles().length);// prove that no the message got there.
 		}
 	}
 
@@ -104,12 +137,12 @@ public class MessageDevLocalFileSystemTest extends TestCase
 		Thread.sleep(4500);// have it wait a minute so we can setup the listener
 
 		// send the message
-		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty_python_jokes")), new QueueId("the-holy-grail")));
+		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty_python_jokes")), new StandardMessageOnUpsert(new Kind("killer-bunny"), new ObjectId(123456789))));
 		Thread.sleep(6000);// have it wait a minute so it can detect changes.
 
 		// make sure that the listener picked up the message
 		assertTrue(listener.messageDetected);
-		assertEquals("the-holy-grail", new String(listener.messageContent));
+		assertEquals("killer-bunny", listener.messageContent);
 
 		// make sure we deleted the message after we heard it.
 		File f = new File(mainpath);
@@ -129,10 +162,9 @@ public class MessageDevLocalFileSystemTest extends TestCase
 				f.mkdirs();
 			}
 		}
-		Random r = new Random();
 		for ( int i = 0; i < 10; i++ )
 		{
-			messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty_python_jokes")), new QueueId("" + r.nextInt()));// putting in a bunch of random information
+			messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty_python_jokes")), new StandardMessageOnUpsert(new Kind("Message"), new ObjectId(123456789)));// putting in a bunch of random information
 		}
 		messagingdevlocalfilesystem.sendAllAndShutdown();
 		int[] initialResults = new int[4];
@@ -146,7 +178,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 				initialResults[i++] = f.listFiles().length;
 			}
 		}
-		Thread.sleep(10);// have it wait a millisecond to let things catchup
+		Thread.sleep(10000);// have it wait a millisecond to let things catchup
 		i = 0;
 		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
 		{
@@ -162,7 +194,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 		boolean error_thrown = false;
 		try
 		{
-			messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty_python_jokes")), new QueueId("" + r.nextInt()));// putting in a bunch of random information
+			messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty_python_jokes")), new StandardMessageOnUpsert(new Kind("Message"), new ObjectId(123456789)));// putting in a bunch of random information
 		}
 		catch ( RejectedExecutionException e )
 		{
@@ -193,13 +225,13 @@ public class MessageDevLocalFileSystemTest extends TestCase
 
 class TestMessageListener implements MessageListener
 {
-	public byte[] messageContent;
+	public String messageContent;
 	public boolean messageDetected = false;
 
 	@Override
 	public void onMessageReceived( @SuppressWarnings("rawtypes") StandardObject message )
 	{
 		messageDetected = true;
-		messageContent = ((MessageStandardObject) message).getData();
+		messageContent = ((StandardMessageOnUpsert) message).getSimpleKind().toString();
 	}
 }
