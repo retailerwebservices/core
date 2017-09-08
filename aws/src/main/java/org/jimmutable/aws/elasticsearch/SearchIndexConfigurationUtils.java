@@ -5,26 +5,26 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
-import org.elasticsearch.action.admin.indices.mapping.get.GetFieldMappingsResponse;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
-import org.elasticsearch.action.admin.indices.settings.get.GetSettingsResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.common.xcontent.ToXContent;
-import org.elasticsearch.common.xcontent.ToXContent.Params;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static org.elasticsearch.common.xcontent.XContentFactory.*;
-
+/**
+ * Utility class for search Index maintenance. Should be used on startup of
+ * application that cares about properly configured search indices.
+ * 
+ * @author trevorbox
+ *
+ */
 public class SearchIndexConfigurationUtils
 {
 
@@ -32,185 +32,184 @@ public class SearchIndexConfigurationUtils
 
 	private TransportClient client;
 
-	@SuppressWarnings("resource")
-	public SearchIndexConfigurationUtils(ElasticSearchEndpoint endpoint) throws UnknownHostException
+	private static final String ELASTICSEARCH_DEFAULT_TYPE = "default";
+
+	public SearchIndexConfigurationUtils(ElasticSearchEndpoint endpoint)
 	{
-		// set cluster name
+		// set cluster name?
 
 		// Settings settings = Settings.builder().put("cluster.name",
 		// "elasticsearch").build();
 
-		client = new PreBuiltTransportClient(Settings.EMPTY).addTransportAddress(new InetSocketTransportAddress(
-				InetAddress.getByName(endpoint.getSimpleHost()), endpoint.getSimplePort()));
+		try {
+			client = new PreBuiltTransportClient(Settings.EMPTY).addTransportAddress(new InetSocketTransportAddress(
+					InetAddress.getByName(endpoint.getSimpleHost()), endpoint.getSimplePort()));
+		} catch (UnknownHostException e) {
+			String errorMessage = String.format("Failed to create a TransportClient from endpoint %s:%d",
+					endpoint.getSimpleHost(), endpoint.getSimplePort());
+			logger.log(Level.SEVERE, errorMessage, e);
+			throw new RuntimeException(errorMessage);
+		}
 
 	}
 
+	/**
+	 * 
+	 * @param index
+	 *            IndexDefinition
+	 * @return boolean if the index exists or not
+	 */
 	public boolean indexExists(IndexDefinition index)
 	{
+		if (index == null) {
+			logger.severe("Cannot check the existence of a null Index");
+			return false;
+		}
 		return client.admin().indices().prepareExists(index.getSimpleValue()).get().isExists();
 	}
 
+	/**
+	 * 
+	 * @param index
+	 *            SearchIndexDefinition
+	 * @return boolean if the index exists or not
+	 */
 	public boolean indexExists(SearchIndexDefinition index)
 	{
-		boolean response = client.admin().indices().prepareExists(index.getSimpleIndex().getSimpleValue()).get()
-				.isExists();
-
-		System.out.println(response);
-
-		return response;
+		if (index == null) {
+			logger.severe("Cannot check the existence of a null Index");
+			return false;
+		}
+		return client.admin().indices().prepareExists(index.getSimpleIndex().getSimpleValue()).get().isExists();
 	}
 
-	public boolean indexProperlyConfigured(SearchIndexDefinition index) throws IOException
+	/**
+	 * An index is properly configured if it exists and its field names and
+	 * datatypes match
+	 * 
+	 * @param index
+	 *            SearchIndexDefinition
+	 * @return boolean if the index is properly configured or not
+	 */
+	public boolean indexProperlyConfigured(SearchIndexDefinition index)
 	{
+		if (index == null) {
+			return false;
+		}
 
 		if (indexExists(index)) {
-			// GetSettingsResponse response = client.admin().indices()
-			// .prepareGetSettings(index.getSimpleIndex().getSimpleValue()).get();
 
-			// GetFieldMappingsResponse response = client.admin().indices()
-			// .prepareGetFieldMappings(index.getSimpleIndex().getSimpleValue()).setTypes("tweet").get();
-
-			GetMappingsResponse response2 = client.admin().indices()
-					.prepareGetMappings(index.getSimpleIndex().getSimpleValue()).get();
-
-			System.out.println(response2.mappings().size());
-
-			// {"tweet":{"properties":{"message":{"type":"text"}}}}
-
-			String json = response2.getMappings().get(index.getSimpleIndex().getSimpleValue()).get("tweet").source()
-					.string();
-
-			Map<String, String> nameType = new HashMap<String, String>();
-
-			System.out.println("current json " + json);
-
-			ObjectMapper mapper = new ObjectMapper();
-			JsonNode root = mapper.readTree(json);
-			
-			
-
-			System.out.println("root " + root.textValue());
-
-			JsonNode properties = root.path("tweet").path("properties");
-
-			System.out.println("properties " + properties.textValue());
-
-			// System.out.println(
-			// response2.getMappings().get(index.getSimpleIndex().getSimpleValue()).get("tweet").source());
-			//
-			// System.out.println(response2.getMappings().get(index.getSimpleIndex().getSimpleValue()).get("tweet"));
-			//
-			// ObjectMapper mapper = new ObjectMapper();
-
-			// DefaultType type = mapper.readValue(
-			// response2.getMappings().get(index.getSimpleIndex().getSimpleValue()).get("tweet").source().string(),
-			// DefaultType.class);
-
-			// DefaultType type = new DefaultType(new IndexType("blaa"));
-			// System.out.println(mapper.writeValueAsString(type));
-
-			response2.mappings().forEach(cursor -> {
-				// System.out.println(String.format("%s %s %s %s", cursor.index, cursor.key,
-				// cursor.value.toString(), cursor.toString()));
-
-				cursor.value.forEach(unit -> {
-
-					try {
-						System.out.println(unit.value.source().toString());
-
-						unit.value.getSourceAsMap().forEach((key, value) -> {
-							System.out.println(String.format("%s %s %s ", unit.key, key, value));
-
-						});
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
-					// System.out.println(String.format("%s %s %s %s", unit.index, unit.key,
-					// unit.value.toString(), unit.toString()));
-				});
-
+			// compare the expected index fields to the actual index fields
+			Map<String, String> expected = new HashMap<String, String>();
+			index.getSimpleFields().forEach(fields -> {
+				expected.put(fields.getSimpleFieldName().getSimpleName(), fields.getSimpleType().getSimpleCode());
 			});
 
-			// response2.mappings().forEach((name, map) -> {
-			// System.out.print(name);
-			// map.forEach((name2, map2) -> {
-			// System.out.print(name2);
-			// map2.forEach((name3, map3) -> {
-			// System.out.print(name3);
-			// map3.sourceAsMap().forEach((metaname, meta) -> {
-			// System.out.print(metaname);
-			// System.out.print(meta.toString());
-			// });
-			// });
-			// });
-			// System.out.println();
-			// });
+			GetMappingsResponse response = client.admin().indices()
+					.prepareGetMappings(index.getSimpleIndex().getSimpleValue()).get();
 
-			// XContentBuilder builder = jsonBuilder();
-			//
-			// response.toXContent(builder, ToXContent.EMPTY_PARAMS);
-			//
-			// response.
+			String json = null;
+			try {
+				json = response.getMappings().get(index.getSimpleIndex().getSimpleValue())
+						.get(ELASTICSEARCH_DEFAULT_TYPE).source().string();
+			} catch (IOException e) {
 
-			// System.out.println(builder.toString());
+				logger.log(Level.SEVERE, String.format("Failed to get the _mapping json for index %s",
+						index.getSimpleIndex().getSimpleValue()), e);
+				return false;
+			}
 
-			// response.getIndexToSettings().forEach(cursor -> {
-			// System.out.println(
-			// String.format("%s %s %s %s", cursor.index, cursor.key,
-			// cursor.value.getAsMap().toString(), cursor.toString()));
-			//
-			// });
+			Map<String, String> actual = new HashMap<String, String>();
 
+			try {
+				new ObjectMapper().readTree(json).get(ELASTICSEARCH_DEFAULT_TYPE).get("properties").fields()
+						.forEachRemaining(action -> {
+							actual.put(action.getKey(), action.getValue().get("type").asText());
+						});
+			} catch (Exception e) {
+				// do nothing
+			}
+
+			return expected.equals(actual);
+
+		} else {
+			return false;
 		}
-		return false;
 	}
 
-	private String toJson(SearchIndexDefinition index)
+	private boolean createIndex(SearchIndexDefinition index)
 	{
-
-		try {
-			XContentBuilder builder = jsonBuilder().startObject().startObject("mappings").startObject("properties");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if (index == null) {
+			logger.severe("Cannot create a null Index");
+			return false;
 		}
 
-		// index.getSimpleFields().forEach(field->{
-		// builder.field(field.getSimpleFieldName().getSimpleName(),
-		// field.getSimpleType().getSimpleCode());
-		// });
-		//
-		//
-		// .field("user", "kimchy")
-		// .field("postDate", new Date())
-		// .field("message", "trying out Elasticsearch")
-		// .endObject()
-		//
-		// index.getSimpleFields();
+		Map<String, String> fieldTypeMap = new HashMap<String, String>();
+		index.getSimpleFields().forEach(fields -> {
+			fieldTypeMap.put(fields.getSimpleFieldName().getSimpleName(), fields.getSimpleType().getSimpleCode());
+		});
 
-		return null;
+		CreateIndexResponse createResponse = client.admin().indices()
+				.prepareCreate(index.getSimpleIndex().getSimpleValue())
+				.addMapping(ELASTICSEARCH_DEFAULT_TYPE, fieldTypeMap).get();
+
+		if (!createResponse.isAcknowledged()) {
+			logger.severe(String.format("Index Creation not acknowledged for index %s",
+					index.getSimpleIndex().getSimpleValue()));
+			return false;
+		}
+		return true;
 	}
 
-	// TODO
+	private boolean deleteIndex(SearchIndexDefinition index)
+	{
+		if (index == null) {
+			logger.severe("Cannot delete a null Index");
+			return false;
+		}
+
+		DeleteIndexResponse deleteResponse = client.admin().indices()
+				.prepareDelete(index.getSimpleIndex().getSimpleValue()).get();
+		if (!deleteResponse.isAcknowledged()) {
+			logger.severe(String.format("Index Deletion not acknowledged for index %s",
+					index.getSimpleIndex().getSimpleValue()));
+			return false;
+		}
+		return true;
+
+	}
+
+	/**
+	 * Upsert if the index doesnt exist or is not properly configured already
+	 * 
+	 * @param index
+	 *            SearchIndexDefinition
+	 * @return boolean if the upsert was successful or not
+	 */
 	public boolean upsertIndex(SearchIndexDefinition index)
 	{
 
-		if (!indexExists(index)) {
-			CreateIndexResponse response = client.admin().indices()
-					.prepareCreate(index.getSimpleIndex().getSimpleValue())
-					.addMapping("tweet",
-							"{\n" + "    \"tweet\": {\n" + "      \"properties\": {\n" + "        \"message\": {\n"
-									+ "          \"type\": \"string\"\n" + "        }\n" + "      }\n" + "    }\n"
-									+ "  }")
-					.get();
-			System.out.println("response is acknowledged? " + response.isAcknowledged());
-		} else {
-			logger.info(String.format("Index %s already exists", index.getSimpleIndex().getSimpleValue()));
-			System.out.println(String.format("Index %s already exists", index.getSimpleIndex().getSimpleValue()));
+		if (index == null) {
+			logger.severe("Cannot upsert a null Index");
+			return false;
 		}
 
+		// if it exists and is not configured correctly delete and add
+		if (indexExists(index)) {
+			if (!indexProperlyConfigured(index)) {
+				if (deleteIndex(index)) {
+					return createIndex(index);
+				} else {
+					// deletion failed
+					return false;
+				}
+			}
+		} else {
+			// index is new
+			return createIndex(index);
+		}
+
+		// index exists and already configured correctly
 		return true;
 	}
 
