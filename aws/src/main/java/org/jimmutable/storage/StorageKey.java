@@ -23,7 +23,7 @@ public class StorageKey extends Stringable
 	StorageKeyExtension extension;
 
 	/**
-	 * @param Creates
+	 * @param value
 	 *            a new Storage Key based on the string that is passed in. Therefore
 	 *            if the String passed in is "Alpha/123.txt" then the Kind will be
 	 *            "alpha" the Object Id will be "123" the extension will be "txt"
@@ -36,7 +36,7 @@ public class StorageKey extends Stringable
 	/**
 	 * @param kind
 	 *            the Kind used for the StorageKey
-	 * @param objectId
+	 * @param object_id
 	 *            the ObjectId used for the StorageKey
 	 * @param extension
 	 *            the extension of the StorageKey
@@ -51,7 +51,7 @@ public class StorageKey extends Stringable
 	 * 
 	 * @param kind
 	 *            the Kind used for the StorageKey
-	 * @param objectId
+	 * @param object_id
 	 *            the ObjectId used for the StorageKey
 	 * @param extension
 	 *            the extension of the StorageKey
