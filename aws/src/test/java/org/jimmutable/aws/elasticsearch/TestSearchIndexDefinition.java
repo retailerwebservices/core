@@ -16,6 +16,7 @@ import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.junit.Before;
 import org.junit.Test;
 
+//CODE REVEIW: Should be SearchIndexDefinitionTest
 public class TestSearchIndexDefinition
 {
 	@Before
@@ -35,6 +36,8 @@ public class TestSearchIndexDefinition
 
 		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
 
+		
+		// CODE REVEIW: one line
 		b.add(SearchIndexDefinition.FIELD_FIELDS,
 				new SearchIndexFieldDefinition(new FieldName("spaghetti"), SearchIndexFieldType.BOOLEAN));
 		b.add(SearchIndexDefinition.FIELD_FIELDS,
@@ -46,6 +49,8 @@ public class TestSearchIndexDefinition
 
 		assertNotNull(def);
 		assertEquals(2, def.getSimpleFields().size());
+		
+		// CODE REVEIW: one line
 		assertTrue(def.getSimpleFields()
 				.contains(new SearchIndexFieldDefinition(new FieldName("spaghetti"), SearchIndexFieldType.BOOLEAN)));
 		assertEquals("foo:bar:v4", def.getSimpleIndex().getSimpleValue());
@@ -58,6 +63,7 @@ public class TestSearchIndexDefinition
 
 		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
 
+		// CODE REVEIW: one line
 		b.add(SearchIndexDefinition.FIELD_FIELDS,
 				new SearchIndexFieldDefinition(new FieldName("spaghetti"), SearchIndexFieldType.BOOLEAN));
 		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(null, SearchIndexFieldType.TEXT));
@@ -87,6 +93,7 @@ public class TestSearchIndexDefinition
 
 		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
 
+		// CODE REVEIW: one line
 		b.add(SearchIndexDefinition.FIELD_FIELDS,
 				new SearchIndexFieldDefinition(new FieldName("spaghetti"), SearchIndexFieldType.BOOLEAN));
 		b.add(SearchIndexDefinition.FIELD_FIELDS,

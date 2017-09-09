@@ -11,6 +11,7 @@ import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.junit.Before;
 import org.junit.Test;
 
+//CODE REVEIW: Should be SearchIndexFiledDefinitionTest
 public class TestSearchIndexFieldDefinition
 {
 

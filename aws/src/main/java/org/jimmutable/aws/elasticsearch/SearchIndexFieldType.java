@@ -12,7 +12,7 @@ import org.jimmutable.core.utils.Validator;
  */
 public enum SearchIndexFieldType implements StandardEnum
 {
-
+	// CODE REVEIW: each on seperate line
 	ATOM("keyword"), TEXT("text"), LONG("long"), BOOLEAN("boolean"), FLOAT("float"), DAY("date");
 
 	static public final MyConverter CONVERTER = new MyConverter();

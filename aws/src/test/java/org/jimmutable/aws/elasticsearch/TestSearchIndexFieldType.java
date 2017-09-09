@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+//CODE REVEIW: Should be SearchIndexFieldTypeTest
 public class TestSearchIndexFieldType
 {
 	@Test

@@ -23,7 +23,8 @@ public class IndexDefinition extends Stringable
 	private transient IndexVersion indexVersion;
 
 	public IndexDefinition(ApplicationId applicationId, IndexId indexId, IndexVersion indexVersion)
-	{
+	{ 
+		// CODE REVEIW: one line
 		super(String.format("%s%s%s%s%s", applicationId.getSimpleValue(), SEPARATOR, indexId.getSimpleValue(),
 				SEPARATOR, indexVersion.getSimpleValue()));
 	}
@@ -48,6 +49,8 @@ public class IndexDefinition extends Stringable
 		String[] values = super.getSimpleValue().split(SEPARATOR);
 
 		if (values.length != 3) {
+			
+			// CODE REVEIW: one line
 			throw new ValidationException(String.format(
 					"Expected the format applicationId:indexId:indexVersion but the definition was set to %s",
 					super.getSimpleValue()));
@@ -59,6 +62,7 @@ public class IndexDefinition extends Stringable
 		this.indexVersion = new IndexVersion(values[2]);
 
 		// Set the value (normalizes everything)
+		// CODE REVEIW: one line
 		super.setValue(String.format("%s%s%s%s%s", this.applicationId.getSimpleValue(), SEPARATOR,
 				this.indexId.getSimpleValue(), SEPARATOR, this.indexVersion.getSimpleValue()));
 

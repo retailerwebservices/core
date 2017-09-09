@@ -21,7 +21,7 @@ public class ElasticSearchEndpoint extends TransientImmutableObject<ElasticSearc
 
 	private String host;
 	private int port;
-	private String CURRENT;
+	private String CURRENT; // CODE REVEIW: You need to set the current endpoint here, not in the constructor.  If you do it in the constructor, CURRENT is unset until you construct and endpoint, and it is reset everytime you make an endpoint
 
 	/**
 	 * defaults to localhost:9300 if environment variable is unset or invalid
@@ -57,12 +57,12 @@ public class ElasticSearchEndpoint extends TransientImmutableObject<ElasticSearc
 
 	public String getSimpleHost()
 	{
-		return this.host;
+		return this.host;  // CODE REVEIW: just return host, not this.host
 	}
 
 	public int getSimplePort()
 	{
-		return this.port;
+		return this.port; // CODE REVEIW: Just return port
 	}
 
 	@Override
@@ -89,7 +89,7 @@ public class ElasticSearchEndpoint extends TransientImmutableObject<ElasticSearc
 	@Override
 	public void validate()
 	{
-		Validator.notNull(this.host, this.port);
+		Validator.notNull(this.host, this.port); // CODE REVEIW: port is an integer, can't be null
 	}
 
 	@Override
@@ -106,6 +106,7 @@ public class ElasticSearchEndpoint extends TransientImmutableObject<ElasticSearc
 
 		ElasticSearchEndpoint other = (ElasticSearchEndpoint) obj;
 
+		// CODE REVEIW: Don't use this.
 		if (!this.getSimpleHost().equals(other.getSimpleHost())) {
 			return false;
 		}

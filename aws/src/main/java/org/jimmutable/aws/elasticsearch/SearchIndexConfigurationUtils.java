@@ -28,6 +28,9 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
  * @author trevorbox
  *
  */
+
+//CODE REVEIW: Generally, I think the lifecycle management (opening and closing clients) needs to be managed *for* the user.  i.e. its bad that if you forget to call closeClient resources are not freed etc.  I suggest making the constructor private and having public static methods to perform the logical operations needed for others...
+
 public class SearchIndexConfigurationUtils
 {
 
@@ -44,6 +47,7 @@ public class SearchIndexConfigurationUtils
 
 		Settings settings = Settings.builder().put("cluster.name", "elasticsearch").build();
 
+		// CODE REVEIW:  format
 		try {
 
 			// long start = System.currentTimeMillis();
@@ -70,6 +74,7 @@ public class SearchIndexConfigurationUtils
 	 */
 	public boolean indexExists(IndexDefinition index)
 	{
+		// CODE REVEIW: needs to trap exceptions
 		if (index == null) {
 			logger.severe("Cannot check the existence of a null Index");
 			return false;
@@ -85,6 +90,7 @@ public class SearchIndexConfigurationUtils
 	 */
 	public boolean indexExists(SearchIndexDefinition index)
 	{
+		// CODE REVEIW: needs to trap exceptions
 		if (index == null) {
 			logger.severe("Cannot check the existence of a null Index");
 			return false;
@@ -102,7 +108,8 @@ public class SearchIndexConfigurationUtils
 	 */
 	public boolean indexProperlyConfigured(SearchIndexDefinition index)
 	{
-
+		// CODE REVEIW: needs to trap exceptions
+		// CODE REVEIW: format
 		if (index == null) {
 			return false;
 		}
@@ -149,6 +156,7 @@ public class SearchIndexConfigurationUtils
 
 	private boolean createIndex(SearchIndexDefinition index)
 	{
+		// CODE REVEIW: format
 		if (index == null) {
 			logger.severe("Cannot create a null Index");
 			return false;
@@ -178,6 +186,8 @@ public class SearchIndexConfigurationUtils
 		} catch (IOException e) {
 			logger.log(Level.SEVERE, String.format("Failed to generate mapping json for index %s",
 					index.getSimpleIndex().getSimpleValue()), e);
+			
+			// CODE REVEIW: return false, I think
 		}
 
 		return true;
@@ -190,6 +200,8 @@ public class SearchIndexConfigurationUtils
 			return false;
 		}
 
+		// CODE REVEIW: format
+		// CODE REVEIW: trap exceptions
 		DeleteIndexResponse deleteResponse = client.admin().indices()
 				.prepareDelete(index.getSimpleIndex().getSimpleValue()).get();
 		if (!deleteResponse.isAcknowledged()) {

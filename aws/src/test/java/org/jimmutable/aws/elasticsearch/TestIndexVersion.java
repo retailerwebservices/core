@@ -4,6 +4,7 @@ import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.util.StringableTest;
 import org.junit.Test;
 
+//CODE REVEIW: Should be IndexVersionTest
 public class TestIndexVersion extends StringableTest
 {
 

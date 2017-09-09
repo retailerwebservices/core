@@ -29,6 +29,7 @@ public class SearchDocumentId extends Stringable
 	@Override
 	public void validate()
 	{
+		// CODE REVIEW: Format
 		Validator.notNull(super.getSimpleValue());
 		Validator.min(super.getSimpleValue().length(), 1);
 		Validator.max(super.getSimpleValue().length(), 256);

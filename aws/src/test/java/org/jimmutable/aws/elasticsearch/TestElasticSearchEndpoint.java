@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+//CODE REVEIW: class name should be ElasticSearchEndpointTest (to match our current convention)
 public class TestElasticSearchEndpoint
 {
 

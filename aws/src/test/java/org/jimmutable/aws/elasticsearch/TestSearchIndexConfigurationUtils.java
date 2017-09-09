@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+//CODE REVEIW: Should be SearchIndexConfigurationUtilsTest
 public class TestSearchIndexConfigurationUtils
 {
 	private static SearchIndexDefinition def;
