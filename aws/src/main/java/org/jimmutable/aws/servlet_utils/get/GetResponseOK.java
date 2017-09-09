@@ -26,6 +26,8 @@ public class GetResponseOK extends JSONServletResponse
 		return TYPE_NAME;
 	}
 
+	// CODE REVIEW: Andrew has a new auto fomatter that won't break these lines at such a narrow width.  Get each of this on one line
+	
 	static public final FieldDefinition.StandardObject FIELD_OBJECT = new FieldDefinition.StandardObject("object",
 			null);
 

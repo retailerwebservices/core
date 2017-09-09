@@ -32,6 +32,9 @@ public class SearchResponseOK extends JSONServletResponse
 		return TYPE_NAME;
 	}
 
+	
+	// CODE REVIEW: Andrew has a new auto fomatter that won't break these lines at such a narrow width.  Get each of these statemetns on one line
+	
 	static public final FieldDefinition.StandardObject FIELD_SEARCH_REQUEST = new FieldDefinition.StandardObject(
 			"search_request", new StandardSearchRequest(""));
 	static public final FieldDefinition.Collection FIELD_RESULTS = new FieldDefinition.Collection("results",
@@ -75,6 +78,7 @@ public class SearchResponseOK extends JSONServletResponse
 	{
 		this.search_request = (StandardSearchRequest) t.getObject(FIELD_SEARCH_REQUEST);
 		this.results = t.getCollection(FIELD_RESULTS, new ArrayList<OneSearchResult>(), ReadAs.OBJECT, OnError.SKIP);
+		// CODE REVIEW: Remove this commened code
 //		if ( this.results == null )
 //		{
 //			this.results = new ArrayList<>();
@@ -99,6 +103,8 @@ public class SearchResponseOK extends JSONServletResponse
 		ret = Comparison.continueCompare(ret, getSimpleFirstResultIdx(), other.getSimpleFirstResultIdx());
 		ret = Comparison.continueCompare(ret, getSimpleHasMoreResults(), other.getSimpleHasMoreResults());
 		ret = Comparison.continueCompare(ret, getSimpleHasPreviousResults(), other.getSimpleHasPreviousResults());
+		
+		// CODE REVEIW: Don't break these lines
 		ret = Comparison.continueCompare(ret, getSimpleStartOfNextPageOfResults(),
 				other.getSimpleStartOfNextPageOfResults());
 		ret = Comparison.continueCompare(ret, getSimpleStartOfPreviousPageOfResults(),

@@ -30,6 +30,8 @@ public class StandardSearchRequest extends StandardImmutableObject<StandardSearc
 	static public int DEFAULT_MAX_RESULTS = 100;
 	static public int DEFAULT_START_RESULTS_AFTER = 0;
 
+	// CODE REVIEW: Andrew has a new auto fomatter that won't break these lines at such a narrow width.  Get each of these statemetns on one line
+	
 	static public final FieldDefinition.String FIELD_QUERY_STRING = new FieldDefinition.String("query", "");
 	static public final FieldDefinition.Integer FIELD_MAX_RESULTS = new FieldDefinition.Integer("max_results",
 			DEFAULT_MAX_RESULTS);
