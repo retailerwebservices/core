@@ -14,9 +14,12 @@ import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 /**
  * Utility class for search Index maintenance. Should be used on startup of
@@ -34,16 +37,22 @@ public class SearchIndexConfigurationUtils
 
 	private static final String ELASTICSEARCH_DEFAULT_TYPE = "default";
 
+	@SuppressWarnings("resource")
 	public SearchIndexConfigurationUtils(ElasticSearchEndpoint endpoint)
 	{
 		// set cluster name?
 
-		// Settings settings = Settings.builder().put("cluster.name",
-		// "elasticsearch").build();
+		Settings settings = Settings.builder().put("cluster.name", "elasticsearch").build();
 
 		try {
-			client = new PreBuiltTransportClient(Settings.EMPTY).addTransportAddress(new InetSocketTransportAddress(
+
+			// long start = System.currentTimeMillis();
+			client = new PreBuiltTransportClient(settings).addTransportAddress(new InetSocketTransportAddress(
 					InetAddress.getByName(endpoint.getSimpleHost()), endpoint.getSimplePort()));
+
+			// System.out.println(String.format("TransportClient took %s seconds to start",
+			// (System.currentTimeMillis() - start) * 0.001));
+
 		} catch (UnknownHostException e) {
 			String errorMessage = String.format("Failed to create a TransportClient from endpoint %s:%d",
 					endpoint.getSimpleHost(), endpoint.getSimplePort());
@@ -93,6 +102,7 @@ public class SearchIndexConfigurationUtils
 	 */
 	public boolean indexProperlyConfigured(SearchIndexDefinition index)
 	{
+
 		if (index == null) {
 			return false;
 		}
@@ -144,24 +154,36 @@ public class SearchIndexConfigurationUtils
 			return false;
 		}
 
-		Map<String, String> fieldTypeMap = new HashMap<String, String>();
-		index.getSimpleFields().forEach(fields -> {
-			fieldTypeMap.put(fields.getSimpleFieldName().getSimpleName(), fields.getSimpleType().getSimpleCode());
-		});
+		try {
+			XContentBuilder mappingBuilder = jsonBuilder().startObject().startObject(ELASTICSEARCH_DEFAULT_TYPE)
+					.startObject("properties");
 
-		CreateIndexResponse createResponse = client.admin().indices()
-				.prepareCreate(index.getSimpleIndex().getSimpleValue())
-				.addMapping(ELASTICSEARCH_DEFAULT_TYPE, fieldTypeMap).get();
+			for (SearchIndexFieldDefinition field : index.getSimpleFields()) {
+				mappingBuilder.startObject(field.getSimpleFieldName().getSimpleName())
+						.field("type", field.getSimpleType().getSimpleCode()).endObject();
+			}
 
-		if (!createResponse.isAcknowledged()) {
-			logger.severe(String.format("Index Creation not acknowledged for index %s",
-					index.getSimpleIndex().getSimpleValue()));
-			return false;
+			mappingBuilder.endObject().endObject().endObject();
+
+			CreateIndexResponse createResponse = client.admin().indices()
+					.prepareCreate(index.getSimpleIndex().getSimpleValue())
+					.addMapping(ELASTICSEARCH_DEFAULT_TYPE, mappingBuilder).get();
+
+			if (!createResponse.isAcknowledged()) {
+				logger.severe(String.format("Index Creation not acknowledged for index %s",
+						index.getSimpleIndex().getSimpleValue()));
+				return false;
+			}
+
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, String.format("Failed to generate mapping json for index %s",
+					index.getSimpleIndex().getSimpleValue()), e);
 		}
+
 		return true;
 	}
 
-	private boolean deleteIndex(SearchIndexDefinition index)
+	public boolean deleteIndex(SearchIndexDefinition index)
 	{
 		if (index == null) {
 			logger.severe("Cannot delete a null Index");
@@ -177,6 +199,12 @@ public class SearchIndexConfigurationUtils
 		}
 		return true;
 
+	}
+
+	// on shutdown
+	public void closeClient()
+	{
+		client.close();
 	}
 
 	/**
@@ -210,6 +238,7 @@ public class SearchIndexConfigurationUtils
 		}
 
 		// index exists and already configured correctly
+		logger.info("No upsert needed");
 		return true;
 	}
 
