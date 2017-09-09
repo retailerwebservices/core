@@ -25,6 +25,7 @@ import org.jimmutable.core.utils.Validator;
 public class SearchIndexDefinition extends StandardImmutableObject<SearchIndexDefinition>
 {
 
+	// CODE REVEIW:  one line
 	public static final FieldDefinition.Collection FIELD_FIELDS = new FieldDefinition.Collection("fields",
 			new FieldArrayList<SearchIndexFieldDefinition>());
 	public static final FieldDefinition.Stringable<IndexDefinition> FIELD_INDEX_DEFINITION = new FieldDefinition.Stringable<IndexDefinition>(
@@ -37,6 +38,8 @@ public class SearchIndexDefinition extends StandardImmutableObject<SearchIndexDe
 	public SearchIndexDefinition(ObjectParseTree t)
 	{
 		index = t.getStringable(FIELD_INDEX_DEFINITION);
+		 
+		// CODE REVEIW: one line
 		fields = t.getCollection(FIELD_FIELDS, new FieldArrayList<SearchIndexFieldDefinition>(), ReadAs.OBJECT,
 				ObjectParseTree.OnError.SKIP);
 	}
