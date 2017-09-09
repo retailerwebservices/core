@@ -54,6 +54,13 @@ public class QueryStringFragmentTest
 			assert(fragment.getSimpleFragmentDecodedValue().equals("BaR"));
 		}
 		
+		{
+			fragment = tester.assertValid("foo=bar baz");
+			
+			assert(fragment.getSimpleKey().equals(new QueryStringKey("foo")));
+			assert(fragment.getSimpleFragmentDecodedValue().equals("bar baz"));
+		}
+		
 		testOneFragmentFromPieces(new QueryStringKey("foo"),"bar");
 	}
 	

@@ -11,6 +11,8 @@ import org.jimmutable.core.utils.Validator;
  * normalized to lower case and any characters other than a-z, 0-9 and - are
  * stripped. keys may not be blank.
  * 
+ * Underscores are normalized to dashes (i.e. _ turns into -)
+ * 
  * 
  * @author kanej
  *
@@ -43,6 +45,7 @@ public class QueryStringKey extends Stringable
 			if ( ch >= 'a' && ch <= 'z' ) { clean_value.append(ch); }
 			if ( ch >= '0' && ch <= '9' ) { clean_value.append(ch); }
 			if ( ch == '-' ) { clean_value.append(ch); }
+			if ( ch == '_') { clean_value.append('-'); }
 		}
 		
 		setValue(clean_value.toString());
