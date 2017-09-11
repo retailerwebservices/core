@@ -1,7 +1,5 @@
 package org.jimmutable.gcloud.search;
 
-import com.google.appengine.api.search.Document;
-
 /**
  * Any class that can be added to a search index should implement the Indexable
  * interface.
@@ -9,14 +7,14 @@ import com.google.appengine.api.search.Document;
  * @author kanej
  *
  */
-public interface Indexable {
+public interface Indexable 
+{
 	/**
 	 * Get the index id that this object should be added to
-	 * 
 	 * @return An IndexId
 	 */
 	public IndexId getSimpleSearchIndexId();
-
+	
 	/**
 	 * Get the search document id. Frequently (but not always) this is also the
 	 * ObjectId of the object.
@@ -24,7 +22,7 @@ public interface Indexable {
 	 * @return The search document id for the document
 	 */
 	public DocumentId getSimpleSearchDocumentId();
-
+	
 	/**
 	 * Write (using DocumentWriter) the search document coresponding to this object
 	 * 
@@ -32,5 +30,4 @@ public interface Indexable {
 	 *            The DocumentWriter to write to
 	 */
 	public void writeSearchDocument(DocumentWriter writer);
-
 }

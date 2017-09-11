@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<%@ page contentType="text/html;charset=UTF-8" language="java"%>
-<%@ page import="org.jimmutable.app_engine_example.HelloInfo"%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="org.jimmutable.app_engine_example.HelloInfo" %>
 <!-- [START_EXCLUDE] -->
 <%--
   ~ Copyright (c) 2016 Google Inc. All Rights Reserved.
@@ -20,40 +20,24 @@
 <!-- [END_EXCLUDE] -->
 <html>
 <head>
-<link href='//fonts.googleapis.com/css?family=Marmelad' rel='stylesheet'
-	type='text/css'>
-<title>Hello App Engine Standard</title>
+  <link href='//fonts.googleapis.com/css?family=Marmelad' rel='stylesheet' type='text/css'>
+  <title>Hello App Engine Standard</title>
 </head>
 <body>
-	<h1>Hello App Engine -- Standard!</h1>
+    <h1>Hello App Engine -- Standard!</h1>
 
-	<p>
-		This is
-		<%=HelloInfo.getInfo()%>.
-	</p>
-	<table>
-		<tr>
-			<td colspan="2" style="font-weight: bold;">Available Servlets:</td>
-		</tr>
-		<tr>
-			<td><a href='/hello'>The servlet</a></td>
-		</tr>
-		<tr>
-			<td><a href='/logging'>Logging Servlet Example</a></td>
-		</tr>
-		<tr>
-			<td><a href='/searchIndex'>Search Index Example</a></td>
-		</tr>
-		<tr>
-			<td><a href='/indexManager'>Index Manager Example</a></td>
-		</tr>
-		<tr>
-			<td><a href='/search'>Search Example</a></td>
-		</tr>
-		<tr>
-			<td><a href='/gcs'>GCS example</a></td>
-		</tr>
-	</table>
+  <p>This is <%= HelloInfo.getInfo() %>.</p>
+  <table>
+    <tr>
+      <td colspan="2" style="font-weight:bold;">Available Servlets:</td>
+    </tr>
+    <tr>
+      <td><a href='/hello'>The servlet</a></td>
+    </tr>
+    <tr>
+    	  <td><a href = '/storage'>Test Storage</a></td>
+    </tr>
+  </table>
 
 </body>
 </html>

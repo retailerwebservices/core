@@ -43,7 +43,7 @@ final public class Book extends StandardImmutableObject<Book>
 	
 	private BindingType binding; // required
 
-	private FieldList<String> authors; 
+	private FieldList<String> authors;
 	
 	public Book(ObjectParseTree t)
 	{
