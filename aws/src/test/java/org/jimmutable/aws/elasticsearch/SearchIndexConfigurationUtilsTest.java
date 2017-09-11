@@ -11,7 +11,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class TestSearchIndexConfigurationUtils
+public class SearchIndexConfigurationUtilsTest
 {
 	private static SearchIndexDefinition def;
 
@@ -53,10 +53,13 @@ public class TestSearchIndexConfigurationUtils
 	// @Test
 	public void upsert() throws IOException
 	{
-		SearchIndexConfigurationUtils util = new SearchIndexConfigurationUtils(new ElasticSearchEndpoint());
+		SearchIndexConfigurationUtils util = new SearchIndexConfigurationUtils(ElasticSearchEndpoint.CURRENT);
 
+<<<<<<< HEAD:aws/src/test/java/org/jimmutable/aws/elasticsearch/TestSearchIndexConfigurationUtils.java
 		// test deletion
 
+=======
+>>>>>>> origin/cr_tjb:aws/src/test/java/org/jimmutable/aws/elasticsearch/SearchIndexConfigurationUtilsTest.java
 
 		for (int i = 0; i < 80; i++) {
 			util.upsertIndex(def);

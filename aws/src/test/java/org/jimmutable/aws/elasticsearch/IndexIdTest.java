@@ -7,13 +7,13 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestSearchDocumentId extends StringableTest
+public class IndexIdTest extends StringableTest
 {
 
 	@Test
 	public void testConverter()
 	{
-		SearchDocumentId defaulted = SearchDocumentId.CONVERTER.fromString("no.no.no", new SearchDocumentId("yes"));
+		IndexId defaulted = IndexId.CONVERTER.fromString("no.no.no", new IndexId("yes"));
 		assertEquals(defaulted.getSimpleValue(), "yes");
 	}
 
@@ -27,18 +27,20 @@ public class TestSearchDocumentId extends StringableTest
 		assertNotValid("foo!");
 
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < 257; i++) {
+		for (int i = 0; i < 65; i++) {
 			sb.append('a');
 		}
 
 		assertNotValid(sb.toString());
+
+		assertNotValid("12");
 
 	}
 
 	@Test
 	public void valid()
 	{
-		assertValid("ABB-1924", "abb-1924");
+		assertValid("ABB1924", "abb1924");
 		assertValid("abb1924", "abb1924");
 		assertValid("aBb1924", "abb1924");
 	}
@@ -46,7 +48,7 @@ public class TestSearchDocumentId extends StringableTest
 	@Override
 	public Stringable fromString(String src)
 	{
-		return new SearchDocumentId(src);
+		return new IndexId(src);
 	}
 
 }

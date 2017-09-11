@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-public class TestSearchIndexFieldType
+public class SearchIndexFieldTypeTest
 {
 	@Test
 	public void testAtom()

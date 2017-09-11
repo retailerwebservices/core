@@ -21,19 +21,16 @@ public class ElasticSearchEndpoint extends TransientImmutableObject<ElasticSearc
 
 	private String host;
 	private int port;
-	private String CURRENT;
+	public static final ElasticSearchEndpoint CURRENT;
 
-	/**
-	 * defaults to localhost:9300 if environment variable is unset or invalid
-	 */
-	public ElasticSearchEndpoint()
-	{
-		CURRENT = System.getProperty("elasticsearch.endpoint");
+	// set the static member to environment variable, else localhost:9300
+	static {
+		String endpoint = System.getProperty("elasticsearch.endpoint");
 		String tmp_host = null;
 		Integer tmp_port = null;
 
-		if (CURRENT != null) {
-			String[] host_port = CURRENT.split(":", -1);
+		if (endpoint != null) {
+			String[] host_port = endpoint.split(":", -1);
 			if (host_port.length == 2) {
 				tmp_host = host_port[0];
 				try {
@@ -49,20 +46,26 @@ public class ElasticSearchEndpoint extends TransientImmutableObject<ElasticSearc
 			tmp_port = 9300;
 		}
 
-		this.host = tmp_host;
-		this.port = tmp_port;
+		CURRENT = new ElasticSearchEndpoint(tmp_host, tmp_port);
+	}
+
+	public ElasticSearchEndpoint(String host, int port)
+	{
+
+		this.host = host;
+		this.port = port;
 
 		complete();
 	}
 
 	public String getSimpleHost()
 	{
-		return this.host;
+		return host;
 	}
 
 	public int getSimplePort()
 	{
-		return this.port;
+		return port;
 	}
 
 	@Override
@@ -89,7 +92,7 @@ public class ElasticSearchEndpoint extends TransientImmutableObject<ElasticSearc
 	@Override
 	public void validate()
 	{
-		Validator.notNull(this.host, this.port);
+		Validator.notNull(this.host);
 	}
 
 	@Override
@@ -106,10 +109,10 @@ public class ElasticSearchEndpoint extends TransientImmutableObject<ElasticSearc
 
 		ElasticSearchEndpoint other = (ElasticSearchEndpoint) obj;
 
-		if (!this.getSimpleHost().equals(other.getSimpleHost())) {
+		if (!getSimpleHost().equals(other.getSimpleHost())) {
 			return false;
 		}
-		if (this.getSimplePort() != other.getSimplePort()) {
+		if (getSimplePort() != other.getSimplePort()) {
 			return false;
 		}
 

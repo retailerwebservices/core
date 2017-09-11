@@ -33,8 +33,7 @@ public class IndexId extends Stringable
 		Validator.min(super.getSimpleValue().length(), 3);
 		Validator.max(super.getSimpleValue().length(), 64);
 
-		Validator.containsOnlyValidCharacters(super.getSimpleValue(), Validator.LOWERCASE_LETTERS, Validator.DASH,
-				Validator.NUMBERS);
+		Validator.containsOnlyValidCharacters(super.getSimpleValue(), Validator.LOWERCASE_LETTERS, Validator.DASH, Validator.NUMBERS);
 
 	}
 
