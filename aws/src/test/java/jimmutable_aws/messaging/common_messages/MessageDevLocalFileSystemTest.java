@@ -43,7 +43,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 
 	public static void testSendAsync() throws InterruptedException
 	{
-		String mainpath = System.getProperty("user.home") + "/jimmtuable_aws_dev/" + ApplicationId.getOptionalDevApplicationId(appId) + "/messaging/development/knights_in_monty_python";
+		String mainpath = System.getProperty("user.home") + "/jimmtuable_aws_dev/messaging/development/knights_in_monty_python";
 		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
 		{
 			for ( String queue_queue_id : Arrays.asList("queue1", "queue2") )
@@ -73,7 +73,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 
 	public static void testSendAsyncWithNoSubfolders() throws InterruptedException
 	{
-		String mainpath = System.getProperty("user.home") + "/jimmtuable_aws_dev/" + ApplicationId.getOptionalDevApplicationId(appId) + "/messaging/development/knights_in_monty_python";
+		String mainpath = System.getProperty("user.home") + "/jimmtuable_aws_dev/messaging/development/knights_in_monty_python";
 
 		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("Knights_in_Monty_Python")), new StandardMessageOnUpsert(new Kind("niii"), new ObjectId(123456789))));
 		Thread.sleep(1000);// have it wait a second
@@ -95,7 +95,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 		{
 			filepath = mainpath + "/" + queue_application_id;
 			f = new File(filepath);
-			assertEquals(0,f.listFiles().length);// prove that no the message got there.
+			assertEquals(0, f.listFiles().length);// prove that no the message got there.
 		}
 	}
 
@@ -129,7 +129,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 
 	public static void testStartListening() throws InterruptedException
 	{
-		String mainpath = System.getProperty("user.home") + "/jimmtuable_aws_dev/" + ApplicationId.getOptionalDevApplicationId(appId) + "/messaging/development/monty_python_jokes/development/the-holy-grail";
+		String mainpath = System.getProperty("user.home") + "/jimmtuable_aws_dev/messaging/development/monty_python_jokes/development/the-holy-grail";
 		TestMessageListener listener = new TestMessageListener();
 
 		// start listening with the listener that we want to listen with
@@ -141,18 +141,30 @@ public class MessageDevLocalFileSystemTest extends TestCase
 		Thread.sleep(6000);// have it wait a minute so it can detect changes.
 
 		// make sure that the listener picked up the message
-		assertTrue(listener.messageDetected);
+		assertEquals(1, listener.messagesFound);
 		assertEquals("killer-bunny", listener.messageContent);
 
 		// make sure we deleted the message after we heard it.
 		File f = new File(mainpath);
 		assertEquals(0, f.listFiles().length);
 
+		// send a different message
+		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty_python_jokes")), new StandardMessageOnUpsert(new Kind("niii"), new ObjectId(123456780))));
+		Thread.sleep(12000);// have it wait a minute so it can detect changes.
+
+		// make sure that the listener picked up the message
+		assertEquals(2, listener.messagesFound);
+		assertEquals("niii", listener.messageContent);
+
+		// make sure we deleted the message after we heard it.
+		f = new File(mainpath);
+		assertEquals(0, f.listFiles().length);
+
 	}
 
 	public static void testSendAllAndShutdown() throws InterruptedException
 	{
-		String mainpath = System.getProperty("user.home") + "/jimmtuable_aws_dev/" + ApplicationId.getOptionalDevApplicationId(appId) + "/messaging/development/monty_python_jokes";
+		String mainpath = System.getProperty("user.home") + "/jimmtuable_aws_dev/messaging/development/monty_python_jokes";
 		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
 		{
 			for ( String queue_queue_id : Arrays.asList("queue1", "queue2") )
@@ -178,7 +190,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 				initialResults[i++] = f.listFiles().length;
 			}
 		}
-		Thread.sleep(10000);// have it wait a millisecond to let things catchup
+		Thread.sleep(10000);// have it wait a millisecond to let things catch up
 		i = 0;
 		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
 		{
@@ -206,7 +218,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 	@Override
 	protected void tearDown()
 	{
-		String filePathString = System.getProperty("user.home") + "/jimmtuable_aws_dev/" + ApplicationId.getOptionalDevApplicationId(appId);// application id needs to go here
+		String filePathString = System.getProperty("user.home") + "/jimmtuable_aws_dev/messaging";// application id needs to go here
 		File f = new File(filePathString);
 		if ( f.exists() )
 		{
@@ -226,12 +238,12 @@ public class MessageDevLocalFileSystemTest extends TestCase
 class TestMessageListener implements MessageListener
 {
 	public String messageContent;
-	public boolean messageDetected = false;
+	public int messagesFound = 0;
 
 	@Override
 	public void onMessageReceived( @SuppressWarnings("rawtypes") StandardObject message )
 	{
-		messageDetected = true;
+		messagesFound = messagesFound+1;
 		messageContent = ((StandardMessageOnUpsert) message).getSimpleKind().toString();
 	}
 }

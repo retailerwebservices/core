@@ -2,6 +2,7 @@ package org.jimmutable.aws.messaging;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -9,12 +10,15 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.management.RuntimeErrorException;
+import org.jimmutable.core.utils.Validator;
 
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.objects.StandardObject;
@@ -27,12 +31,10 @@ import org.jimmutable.storage.StorageKeyExtension;
 import com.amazonaws.util.IOUtils;
 
 /**
- * CODE REVIEW: The directory [home directory]/jimmutable_aws_messaging/[ApplicationId]/messaging is not right, it should be ~/jimmutable_aws_dev/messaging/[topic def]/[queue def]
- * 
  * This is our local implementation of Messaging. It is designed so that a
  * person can run our messaging services without having to rely on AWS or
  * Google. Messages created are stored as .json files on the local machine, in:
- * [home directory]/jimmutable_aws_messaging/[ApplicationId]/messaging This
+ * ~/jimmutable_aws_dev/messaging/[topic def]/[queue def] This
  * class has a Single thread executor to handle the sending of messages. It is
  * created on creation of this class and can be shutdown by running the
  * SendAllAndShutdown method.
@@ -42,9 +44,9 @@ import com.amazonaws.util.IOUtils;
  */
 public class MessagingDevLocalFileSystem extends Messaging
 {
-	// CODE REVEIW: Both of these fields should be private (no modified = package private = visible to other classes in the package
-	File root;
-	final ExecutorService executor_service = Executors.newSingleThreadExecutor(); // CODE REVIEW: No need for final here
+
+	private File root;
+	private ExecutorService executor_service = Executors.newSingleThreadExecutor();
 
 	public MessagingDevLocalFileSystem()
 	{
@@ -55,13 +57,8 @@ public class MessagingDevLocalFileSystem extends Messaging
 			throw new RuntimeException();
 		}
 
-		root = new File(System.getProperty("user.home") + "/jimmtuable_aws_dev/" + ApplicationId.getOptionalDevApplicationId(new ApplicationId("Development")) + "/messaging");  // CODE REVIEW: This path is wrong.  Messaging is, by it definition, intra application.  Should be ~/jimmutable_aws_dev/messaging/
-		
-		// CODE REVIEW: No need for this code, you can just say root.mkdirs();
-		
-	    String pathname = root.getAbsolutePath();
-		File pfile = new File(pathname);
-		pfile.mkdirs();
+		root = new File(System.getProperty("user.home"), "/jimmtuable_aws_dev/messaging");
+		root.mkdirs();
 	}
 
 	/**
@@ -77,7 +74,6 @@ public class MessagingDevLocalFileSystem extends Messaging
 	{
 		if ( message == null )
 		{
-			System.out.println("message is null"); // CODE REVIEW: Print nothing, just return
 			return false;
 		}
 
@@ -98,7 +94,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 	@Override
 	public boolean startListening( SubscriptionDefinition subscription, MessageListener listener )
 	{
-		File subscription_path = new File(root.getAbsolutePath() + "/" + subscription.getSimpleValue()); // CODE REVIEW: Use the two parameter constructor for file, namely new File(root, subscription.getSimpleValue());
+		File subscription_path = new File(root.getAbsolutePath(), subscription.getSimpleValue());
 		if ( !subscription_path.exists() )// if subscription does not exist, make it.
 		{
 			subscription_path.mkdirs();
@@ -113,15 +109,13 @@ public class MessagingDevLocalFileSystem extends Messaging
 	 * Single thread executor finishes all current threads, then shuts down. Single
 	 * thread executor will not accept any new threads after this method is run.
 	 */
-
 	@Override
 	public void sendAllAndShutdown()
 	{
 		executor_service.shutdown();
 	}
 
-	// CODE REVIEW: Need private modifier
-	class SendMessageRunnable implements Runnable
+	private class SendMessageRunnable implements Runnable
 	{
 		@SuppressWarnings("rawtypes")
 		private StandardObject message;
@@ -137,55 +131,23 @@ public class MessagingDevLocalFileSystem extends Messaging
 		@Override
 		public void run()
 		{
-			// CODE REVIEW: Replace with Validator.notNull(topic)
-			if ( topic == null )
-			{
-				throw new RuntimeException("Topic cannot be empty");
-			}
-			Random rng = new Random();
-			ObjectId objectId = new ObjectId(rng.nextLong());
+			Validator.notNull(topic);
+			ObjectId objectId = new ObjectId(new Random().nextLong());
 
 			FileOutputStream fos;
 
 			try
 			{
-				// CODE REVIEW: Use two parameter constructor for file, namely new File(root, topic.getSimpleValue);
-				String pathname = root.getAbsolutePath() + "/" + topic.getSimpleValue();
-				File pfile = new File(pathname);
-
-				// CODE REIVEW: Create a helper methods List<File> listDirectoriesToPutMessagesInto() that does the listing of directories that should get messages
-				// CODE REIVEW: What is withthe calls to isHidden()?  Was there an issue with hidden files/directories?   I think the code should use isDirectory() to make sure that its only trying to list directories etc.
+				File pfile = new File(root.getAbsolutePath(), topic.getSimpleValue());
 				
-				File[] listFiles = pfile.listFiles();
-				if ( listFiles != null )
-				{
-					for ( File file_header : listFiles )
-					{
-						listFiles = pfile.listFiles();
-						if ( !file_header.isHidden() && listFiles != null )
-						{
-							for ( File sub_file_header : file_header.listFiles() )
-							{
-								if ( !sub_file_header.isHidden() )
-								{
-									File file = new File(sub_file_header.getAbsolutePath() + "/" + objectId.getSimpleValue() + "." + StorageKeyExtension.JSON);
-									fos = new FileOutputStream(file.getAbsolutePath());
-									fos.write(ObjectWriter.serialize(Format.JSON_PRETTY_PRINT, message).getBytes());
-									fos.close();
-								}
-							}
+				// CODE REIVEW: What is with the calls to isHidden()? Was there an issue with
+				// hidden files/directories?
+				// CODE ANSWER: We were having issues with Hidden directories (The one I found was ./DStore)
 
-						}
-						else {
-							System.out.println("No Topics to send to. No message sent."); // CODE REVIEW: Use logging
-						}
-					}
-				}
-				else
+				for ( File sub_file_header : listDirectoriesToPutMessagesInto(pfile) )
 				{
-					System.out.println("No Topics to send to. No message sent."); // CODE REVIEW: Use logging
+					writeFile(objectId, sub_file_header);					
 				}
-
 			}
 			catch ( Exception e )
 			{
@@ -193,88 +155,116 @@ public class MessagingDevLocalFileSystem extends Messaging
 				e.printStackTrace();
 			}
 		}
+
+		private List<File> listDirectoriesToPutMessagesInto( File pfile )
+		{
+			List<File> filesToReturn = new ArrayList<File>();
+			File[] listFiles = pfile.listFiles();
+			if ( listFiles != null )
+			{
+				for ( File file_header : listFiles )
+				{
+					listFiles = pfile.listFiles();
+					if ( !file_header.isHidden() && listFiles != null )
+					{
+						for ( File sub_file_header : file_header.listFiles() )
+						{
+							if ( !sub_file_header.isHidden() )
+							{
+								filesToReturn.add(sub_file_header);
+							}
+						}
+					}
+				}
+			}
+			return filesToReturn;
+		}
+
+		private void writeFile( ObjectId objectId, File sub_file_header ) throws FileNotFoundException, IOException
+		{
+			FileOutputStream fos;
+			File file = new File(sub_file_header.getAbsolutePath(), objectId.getSimpleValue() + "." + StorageKeyExtension.JSON);
+			fos = new FileOutputStream(file.getAbsolutePath());
+			fos.write(ObjectWriter.serialize(Format.JSON_PRETTY_PRINT, message).getBytes());
+			fos.close();
+		}
 	}
 
-	// CODE REVIEW: Needs to be private
-	class ListenForMessageRunnable implements Runnable
+	private class ListenForMessageRunnable implements Runnable
 	{
-		// CODE REVIEW: Needs private modifier
-		File subscription_path;
-		MessageListener listener;
+
+		private MessageListener listener;
+		private Path my_dir;
 
 		public ListenForMessageRunnable( File subscription_path, MessageListener listener )
 		{
-			this.subscription_path = subscription_path;
+			this.my_dir = subscription_path.toPath();
 			this.listener = listener;
 		}
 
 		@SuppressWarnings("rawtypes")
 		@Override
-		public void run()// this will only find one message.
+		public void run()
 		{
-			// CODE REVIEW: Break this into methods
-			// CODE REVIEW: Also, this code does not appear write to me, you need to continue to poll events *forever* with some kind of sleep in between.  
-			/**
-			 * while(true)
-			 * {
-			 * 
-			 * 		sleep(500);
-			 * 
-			 * 		List<WatchEvent<?>> events = watckKey.pollEvents();
-			 * 
-			 * 		for ( WatchEvent event : events )
-			 * 		{
-			 * 			handleEvent(event);
-			 * 		}
-			 * }
-			 * 
-			 * 
-			 * handleEvent() should have all the code to handle the evenet
-			 * 
-			 */
-			
-			// CODE REVIEW: With the error handling code in the outer loop like that, any exception will stop the messaging service forever...
-			
-			
-			Path my_dir = subscription_path.toPath();
-			try
+			WatchService watcher = setupListener();
+			WatchKey watchKey=null;
+			while ( true )
 			{
-				WatchService watcher = my_dir.getFileSystem().newWatchService();
-				my_dir.register(watcher, StandardWatchEventKinds.ENTRY_CREATE);
-				WatchKey watckKey = watcher.take();
-
-				List<WatchEvent<?>> events = watckKey.pollEvents();
-				for ( WatchEvent event : events )
+				try
 				{
-					if ( event.kind() == StandardWatchEventKinds.ENTRY_CREATE )
+					Thread.sleep(500);
+
+					watchKey= watcher.take();
+				    
+					List<WatchEvent<?>> events = watchKey.pollEvents();
+					for ( WatchEvent event : events )
 					{
-
-						Path message_path = my_dir.resolve(((Path) event.context()));
-						File f = new File(message_path.toString());
-						listener.onMessageReceived(StandardObject.deserialize(readFile(f)));
-						f.delete();
-
+						if ( event.kind() == StandardWatchEventKinds.ENTRY_CREATE )
+						{
+							handleEvent(event);
+						}
 					}
 				}
+				catch ( Exception e )
+				{
+					e.printStackTrace();
+				}
+				watchKey.reset(); //need this so we can look again
 			}
-			catch ( Exception e )
+		}
+
+		private void handleEvent( WatchEvent event )
+		{
+			Path message_path = my_dir.resolve(((Path) event.context()));
+			File f = new File(message_path.toString());
+			listener.onMessageReceived(StandardObject.deserialize(readFile(f)));
+			f.delete();
+		}
+
+		private WatchService setupListener()
+		{
+			WatchService watcher = null;
+			try
 			{
-				e.printStackTrace();
+				watcher = my_dir.getFileSystem().newWatchService();
+				my_dir.register(watcher, StandardWatchEventKinds.ENTRY_CREATE);
 			}
+			catch ( IOException e1 )
+			{
+				e1.printStackTrace(); // setup was bad, could not start thread.
+			}
+			return watcher;
 		}
 
 		private String readFile( File f )
 		{
 			FileInputStream fis = null;
-			
-			// CODE REVEIW: This code is not write.  Read does not guarantee that it reads all of the data from a file.  I recommend you just use IOUtils. IOUtils.toByteArray(fis) (remember to close the stream afterwards)
-			
-			byte[] bytesArray = new byte[(int) f.length()];
 			try
 			{
 				fis = new FileInputStream(f);
-				fis.read(bytesArray); // read file into bytes[]
-				return new String(bytesArray);
+				byte[] byteArray = IOUtils.toByteArray(fis);
+				fis.close();
+				return new String(byteArray);
 			}
 			catch ( Exception e )
 			{
@@ -296,3 +286,4 @@ public class MessagingDevLocalFileSystem extends Messaging
 		}
 	}
 }
+
