@@ -1,7 +1,5 @@
 package org.jimmutable.aws.logging;
 
-import static org.junit.Assert.*;
-
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.logging.Formatter;
@@ -15,6 +13,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 public class TestLogging
 {
 
@@ -23,7 +25,7 @@ public class TestLogging
 	private static StreamHandler customLogHandler;
 
 	@Before
-	public void before()
+	public void setUp()
 	{
 		// This loads the LoggingUtil class to setup logging how we want. We will need
 		// to instantiate the singleton in our main method as well.
@@ -36,6 +38,12 @@ public class TestLogging
 
 		customLogHandler = new StreamHandler(logCapturingStream, rootFormatter);
 		logger.addHandler(customLogHandler);
+	}
+
+	@After
+	public void tearDown()
+	{
+		logger.removeHandler(customLogHandler);
 	}
 
 	private String getTestCapturedLog()
@@ -71,11 +79,9 @@ public class TestLogging
 	public void textExceptionOutput()
 	{
 
-		try
-		{
+		try {
 			Integer.parseInt("foggle");
-		} catch (NumberFormatException e)
-		{
+		} catch (NumberFormatException e) {
 			logger.log(Level.WARNING, "myMessage", e);
 		}
 
@@ -84,12 +90,6 @@ public class TestLogging
 
 		assertTrue(lines[1].equals("java.lang.NumberFormatException: For input string: \"foggle\""));
 
-	}
-
-	@After
-	public void after()
-	{
-		logger.removeHandler(customLogHandler);
 	}
 
 }
