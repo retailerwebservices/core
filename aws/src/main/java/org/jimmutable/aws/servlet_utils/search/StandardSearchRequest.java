@@ -11,11 +11,9 @@ import org.jimmutable.core.utils.Comparison;
 import org.jimmutable.core.utils.Validator;
 
 /**
- * StandardSearchRequest 
- * Container for passing general search information
+ * StandardSearchRequest Container for passing general search information
  * 
- * @author Preston McCumber
- * Sep 5, 2017
+ * @author Preston McCumber Sep 5, 2017
  */
 public class StandardSearchRequest extends StandardImmutableObject<StandardSearchRequest>
 {
@@ -30,13 +28,9 @@ public class StandardSearchRequest extends StandardImmutableObject<StandardSearc
 	static public int DEFAULT_MAX_RESULTS = 100;
 	static public int DEFAULT_START_RESULTS_AFTER = 0;
 
-	// CODE REVIEW: Andrew has a new auto fomatter that won't break these lines at such a narrow width.  Get each of these statemetns on one line
-	
 	static public final FieldDefinition.String FIELD_QUERY_STRING = new FieldDefinition.String("query", "");
-	static public final FieldDefinition.Integer FIELD_MAX_RESULTS = new FieldDefinition.Integer("max_results",
-			DEFAULT_MAX_RESULTS);
-	static public final FieldDefinition.Integer FIELD_START_RESULTS_AFTER = new FieldDefinition.Integer(
-			"start_results_after", DEFAULT_START_RESULTS_AFTER);
+	static public final FieldDefinition.Integer FIELD_MAX_RESULTS = new FieldDefinition.Integer("max_results", DEFAULT_MAX_RESULTS);
+	static public final FieldDefinition.Integer FIELD_START_RESULTS_AFTER = new FieldDefinition.Integer("start_results_after", DEFAULT_START_RESULTS_AFTER);
 
 	private String query_string; // required
 	private int max_results; // required
@@ -54,13 +48,13 @@ public class StandardSearchRequest extends StandardImmutableObject<StandardSearc
 		this.query_string = query_string;
 		this.max_results = max_results;
 		this.start_results_after = start_results_after;
-		
+
 		complete();
 	}
-	
+
 	public StandardSearchRequest( String query_string )
 	{
-		this(query_string, DEFAULT_MAX_RESULTS, DEFAULT_START_RESULTS_AFTER );
+		this(query_string, DEFAULT_MAX_RESULTS, DEFAULT_START_RESULTS_AFTER);
 	}
 
 	public String getSimpleQueryString()

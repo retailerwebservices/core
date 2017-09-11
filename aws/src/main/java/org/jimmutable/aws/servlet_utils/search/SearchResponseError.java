@@ -16,7 +16,6 @@ import org.jimmutable.core.utils.Validator;
  * request
  * 
  * @author Preston McCumber
- * Sep 7, 2017
  */
 public class SearchResponseError extends JSONServletResponse
 {
@@ -28,9 +27,7 @@ public class SearchResponseError extends JSONServletResponse
 		return TYPE_NAME;
 	}
 
-	// CODE REVEIW: Don't break these lines
-	static public final FieldDefinition.StandardObject FIELD_SEARCH_REQUEST = new FieldDefinition.StandardObject(
-			"search_request", new StandardSearchRequest(""));
+	static public final FieldDefinition.StandardObject FIELD_SEARCH_REQUEST = new FieldDefinition.StandardObject("search_request", new StandardSearchRequest(""));
 	static public final FieldDefinition.String FIELD_MESSAGE = new FieldDefinition.String("message", null);
 
 	static public final int HTTP_STATUS_CODE_ERROR = 500;

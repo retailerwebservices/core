@@ -11,11 +11,9 @@ import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.utils.Comparison;
 
 /**
- * GetResponseOK
- * Used to indicate successful response to GET request
+ * GetResponseOK Used to indicate successful response to GET request
  * 
  * @author Preston McCumber
- * Sep 1, 2017
  */
 public class GetResponseOK extends JSONServletResponse
 {
@@ -26,10 +24,7 @@ public class GetResponseOK extends JSONServletResponse
 		return TYPE_NAME;
 	}
 
-	// CODE REVIEW: Andrew has a new auto fomatter that won't break these lines at such a narrow width.  Get each of this on one line
-	
-	static public final FieldDefinition.StandardObject FIELD_OBJECT = new FieldDefinition.StandardObject("object",
-			null);
+	static public final FieldDefinition.StandardObject FIELD_OBJECT = new FieldDefinition.StandardObject("object", null);
 
 	static public final int HTTP_STATUS_CODE_OK = 200;
 
