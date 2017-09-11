@@ -13,7 +13,7 @@ import org.joda.time.DateTime;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class TestSearchDocumentWriter
+public class SearchDocumentWriterTest
 {
 
 	@BeforeClass

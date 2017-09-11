@@ -30,18 +30,12 @@ public class SearchIndexConfigurationUtilsTest
 
 		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
 
-		b.add(SearchIndexDefinition.FIELD_FIELDS,
-				new SearchIndexFieldDefinition(new FieldName("boolean"), SearchIndexFieldType.BOOLEAN));
-		b.add(SearchIndexDefinition.FIELD_FIELDS,
-				new SearchIndexFieldDefinition(new FieldName("text"), SearchIndexFieldType.TEXT));
-		b.add(SearchIndexDefinition.FIELD_FIELDS,
-				new SearchIndexFieldDefinition(new FieldName("atom"), SearchIndexFieldType.ATOM));
-		b.add(SearchIndexDefinition.FIELD_FIELDS,
-				new SearchIndexFieldDefinition(new FieldName("day"), SearchIndexFieldType.DAY));
-		b.add(SearchIndexDefinition.FIELD_FIELDS,
-				new SearchIndexFieldDefinition(new FieldName("float"), SearchIndexFieldType.FLOAT));
-		b.add(SearchIndexDefinition.FIELD_FIELDS,
-				new SearchIndexFieldDefinition(new FieldName("long"), SearchIndexFieldType.LONG));
+		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("boolean"), SearchIndexFieldType.BOOLEAN));
+		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("text"), SearchIndexFieldType.TEXT));
+		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("atom"), SearchIndexFieldType.ATOM));
+		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("day"), SearchIndexFieldType.DAY));
+		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("float"), SearchIndexFieldType.FLOAT));
+		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("long"), SearchIndexFieldType.LONG));
 
 		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, new IndexDefinition("trevorApp:trevorIndex:v1"));
 
@@ -55,15 +49,8 @@ public class SearchIndexConfigurationUtilsTest
 	{
 		SearchIndexConfigurationUtils util = new SearchIndexConfigurationUtils(ElasticSearchEndpoint.CURRENT);
 
-<<<<<<< HEAD:aws/src/test/java/org/jimmutable/aws/elasticsearch/TestSearchIndexConfigurationUtils.java
-		// test deletion
+		util.upsertIndex(def);
 
-=======
->>>>>>> origin/cr_tjb:aws/src/test/java/org/jimmutable/aws/elasticsearch/SearchIndexConfigurationUtilsTest.java
-
-		for (int i = 0; i < 80; i++) {
-			util.upsertIndex(def);
-		}
 	}
 
 }
