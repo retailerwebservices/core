@@ -4,8 +4,7 @@ import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.util.StringableTest;
 import org.junit.Test;
 
-//CODE REVEIW: Should be IndexVersionTest
-public class TestIndexVersion extends StringableTest
+public class IndexVersionTest extends StringableTest
 {
 
 	@Override
@@ -28,7 +27,6 @@ public class TestIndexVersion extends StringableTest
 		super.assertNotValid("v");
 		super.assertNotValid("vv");
 		super.assertNotValid("v 2");
-
 	}
 
 }

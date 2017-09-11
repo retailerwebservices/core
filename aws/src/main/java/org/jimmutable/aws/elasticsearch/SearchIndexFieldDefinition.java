@@ -20,11 +20,8 @@ import org.jimmutable.core.utils.Validator;
 public class SearchIndexFieldDefinition extends StandardImmutableObject<SearchIndexFieldDefinition>
 {
 
-	// CODE REVEIW: one line
-	public static final FieldDefinition.StandardObject FIELD_FIELD_NAME = new FieldDefinition.StandardObject("name",
-			null);
-	public static final FieldDefinition.Enum<SearchIndexFieldType> FIELD_SEARCH_INDEX_FIELD_TYPE = new FieldDefinition.Enum<SearchIndexFieldType>(
-			"type", null, SearchIndexFieldType.CONVERTER);
+	public static final FieldDefinition.StandardObject FIELD_FIELD_NAME = new FieldDefinition.StandardObject("name", null);
+	public static final FieldDefinition.Enum<SearchIndexFieldType> FIELD_SEARCH_INDEX_FIELD_TYPE = new FieldDefinition.Enum<SearchIndexFieldType>("type", null, SearchIndexFieldType.CONVERTER);
 
 	public static final TypeName TYPE_NAME = new TypeName(SearchIndexFieldDefinition.class.getName());
 

@@ -11,8 +11,7 @@ import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.junit.Before;
 import org.junit.Test;
 
-//CODE REVEIW: Should be SearchIndexFiledDefinitionTest
-public class TestSearchIndexFieldDefinition
+public class SearchIndexFieldDefinitionTest
 {
 
 	@Before
@@ -73,10 +72,7 @@ public class TestSearchIndexFieldDefinition
 	public void jsonSerialization()
 	{
 
-		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s", "{",
-				"  \"type_hint\" : \"org.jimmutable.aws.elasticsearch.SearchIndexFieldDefinition\",", "  \"name\" : {",
-				"    \"type_hint\" : \"jimmutable.FieldName\",", "    \"name\" : \"spaghetti\"", "  },",
-				"  \"type\" : \"keyword\"", "}");
+		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s", "{", "  \"type_hint\" : \"org.jimmutable.aws.elasticsearch.SearchIndexFieldDefinition\",", "  \"name\" : {", "    \"type_hint\" : \"jimmutable.FieldName\",", "    \"name\" : \"spaghetti\"", "  },", "  \"type\" : \"keyword\"", "}");
 
 		SearchIndexFieldDefinition obj = (SearchIndexFieldDefinition) StandardObject.deserialize(obj_string);
 

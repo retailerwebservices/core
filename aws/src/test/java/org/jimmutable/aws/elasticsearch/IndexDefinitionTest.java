@@ -4,8 +4,7 @@ import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.util.StringableTest;
 import org.junit.Test;
 
-//CODE REVEIW: Should be IndexDefinitionTest to match our convention
-public class TestIndexDefinition extends StringableTest
+public class IndexDefinitionTest extends StringableTest
 {
 
 	@Test

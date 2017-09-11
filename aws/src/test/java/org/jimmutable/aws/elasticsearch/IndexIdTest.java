@@ -7,8 +7,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-//CODE REVEIW: Should be IndexIdTest to match our convention
-public class TestIndexId extends StringableTest
+public class IndexIdTest extends StringableTest
 {
 
 	@Test

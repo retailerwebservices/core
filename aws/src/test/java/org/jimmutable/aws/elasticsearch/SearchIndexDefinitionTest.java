@@ -16,8 +16,7 @@ import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.junit.Before;
 import org.junit.Test;
 
-//CODE REVEIW: Should be SearchIndexDefinitionTest
-public class TestSearchIndexDefinition
+public class SearchIndexDefinitionTest
 {
 	@Before
 	public void before()

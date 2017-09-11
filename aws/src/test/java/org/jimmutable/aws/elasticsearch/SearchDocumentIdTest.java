@@ -7,8 +7,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-//CODE REVEIW: Should be SearchDocumentIdTest
-public class TestSearchDocumentId extends StringableTest
+public class SearchDocumentIdTest extends StringableTest
 {
 
 	@Test
