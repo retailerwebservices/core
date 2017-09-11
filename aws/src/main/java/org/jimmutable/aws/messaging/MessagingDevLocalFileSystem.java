@@ -16,7 +16,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.management.RuntimeErrorException;
 import org.jimmutable.core.utils.Validator;
 
@@ -47,7 +48,9 @@ public class MessagingDevLocalFileSystem extends Messaging
 
 	private File root;
 	private ExecutorService executor_service = Executors.newSingleThreadExecutor();
-
+	private static final Logger logger = Logger.getLogger(MessagingDevLocalFileSystem.class.getName());
+	
+	
 	public MessagingDevLocalFileSystem()
 	{
 		super();
@@ -151,8 +154,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 			}
 			catch ( Exception e )
 			{
-				System.out.println("Sending message Failed: " + e + "\n"); // CODE REVEIW: Use logging
-				e.printStackTrace();
+				 logger.log(Level.WARNING,"Could not send message");
 			}
 		}
 
@@ -227,7 +229,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 				}
 				catch ( Exception e )
 				{
-					e.printStackTrace();
+					logger.log(Level.SEVERE, "Could not hear message");
 				}
 				watchKey.reset(); //need this so we can look again
 			}
@@ -251,7 +253,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 			}
 			catch ( IOException e1 )
 			{
-				e1.printStackTrace(); // setup was bad, could not start thread.
+				logger.log(Level.SEVERE, "Could not setup listener", e1);
 			}
 			return watcher;
 		}
@@ -268,7 +270,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 			}
 			catch ( Exception e )
 			{
-				System.out.println("Something went wrong with reading the file");
+				logger.log(Level.SEVERE, "Something went wrong with reading the file", e);
 				return null;
 			}
 			finally
@@ -279,7 +281,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 				}
 				catch ( IOException e )
 				{
-					System.out.println("Something went weird when trying to close the file stream");
+					logger.log(Level.SEVERE, "Something went weird when trying to close the file stream", e);
 				}
 			}
 
