@@ -22,7 +22,6 @@ import org.jimmutable.core.utils.Validator;
  * Stores FieldName, String pairs in a HashMap. HashMap can be empty.
  * 
  * @author Preston McCumber
- * Sep 6, 2017
  */
 public class OneSearchResult extends StandardImmutableMapDeck<OneSearchResult, FieldName, String>
 {

@@ -41,7 +41,7 @@ public class GetResponseOKTest extends TestCase
 		assert (result.getSimpleHTTPResponseCode() == GetResponseOK.HTTP_STATUS_CODE_OK);
 		assert (result.getSimpleObject() != null);
 
-		StandardImmutableObject data_object = new Book("test title", 50, "100", BindingType.HARD_COVER, "test author");
+		StandardImmutableObject<Book> data_object = new Book("test title", 50, "100", BindingType.HARD_COVER, "test author");
 		result = new GetResponseOK(data_object);
 		assert (result.getSimpleObject() == data_object);
 	}

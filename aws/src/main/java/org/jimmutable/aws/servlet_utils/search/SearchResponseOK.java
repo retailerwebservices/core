@@ -20,7 +20,6 @@ import org.jimmutable.core.utils.Validator;
  * pass results
  * 
  * @author Preston McCumber
- * Sep 5, 2017
  */
 public class SearchResponseOK extends JSONServletResponse
 {
@@ -32,20 +31,16 @@ public class SearchResponseOK extends JSONServletResponse
 		return TYPE_NAME;
 	}
 
-	static public final FieldDefinition.StandardObject FIELD_SEARCH_REQUEST = new FieldDefinition.StandardObject(
-			"search_request", new StandardSearchRequest(""));
-	static public final FieldDefinition.Collection FIELD_RESULTS = new FieldDefinition.Collection("results",
-			new ArrayList<OneSearchResult>());
-	static public final FieldDefinition.Integer FIELD_FIRST_RESULT_IDX = new FieldDefinition.Integer("first_result_idx",
-			0);
-	static public final FieldDefinition.Boolean FIELD_HAS_MORE_RESULTS = new FieldDefinition.Boolean("has_more_results",
-			false);
-	static public final FieldDefinition.Boolean FIELD_HAS_PREVIOUS_RESULTS = new FieldDefinition.Boolean(
-			"has_previous_results", false);
-	static public final FieldDefinition.Integer FIELD_START_OF_NEXT_PAGE_OF_RESULTS = new FieldDefinition.Integer(
-			"start_of_next_page_of_results", -1);
-	static public final FieldDefinition.Integer FIELD_START_OF_PREVIOUS_PAGE_OF_RESULTS = new FieldDefinition.Integer(
-			"start_of_previous_page_of_results", -1);
+	// CODE REVIEW: Andrew has a new auto fomatter that won't break these lines at
+	// such a narrow width. Get each of these statemetns on one line
+
+	static public final FieldDefinition.StandardObject FIELD_SEARCH_REQUEST = new FieldDefinition.StandardObject("search_request", new StandardSearchRequest(""));
+	static public final FieldDefinition.Collection FIELD_RESULTS = new FieldDefinition.Collection("results", new ArrayList<OneSearchResult>());
+	static public final FieldDefinition.Integer FIELD_FIRST_RESULT_IDX = new FieldDefinition.Integer("first_result_idx", 0);
+	static public final FieldDefinition.Boolean FIELD_HAS_MORE_RESULTS = new FieldDefinition.Boolean("has_more_results", false);
+	static public final FieldDefinition.Boolean FIELD_HAS_PREVIOUS_RESULTS = new FieldDefinition.Boolean("has_previous_results", false);
+	static public final FieldDefinition.Integer FIELD_START_OF_NEXT_PAGE_OF_RESULTS = new FieldDefinition.Integer("start_of_next_page_of_results", -1);
+	static public final FieldDefinition.Integer FIELD_START_OF_PREVIOUS_PAGE_OF_RESULTS = new FieldDefinition.Integer("start_of_previous_page_of_results", -1);
 
 	static public final int HTTP_STATUS_CODE_OK = 200;
 
@@ -57,9 +52,7 @@ public class SearchResponseOK extends JSONServletResponse
 	private int start_of_next_page_of_results; // optional
 	private int start_of_previous_page_of_results; // optional
 
-	public SearchResponseOK( StandardSearchRequest search_request, List<OneSearchResult> results, int first_result_idx,
-			boolean has_more_results, boolean has_previous_results, int start_of_next_page_of_results,
-			int start_of_previous_page_of_results )
+	public SearchResponseOK( StandardSearchRequest search_request, List<OneSearchResult> results, int first_result_idx, boolean has_more_results, boolean has_previous_results, int start_of_next_page_of_results, int start_of_previous_page_of_results )
 	{
 		this.search_request = search_request;
 		this.results = results;
@@ -75,10 +68,6 @@ public class SearchResponseOK extends JSONServletResponse
 	{
 		this.search_request = (StandardSearchRequest) t.getObject(FIELD_SEARCH_REQUEST);
 		this.results = t.getCollection(FIELD_RESULTS, new ArrayList<OneSearchResult>(), ReadAs.OBJECT, OnError.SKIP);
-//		if ( this.results == null )
-//		{
-//			this.results = new ArrayList<>();
-//		}
 		this.first_result_idx = t.getInt(FIELD_FIRST_RESULT_IDX);
 		this.has_more_results = t.getBoolean(FIELD_HAS_MORE_RESULTS);
 		this.has_previous_results = t.getBoolean(FIELD_HAS_PREVIOUS_RESULTS);
@@ -99,10 +88,8 @@ public class SearchResponseOK extends JSONServletResponse
 		ret = Comparison.continueCompare(ret, getSimpleFirstResultIdx(), other.getSimpleFirstResultIdx());
 		ret = Comparison.continueCompare(ret, getSimpleHasMoreResults(), other.getSimpleHasMoreResults());
 		ret = Comparison.continueCompare(ret, getSimpleHasPreviousResults(), other.getSimpleHasPreviousResults());
-		ret = Comparison.continueCompare(ret, getSimpleStartOfNextPageOfResults(),
-				other.getSimpleStartOfNextPageOfResults());
-		ret = Comparison.continueCompare(ret, getSimpleStartOfPreviousPageOfResults(),
-				other.getSimpleStartOfPreviousPageOfResults());
+		ret = Comparison.continueCompare(ret, getSimpleStartOfNextPageOfResults(), other.getSimpleStartOfNextPageOfResults());
+		ret = Comparison.continueCompare(ret, getSimpleStartOfPreviousPageOfResults(), other.getSimpleStartOfPreviousPageOfResults());
 
 		return ret;
 	}
@@ -190,9 +177,7 @@ public class SearchResponseOK extends JSONServletResponse
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(getSimpleHTTPResponseCode(), getSimpleSearchRequest(), getSimpleFirstResultIdx(),
-				getSimpleHasMoreResults(), getSimpleHasPreviousResults(), getSimpleStartOfNextPageOfResults(),
-				getSimpleStartOfPreviousPageOfResults());
+		return Objects.hash(getSimpleHTTPResponseCode(), getSimpleSearchRequest(), getSimpleFirstResultIdx(), getSimpleHasMoreResults(), getSimpleHasPreviousResults(), getSimpleStartOfNextPageOfResults(), getSimpleStartOfPreviousPageOfResults());
 	}
 
 	@Override
@@ -205,7 +190,7 @@ public class SearchResponseOK extends JSONServletResponse
 		if ( !Objects.equals(getSimpleSearchRequest(), other.getSimpleSearchRequest()) )
 			return false;
 
-		 if ( !Objects.equals(getSimpleResults(), other.getSimpleResults()) )
+		if ( !Objects.equals(getSimpleResults(), other.getSimpleResults()) )
 			return false;
 
 		if ( getSimpleFirstResultIdx() != other.getSimpleFirstResultIdx() )
