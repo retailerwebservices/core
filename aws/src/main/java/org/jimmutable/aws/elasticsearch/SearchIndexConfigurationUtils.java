@@ -183,7 +183,7 @@ public class SearchIndexConfigurationUtils
 		return true;
 	}
 
-	public boolean deleteIndex(SearchIndexDefinition index)
+	private boolean deleteIndex(SearchIndexDefinition index)
 	{
 		if (index == null) {
 			logger.severe("Cannot delete a null Index");

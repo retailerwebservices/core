@@ -20,7 +20,6 @@ public class TestSearchIndexConfigurationUtils
 	public static void setup() throws UnknownHostException
 	{
 
-		System.setProperty("org.apache.logging.log4j.simplelog.StatusLogger.level", "INFO");
 		StartupSingleton.setupOnce();
 
 		JimmutableTypeNameRegister.registerAllTypes();
@@ -57,7 +56,7 @@ public class TestSearchIndexConfigurationUtils
 		SearchIndexConfigurationUtils util = new SearchIndexConfigurationUtils(new ElasticSearchEndpoint());
 
 		// test deletion
-		util.deleteIndex(def);
+
 
 		for (int i = 0; i < 80; i++) {
 			util.upsertIndex(def);
