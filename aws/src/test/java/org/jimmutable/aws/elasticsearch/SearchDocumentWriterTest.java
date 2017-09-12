@@ -29,22 +29,14 @@ public class SearchDocumentWriterTest
 	{
 		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
 
-		SearchIndexFieldDefinition theBoolean = new SearchIndexFieldDefinition(new FieldName("boolean"),
-				SearchIndexFieldType.BOOLEAN);
-		SearchIndexFieldDefinition theText1 = new SearchIndexFieldDefinition(new FieldName("text1"),
-				SearchIndexFieldType.TEXT);
-		SearchIndexFieldDefinition theText2 = new SearchIndexFieldDefinition(new FieldName("text2"),
-				SearchIndexFieldType.TEXT);
-		SearchIndexFieldDefinition theText3 = new SearchIndexFieldDefinition(new FieldName("text3"),
-				SearchIndexFieldType.TEXT);
-		SearchIndexFieldDefinition theAtom = new SearchIndexFieldDefinition(new FieldName("atom"),
-				SearchIndexFieldType.ATOM);
-		SearchIndexFieldDefinition theDay = new SearchIndexFieldDefinition(new FieldName("day"),
-				SearchIndexFieldType.DAY);
-		SearchIndexFieldDefinition theFloat = new SearchIndexFieldDefinition(new FieldName("float"),
-				SearchIndexFieldType.FLOAT);
-		SearchIndexFieldDefinition theLong = new SearchIndexFieldDefinition(new FieldName("long"),
-				SearchIndexFieldType.LONG);
+		SearchIndexFieldDefinition theBoolean = new SearchIndexFieldDefinition(new FieldName("boolean"), SearchIndexFieldType.BOOLEAN);
+		SearchIndexFieldDefinition theText1 = new SearchIndexFieldDefinition(new FieldName("text1"), SearchIndexFieldType.TEXT);
+		SearchIndexFieldDefinition theText2 = new SearchIndexFieldDefinition(new FieldName("text2"), SearchIndexFieldType.TEXT);
+		SearchIndexFieldDefinition theText3 = new SearchIndexFieldDefinition(new FieldName("text3"), SearchIndexFieldType.TEXT);
+		SearchIndexFieldDefinition theAtom = new SearchIndexFieldDefinition(new FieldName("atom"), SearchIndexFieldType.ATOM);
+		SearchIndexFieldDefinition theDay = new SearchIndexFieldDefinition(new FieldName("day"), SearchIndexFieldType.DAY);
+		SearchIndexFieldDefinition theFloat = new SearchIndexFieldDefinition(new FieldName("float"), SearchIndexFieldType.FLOAT);
+		SearchIndexFieldDefinition theLong = new SearchIndexFieldDefinition(new FieldName("long"), SearchIndexFieldType.LONG);
 
 		b.add(SearchIndexDefinition.FIELD_FIELDS, theBoolean);
 		b.add(SearchIndexDefinition.FIELD_FIELDS, theText1);
@@ -84,19 +76,22 @@ public class SearchDocumentWriterTest
 
 		assertEquals(expected, writer.getSimpleFieldsMap());
 
-//		SearchIndexConfigurationUtils util = new SearchIndexConfigurationUtils(new ElasticSearchEndpoint());
-//
-//		util.upsertIndex(def);
-//		try {
-//			TransportClient client = new PreBuiltTransportClient(Settings.EMPTY)
-//					.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9300));
-//			client.prepareIndex(def.getSimpleIndex().getSimpleValue(), "default", id.getSimpleValue())
-//					.setSource(writer.getSimpleFieldsMap()).get();
-//
-//		} catch (UnknownHostException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		// SearchIndexConfigurationUtils util = new SearchIndexConfigurationUtils(new
+		// ElasticSearchEndpoint());
+		//
+		// util.upsertIndex(def);
+		// try {
+		// TransportClient client = new PreBuiltTransportClient(Settings.EMPTY)
+		// .addTransportAddress(new
+		// InetSocketTransportAddress(InetAddress.getByName("localhost"), 9300));
+		// client.prepareIndex(def.getSimpleIndex().getSimpleValue(), "default",
+		// id.getSimpleValue())
+		// .setSource(writer.getSimpleFieldsMap()).get();
+		//
+		// } catch (UnknownHostException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
 
 	}
 
