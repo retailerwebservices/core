@@ -8,7 +8,8 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 
-import org.jimmutable.aws.StartupSingleton;
+import org.jimmutable.cloud.StartupSingleton;
+import org.jimmutable.cloud.logging.LoggingUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

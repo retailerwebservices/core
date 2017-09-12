@@ -2,6 +2,7 @@ package org.jimmutable.aws.servlet_utils.search;
 
 import java.util.Map;
 
+import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
 import org.jimmutable.core.fields.FieldHashMap;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.FieldName;

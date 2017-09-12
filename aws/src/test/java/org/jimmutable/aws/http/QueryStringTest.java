@@ -2,6 +2,9 @@ package org.jimmutable.aws.http;
 
 import java.util.Objects;
 
+import org.jimmutable.cloud.http.QueryString;
+import org.jimmutable.cloud.http.QueryStringFragment;
+import org.jimmutable.cloud.http.QueryStringKey;
 import org.jimmutable.core.utils.StringableTester;
 import org.junit.Test;
 
