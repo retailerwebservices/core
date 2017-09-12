@@ -5,6 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jimmutable.aws.logging.DatedFileHandler;
+import org.jimmutable.aws.logging.Log4jUtil;
 import org.jimmutable.aws.logging.LoggingUtil;
 import org.jimmutable.aws.logging.SingleLineFormatter;
 
@@ -27,12 +28,11 @@ public class StartupSingleton
 	private static final String system_property_logging_level = "logging.level";
 
 	// default
-	private static String LOG_DIR = String.format("%s%s%s%slogs", System.getProperty("user.home"), File.separator,
-			"jummutable_aws_dev", File.separator);
+	private static String LOG_DIR = String.format("%s%s%s%slogs", System.getProperty("user.home"), File.separator, "jummutable_aws_dev", File.separator);
 	// default
 	private static String FILE_NAME = "application.name";
 	// default
-	private static Level LOG_LEVEL = Level.WARNING;
+	private static Level LOG_LEVEL = Level.INFO;
 
 	private static StartupSingleton instance = null;
 
@@ -120,6 +120,8 @@ public class StartupSingleton
 			logger.config(String.format("Logging output directory: %s", LOG_DIR));
 			logger.config(String.format("Logging output file name: %s", FILE_NAME));
 			logger.config(String.format("Logging level: %s", LOG_LEVEL));
+
+			// Log4jUtil.setLevel(LOG_LEVEL);
 
 		}
 	}

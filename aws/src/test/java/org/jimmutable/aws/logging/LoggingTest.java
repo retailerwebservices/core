@@ -8,7 +8,9 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 
+import org.jimmutable.aws.CloudExecutionEnvironment;
 import org.jimmutable.aws.StartupSingleton;
+import org.jimmutable.storage.ApplicationId;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,10 +19,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class TestLogging
+public class LoggingTest
 {
 
-	private static Logger logger = Logger.getLogger(TestLogging.class.getName());
+	private static Logger logger = Logger.getLogger(LoggingTest.class.getName());
 	private static OutputStream logCapturingStream;
 	private static StreamHandler customLogHandler;
 
@@ -29,7 +31,9 @@ public class TestLogging
 	{
 		// This loads the LoggingUtil class to setup logging how we want. We will need
 		// to instantiate the singleton in our main method as well.
-		StartupSingleton.setupOnce();
+		// StartupSingleton.setupOnce();
+
+		CloudExecutionEnvironment.startup(new ApplicationId("foggle"));
 
 		logCapturingStream = new ByteArrayOutputStream();
 		Formatter rootFormatter = LogManager.getLogManager().getLogger("").getHandlers()[0].getFormatter();

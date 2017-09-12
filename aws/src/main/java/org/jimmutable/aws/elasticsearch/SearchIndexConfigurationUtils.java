@@ -257,6 +257,8 @@ public class SearchIndexConfigurationUtils
 			return false;
 		}
 
+		logger.info(String.format("Logging Index %s...", index.getSimpleIndex().getSimpleValue()));
+
 		// if it exists and is not configured correctly delete and add
 		if (indexExists(index)) {
 			if (!indexProperlyConfigured(index)) {

@@ -44,13 +44,11 @@ public class SearchIndexConfigurationUtilsTest
 	}
 
 	// Uncomment this to run unit test with elasticsearch running
-	// @Test
+	 @Test
 	public void upsert() throws IOException
 	{
 		SearchIndexConfigurationUtils util = new SearchIndexConfigurationUtils(ElasticSearchEndpoint.CURRENT);
-
 		util.upsertIndex(def);
-
 	}
 
 }

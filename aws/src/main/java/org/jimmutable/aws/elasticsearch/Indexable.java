@@ -9,12 +9,15 @@ package org.jimmutable.aws.elasticsearch;
  */
 public interface Indexable
 {
+
+	public static final String DEFAULT_TYPE = "default";
+
 	/**
-	 * Get the index id that this object should be added to
+	 * Get the index definition that this object should be added to
 	 * 
 	 * @return An IndexId
 	 */
-	public IndexId getSimpleSearchIndexId();
+	public IndexDefinition getSimpleSearchIndexDefinition();
 
 	/**
 	 * Get the search document id. Frequently (but not always) this is also the
