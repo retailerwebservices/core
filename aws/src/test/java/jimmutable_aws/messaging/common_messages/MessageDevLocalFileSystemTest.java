@@ -43,7 +43,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 
 	public static void testSendAsync() throws InterruptedException
 	{
-		String mainpath = System.getProperty("user.home") + "/jimmtuable_aws_dev/messaging/development/knights_in_monty_python";
+		String mainpath = System.getProperty("user.home") + "/jimmtuable_aws_dev/messaging/development/knights-in-monty-python";
 		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
 		{
 			for ( String queue_queue_id : Arrays.asList("queue1", "queue2") )
@@ -54,7 +54,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 			}
 		}
 
-		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("Knights_in_Monty_Python")), new StandardMessageOnUpsert(new Kind("niii"), new ObjectId(123456789))));
+		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("Knights-in-Monty-Python")), new StandardMessageOnUpsert(new Kind("niii"), new ObjectId(123456789))));
 		Thread.sleep(1000);// have it wait a second
 
 		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
@@ -75,7 +75,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 	{
 		String mainpath = System.getProperty("user.home") + "/jimmtuable_aws_dev/messaging/development/knights_in_monty_python";
 
-		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("Knights_in_Monty_Python")), new StandardMessageOnUpsert(new Kind("niii"), new ObjectId(123456789))));
+		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("Knights-in-Monty-Python")), new StandardMessageOnUpsert(new Kind("niii"), new ObjectId(123456789))));
 		Thread.sleep(1000);// have it wait a second
 
 		String filepath = mainpath;
@@ -88,7 +88,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 			f = new File(filepath);
 			f.mkdirs();
 		}
-		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("Knights_in_Monty_Python")), new StandardMessageOnUpsert(new Kind("niii"), new ObjectId(123456789))));
+		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("Knights-in-Monty-Python")), new StandardMessageOnUpsert(new Kind("niii"), new ObjectId(123456789))));
 		Thread.sleep(1000);// have it wait a second
 
 		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
@@ -129,15 +129,15 @@ public class MessageDevLocalFileSystemTest extends TestCase
 
 	public static void testStartListening() throws InterruptedException
 	{
-		String mainpath = System.getProperty("user.home") + "/jimmtuable_aws_dev/messaging/development/monty_python_jokes/development/the-holy-grail";
+		String mainpath = System.getProperty("user.home") + "/jimmtuable_aws_dev/messaging/development/monty-python-jokes/development/the-holy-grail";
 		TestMessageListener listener = new TestMessageListener();
 
 		// start listening with the listener that we want to listen with
-		assertTrue(messagingdevlocalfilesystem.startListening(new SubscriptionDefinition(new TopicDefinition(appId, new TopicId("monty_python_jokes")), new QueueDefinition(appId, new QueueId("the-holy-grail"))), listener));
+		assertTrue(messagingdevlocalfilesystem.startListening(new SubscriptionDefinition(new TopicDefinition(appId, new TopicId("monty-python-jokes")), new QueueDefinition(appId, new QueueId("the-holy-grail"))), listener));
 		Thread.sleep(4500);// have it wait a minute so we can setup the listener
 
 		// send the message
-		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty_python_jokes")), new StandardMessageOnUpsert(new Kind("killer-bunny"), new ObjectId(123456789))));
+		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty-python-jokes")), new StandardMessageOnUpsert(new Kind("killer-bunny"), new ObjectId(123456789))));
 		Thread.sleep(6000);// have it wait a minute so it can detect changes.
 
 		// make sure that the listener picked up the message
@@ -149,7 +149,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 		assertEquals(0, f.listFiles().length);
 
 		// send a different message
-		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty_python_jokes")), new StandardMessageOnUpsert(new Kind("niii"), new ObjectId(123456780))));
+		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty-python-jokes")), new StandardMessageOnUpsert(new Kind("niii"), new ObjectId(123456780))));
 		Thread.sleep(12000);// have it wait a minute so it can detect changes.
 
 		// make sure that the listener picked up the message
@@ -164,7 +164,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 
 	public static void testSendAllAndShutdown() throws InterruptedException
 	{
-		String mainpath = System.getProperty("user.home") + "/jimmtuable_aws_dev/messaging/development/monty_python_jokes";
+		String mainpath = System.getProperty("user.home") + "/jimmtuable_aws_dev/messaging/development/monty-python-jokes";
 		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
 		{
 			for ( String queue_queue_id : Arrays.asList("queue1", "queue2") )
@@ -176,7 +176,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 		}
 		for ( int i = 0; i < 10; i++ )
 		{
-			messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty_python_jokes")), new StandardMessageOnUpsert(new Kind("Message"), new ObjectId(123456789)));// putting in a bunch of random information
+			messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty-python-jokes")), new StandardMessageOnUpsert(new Kind("Message"), new ObjectId(123456789)));// putting in a bunch of random information
 		}
 		messagingdevlocalfilesystem.sendAllAndShutdown();
 		int[] initialResults = new int[4];
@@ -206,7 +206,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 		boolean error_thrown = false;
 		try
 		{
-			messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty_python_jokes")), new StandardMessageOnUpsert(new Kind("Message"), new ObjectId(123456789)));// putting in a bunch of random information
+			messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty-python-jokes")), new StandardMessageOnUpsert(new Kind("Message"), new ObjectId(123456789)));// putting in a bunch of random information
 		}
 		catch ( RejectedExecutionException e )
 		{
