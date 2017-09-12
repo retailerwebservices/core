@@ -1,4 +1,4 @@
-package org.jimmutable.storage;
+package org.jimmutable.cloud.storage;
 
 import java.io.File;
 import java.io.FileInputStream;

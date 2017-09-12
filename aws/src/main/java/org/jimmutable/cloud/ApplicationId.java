@@ -1,5 +1,6 @@
 package org.jimmutable.cloud;
 
+import org.jimmutable.cloud.http.QueryStringKey;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
 
@@ -70,5 +71,20 @@ public class ApplicationId extends Stringable
 			return null;
 		}
 		return new ApplicationId(devEnvironment);
+	}
+	
+	static public class MyConverter extends Stringable.Converter<ApplicationId>
+	{
+		public ApplicationId fromString(String str, ApplicationId default_value)
+		{
+			try
+			{
+				return new ApplicationId(str);
+			}
+			catch(Exception e)
+			{
+				return default_value;
+			}
+		}
 	}
 }

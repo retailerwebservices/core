@@ -1,12 +1,6 @@
 package jimmutable_aws.messaging.common_messages;
 
-
-import org.jimmutable.cloud.ApplicationId;
-import org.jimmutable.cloud.messaging.QueueDefinition;
-import org.jimmutable.cloud.messaging.QueueId;
 import org.jimmutable.cloud.messaging.SubscriptionDefinition;
-import org.jimmutable.cloud.messaging.TopicDefinition;
-import org.jimmutable.cloud.messaging.TopicId;
 import org.jimmutable.core.utils.StringableTester;
 
 import junit.framework.TestCase;
