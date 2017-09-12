@@ -3,11 +3,10 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.jimmutable</groupId>
-	<artifactId>aws</artifactId>
 	<version>0.0.6</version>
 	<packaging>jar</packaging>
 
-	<name>aws</name>
+	<name>cloud</name>
 	<description>The aws classes of the jimmutable project</description>
 	<url>http://www.jimmutable.org</url>
 
@@ -293,4 +292,5 @@
 	</build>
 
 
+	<artifactId>cloud</artifactId>
 </project>

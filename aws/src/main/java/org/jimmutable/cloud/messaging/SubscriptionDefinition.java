@@ -70,4 +70,19 @@ public class SubscriptionDefinition extends Stringable
 	{
 		return queue_definition;
 	}
+	
+	static public class MyConverter extends Stringable.Converter<SubscriptionDefinition>
+	{
+		public SubscriptionDefinition fromString(String str, SubscriptionDefinition default_value)
+		{
+			try
+			{
+				return new SubscriptionDefinition(str);
+			}
+			catch(Exception e)
+			{
+				return default_value;
+			}
+		}
+	}
 }

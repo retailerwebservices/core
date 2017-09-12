@@ -1,5 +1,8 @@
 package org.jimmutable.gcloud.search;
 
+
+import org.jimmutable.core.utils.StringableTester;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -22,6 +25,31 @@ public class IndexIdTest extends TestCase
 	public static Test suite()
 	{
 		return new TestSuite( IndexIdTest.class );
+	}
+	
+private StringableTester<IndexId> tester = new StringableTester(new IndexId.MyConverter());
+	
+	public void testValid()
+	{
+		tester.assertValid("some-id", "some-id");
+		tester.assertValid("some-id-1234", "some-id-1234");
+		tester.assertValid("SOME-id", "some-id");
+		tester.assertValid(" SOME-id ", "some-id");
+	}
+
+	public void testInvalid()
+	{		
+		tester.assertInvalid(null);
+		tester.assertInvalid("");
+		tester.assertInvalid(" ");
+		tester.assertInvalid("foo_bar");
+		tester.assertInvalid(".foo");
+		tester.assertInvalid("foo.");
+		tester.assertInvalid("foo..bar");
+		tester.assertInvalid("foo..bar");
+		tester.assertInvalid("foo/bar");
+		tester.assertInvalid("abcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabc"); // more than 64 characters
+	
 	}
 
 	public void testIndexId()

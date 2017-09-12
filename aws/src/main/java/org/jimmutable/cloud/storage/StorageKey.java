@@ -88,7 +88,7 @@ public class StorageKey extends Stringable
 
 		extension = new StorageKeyExtension(breakondot[1]);
 
-		setValue(createStringFromComponents(getSimpleKind(), getSimpleObjectId(),getSimpleExtension()));
+		setValue(createStringFromComponents(getSimpleKind(), getSimpleObjectId(), getSimpleExtension()));
 
 	}
 
@@ -116,4 +116,18 @@ public class StorageKey extends Stringable
 		return extension;
 	}
 
+	static public class MyConverter extends Stringable.Converter<StorageKey>
+	{
+		public StorageKey fromString( String str, StorageKey default_value )
+		{
+			try
+			{
+				return new StorageKey(str);
+			}
+			catch ( Exception e )
+			{
+				return default_value;
+			}
+		}
+	}
 }

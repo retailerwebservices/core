@@ -63,5 +63,18 @@ public class QueueDefinition extends Stringable
 	{
 		return queue_id;
 	}
-
+	static public class MyConverter extends Stringable.Converter<QueueDefinition>
+	{
+		public QueueDefinition fromString(String str, QueueDefinition default_value)
+		{
+			try
+			{
+				return new QueueDefinition(str);
+			}
+			catch(Exception e)
+			{
+				return default_value;
+			}
+		}
+	}
 }

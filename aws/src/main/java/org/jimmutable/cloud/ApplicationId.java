@@ -10,8 +10,7 @@ import org.jimmutable.core.utils.Validator;
  */
 public class ApplicationId extends Stringable
 {
-	// private static final ApplicationId DEV_CURRENT_APPLICATION_ID =
-	// createDevCurrentApplicationId();
+	 private static final ApplicationId DEV_CURRENT_APPLICATION_ID = createDevCurrentApplicationId();
 
 	public ApplicationId(String value)
 	{
@@ -56,23 +55,14 @@ public class ApplicationId extends Stringable
 	 * @return true if there is a current Development Application Id else false
 	 */
 
-	// public static boolean hasOptionalDevApplicationId()
-	// {
-	// return DEV_CURRENT_APPLICATION_ID != null;
-	// }
+	 public static boolean hasOptionalDevApplicationId()
+	 {
+	 return DEV_CURRENT_APPLICATION_ID != null;
+	 }
 
 	/**
 	 * @return either the Dev Application Id Environmental Variable or null
 	 */
-<<<<<<< HEAD:aws/src/main/java/org/jimmutable/storage/ApplicationId.java
-	// public static ApplicationId createDevCurrentApplicationId()
-	// {
-	// String devEnvironment = System.getenv("DEV_APPLICATION_ID");
-	//
-	// return new ApplicationId(devEnvironment);
-	//
-	// }
-=======
 	public static ApplicationId createDevCurrentApplicationId() 
 	{
 		String devEnvironment = System.getenv("DEV_APPLICATION_ID");
@@ -81,5 +71,4 @@ public class ApplicationId extends Stringable
 		}
 		return new ApplicationId(devEnvironment);
 	}
->>>>>>> origin/dev_awt:aws/src/main/java/org/jimmutable/cloud/ApplicationId.java
 }

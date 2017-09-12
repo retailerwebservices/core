@@ -37,4 +37,18 @@ public class QueueId extends Stringable
 				Validator.NUMBERS);
 
 	}
+	static public class MyConverter extends Stringable.Converter<QueueId>
+	{
+		public QueueId fromString(String str, QueueId default_value)
+		{
+			try
+			{
+				return new QueueId(str);
+			}
+			catch(Exception e)
+			{
+				return default_value;
+			}
+		}
+	}
 }

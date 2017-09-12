@@ -79,5 +79,18 @@ public class StorageKeyExtension extends Stringable
 													// caught here.
 		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.LOWERCASE_LETTERS, Validator.NUMBERS);
 	}
-
+	static public class MyConverter extends Stringable.Converter<StorageKeyExtension>
+	{
+		public StorageKeyExtension fromString(String str, StorageKeyExtension default_value)
+		{
+			try
+			{
+				return new StorageKeyExtension(str);
+			}
+			catch(Exception e)
+			{
+				return default_value;
+			}
+		}
+	}
 }

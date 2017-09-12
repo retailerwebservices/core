@@ -5,13 +5,13 @@ import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
 
 /**
- * Topic's are resources that are owned by an application.  A topic definition defines the application that owns a topic along with the id of the topic
- * Topic Definitions have 2 components to them, the Application Id and the Topic Id
- * The Topic Definition is formatted at [ApplicationId/TopicId]
- * @author andrew.towe 
+ * Topic's are resources that are owned by an application. A topic definition
+ * defines the application that owns a topic along with the id of the topic
+ * Topic Definitions have 2 components to them, the Application Id and the Topic
+ * Id The Topic Definition is formatted at [ApplicationId/TopicId]
+ * 
+ * @author andrew.towe
  */
-
-
 
 public class TopicDefinition extends Stringable
 {
@@ -51,7 +51,7 @@ public class TopicDefinition extends Stringable
 		Validator.min(breakonslash.length, 2);
 		application_id = new ApplicationId(breakonslash[0]);
 		topic_id = new TopicId(breakonslash[1]);
-		
+
 		setValue(createStringFromComponents(application_id, topic_id));
 	}
 
@@ -65,4 +65,18 @@ public class TopicDefinition extends Stringable
 		return topic_id;
 	}
 
+	static public class MyConverter extends Stringable.Converter<TopicDefinition>
+	{
+		public TopicDefinition fromString( String str, TopicDefinition default_value )
+		{
+			try
+			{
+				return new TopicDefinition(str);
+			}
+			catch ( Exception e )
+			{
+				return default_value;
+			}
+		}
+	}
 }

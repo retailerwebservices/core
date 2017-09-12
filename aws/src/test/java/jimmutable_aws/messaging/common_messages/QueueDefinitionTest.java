@@ -1,23 +1,39 @@
 package jimmutable_aws.messaging.common_messages;
 
+
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.messaging.QueueDefinition;
 import org.jimmutable.cloud.messaging.QueueId;
+
+
+import org.jimmutable.core.utils.StringableTester;
+
+
 
 import junit.framework.TestCase;
 
 public class QueueDefinitionTest extends TestCase
 {
+	private StringableTester<QueueDefinition> tester = new StringableTester(new QueueDefinition.MyConverter());
 
-	public static void testCreation()
+	public void testValid()
 	{
-		QueueDefinition queue_def = new QueueDefinition("ApplicationId/Queueid");
-		assertEquals("ApplicationId/Queueid", queue_def.getSimpleValue());
-		
-		ApplicationId applicationId = new ApplicationId("ApplicationId");
-		QueueId queueId = new QueueId("Queueid");
-		queue_def = new QueueDefinition("ApplicationId/Queueid");
-		assertEquals("ApplicationId/Queueid", queue_def.getSimpleValue());
+		tester.assertValid("some/ids", "some/ids");
+		tester.assertValid("some/id1234", "some/id1234");
+		tester.assertValid("SOME/ids", "some/ids");
+		tester.assertValid(" SOME/ids ", "some/ids");
 	}
 
+	public void testInvalid()
+	{
+		tester.assertInvalid(null);
+		tester.assertInvalid("");
+		tester.assertInvalid(" ");
+		tester.assertInvalid("1");
+		tester.assertInvalid("foo_bar");
+		tester.assertInvalid(".foo");
+		tester.assertInvalid("foo.");
+		tester.assertInvalid("foo..bar");
+		tester.assertInvalid("some_id");
+	}
 }

@@ -3,7 +3,7 @@ package org.jimmutable.cloud.elasticsearch;
 import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
-import org.jimmutable.storage.ApplicationId;
+import org.jimmutable.cloud.ApplicationId;
 
 /**
  * Search index definition applicaitonid:indexid

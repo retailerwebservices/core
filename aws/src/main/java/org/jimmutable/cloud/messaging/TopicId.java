@@ -34,9 +34,22 @@ public class TopicId extends Stringable
 		Validator.notNull(getSimpleValue());
 		Validator.min(getSimpleValue().length(), 3);
 		Validator.max(getSimpleValue().length(), 64);
-		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.UNDERSCORE, Validator.LOWERCASE_LETTERS,
-				Validator.NUMBERS);  // Code reivew: this is not right, - are allowed, not _
+		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.DASH, Validator.LOWERCASE_LETTERS,
+				Validator.NUMBERS);  
 
 	}
-
+	static public class MyConverter extends Stringable.Converter<TopicId>
+	{
+		public TopicId fromString(String str, TopicId default_value)
+		{
+			try
+			{
+				return new TopicId(str);
+			}
+			catch(Exception e)
+			{
+				return default_value;
+			}
+		}
+	}
 }
