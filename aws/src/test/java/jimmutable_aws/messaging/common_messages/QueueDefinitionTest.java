@@ -1,8 +1,8 @@
 package jimmutable_aws.messaging.common_messages;
 
-import org.jimmutable.aws.messaging.QueueDefinition;
-import org.jimmutable.aws.messaging.QueueId;
-import org.jimmutable.storage.ApplicationId;
+import org.jimmutable.cloud.ApplicationId;
+import org.jimmutable.cloud.messaging.QueueDefinition;
+import org.jimmutable.cloud.messaging.QueueId;
 
 import junit.framework.TestCase;
 

@@ -1,6 +1,6 @@
 package jimmutable_aws.messaging.common_messages;
 
-import org.jimmutable.aws.messaging.StandardMessageOnUpsert;
+import org.jimmutable.cloud.messaging.StandardMessageOnUpsert;
 import org.jimmutable.core.examples.product_data.ItemAttribute;
 import org.jimmutable.core.examples.product_data.ItemKey;
 import org.jimmutable.core.examples.product_data.ItemSpecifications;

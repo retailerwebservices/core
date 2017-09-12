@@ -1,5 +1,6 @@
 package org.jimmutable.aws.servlet_utils.get;
 
+import org.jimmutable.cloud.servlet_utils.get.GetResponseError;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;

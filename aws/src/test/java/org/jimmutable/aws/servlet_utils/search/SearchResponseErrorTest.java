@@ -2,6 +2,8 @@ package org.jimmutable.aws.servlet_utils.search;
 
 import java.util.Objects;
 
+import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
+import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;

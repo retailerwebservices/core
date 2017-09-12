@@ -6,10 +6,10 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.util.Comparator;
 
+import org.jimmutable.cloud.ApplicationId;
+import org.jimmutable.cloud.storage.StorageDevLocalFileSystem;
+import org.jimmutable.cloud.storage.StorageKey;
 import org.jimmutable.core.objects.common.Kind;
-import org.jimmutable.storage.ApplicationId;
-import org.jimmutable.storage.StorageDevLocalFileSystem;
-import org.jimmutable.storage.StorageKey;
 
 import junit.framework.TestCase;
 

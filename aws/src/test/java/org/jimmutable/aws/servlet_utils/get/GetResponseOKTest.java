@@ -1,5 +1,6 @@
 package org.jimmutable.aws.servlet_utils.get;
 
+import org.jimmutable.cloud.servlet_utils.get.GetResponseOK;
 import org.jimmutable.core.examples.book.BindingType;
 import org.jimmutable.core.examples.book.Book;
 import org.jimmutable.core.objects.StandardImmutableObject;

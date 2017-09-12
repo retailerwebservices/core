@@ -3,6 +3,7 @@ package org.jimmutable.aws.elasticsearch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.jimmutable.cloud.elasticsearch.ElasticSearchEndpoint;
 import org.junit.Test;
 
 public class TestElasticSearchEndpoint

@@ -12,19 +12,19 @@ import java.util.Comparator;
 import java.util.Random;
 import java.util.concurrent.RejectedExecutionException;
 
-import org.jimmutable.aws.messaging.MessageListener;
-import org.jimmutable.aws.messaging.MessagingDevLocalFileSystem;
-import org.jimmutable.aws.messaging.QueueDefinition;
-import org.jimmutable.aws.messaging.QueueId;
-import org.jimmutable.aws.messaging.StandardMessageOnUpsert;
-import org.jimmutable.aws.messaging.SubscriptionDefinition;
-import org.jimmutable.aws.messaging.TopicDefinition;
-import org.jimmutable.aws.messaging.TopicId;
+import org.jimmutable.cloud.ApplicationId;
+import org.jimmutable.cloud.messaging.MessageListener;
+import org.jimmutable.cloud.messaging.MessagingDevLocalFileSystem;
+import org.jimmutable.cloud.messaging.QueueDefinition;
+import org.jimmutable.cloud.messaging.QueueId;
+import org.jimmutable.cloud.messaging.StandardMessageOnUpsert;
+import org.jimmutable.cloud.messaging.SubscriptionDefinition;
+import org.jimmutable.cloud.messaging.TopicDefinition;
+import org.jimmutable.cloud.messaging.TopicId;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
-import org.jimmutable.storage.ApplicationId;
 
 import junit.framework.TestCase;
 

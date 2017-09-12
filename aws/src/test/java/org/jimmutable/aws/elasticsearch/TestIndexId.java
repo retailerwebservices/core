@@ -2,6 +2,7 @@ package org.jimmutable.aws.elasticsearch;
 
 import static org.junit.Assert.assertEquals;
 
+import org.jimmutable.cloud.elasticsearch.IndexId;
 import org.jimmutable.core.exceptions.ValidationException;
 import org.junit.Test;
 

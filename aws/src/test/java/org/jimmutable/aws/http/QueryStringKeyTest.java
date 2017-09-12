@@ -1,6 +1,6 @@
 package org.jimmutable.aws.http;
 
-import org.jimmutable.aws.http.QueryStringKey;
+import org.jimmutable.cloud.http.QueryStringKey;
 import org.jimmutable.core.utils.StringableTester;
 import org.junit.Test;
 

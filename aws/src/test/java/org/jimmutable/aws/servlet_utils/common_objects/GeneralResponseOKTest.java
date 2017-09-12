@@ -1,5 +1,6 @@
 package org.jimmutable.aws.servlet_utils.common_objects;
 
+import org.jimmutable.cloud.servlet_utils.common_objects.GeneralResponseOK;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
