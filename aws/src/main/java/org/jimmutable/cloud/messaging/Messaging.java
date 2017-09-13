@@ -6,14 +6,14 @@ import org.jimmutable.core.objects.StandardImmutableObject;
 public abstract class Messaging
 {
 
-	Messaging instance = null;
+	static Messaging instance = null;
 
-	public Messaging()
+	protected Messaging()
 	{
 		// TODO Auto-generated constructor stub
 	}
 
-	public Messaging getSimpleInstance()
+	public static Messaging getSimpleInstance()
 	{
 		if ( instance == null )
 		{
@@ -58,7 +58,6 @@ public abstract class Messaging
 	/**
 	 * Used to send all messages before shutting down
 	 * this will block any attempt to shutdown until all pending messages are sent. 
-	 * 
 	 * this will free any resources that are used to implement the asynchronous sending mechanism
 	 * 
 	 */

@@ -19,6 +19,8 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.management.RuntimeErrorException;
+import javax.sql.rowset.serial.SerialException;
+
 import org.jimmutable.core.utils.Validator;
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.storage.StorageKeyExtension;
@@ -26,6 +28,7 @@ import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.serialization.Format;
+import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
 
 import com.amazonaws.util.IOUtils;
@@ -34,10 +37,10 @@ import com.amazonaws.util.IOUtils;
  * This is our local implementation of Messaging. It is designed so that a
  * person can run our messaging services without having to rely on AWS or
  * Google. Messages created are stored as .json files on the local machine, in:
- * ~/jimmutable_aws_dev/messaging/[topic def]/[queue def] This
- * class has a Single thread executor to handle the sending of messages. It is
- * created on creation of this class and can be shutdown by running the
- * SendAllAndShutdown method.
+ * ~/jimmutable_aws_dev/messaging/[topic def]/[queue def] This class has a
+ * Single thread executor to handle the sending of messages. It is created on
+ * creation of this class and can be shutdown by running the SendAllAndShutdown
+ * method.
  * 
  * @author andrew.towe
  *
@@ -48,18 +51,20 @@ public class MessagingDevLocalFileSystem extends Messaging
 	private File root;
 	private ExecutorService executor_service = Executors.newSingleThreadExecutor();
 	private static final Logger logger = Logger.getLogger(MessagingDevLocalFileSystem.class.getName());
-	
-	
+
 	public MessagingDevLocalFileSystem()
 	{
 		super();
+		
 		if ( !ApplicationId.hasOptionalDevApplicationId() )
 		{
 			System.err.println("Hey -- you are trying to instantiate a dev local file system. This should not be happening in production. If you are a developer and you are trying to run this through eclipse, you need to setup the environment configurations in your run configurations");
 			throw new RuntimeException();
 		}
 
-		root = new File(System.getProperty("user.home"), "/jimmtuable_aws_dev/messaging");
+		ObjectParseTree.registerTypeName(StandardMessageOnUpsert.class);
+		
+		root = new File(System.getProperty("user.home"), "/jimmutable_aws_dev/messaging");
 		root.mkdirs();
 	}
 
@@ -141,19 +146,20 @@ public class MessagingDevLocalFileSystem extends Messaging
 			try
 			{
 				File pfile = new File(root.getAbsolutePath(), topic.getSimpleValue());
-				
+
 				// CODE REIVEW: What is with the calls to isHidden()? Was there an issue with
 				// hidden files/directories?
-				// CODE ANSWER: We were having issues with Hidden directories (The one I found was ./DStore)
+				// CODE ANSWER: We were having issues with Hidden directories (The one I found
+				// was ./DStore)
 
 				for ( File sub_file_header : listDirectoriesToPutMessagesInto(pfile) )
 				{
-					writeFile(objectId, sub_file_header);					
+					writeFile(objectId, sub_file_header);
 				}
 			}
 			catch ( Exception e )
 			{
-				 logger.log(Level.WARNING,"Could not send message");
+				logger.log(Level.WARNING, "Could not send message",e);
 			}
 		}
 
@@ -208,15 +214,15 @@ public class MessagingDevLocalFileSystem extends Messaging
 		public void run()
 		{
 			WatchService watcher = setupListener();
-			WatchKey watchKey=null;
+			WatchKey watchKey = null;
 			while ( true )
 			{
 				try
 				{
 					Thread.sleep(500);
 
-					watchKey= watcher.take();
-				    
+					watchKey = watcher.take();
+
 					List<WatchEvent<?>> events = watchKey.pollEvents();
 					for ( WatchEvent event : events )
 					{
@@ -228,13 +234,13 @@ public class MessagingDevLocalFileSystem extends Messaging
 				}
 				catch ( Exception e )
 				{
-					logger.log(Level.SEVERE, "Could not hear message");
+					logger.log(Level.SEVERE, "Could not hear message",e);
 				}
-				watchKey.reset(); //need this so we can look again
+				watchKey.reset(); // need this so we can look again
 			}
 		}
 
-		private void handleEvent( WatchEvent event )
+		private void handleEvent( WatchEvent event ) throws SerialException
 		{
 			Path message_path = my_dir.resolve(((Path) event.context()));
 			File f = new File(message_path.toString());
@@ -250,9 +256,9 @@ public class MessagingDevLocalFileSystem extends Messaging
 				watcher = my_dir.getFileSystem().newWatchService();
 				my_dir.register(watcher, StandardWatchEventKinds.ENTRY_CREATE);
 			}
-			catch ( IOException e1 )
+			catch ( IOException e )
 			{
-				logger.log(Level.SEVERE, "Could not setup listener", e1);
+				logger.log(Level.SEVERE, "Could not setup listener", e);
 			}
 			return watcher;
 		}
@@ -287,4 +293,3 @@ public class MessagingDevLocalFileSystem extends Messaging
 		}
 	}
 }
-
