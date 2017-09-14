@@ -15,7 +15,7 @@ public interface Indexable
 	/**
 	 * Get the index definition that this object should be added to
 	 * 
-	 * @return An IndexId
+	 * @return A SearchIndexDefinition
 	 */
 	public SearchIndexDefinition getSimpleSearchIndexDefinition();
 
