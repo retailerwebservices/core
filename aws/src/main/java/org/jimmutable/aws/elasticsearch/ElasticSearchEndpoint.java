@@ -29,8 +29,6 @@ public class ElasticSearchEndpoint extends TransientImmutableObject<ElasticSearc
 	static {
 		String endpoint = System.getProperty("elasticsearch.endpoint");
 
-		logger.info("elasticsearch.endpoint " + endpoint);
-
 		String tmp_host = null;
 		Integer tmp_port = null;
 
