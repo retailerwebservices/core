@@ -1,5 +1,6 @@
 package jimmutable_aws.messaging.common_messages;
 
+import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
 import org.jimmutable.cloud.messaging.StandardMessageOnUpsert;
 import org.jimmutable.core.examples.product_data.ItemAttribute;
 import org.jimmutable.core.examples.product_data.ItemKey;
@@ -36,8 +37,8 @@ public class StandardMessageOnUpsertTest extends TestCase
 	 */
 	public static Test suite()
 	{
-		ObjectParseTree.registerTypeName(StandardMessageOnUpsert.class);
 //		ObjectParseTree.registerTypeName(SearchExampleLibraryPatron.class);
+		JimmutableCloudTypeNameRegister.registerAllTypes();
 		return new TestSuite( StandardMessageOnUpsertTest.class );
 	}
 
