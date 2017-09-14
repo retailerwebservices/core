@@ -12,9 +12,6 @@ import org.jimmutable.core.utils.Validator;
  * @author andrew.towe
  */
 
-
-
-
 public class SubscriptionDefinition extends Stringable
 {
 	private TopicDefinition topic_definition;
