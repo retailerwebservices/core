@@ -2,7 +2,6 @@ package org.jimmutable.cloud.elasticsearch;
 
 import static org.junit.Assert.assertEquals;
 import org.jimmutable.core.exceptions.ValidationException;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class ElasticSearchEndpointTest

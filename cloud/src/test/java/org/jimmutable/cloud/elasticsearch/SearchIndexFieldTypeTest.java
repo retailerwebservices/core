@@ -2,7 +2,6 @@ package org.jimmutable.cloud.elasticsearch;
 
 import static org.junit.Assert.assertEquals;
 
-import org.jimmutable.cloud.elasticsearch.SearchIndexFieldType;
 import org.junit.Test;
 
 public class SearchIndexFieldTypeTest
@@ -47,6 +46,13 @@ public class SearchIndexFieldTypeTest
 	{
 		assertEquals(SearchIndexFieldType.TEXT, SearchIndexFieldType.CONVERTER.fromCode("TEXT", null));
 		assertEquals("text", SearchIndexFieldType.CONVERTER.fromCode("TEXT", null).getSimpleCode());
+	}
+
+	@Test
+	public void testObjectId()
+	{
+		assertEquals(SearchIndexFieldType.OBJECTID, SearchIndexFieldType.CONVERTER.fromCode("TEXT:KEYWORD", null));
+		assertEquals("text:keyword", SearchIndexFieldType.CONVERTER.fromCode("TEXT:KEYWORD", null).getSimpleCode());
 	}
 
 }

@@ -1,6 +1,5 @@
 package org.jimmutable.cloud.elasticsearch;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.logging.log4j.Level;
@@ -151,15 +150,22 @@ public class SearchIndexConfigurationUtils
 			XContentBuilder mappingBuilder = jsonBuilder();
 			mappingBuilder.startObject().startObject(ELASTICSEARCH_DEFAULT_TYPE).startObject("properties");
 			for (SearchIndexFieldDefinition field : index.getSimpleFields()) {
-				mappingBuilder.startObject(field.getSimpleFieldName().getSimpleName());
-				mappingBuilder.field("type", field.getSimpleType().getSimpleCode());
-				mappingBuilder.endObject();
-				// https://www.elastic.co/blog/strings-are-dead-long-live-strings
 				if (field.getSimpleType().equals(SearchIndexFieldType.OBJECTID)) {
-					mappingBuilder.startObject("fields").startObject("keyword");
-					mappingBuilder.field("type", "keyword");
-					mappingBuilder.field("ignore_above", 256);
-					mappingBuilder.endObject().endObject();
+					// EXPLICIT MAPPING FOR OBJECTID - does not rely on enum's simple code
+					// https://www.elastic.co/blog/strings-are-dead-long-live-strings
+					mappingBuilder.startObject(field.getSimpleFieldName().getSimpleName());
+					/*		*/mappingBuilder.field("type", "text");
+					/*	*/mappingBuilder.startObject("fields");
+					/*		*/mappingBuilder.startObject("keyword");
+					/*			*/mappingBuilder.field("type", "keyword");
+					/*			*/mappingBuilder.field("ignore_above", 256);
+					/*		*/mappingBuilder.endObject();
+					/*	*/mappingBuilder.endObject();
+					mappingBuilder.endObject();
+				} else {
+					mappingBuilder.startObject(field.getSimpleFieldName().getSimpleName());
+					/*	*/mappingBuilder.field("type", field.getSimpleType().getSimpleCode());
+					mappingBuilder.endObject();
 				}
 			}
 			mappingBuilder.endObject().endObject().endObject();
@@ -171,7 +177,7 @@ public class SearchIndexConfigurationUtils
 				return false;
 			}
 
-		} catch (IOException e) {
+		} catch (Exception e) {
 			logger.log(Level.FATAL, String.format("Failed to generate mapping json for index %s", index.getSimpleIndex().getSimpleValue()), e);
 			return false;
 		}

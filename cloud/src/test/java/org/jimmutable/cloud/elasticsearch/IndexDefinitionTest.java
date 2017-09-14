@@ -1,43 +1,47 @@
 package org.jimmutable.cloud.elasticsearch;
 
-import org.jimmutable.cloud.ApplicationId;
-import org.jimmutable.core.utils.StringableTester;
+import org.jimmutable.core.objects.Stringable;
+import org.jimmutable.util.StringableTest;
 import org.junit.Test;
 
-import junit.framework.TestCase;
-
-public class IndexDefinitionTest extends TestCase
+public class IndexDefinitionTest extends StringableTest
 {
-	private StringableTester<ApplicationId> tester = new StringableTester(new ApplicationId.MyConverter());
+
 	@Test
 	public void inValid()
 	{
-		tester.assertInvalid(null);
-		tester.assertInvalid("");
-		tester.assertInvalid("foo!bar:v");
-		tester.assertInvalid("foo/bar");
+		assertNotValid(null);
+		assertNotValid("");
+		assertNotValid("foo!bar:v");
+		assertNotValid("foo/bar");
 
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < 65; i++) {
 			sb.append('a');
 		}
 
-		tester.assertInvalid(sb.append("/").append("theindexId").toString());
+		assertNotValid(sb.append("/").append("theindexId").toString());
 
-		tester.assertInvalid("12");
+		assertNotValid("12");
 
-		tester.assertInvalid("foo:bar");
-		tester.assertInvalid("foo:bar:");
-		tester.assertInvalid("foo:bar:v");
-		tester.assertInvalid("foo:bar:2");
+		assertNotValid("foo:bar");
+		assertNotValid("foo:bar:");
+		assertNotValid("foo:bar:v");
+		assertNotValid("foo:bar:2");
 
 	}
 
 	@Test
 	public void valid()
 	{
-		tester.assertValid("foo:bar:v2", "foo:bar:v2");
-		tester.assertValid("FOO:BAR:V2", "foo:bar:v2");
+		assertValid("foo:bar:v2", "foo:bar:v2");
+		assertValid("FOO:BAR:V2", "foo:bar:v2");
+	}
+
+	@Override
+	public Stringable fromString(String src)
+	{
+		return new IndexDefinition(src);
 	}
 
 }

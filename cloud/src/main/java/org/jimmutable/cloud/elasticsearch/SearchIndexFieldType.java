@@ -19,7 +19,7 @@ public enum SearchIndexFieldType implements StandardEnum
 	FLOAT("float"),
 	DAY("date"),
 	// ok?
-	OBJECTID("text");
+	OBJECTID("text:keyword");
 
 	static public final MyConverter CONVERTER = new MyConverter();
 

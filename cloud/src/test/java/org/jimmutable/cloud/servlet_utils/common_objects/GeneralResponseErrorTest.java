@@ -46,7 +46,7 @@ public class GeneralResponseErrorTest extends TestCase
 	{
 		String obj_string = String.format("%s\n%s\n%s\n%s"
 				, "{"
-				, "  \"type_hint\" : \"jimmutable.cloud.servlet_utils.common_objects.GeneralResponseError\","
+				, "  \"type_hint\" : \"jimmutable.aws.servlet_utils.common_objects.GeneralResponseError\","
 				, "  \"message\" : \"Test Deserialization\""
 				, "}"
 				);
