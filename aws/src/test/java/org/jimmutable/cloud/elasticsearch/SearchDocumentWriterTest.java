@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
 import org.jimmutable.cloud.elasticsearch.SearchDocumentId;
 import org.jimmutable.cloud.elasticsearch.SearchDocumentWriter;
 import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
@@ -13,7 +14,6 @@ import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.common.Day;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
-import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.joda.time.DateTime;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -25,8 +25,7 @@ public class SearchDocumentWriterTest
 	public static void beforeClass()
 	{
 		JimmutableTypeNameRegister.registerAllTypes();
-		ObjectParseTree.registerTypeName(SearchIndexFieldDefinition.class);
-		ObjectParseTree.registerTypeName(SearchIndexDefinition.class);
+		JimmutableCloudTypeNameRegister.registerAllTypes();
 	}
 
 	@Test

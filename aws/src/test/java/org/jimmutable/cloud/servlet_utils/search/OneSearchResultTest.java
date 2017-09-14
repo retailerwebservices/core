@@ -2,13 +2,13 @@ package org.jimmutable.cloud.servlet_utils.search;
 
 import java.util.Map;
 
+import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
 import org.jimmutable.core.fields.FieldHashMap;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
-import org.jimmutable.core.serialization.reader.ObjectParseTree;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -25,7 +25,7 @@ public class OneSearchResultTest extends TestCase
 	public static Test suite()
 	{
 		JimmutableTypeNameRegister.registerAllTypes();
-		ObjectParseTree.registerTypeName(OneSearchResult.class);
+		JimmutableCloudTypeNameRegister.registerAllTypes();
 		return new TestSuite(OneSearchResultTest.class);
 	}
 

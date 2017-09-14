@@ -2,6 +2,8 @@ package org.jimmutable.cloud.elasticsearch;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+
+import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
 import org.jimmutable.cloud.StartupSingleton;
 import org.jimmutable.cloud.elasticsearch.SearchIndexConfigurationUtils;
 import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
@@ -10,7 +12,6 @@ import org.jimmutable.cloud.elasticsearch.SearchIndexFieldType;
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
-import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -27,8 +28,7 @@ public class SearchIndexConfigurationUtilsTest
 		StartupSingleton.setupOnce();
 
 		JimmutableTypeNameRegister.registerAllTypes();
-		ObjectParseTree.registerTypeName(SearchIndexFieldDefinition.class);
-		ObjectParseTree.registerTypeName(SearchIndexDefinition.class);
+		JimmutableCloudTypeNameRegister.registerAllTypes();
 
 		StartupSingleton.setupOnce();
 

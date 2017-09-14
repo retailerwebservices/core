@@ -3,6 +3,7 @@ package org.jimmutable.cloud.elasticsearch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldType;
 import org.jimmutable.core.exceptions.SerializeException;
@@ -10,7 +11,6 @@ import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
-import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,7 +21,7 @@ public class SearchIndexFieldDefinitionTest
 	public void before()
 	{
 		JimmutableTypeNameRegister.registerAllTypes();
-		ObjectParseTree.registerTypeName(SearchIndexFieldDefinition.class);
+		JimmutableCloudTypeNameRegister.registerAllTypes();
 	}
 
 	@Test
@@ -75,7 +75,7 @@ public class SearchIndexFieldDefinitionTest
 	public void jsonSerialization()
 	{
 
-		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s", "{", "  \"type_hint\" : \"org.jimmutable.aws.elasticsearch.SearchIndexFieldDefinition\",", "  \"name\" : {", "    \"type_hint\" : \"jimmutable.FieldName\",", "    \"name\" : \"spaghetti\"", "  },", "  \"type\" : \"keyword\"", "}");
+		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s", "{", "  \"type_hint\" : \"org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition\",", "  \"name\" : {", "    \"type_hint\" : \"jimmutable.FieldName\",", "    \"name\" : \"spaghetti\"", "  },", "  \"type\" : \"keyword\"", "}");
 
 		SearchIndexFieldDefinition obj = (SearchIndexFieldDefinition) StandardObject.deserialize(obj_string);
 
