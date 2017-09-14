@@ -17,7 +17,7 @@ public interface Indexable
 	 * 
 	 * @return An IndexId
 	 */
-	public IndexDefinition getSimpleSearchIndexDefinition();
+	public SearchIndexDefinition getSimpleSearchIndexDefinition();
 
 	/**
 	 * Get the search document id. Frequently (but not always) this is also the

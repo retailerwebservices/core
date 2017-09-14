@@ -1,9 +1,18 @@
 package org.jimmutable.aws;
 
 import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
+import org.jimmutable.aws.elasticsearch.ElasticSearchEndpoint;
+import org.jimmutable.aws.elasticsearch.Search;
 import org.jimmutable.aws.logging.DatedFileHandler;
 import org.jimmutable.aws.logging.Log4jUtil;
 import org.jimmutable.aws.logging.LoggingUtil;
@@ -17,15 +26,17 @@ import org.jimmutable.storage.ApplicationId;
  * @author trevorbox
  *
  */
+@SuppressWarnings("resource")
 public class CloudExecutionEnvironment
 {
-
+	private static Logger logger;
 	private static CloudExecutionEnvironment CURRENT;
 
 	private EnvironmentType type;
 	private ApplicationId application_id;
+	private Search search;
 
-	private static Logger logger;
+	private TransportClient elasticsearchClient;
 
 	// System properties
 	private static final String ENV_TYPE_VARIABLE_NAME = "JIMMUTABLE_ENV_TYPE";
@@ -33,6 +44,8 @@ public class CloudExecutionEnvironment
 	private static final String ENV_LOGGING_DIR = "logging.dir";
 	private static final String ENV_LOGGNG_FILE_NAME = "logging.file.name";
 	private static final String ENV_LOGGING_LEVEL = "logging.level";
+
+	private static final Level DEFAULT_LEVEL = Level.INFO;
 
 	// setup the required logging configurations
 	static {
@@ -49,43 +62,38 @@ public class CloudExecutionEnvironment
 			file_name = "application.name";
 		}
 
-		// default value
-		Level log_level = Level.ALL;
+		Level level = Level.toLevel(System.getProperty(ENV_LOGGING_LEVEL), DEFAULT_LEVEL);
 
-		String string_level = System.getProperty(ENV_LOGGING_LEVEL);
-		if (string_level != null) {
-			try {
-				log_level = Level.parse(string_level);
-			} catch (IllegalArgumentException e) {
-				Logger.getLogger(CloudExecutionEnvironment.class.getName()).log(Level.WARNING, String.format("Failed to parse the log level %s", string_level), e);
-			}
-		}
+		Log4jUtil.setAllLoggerLevels(level);
 
-		LoggingUtil.setRootLoggingFormatter(new SingleLineFormatter());
-		LoggingUtil.addRootHandler(new DatedFileHandler());
-		LoggingUtil.updateRootLoggingLevel(log_level);
-		Log4jUtil.setLevel(log_level);
-
-		logger = Logger.getLogger(CloudExecutionEnvironment.class.getName());
+		logger = LogManager.getLogger(CloudExecutionEnvironment.class);
 
 		File dir = new File(log_dir);
 		if (!dir.exists()) {
 			try {
 				dir.mkdirs();
 			} catch (Exception e) {
-				logger.log(Level.SEVERE, String.format("Failed to create logs dir %s", log_dir), e);
+				logger.log(Level.FATAL, String.format("Failed to create logs dir %s", log_dir), e);
 			}
 		}
 
-		logger.config(String.format("Logging output directory: %s", log_dir));
-		logger.config(String.format("Logging output file name: %s", file_name));
-		logger.config(String.format("Logging level: %s", log_level));
+		logger.trace(String.format("Logging output directory: %s", log_dir));
+		logger.trace(String.format("Logging output file name: %s", file_name));
+		logger.trace(String.format("Logging level: %s", level));
+
 	}
 
-	private CloudExecutionEnvironment(EnvironmentType type, ApplicationId application_id)
+	private CloudExecutionEnvironment(EnvironmentType type, ApplicationId application_id, TransportClient elasticsearchClient, Search search)
 	{
 		this.type = type;
 		this.application_id = application_id;
+		this.elasticsearchClient = elasticsearchClient;
+		this.search = search;
+	}
+
+	public TransportClient getSimpleElasticsearchClient()
+	{
+		return elasticsearchClient;
 	}
 
 	public EnvironmentType getSimpleEnvironmentType()
@@ -96,6 +104,16 @@ public class CloudExecutionEnvironment
 	public ApplicationId getSimpleApplicationId()
 	{
 		return application_id;
+	}
+
+	/**
+	 * Search instance used for document upsert and searching of indices
+	 * 
+	 * @return
+	 */
+	public Search getSimpleSearch()
+	{
+		return search;
 	}
 
 	/**
@@ -112,10 +130,10 @@ public class CloudExecutionEnvironment
 	 *            A default application id in case the environment variable is not
 	 *            set
 	 */
-	static public void startup(ApplicationId default_id)
+	public static void startup(ApplicationId default_id)
 	{
 		if (CURRENT != null) {
-			logger.severe("Startup has already been called!");
+			logger.fatal("Startup has already been called!");
 			throw new RuntimeException("Startup has already been called!");
 		}
 		// default
@@ -126,11 +144,11 @@ public class CloudExecutionEnvironment
 			try {
 				tmp_type = EnvironmentType.valueOf(env_level);
 			} catch (Exception e) {
-				logger.severe(String.format("Invalid Environment type %s using default type %s", env_level, tmp_type));
+				logger.fatal(String.format("Invalid Environment type %s using default type %s", env_level, tmp_type));
 			}
 		}
 
-		logger.config(String.format("Environment type set to %s", tmp_type));
+		logger.trace(String.format("Environment type set to %s", tmp_type));
 
 		if (tmp_type.equals(EnvironmentType.DEV)) {
 
@@ -139,10 +157,10 @@ public class CloudExecutionEnvironment
 			if (operating_system_property != null) {
 				String os = operating_system_property.toLowerCase();
 				if (os.indexOf("win") < 0 && os.indexOf("mac") < 0) {
-					logger.severe(String.format("Unexpected operating system (%s) detected for %s environment! This is probabaly because the environment variable %s was not set correctly.", os, tmp_type, ENV_TYPE_VARIABLE_NAME));
+					logger.fatal(String.format("Unexpected operating system (%s) detected for %s environment! This is probabaly because the environment variable %s was not set correctly.", os, tmp_type, ENV_TYPE_VARIABLE_NAME));
 				}
 			} else {
-				logger.severe("Failed to detect operating system!");
+				logger.fatal("Failed to detect operating system!");
 			}
 
 		}
@@ -152,13 +170,24 @@ public class CloudExecutionEnvironment
 			tmp_application_id = new ApplicationId(System.getProperty(ENV_APPLICATION_ID));
 		} catch (Exception e) {
 			if (tmp_application_id == null) {
-				logger.severe("Failed to set the application id! Terminating the JVM...");
+				logger.fatal("Failed to set the application id! Terminating the JVM...");
 				System.exit(1);
 			}
 		}
-		logger.config(String.format("Application Id set to %s", tmp_application_id));
+		logger.trace(String.format("Application Id set to %s", tmp_application_id));
 
-		CURRENT = new CloudExecutionEnvironment(tmp_type, tmp_application_id);
+		TransportClient client = null;
+		try {
+			client = new PreBuiltTransportClient(Settings.EMPTY).addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(ElasticSearchEndpoint.CURRENT.getSimpleHost()), ElasticSearchEndpoint.CURRENT.getSimplePort()));
+		} catch (UnknownHostException e) {
+			logger.log(Level.FATAL, "Failed to instantiate the elasticsearch client!", e);
+		}
+
+		if (client == null) {
+			throw new RuntimeException("Failed to instantiate the elasticsearch client!");
+		}
+
+		CURRENT = new CloudExecutionEnvironment(tmp_type, tmp_application_id, client, new Search(client));
 
 	}
 
@@ -173,7 +202,7 @@ public class CloudExecutionEnvironment
 	static public CloudExecutionEnvironment getSimpleCurrent()
 	{
 		if (CURRENT == null) {
-			logger.severe("The startup mathod was never called first to setup the singleton! Terminating the JVM...");
+			logger.fatal("The startup mathod was never called first to setup the singleton! Terminating the JVM...");
 			System.exit(1);
 		}
 		return CURRENT;

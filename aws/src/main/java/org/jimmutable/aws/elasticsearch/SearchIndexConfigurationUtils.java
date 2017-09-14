@@ -6,8 +6,9 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
@@ -44,7 +45,7 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 public class SearchIndexConfigurationUtils
 {
 
-	private static final Logger logger = Logger.getLogger(SearchIndexConfigurationUtils.class.getName());
+	private static final Logger logger = LogManager.getLogger(SearchIndexConfigurationUtils.class);
 
 	private static TransportClient client;
 
@@ -63,7 +64,7 @@ public class SearchIndexConfigurationUtils
 
 		} catch (UnknownHostException e) {
 			String errorMessage = String.format("Failed to create a TransportClient from endpoint %s:%d", endpoint.getSimpleHost(), endpoint.getSimplePort());
-			logger.log(Level.SEVERE, errorMessage, e);
+			logger.log(Level.FATAL, errorMessage, e);
 			throw new RuntimeException(errorMessage);
 		}
 	}
@@ -109,13 +110,13 @@ public class SearchIndexConfigurationUtils
 	public boolean indexExists(IndexDefinition index)
 	{
 		if (index == null) {
-			logger.severe("Cannot check the existence of a null Index");
+			logger.fatal("Cannot check the existence of a null Index");
 			return false;
 		}
 		try {
 			return client.admin().indices().prepareExists(index.getSimpleValue()).get().isExists();
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Failed to check if index exists", e);
+			logger.log(Level.FATAL, "Failed to check if index exists", e);
 			return false;
 		}
 	}
@@ -129,13 +130,13 @@ public class SearchIndexConfigurationUtils
 	public boolean indexExists(SearchIndexDefinition index)
 	{
 		if (index == null) {
-			logger.severe("Cannot check the existence of a null Index");
+			logger.fatal("Cannot check the existence of a null Index");
 			return false;
 		}
 		try {
 			return client.admin().indices().prepareExists(index.getSimpleIndex().getSimpleValue()).get().isExists();
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Failed to check if index exists", e);
+			logger.log(Level.FATAL, "Failed to check if index exists", e);
 			return false;
 		}
 	}
@@ -176,7 +177,7 @@ public class SearchIndexConfigurationUtils
 				return expected.equals(actual);
 
 			} catch (Exception e) {
-				logger.log(Level.SEVERE, String.format("Failed to get the index mapping for index %s", index.getSimpleIndex().getSimpleValue()), e);
+				logger.log(Level.FATAL, String.format("Failed to get the index mapping for index %s", index.getSimpleIndex().getSimpleValue()), e);
 			}
 		}
 
@@ -187,7 +188,7 @@ public class SearchIndexConfigurationUtils
 	private boolean createIndex(SearchIndexDefinition index)
 	{
 		if (index == null) {
-			logger.severe("Cannot create a null Index");
+			logger.fatal("Cannot create a null Index");
 			return false;
 		}
 
@@ -203,12 +204,12 @@ public class SearchIndexConfigurationUtils
 			CreateIndexResponse createResponse = client.admin().indices().prepareCreate(index.getSimpleIndex().getSimpleValue()).addMapping(ELASTICSEARCH_DEFAULT_TYPE, mappingBuilder).get();
 
 			if (!createResponse.isAcknowledged()) {
-				logger.severe(String.format("Index Creation not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
+				logger.fatal(String.format("Index Creation not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
 				return false;
 			}
 
 		} catch (IOException e) {
-			logger.log(Level.SEVERE, String.format("Failed to generate mapping json for index %s", index.getSimpleIndex().getSimpleValue()), e);
+			logger.log(Level.FATAL, String.format("Failed to generate mapping json for index %s", index.getSimpleIndex().getSimpleValue()), e);
 			return false;
 		}
 
@@ -218,18 +219,18 @@ public class SearchIndexConfigurationUtils
 	private boolean deleteIndex(SearchIndexDefinition index)
 	{
 		if (index == null) {
-			logger.severe("Cannot delete a null Index");
+			logger.fatal("Cannot delete a null Index");
 			return false;
 		}
 
 		try {
 			DeleteIndexResponse deleteResponse = client.admin().indices().prepareDelete(index.getSimpleIndex().getSimpleValue()).get();
 			if (!deleteResponse.isAcknowledged()) {
-				logger.severe(String.format("Index Deletion not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
+				logger.fatal(String.format("Index Deletion not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
 				return false;
 			}
 		} catch (Exception e) {
-			logger.severe(String.format("Index Deletion failed for index %s", index.getSimpleIndex().getSimpleValue()));
+			logger.fatal(String.format("Index Deletion failed for index %s", index.getSimpleIndex().getSimpleValue()));
 			return false;
 		}
 		return true;
@@ -253,7 +254,7 @@ public class SearchIndexConfigurationUtils
 	{
 
 		if (index == null) {
-			logger.severe("Cannot upsert a null Index");
+			logger.fatal("Cannot upsert a null Index");
 			return false;
 		}
 
