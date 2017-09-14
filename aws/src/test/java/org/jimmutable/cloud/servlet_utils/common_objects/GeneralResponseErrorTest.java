@@ -1,5 +1,6 @@
 package org.jimmutable.cloud.servlet_utils.common_objects;
 
+import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
 import org.jimmutable.cloud.servlet_utils.common_objects.GeneralResponseError;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
@@ -19,7 +20,8 @@ public class GeneralResponseErrorTest extends TestCase
 	public static Test suite()
 	{
 		JimmutableTypeNameRegister.registerAllTypes();
-		ObjectParseTree.registerTypeName(GeneralResponseError.class);
+		JimmutableCloudTypeNameRegister.registerAllTypes();
+//		ObjectParseTree.registerTypeName(GeneralResponseError.class);
 		return new TestSuite(GeneralResponseErrorTest.class);
 	}
 

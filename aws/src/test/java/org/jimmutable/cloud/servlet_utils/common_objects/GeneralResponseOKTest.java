@@ -1,5 +1,6 @@
 package org.jimmutable.cloud.servlet_utils.common_objects;
 
+import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
 import org.jimmutable.cloud.servlet_utils.common_objects.GeneralResponseOK;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
@@ -20,7 +21,8 @@ public class GeneralResponseOKTest extends TestCase
 	public static Test suite()
 	{
 		JimmutableTypeNameRegister.registerAllTypes();
-		ObjectParseTree.registerTypeName(GeneralResponseOK.class);
+//		ObjectParseTree.registerTypeName(GeneralResponseOK.class);
+		JimmutableCloudTypeNameRegister.registerAllTypes();
 		return new TestSuite(GeneralResponseOKTest.class);
 	}
 

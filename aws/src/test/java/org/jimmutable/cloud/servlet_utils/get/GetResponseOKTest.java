@@ -1,5 +1,6 @@
 package org.jimmutable.cloud.servlet_utils.get;
 
+import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
 import org.jimmutable.cloud.servlet_utils.get.GetResponseOK;
 import org.jimmutable.core.examples.book.BindingType;
 import org.jimmutable.core.examples.book.Book;
@@ -23,7 +24,8 @@ public class GetResponseOKTest extends TestCase
 	public static Test suite()
 	{
 		JimmutableTypeNameRegister.registerAllTypes();
-		ObjectParseTree.registerTypeName(GetResponseOK.class);
+//		ObjectParseTree.registerTypeName(GetResponseOK.class);
+		JimmutableCloudTypeNameRegister.registerAllTypes();
 		return new TestSuite(GetResponseOKTest.class);
 	}
 
