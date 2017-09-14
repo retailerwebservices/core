@@ -1,4 +1,4 @@
-package org.jimmutable.aws;
+package org.jimmutable.cloud;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -11,13 +11,10 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
-import org.jimmutable.aws.elasticsearch.ElasticSearchEndpoint;
-import org.jimmutable.aws.elasticsearch.Search;
-import org.jimmutable.aws.elasticsearch.SearchIndexConfigurationUtils;
-
-import org.jimmutable.aws.logging.Log4jUtil;
-
-import org.jimmutable.storage.ApplicationId;
+import org.jimmutable.cloud.elasticsearch.ElasticSearchEndpoint;
+import org.jimmutable.cloud.elasticsearch.Search;
+import org.jimmutable.cloud.elasticsearch.SearchIndexConfigurationUtils;
+import org.jimmutable.cloud.logging.Log4jUtil;
 
 /**
  * Configures environment and application specific setting, to be used by other

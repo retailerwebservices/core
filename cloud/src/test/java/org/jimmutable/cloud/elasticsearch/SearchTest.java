@@ -1,9 +1,10 @@
-package org.jimmutable.aws.elasticsearch;
+package org.jimmutable.cloud.elasticsearch;
 
-import org.jimmutable.aws.CloudExecutionEnvironment;
+import org.jimmutable.cloud.ApplicationId;
+import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
-import org.jimmutable.storage.ApplicationId;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -11,7 +12,7 @@ import org.junit.Test;
 public class SearchTest
 {
 
-//	@BeforeClass
+	// @BeforeClass
 	public static void setup()
 	{
 
@@ -22,7 +23,7 @@ public class SearchTest
 		CloudExecutionEnvironment.startup(new ApplicationId("searchtest"));
 	}
 
-//	@Test
+	// @Test
 	public void test1() throws InterruptedException
 	{
 		MyIndexable indexable = new MyIndexable();
@@ -34,24 +35,24 @@ public class SearchTest
 		for (int i = 0; i < 200; i++) {
 			CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocumentAsync(indexable);
 		}
-		
 
 	}
-	
-//	@Test
-	public void testSearch() {
+
+	// @Test
+	public void testSearch()
+	{
 		MyIndexable indexable = new MyIndexable();
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(indexable.getSimpleSearchIndexDefinition(), "abc");
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(indexable.getSimpleSearchIndexDefinition(), "day:>2012-01-01");
-		
+
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(indexable.getSimpleSearchIndexDefinition(), "NINE");
 	}
 
-//	@AfterClass
+	// @AfterClass
 	public static void shutdown()
 	{
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().shutdownThreadPool();
-		
+
 	}
 
 }

@@ -1,9 +1,14 @@
-package org.jimmutable.aws.elasticsearch;
+package org.jimmutable.cloud.elasticsearch;
 
 import org.jimmutable.core.objects.common.Day;
 import org.jimmutable.core.serialization.FieldName;
 import org.joda.time.DateTime;
 
+/**
+ * testclass
+ * @author trevorbox
+ *
+ */
 public class MyIndexable implements Indexable
 {
 

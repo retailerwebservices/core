@@ -1,4 +1,4 @@
-package org.jimmutable.aws.elasticsearch;
+package org.jimmutable.cloud.elasticsearch;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package org.jimmutable.aws;
+package org.jimmutable.cloud;
 
 import org.jimmutable.core.objects.StandardEnum;
 import org.jimmutable.core.utils.Normalizer;

@@ -1,4 +1,4 @@
-package org.jimmutable.aws.logging;
+package org.jimmutable.cloud.logging;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
