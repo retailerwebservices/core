@@ -1,6 +1,5 @@
 package org.jimmutable.aws.elasticsearch;
 
-import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.common.Day;
 import org.jimmutable.core.serialization.FieldName;
 import org.joda.time.DateTime;
@@ -17,24 +16,13 @@ public class MyIndexable implements Indexable
 	SearchIndexFieldDefinition theFloat = new SearchIndexFieldDefinition(new FieldName("float"), SearchIndexFieldType.FLOAT);
 	SearchIndexFieldDefinition theLong = new SearchIndexFieldDefinition(new FieldName("long"), SearchIndexFieldType.LONG);
 
-	private SearchIndexDefinition index_definition;
+	private IndexDefinition index_definition;
 	private SearchDocumentId document_id;
 
 	public MyIndexable()
 	{
 
-		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
-		b.add(SearchIndexDefinition.FIELD_FIELDS, theBoolean);
-		b.add(SearchIndexDefinition.FIELD_FIELDS, theText1);
-		b.add(SearchIndexDefinition.FIELD_FIELDS, theText2);
-		b.add(SearchIndexDefinition.FIELD_FIELDS, theText3);
-		b.add(SearchIndexDefinition.FIELD_FIELDS, theAtom);
-		b.add(SearchIndexDefinition.FIELD_FIELDS, theDay);
-		b.add(SearchIndexDefinition.FIELD_FIELDS, theFloat);
-		b.add(SearchIndexDefinition.FIELD_FIELDS, theLong);
-		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, new IndexDefinition("sanity:test:v0"));
-
-		index_definition = (SearchIndexDefinition) b.create(null);
+		index_definition = new IndexDefinition("sanity:test:v0");
 
 		document_id = new SearchDocumentId("amigo");
 
@@ -62,7 +50,7 @@ public class MyIndexable implements Indexable
 	}
 
 	@Override
-	public SearchIndexDefinition getSimpleSearchIndexDefinition()
+	public IndexDefinition getSimpleSearchIndexDefinition()
 	{
 		return index_definition;
 	}

@@ -47,7 +47,7 @@ public class IndexDefinition extends Stringable
 		String[] values = super.getSimpleValue().split(SEPARATOR);
 
 		if (values.length != 3) {
-			throw new ValidationException(String.format("Expected the format applicationId:indexId:indexVersion but the definition was set to %s",	super.getSimpleValue()));
+			throw new ValidationException(String.format("Expected the format applicationId:indexId:indexVersion but the definition was set to %s", super.getSimpleValue()));
 		}
 
 		// run the validation
