@@ -50,7 +50,7 @@ public class MessagingApp
 			@Override
 			public void actionPerformed( ActionEvent e )
 			{
-				String mainpath = System.getProperty("user.home") + "/jimmutable_aws_dev/messaging/development/monty-python-jokes";
+				String mainpath = System.getProperty("user.home") + "/jimmutable_dev/messaging/development/monty-python-jokes";
 				for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
 				{
 					for ( String queue_queue_id : Arrays.asList("queue1", "queue2") )
@@ -90,7 +90,7 @@ public class MessagingApp
 			@Override
 			public void actionPerformed( ActionEvent e )
 			{
-				String filePathString = System.getProperty("user.home") + "/jimmutable_aws_dev/messaging";// application id needs to go here
+				String filePathString = System.getProperty("user.home") + "/jimmutable_dev/messaging";// application id needs to go here
 				File f = new File(filePathString);
 				if ( f.exists() )
 				{

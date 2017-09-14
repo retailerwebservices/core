@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
 import org.jimmutable.cloud.StartupSingleton;
 import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
@@ -15,7 +16,6 @@ import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
-import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,8 +28,7 @@ public class SearchIndexDefinitionTest
 		StartupSingleton.setupOnce();
 
 		JimmutableTypeNameRegister.registerAllTypes();
-		ObjectParseTree.registerTypeName(SearchIndexDefinition.class);
-		ObjectParseTree.registerTypeName(SearchIndexFieldDefinition.class);
+		JimmutableCloudTypeNameRegister.registerAllTypes();
 	}
 
 	@Test

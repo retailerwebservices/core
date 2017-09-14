@@ -64,7 +64,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 
 		ObjectParseTree.registerTypeName(StandardMessageOnUpsert.class);
 		
-		root = new File(System.getProperty("user.home"), "/jimmutable_aws_dev/messaging");
+		root = new File(System.getProperty("user.home"), "/jimmutable_dev/messaging");
 		root.mkdirs();
 	}
 

@@ -13,6 +13,7 @@ import java.util.Random;
 import java.util.concurrent.RejectedExecutionException;
 
 import org.jimmutable.cloud.ApplicationId;
+import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
 import org.jimmutable.cloud.messaging.MessageListener;
 import org.jimmutable.cloud.messaging.MessagingDevLocalFileSystem;
 import org.jimmutable.cloud.messaging.QueueDefinition;
@@ -24,7 +25,6 @@ import org.jimmutable.cloud.messaging.TopicId;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
-import org.jimmutable.core.serialization.reader.ObjectParseTree;
 
 import junit.framework.TestCase;
 
@@ -38,12 +38,12 @@ public class MessageDevLocalFileSystemTest extends TestCase
 	{
 		appId = new ApplicationId("Development");
 		messagingdevlocalfilesystem = new MessagingDevLocalFileSystem();
-		ObjectParseTree.registerTypeName(StandardMessageOnUpsert.class);
+		JimmutableCloudTypeNameRegister.registerAllTypes();
 	}
 
 	public static void testSendAsync() throws InterruptedException
 	{
-		String mainpath = System.getProperty("user.home") + "/jimmutable_aws_dev/messaging/development/knights-in-monty-python";
+		String mainpath = System.getProperty("user.home") + "/jimmutable_dev/messaging/development/knights-in-monty-python";
 		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
 		{
 			for ( String queue_queue_id : Arrays.asList("queue1", "queue2") )
@@ -73,7 +73,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 
 	public static void testSendAsyncWithNoSubfolders() throws InterruptedException
 	{
-		String mainpath = System.getProperty("user.home") + "/jimmutable_aws_dev/messaging/development/knights_in_monty_python";
+		String mainpath = System.getProperty("user.home") + "/jimmutable_dev/messaging/development/knights_in_monty_python";
 
 		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("Knights-in-Monty-Python")), new StandardMessageOnUpsert(new Kind("niii"), new ObjectId(123456789))));
 		Thread.sleep(1000);// have it wait a second
@@ -129,7 +129,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 
 	public static void testStartListening() throws InterruptedException
 	{
-		String mainpath = System.getProperty("user.home") + "/jimmutable_aws_dev/messaging/development/monty-python-jokes/development/the-holy-grail";
+		String mainpath = System.getProperty("user.home") + "/jimmutable_dev/messaging/development/monty-python-jokes/development/the-holy-grail";
 		TestMessageListener listener = new TestMessageListener();
 
 		// start listening with the listener that we want to listen with
@@ -164,7 +164,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 
 	public static void testSendAllAndShutdown() throws InterruptedException
 	{
-		String mainpath = System.getProperty("user.home") + "/jimmutable_aws_dev/messaging/development/monty-python-jokes";
+		String mainpath = System.getProperty("user.home") + "/jimmutable_dev/messaging/development/monty-python-jokes";
 		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
 		{
 			for ( String queue_queue_id : Arrays.asList("queue1", "queue2") )
@@ -218,7 +218,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 	@Override
 	protected void tearDown()
 	{
-		String filePathString = System.getProperty("user.home") + "/jimmutable_aws_dev/messaging";// application id needs to go here
+		String filePathString = System.getProperty("user.home") + "/jimmutable_dev/messaging";// application id needs to go here
 		File f = new File(filePathString);
 		if ( f.exists() )
 		{
