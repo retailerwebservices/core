@@ -14,10 +14,9 @@ import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.jimmutable.aws.elasticsearch.ElasticSearchEndpoint;
 import org.jimmutable.aws.elasticsearch.Search;
 import org.jimmutable.aws.elasticsearch.SearchIndexConfigurationUtils;
-import org.jimmutable.aws.logging.DatedFileHandler;
+
 import org.jimmutable.aws.logging.Log4jUtil;
-import org.jimmutable.aws.logging.LoggingUtil;
-import org.jimmutable.aws.logging.SingleLineFormatter;
+
 import org.jimmutable.storage.ApplicationId;
 
 /**

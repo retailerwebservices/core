@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 
 import org.jimmutable.aws.CloudExecutionEnvironment;
-import org.jimmutable.aws.StartupSingleton;
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
@@ -19,17 +18,13 @@ public class SearchIndexConfigurationUtilsTest
 	private static SearchIndexDefinition def;
 
 	// Uncomment this to run unit test with elasticsearch running
-//	@BeforeClass
+	// @BeforeClass
 	public static void setup() throws UnknownHostException
 	{
-
-		StartupSingleton.setupOnce();
 
 		JimmutableTypeNameRegister.registerAllTypes();
 		ObjectParseTree.registerTypeName(SearchIndexFieldDefinition.class);
 		ObjectParseTree.registerTypeName(SearchIndexDefinition.class);
-
-		StartupSingleton.setupOnce();
 
 		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
 
@@ -48,7 +43,7 @@ public class SearchIndexConfigurationUtilsTest
 	}
 
 	// Uncomment this to run unit test with elasticsearch running
-//	@Test
+	// @Test
 	public void upsert() throws IOException
 	{
 
