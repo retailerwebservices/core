@@ -34,13 +34,24 @@ public class SearchTest
 		for (int i = 0; i < 200; i++) {
 			CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocumentAsync(indexable);
 		}
+		
 
+	}
+	
+	@Test
+	public void testSearch() {
+		MyIndexable indexable = new MyIndexable();
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(indexable.getSimpleSearchIndexDefinition(), "abc");
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(indexable.getSimpleSearchIndexDefinition(), "day:>2012-01-01");
+		
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(indexable.getSimpleSearchIndexDefinition(), "NINE");
 	}
 
 	@AfterClass
 	public static void shutdown()
 	{
-		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().shutdown();
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().shutdownThreadPool();
+		
 	}
 
 }

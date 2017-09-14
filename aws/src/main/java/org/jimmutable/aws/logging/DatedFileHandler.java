@@ -20,6 +20,7 @@ import org.jimmutable.aws.StartupSingleton;
  * @author trevorbox
  *
  */
+@Deprecated
 public class DatedFileHandler extends Handler
 {
 
@@ -27,8 +28,7 @@ public class DatedFileHandler extends Handler
 	private static final SingleLineFormatter formatter = new SingleLineFormatter();
 	private Date date = new Date();
 
-	static
-	{
+	static {
 		FILE_DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("US/Arizona"));
 	}
 
@@ -39,19 +39,15 @@ public class DatedFileHandler extends Handler
 	@Override
 	public synchronized void publish(LogRecord r)
 	{
-		if (r != null)
-		{
-			if (isLoggable(r))
-			{
+		if (r != null) {
+			if (isLoggable(r)) {
 				FileHandler f;
-				try
-				{
+				try {
 					f = new FileHandler(fileName(r), true);
 					f.setFormatter(formatter);
 					f.publish(r);
 					f.close(); // if this is not closed you will get multiple writes to different logs
-				} catch (SecurityException | IOException e)
-				{
+				} catch (SecurityException | IOException e) {
 					e.printStackTrace();
 					this.reportError(null, e, ErrorManager.WRITE_FAILURE);
 				}
@@ -79,14 +75,11 @@ public class DatedFileHandler extends Handler
 	 */
 	private String fileName(LogRecord r)
 	{
-		if (r != null)
-		{
+		if (r != null) {
 			date.setTime(r.getMillis());
-		} else
-		{
+		} else {
 			date.setTime(System.currentTimeMillis());
 		}
-		return String.format("%s/%s-%s.log", StartupSingleton.getSimpleLoggingDirectory(),
-				StartupSingleton.getSimpleLoggingFileName(), FILE_DATE_FORMAT.format(date));
+		return String.format("%s/%s-%s.log", StartupSingleton.getSimpleLoggingDirectory(), StartupSingleton.getSimpleLoggingFileName(), FILE_DATE_FORMAT.format(date));
 	}
 }

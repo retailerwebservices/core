@@ -47,26 +47,39 @@ public class SearchIndexConfigurationUtils
 
 	private static final Logger logger = LogManager.getLogger(SearchIndexConfigurationUtils.class);
 
-	private static TransportClient client;
+	private TransportClient client;
 
 	private static final String ELASTICSEARCH_DEFAULT_TYPE = "default";
 
-	@SuppressWarnings("resource")
-	public SearchIndexConfigurationUtils(ElasticSearchEndpoint endpoint)
+	// @SuppressWarnings("resource")
+	// public SearchIndexConfigurationUtils(ElasticSearchEndpoint endpoint)
+	// {
+	// // set cluster name?
+	// // Settings settings = Settings.builder().put("cluster.name",
+	// // "elasticsearch").build();
+	//
+	// Settings settings = Settings.EMPTY;
+	// try {
+	// // this is expensive - could take 16 seconds
+	// client = new PreBuiltTransportClient(settings).addTransportAddress(new
+	// InetSocketTransportAddress(InetAddress.getByName(endpoint.getSimpleHost()),
+	// endpoint.getSimplePort()));
+	//
+	// } catch (UnknownHostException e) {
+	// String errorMessage = String.format("Failed to create a TransportClient from
+	// endpoint %s:%d", endpoint.getSimpleHost(), endpoint.getSimplePort());
+	// logger.log(Level.FATAL, errorMessage, e);
+	// throw new RuntimeException(errorMessage);
+	// }
+	// }
+
+	/**
+	 *
+	 * @param client
+	 */
+	public SearchIndexConfigurationUtils(TransportClient client)
 	{
-		// set cluster name?
-		Settings settings = Settings.builder().put("cluster.name", "elasticsearch").build();
-
-		try {
-
-			// this is expensive - could take 16 seconds
-			client = new PreBuiltTransportClient(settings).addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(endpoint.getSimpleHost()), endpoint.getSimplePort()));
-
-		} catch (UnknownHostException e) {
-			String errorMessage = String.format("Failed to create a TransportClient from endpoint %s:%d", endpoint.getSimpleHost(), endpoint.getSimplePort());
-			logger.log(Level.FATAL, errorMessage, e);
-			throw new RuntimeException(errorMessage);
-		}
+		this.client = client;
 	}
 
 	// public static boolean
@@ -193,12 +206,21 @@ public class SearchIndexConfigurationUtils
 		}
 
 		try {
-			XContentBuilder mappingBuilder = jsonBuilder().startObject().startObject(ELASTICSEARCH_DEFAULT_TYPE).startObject("properties");
 
+			XContentBuilder mappingBuilder = jsonBuilder();
+			mappingBuilder.startObject().startObject(ELASTICSEARCH_DEFAULT_TYPE).startObject("properties");
 			for (SearchIndexFieldDefinition field : index.getSimpleFields()) {
-				mappingBuilder.startObject(field.getSimpleFieldName().getSimpleName()).field("type", field.getSimpleType().getSimpleCode()).endObject();
+				mappingBuilder.startObject(field.getSimpleFieldName().getSimpleName());
+				mappingBuilder.field("type", field.getSimpleType().getSimpleCode());
+				mappingBuilder.endObject();
+				// https://www.elastic.co/blog/strings-are-dead-long-live-strings
+				if (field.getSimpleType().equals(SearchIndexFieldType.OBJECTID)) {
+					mappingBuilder.startObject("fields").startObject("keyword");
+					mappingBuilder.field("type", "keyword");
+					mappingBuilder.field("ignore_above", 256);
+					mappingBuilder.endObject().endObject();
+				}
 			}
-
 			mappingBuilder.endObject().endObject().endObject();
 
 			CreateIndexResponse createResponse = client.admin().indices().prepareCreate(index.getSimpleIndex().getSimpleValue()).addMapping(ELASTICSEARCH_DEFAULT_TYPE, mappingBuilder).get();
@@ -213,6 +235,7 @@ public class SearchIndexConfigurationUtils
 			return false;
 		}
 
+		logger.info("Created index %s", index.getSimpleIndex().getSimpleValue());
 		return true;
 	}
 
@@ -229,18 +252,14 @@ public class SearchIndexConfigurationUtils
 				logger.fatal(String.format("Index Deletion not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
 				return false;
 			}
+
 		} catch (Exception e) {
 			logger.fatal(String.format("Index Deletion failed for index %s", index.getSimpleIndex().getSimpleValue()));
 			return false;
 		}
+		logger.info("Deleted index %s", index.getSimpleIndex().getSimpleValue());
 		return true;
 
-	}
-
-	// on shutdown
-	public void closeClient()
-	{
-		client.close();
 	}
 
 	/**
@@ -258,8 +277,6 @@ public class SearchIndexConfigurationUtils
 			return false;
 		}
 
-		logger.info(String.format("Logging Index %s...", index.getSimpleIndex().getSimpleValue()));
-
 		// if it exists and is not configured correctly delete and add
 		if (indexExists(index)) {
 			if (!indexProperlyConfigured(index)) {
@@ -276,7 +293,7 @@ public class SearchIndexConfigurationUtils
 		}
 
 		// index exists and already configured correctly
-		logger.info("No upsert needed");
+		logger.info(String.format("No upsert needed for index %s", index.getSimpleIndex().getSimpleValue()));
 		return true;
 	}
 

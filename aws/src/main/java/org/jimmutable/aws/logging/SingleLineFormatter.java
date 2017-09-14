@@ -15,6 +15,7 @@ import java.util.logging.LogRecord;
  * @author trevorbox
  *
  */
+@Deprecated
 public class SingleLineFormatter extends Formatter
 {
 	private static final String format = "%s %-7s %s %s %s\n";
@@ -28,25 +29,20 @@ public class SingleLineFormatter extends Formatter
 
 	public synchronized String format(LogRecord record)
 	{
-		if (record != null)
-		{
+		if (record != null) {
 			this.date.setTime(record.getMillis());
 			String source;
-			if (record.getSourceClassName() != null)
-			{
+			if (record.getSourceClassName() != null) {
 				source = record.getSourceClassName();
-				if (record.getSourceMethodName() != null)
-				{
+				if (record.getSourceMethodName() != null) {
 					source += " " + record.getSourceMethodName();
 				}
-			} else
-			{
+			} else {
 				source = record.getLoggerName();
 			}
 			String message = formatMessage(record);
 			String throwable = "";
-			if (record.getThrown() != null)
-			{
+			if (record.getThrown() != null) {
 				StringWriter sw = new StringWriter();
 				PrintWriter pw = new PrintWriter(sw);
 				pw.println();
@@ -57,7 +53,6 @@ public class SingleLineFormatter extends Formatter
 			return String.format(format, dateFormat.format(date), record.getLevel(), source, message, throwable);
 		}
 		date.setTime(System.currentTimeMillis());
-		return String.format(format, dateFormat.format(date), Level.SEVERE,
-				SingleLineFormatter.class.getName() + " format", "LogRecord is null!", "");
+		return String.format(format, dateFormat.format(date), Level.SEVERE, SingleLineFormatter.class.getName() + " format", "LogRecord is null!", "");
 	}
 }

@@ -14,6 +14,7 @@ import java.util.logging.Logger;
  * @author trevorbox
  *
  */
+@Deprecated
 public class LoggingUtil
 {
 

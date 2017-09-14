@@ -17,7 +17,9 @@ public enum SearchIndexFieldType implements StandardEnum
 	LONG("long"),
 	BOOLEAN("boolean"),
 	FLOAT("float"),
-	DAY("date");
+	DAY("date"),
+	// ok?
+	OBJECTID("text");
 
 	static public final MyConverter CONVERTER = new MyConverter();
 

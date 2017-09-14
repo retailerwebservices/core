@@ -13,6 +13,7 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.jimmutable.aws.elasticsearch.ElasticSearchEndpoint;
 import org.jimmutable.aws.elasticsearch.Search;
+import org.jimmutable.aws.elasticsearch.SearchIndexConfigurationUtils;
 import org.jimmutable.aws.logging.DatedFileHandler;
 import org.jimmutable.aws.logging.Log4jUtil;
 import org.jimmutable.aws.logging.LoggingUtil;
@@ -35,7 +36,9 @@ public class CloudExecutionEnvironment
 	private EnvironmentType type;
 	private ApplicationId application_id;
 	private Search search;
+	private SearchIndexConfigurationUtils searchIndexConfigurationUtils;
 
+	// centrally managed client used by a couple classes
 	private TransportClient elasticsearchClient;
 
 	// System properties
@@ -83,12 +86,18 @@ public class CloudExecutionEnvironment
 
 	}
 
-	private CloudExecutionEnvironment(EnvironmentType type, ApplicationId application_id, TransportClient elasticsearchClient, Search search)
+	private CloudExecutionEnvironment(EnvironmentType type, ApplicationId application_id, TransportClient elasticsearchClient, Search search, SearchIndexConfigurationUtils searchIndexConfigurationUtils)
 	{
 		this.type = type;
 		this.application_id = application_id;
 		this.elasticsearchClient = elasticsearchClient;
 		this.search = search;
+		this.searchIndexConfigurationUtils = searchIndexConfigurationUtils;
+	}
+
+	public void closeElasticSearchClient()
+	{
+		elasticsearchClient.close();
 	}
 
 	public TransportClient getSimpleElasticsearchClient()
@@ -114,6 +123,16 @@ public class CloudExecutionEnvironment
 	public Search getSimpleSearch()
 	{
 		return search;
+	}
+
+	/**
+	 * Search index utility used for index upsert and maintenance
+	 * 
+	 * @return
+	 */
+	public SearchIndexConfigurationUtils getSimpleSearchIndexConfigurationUtils()
+	{
+		return searchIndexConfigurationUtils;
 	}
 
 	/**
@@ -187,7 +206,7 @@ public class CloudExecutionEnvironment
 			throw new RuntimeException("Failed to instantiate the elasticsearch client!");
 		}
 
-		CURRENT = new CloudExecutionEnvironment(tmp_type, tmp_application_id, client, new Search(client));
+		CURRENT = new CloudExecutionEnvironment(tmp_type, tmp_application_id, client, new Search(client), new SearchIndexConfigurationUtils(client));
 
 	}
 

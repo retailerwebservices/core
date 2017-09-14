@@ -174,7 +174,7 @@ public class SearchDocumentWriter
 	{
 		Validator.notNull(search_index_definition);
 		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.LONG)) {
-			throw new RuntimeException(String.format("Invalid type %s, expected ", search_index_definition.getTypeName(), SearchIndexFieldType.LONG));
+			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.LONG));
 		}
 		writeLong(search_index_definition.getSimpleFieldName(), value);
 	}
@@ -202,7 +202,7 @@ public class SearchDocumentWriter
 		Validator.notNull(search_index_definition);
 
 		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.FLOAT)) {
-			throw new RuntimeException(String.format("Invalid type %s, expected ", search_index_definition.getTypeName(), SearchIndexFieldType.FLOAT));
+			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.FLOAT));
 		}
 
 		writeFloat(search_index_definition.getSimpleFieldName(), value);
@@ -238,7 +238,7 @@ public class SearchDocumentWriter
 		Validator.notNull(day);
 
 		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.DAY)) {
-			throw new RuntimeException(String.format("Invalid type %s, expected ", search_index_definition.getTypeName(), SearchIndexFieldType.DAY));
+			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.DAY));
 		}
 
 		writeDay(search_index_definition.getSimpleFieldName(), day);
@@ -279,8 +279,8 @@ public class SearchDocumentWriter
 		Validator.notNull(search_index_definition);
 		Validator.notNull(id);
 
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.ATOM)) {
-			throw new RuntimeException(String.format("Invalid type %s, expected ", search_index_definition.getTypeName(), SearchIndexFieldType.ATOM));
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.OBJECTID)) {
+			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.OBJECTID));
 		}
 
 		writeObjectId(search_index_definition.getSimpleFieldName(), id);
@@ -342,7 +342,7 @@ public class SearchDocumentWriter
 	{
 		Validator.notNull(search_index_definition);
 		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.TEXT)) {
-			throw new RuntimeException(String.format("Invalid type %s, expected ", search_index_definition.getTypeName(), SearchIndexFieldType.TEXT));
+			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.TEXT));
 		}
 		writeTextWithPrefixMatchingSupport(search_index_definition.getSimpleFieldName(), text);
 	}
@@ -391,7 +391,7 @@ public class SearchDocumentWriter
 		Validator.notNull(search_index_definition);
 
 		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.TEXT)) {
-			throw new RuntimeException(String.format("Invalid type %s, expected ", search_index_definition.getTypeName(), SearchIndexFieldType.TEXT));
+			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.TEXT));
 		}
 
 		writeTextWithSubstringMatchingSupport(search_index_definition.getSimpleFieldName(), text);
