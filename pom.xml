@@ -12,7 +12,7 @@
 
     <modules>
         <module>core</module>
-        <module>aws</module>
+        <module>cloud</module>
     </modules>
 
     <build>
