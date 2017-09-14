@@ -71,7 +71,7 @@ public class Search
 
 				try {
 
-					String index_name = object.getSimpleSearchIndexDefinition().getSimpleIndex().getSimpleValue();
+					String index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
 					String inted_type = Indexable.DEFAULT_TYPE;
 					String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
 					Map<String, Object> data = writer.getSimpleFieldsMap();
