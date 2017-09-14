@@ -47,7 +47,7 @@ public class IndexDefinition extends Stringable
 		String[] values = super.getSimpleValue().split(SEPARATOR);
 
 		if (values.length != 3) {
-			throw new ValidationException(String.format("Expected the format applicationId:indexId:indexVersion but the definition was set to %s",	super.getSimpleValue()));
+			throw new ValidationException(String.format("Expected the format applicationId:indexId:indexVersion but the definition was set to %s", super.getSimpleValue()));
 		}
 
 		// run the validation
@@ -60,6 +60,12 @@ public class IndexDefinition extends Stringable
 
 	}
 
+	/**
+	 * Convert a string to an IndexDefinition
+	 * 
+	 * @author trevorbox
+	 *
+	 */
 	static public class MyConverter extends Stringable.Converter<IndexDefinition>
 	{
 		public IndexDefinition fromString(String str, IndexDefinition default_value)

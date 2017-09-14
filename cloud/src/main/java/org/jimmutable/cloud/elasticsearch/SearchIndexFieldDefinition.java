@@ -42,11 +42,21 @@ public class SearchIndexFieldDefinition extends StandardImmutableObject<SearchIn
 		complete();
 	}
 
+	/**
+	 * The search FieldName
+	 * 
+	 * @return FieldName
+	 */
 	public FieldName getSimpleFieldName()
 	{
 		return name;
 	}
 
+	/**
+	 * The search field type
+	 * 
+	 * @return SearchIndexFieldType
+	 */
 	public SearchIndexFieldType getSimpleType()
 	{
 		return type;

@@ -38,11 +38,16 @@ public class IndexVersion extends Stringable
 		Validator.notNull(super.getSimpleValue());
 
 		if (!super.getSimpleValue().matches("^v\\d+")) {
-			throw new ValidationException(
-					String.format("Version does not match syntax ^v\\d+", super.getSimpleValue()));
+			throw new ValidationException(String.format("Version does not match syntax ^v\\d+", super.getSimpleValue()));
 		}
 	}
 
+	/**
+	 * Convert a string to an Index Version
+	 * 
+	 * @author trevorbox
+	 *
+	 */
 	static public class MyConverter extends Stringable.Converter<IndexVersion>
 	{
 		public IndexVersion fromString(String str, IndexVersion default_value)
