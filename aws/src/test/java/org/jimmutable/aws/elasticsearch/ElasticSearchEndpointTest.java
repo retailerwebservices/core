@@ -2,21 +2,21 @@ package org.jimmutable.aws.elasticsearch;
 
 import static org.junit.Assert.assertEquals;
 import org.jimmutable.core.exceptions.ValidationException;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class ElasticSearchEndpointTest
 {
 
 	@Test
-	public void testEnvironmentvariable()
+	public void testCurrent()
 	{
-		System.setProperty("elasticsearch.endpoint", "abc:123");
-		assertEquals("abc", ElasticSearchEndpoint.CURRENT.getSimpleHost());
-		assertEquals(123, ElasticSearchEndpoint.CURRENT.getSimplePort());
+		assertEquals("localhost", ElasticSearchEndpoint.CURRENT.getSimpleHost());
+		assertEquals(9300, ElasticSearchEndpoint.CURRENT.getSimplePort());
 	}
 
 	@Test
-	public void testValidInstantiation()
+	public void testInstant()
 	{
 		ElasticSearchEndpoint e = new ElasticSearchEndpoint("my.host.name", 1234);
 		assertEquals("my.host.name", e.getSimpleHost());

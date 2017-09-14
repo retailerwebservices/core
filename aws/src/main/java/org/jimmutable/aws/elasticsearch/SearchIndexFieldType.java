@@ -31,16 +31,28 @@ public enum SearchIndexFieldType implements StandardEnum
 		this.code = Normalizer.lowerCase(code);
 	}
 
+	/**
+	 * The enum String representation
+	 */
 	public String getSimpleCode()
 	{
 		return code;
 	}
 
+	/**
+	 * The enum String representation
+	 */
 	public String toString()
 	{
 		return code;
 	}
 
+	/**
+	 * Used for converting Strings to SearchIndexFieldType
+	 * 
+	 * @author trevorbox
+	 *
+	 */
 	static public class MyConverter extends StandardEnum.Converter<SearchIndexFieldType>
 	{
 		public SearchIndexFieldType fromCode(String code, SearchIndexFieldType default_value)

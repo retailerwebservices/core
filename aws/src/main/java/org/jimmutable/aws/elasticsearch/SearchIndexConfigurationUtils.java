@@ -1,10 +1,7 @@
 package org.jimmutable.aws.elasticsearch;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -14,19 +11,15 @@ import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 /**
  * Utility class for search Index maintenance. Should be used on startup of
- * application that cares about properly configured search indices.
- * 
+ * application to make sure indices are correct.
+ *
  * 
  * @author trevorbox
  *
@@ -49,29 +42,7 @@ public class SearchIndexConfigurationUtils
 
 	private TransportClient client;
 
-	private static final String ELASTICSEARCH_DEFAULT_TYPE = "default";
-
-	// @SuppressWarnings("resource")
-	// public SearchIndexConfigurationUtils(ElasticSearchEndpoint endpoint)
-	// {
-	// // set cluster name?
-	// // Settings settings = Settings.builder().put("cluster.name",
-	// // "elasticsearch").build();
-	//
-	// Settings settings = Settings.EMPTY;
-	// try {
-	// // this is expensive - could take 16 seconds
-	// client = new PreBuiltTransportClient(settings).addTransportAddress(new
-	// InetSocketTransportAddress(InetAddress.getByName(endpoint.getSimpleHost()),
-	// endpoint.getSimplePort()));
-	//
-	// } catch (UnknownHostException e) {
-	// String errorMessage = String.format("Failed to create a TransportClient from
-	// endpoint %s:%d", endpoint.getSimpleHost(), endpoint.getSimplePort());
-	// logger.log(Level.FATAL, errorMessage, e);
-	// throw new RuntimeException(errorMessage);
-	// }
-	// }
+	private static final String ELASTICSEARCH_DEFAULT_TYPE = Indexable.DEFAULT_TYPE;
 
 	/**
 	 *
@@ -82,39 +53,8 @@ public class SearchIndexConfigurationUtils
 		this.client = client;
 	}
 
-	// public static boolean
-	// checkAllIndicesConfiguredCorrectly(ElasticSearchEndpoint endpoint,
-	// List<SearchIndexDefinition> indices)
-	// {
-	// SearchIndexConfigurationUtils util = new
-	// SearchIndexConfigurationUtils(endpoint);
-	//
-	// boolean status = true;
-	// for (SearchIndexDefinition index : indices) {
-	// if (!util.indexProperlyConfigured(index)) {
-	// status = false;
-	// }
-	// }
-	// util.closeClient();
-	// return status;
-	// }
-	//
-	// public static boolean upsertAll(ElasticSearchEndpoint endpoint,
-	// List<SearchIndexDefinition> indices)
-	// {
-	// SearchIndexConfigurationUtils util = new
-	// SearchIndexConfigurationUtils(endpoint);
-	// boolean status = true;
-	// for (SearchIndexDefinition index : indices) {
-	// if (!util.upsertIndex(index)) {
-	// status = false;
-	// }
-	// }
-	// util.closeClient();
-	// return status;
-	// }
-
 	/**
+	 * Test if the index exists or not
 	 * 
 	 * @param index
 	 *            IndexDefinition
@@ -135,6 +75,7 @@ public class SearchIndexConfigurationUtils
 	}
 
 	/**
+	 * Test if the index exists or not
 	 * 
 	 * @param index
 	 *            SearchIndexDefinition

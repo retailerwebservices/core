@@ -60,6 +60,12 @@ public class IndexDefinition extends Stringable
 
 	}
 
+	/**
+	 * Convert a string to an IndexDefinition
+	 * 
+	 * @author trevorbox
+	 *
+	 */
 	static public class MyConverter extends Stringable.Converter<IndexDefinition>
 	{
 		public IndexDefinition fromString(String str, IndexDefinition default_value)

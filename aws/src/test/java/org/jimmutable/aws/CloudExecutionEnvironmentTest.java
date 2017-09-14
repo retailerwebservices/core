@@ -7,13 +7,13 @@ import org.junit.Test;
 public class CloudExecutionEnvironmentTest
 {
 
-	@BeforeClass
+	//@BeforeClass
 	public static void setup()
 	{
 
 	}
 
-	@Test
+	//@Test
 	public void testOnce()
 	{
 		System.setProperty("JIMMUTABLE_ENV_TYPE", "lol");

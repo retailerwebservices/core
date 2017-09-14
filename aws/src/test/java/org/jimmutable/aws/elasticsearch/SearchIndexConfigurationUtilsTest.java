@@ -19,7 +19,7 @@ public class SearchIndexConfigurationUtilsTest
 	private static SearchIndexDefinition def;
 
 	// Uncomment this to run unit test with elasticsearch running
-	@BeforeClass
+//	@BeforeClass
 	public static void setup() throws UnknownHostException
 	{
 
@@ -48,7 +48,7 @@ public class SearchIndexConfigurationUtilsTest
 	}
 
 	// Uncomment this to run unit test with elasticsearch running
-	@Test
+//	@Test
 	public void upsert() throws IOException
 	{
 

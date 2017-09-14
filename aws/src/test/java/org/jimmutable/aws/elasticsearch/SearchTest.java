@@ -11,7 +11,7 @@ import org.junit.Test;
 public class SearchTest
 {
 
-	@BeforeClass
+//	@BeforeClass
 	public static void setup()
 	{
 
@@ -22,7 +22,7 @@ public class SearchTest
 		CloudExecutionEnvironment.startup(new ApplicationId("searchtest"));
 	}
 
-	@Test
+//	@Test
 	public void test1() throws InterruptedException
 	{
 		MyIndexable indexable = new MyIndexable();
@@ -38,7 +38,7 @@ public class SearchTest
 
 	}
 	
-	@Test
+//	@Test
 	public void testSearch() {
 		MyIndexable indexable = new MyIndexable();
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(indexable.getSimpleSearchIndexDefinition(), "abc");
@@ -47,7 +47,7 @@ public class SearchTest
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(indexable.getSimpleSearchIndexDefinition(), "NINE");
 	}
 
-	@AfterClass
+//	@AfterClass
 	public static void shutdown()
 	{
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().shutdownThreadPool();

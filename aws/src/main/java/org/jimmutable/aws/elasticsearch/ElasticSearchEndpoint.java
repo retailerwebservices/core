@@ -6,7 +6,6 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-
 import org.jimmutable.core.objects.TransientImmutableObject;
 import org.jimmutable.core.utils.Comparison;
 import org.jimmutable.core.utils.Validator;
@@ -29,6 +28,9 @@ public class ElasticSearchEndpoint extends TransientImmutableObject<ElasticSearc
 	// set the static member to environment variable, else localhost:9300
 	static {
 		String endpoint = System.getProperty("elasticsearch.endpoint");
+
+		logger.info("elasticsearch.endpoint " + endpoint);
+
 		String tmp_host = null;
 		Integer tmp_port = null;
 
@@ -61,11 +63,21 @@ public class ElasticSearchEndpoint extends TransientImmutableObject<ElasticSearc
 		complete();
 	}
 
+	/**
+	 * The host name string, like "localhost"
+	 * 
+	 * @return the host name string
+	 */
 	public String getSimpleHost()
 	{
 		return host;
 	}
 
+	/**
+	 * The port number, like 9300
+	 * 
+	 * @return the port number
+	 */
 	public int getSimplePort()
 	{
 		return port;

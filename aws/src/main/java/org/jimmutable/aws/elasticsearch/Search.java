@@ -1,8 +1,6 @@
 package org.jimmutable.aws.elasticsearch;
 
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -16,15 +14,15 @@ import org.apache.logging.log4j.Logger;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.xcontent.ToXContent;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-
+/**
+ * Use this class for general searching and document upserts with Elasticsearch
+ * 
+ * @author trevorbox
+ *
+ */
 public class Search
 {
 
@@ -65,7 +63,7 @@ public class Search
 	}
 
 	/**
-	 * Upsert a document to an index
+	 * Upsert a document to a search index
 	 * 
 	 * @param object
 	 *            The Indexable object
@@ -131,6 +129,13 @@ public class Search
 
 	// public JSONResponse search(IndexDefinition index, StandardSearchRequest
 	// request)
+	/**
+	 * IN PROGRESS DO NOT USE YET
+	 * 
+	 * @param index
+	 * @param queryString
+	 * @return
+	 */
 	public String search(IndexDefinition index, String queryString)
 	{
 

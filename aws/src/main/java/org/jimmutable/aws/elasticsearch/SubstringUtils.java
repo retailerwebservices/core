@@ -21,8 +21,7 @@ public class SubstringUtils
 		}
 	}
 
-	static public String createSubstringMatchingText(String str, int min_substring_size, int max_substring_size,
-			String default_value)
+	static public String createSubstringMatchingText(String str, int min_substring_size, int max_substring_size, String default_value)
 	{
 		if (str == null || min_substring_size < 1 || max_substring_size < 1 || min_substring_size > max_substring_size)
 			return default_value;
@@ -40,8 +39,7 @@ public class SubstringUtils
 
 	static public void main(String args[])
 	{
-		System.out.println(
-				createSubstringMatchingText("abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMN", 1, 50, null));
+		System.out.println(createSubstringMatchingText("abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMN", 1, 50, null));
 		System.out.println(writeTextWithPrefixMatchingSupport("monkey", 50, null));
 	}
 
@@ -55,7 +53,7 @@ public class SubstringUtils
 	 * @param max_text_length
 	 *            The maximum substring length the prefixes will be created for
 	 * @param default_value
-	 *            The default value to return in the event the test is null or empty
+	 *            The default value to return in the event the text is null or empty
 	 * @return The String with space separated prefixes
 	 */
 	static public String writeTextWithPrefixMatchingSupport(String text, int max_text_length, String default_value)

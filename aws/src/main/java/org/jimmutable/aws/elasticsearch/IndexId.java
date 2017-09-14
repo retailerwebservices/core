@@ -37,6 +37,12 @@ public class IndexId extends Stringable
 
 	}
 
+	/**
+	 * Convert a String to an IndexId
+	 * 
+	 * @author trevorbox
+	 *
+	 */
 	static public class MyConverter extends Stringable.Converter<IndexId>
 	{
 		public IndexId fromString(String str, IndexId default_value)

@@ -46,11 +46,21 @@ public class SearchIndexDefinition extends StandardImmutableObject<SearchIndexDe
 		complete();
 	}
 
+	/**
+	 * The search index fields list
+	 * 
+	 * @return A list of SearchIndexFieldDefinition
+	 */
 	public List<SearchIndexFieldDefinition> getSimpleFields()
 	{
 		return fields;
 	}
 
+	/**
+	 * The search index
+	 * 
+	 * @return
+	 */
 	public IndexDefinition getSimpleIndex()
 	{
 		return index;
