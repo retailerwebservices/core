@@ -1,15 +1,12 @@
 package org.jimmutable.cloud.elasticsearch;
 
-import java.io.IOException;
-import java.net.UnknownHostException;
-
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
-
+import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -53,7 +50,7 @@ public class SearchIndexConfigurationUtilsTest
 
 		// SearchIndexConfigurationUtils util = new
 		// SearchIndexConfigurationUtils(ElasticSearchEndpoint.CURRENT);
-		util.upsertIndex(def);
+		assertTrue(util.upsertIndex(def));
 	}
 
 }

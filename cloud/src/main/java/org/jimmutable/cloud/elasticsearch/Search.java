@@ -174,17 +174,13 @@ public class Search
 				results.add(new OneSearchResult(map));
 			});
 
-			boolean has_more_results = false;
-
 			int next_page = from + size;
 
 			// if the size was met try and see if there are more results
-			logger.info(response.getHits().totalHits);
-			if (response.getHits().totalHits >= size) {
-				builder.setFrom(next_page);
-				builder.setSize(1);
-				has_more_results = builder.get().getHits().totalHits > 0;
-			}
+
+			logger.info(String.format("TOTAL:%s SIZE:%s", response.getHits().totalHits, response.getHits().getHits().length));
+
+			boolean has_more_results = response.getHits().totalHits > next_page;
 
 			boolean has_previous_results = from != 0;
 
@@ -197,13 +193,16 @@ public class Search
 				level = Level.WARN;
 				break;
 			}
-			logger.log(level, String.format("Status:%s Index:%s/%s Query:%s Total hits:%s Took:%sms", response.status(), index_name, index_type, request.getSimpleQueryString(), results.size(), response.getTookInMillis()));
-			logger.trace(results.toString());
 
-			return new SearchResponseOK(request, results, from, has_more_results, has_previous_results, next_page, from);
+			SearchResponseOK ok = new SearchResponseOK(request, results, from, has_more_results, has_previous_results, next_page, from);
+
+			logger.log(level, String.format("Status:%s Hits:%s TotalHits:%s StandardSearchRequest:%s first_result_idx:%s has_more_results:%s has_previous_results:%s start_of_next_page_of_results:%s start_of_previous_page_of_results:%s", response.status(), results.size(), response.getHits().totalHits, ok.getSimpleSearchRequest(), ok.getSimpleFirstResultIdx(), ok.getSimpleHasMoreResults(), ok.getSimpleHasMoreResults(), ok.getSimpleStartOfNextPageOfResults(), ok.getSimpleStartOfPreviousPageOfResults()));
+			logger.trace(ok.getSimpleResults().toString());
+
+			return ok;
 
 		} catch (Exception e) {
-			logger.fatal("Failure during search!", e);
+			logger.warn(String.format("Search failed for %s", request), e);
 			return new SearchResponseError(request, e.getMessage());
 		}
 
