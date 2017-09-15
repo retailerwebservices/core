@@ -11,7 +11,7 @@ import org.jimmutable.core.serialization.Format;
  *
  */
 
-public abstract class Storable
+public interface Storable
 {
 
 	/**
@@ -40,7 +40,7 @@ public abstract class Storable
 	 * @return a new Storage Key with an extension type of XML based on the Kind and
 	 *         ObjectId of the Storable object.
 	 */
-	public StorageKey createStorageKey()
+	default public StorageKey createStorageKey()
 	{
 		return new StorageKey(getSimpleKind(), getSimpleObjectId(), StorageKeyExtension.XML);
 	}
