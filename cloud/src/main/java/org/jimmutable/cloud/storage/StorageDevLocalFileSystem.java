@@ -1,13 +1,15 @@
 package org.jimmutable.cloud.storage;
 
-import org.jimmutable.cloud.ApplicationId;
-import org.jimmutable.core.objects.common.Kind;
-
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jimmutable.cloud.ApplicationId;
+import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.utils.Validator;
 
 public class StorageDevLocalFileSystem extends Storage
@@ -28,7 +30,7 @@ public class StorageDevLocalFileSystem extends Storage
 			System.err.println("Hey -- you are trying to instantiate a dev local file system. This should not be happening in production. If you are a developer and you are trying to run this through eclipse, you need to setup the environment configurations in your run configurations");
 			throw new RuntimeException();
 		}
-		root = new File(System.getProperty("user.home") + "/jimmtuable_aws_dev/" + ApplicationId.getOptionalDevApplicationId(new ApplicationId("Development")));
+		root = new File(System.getProperty("user.home") + "/jimmutable_dev/" + ApplicationId.getOptionalDevApplicationId(new ApplicationId("Development")));
 	}
 
 	/**
