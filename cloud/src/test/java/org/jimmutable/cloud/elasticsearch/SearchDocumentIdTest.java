@@ -1,6 +1,5 @@
 package org.jimmutable.cloud.elasticsearch;
 
-import org.jimmutable.cloud.elasticsearch.SearchDocumentId;
 import org.jimmutable.core.objects.Stringable;
 
 import org.jimmutable.util.StringableTest;

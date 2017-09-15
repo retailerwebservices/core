@@ -2,15 +2,12 @@ package org.jimmutable.cloud.elasticsearch;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-
-import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
-import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
-import org.jimmutable.cloud.elasticsearch.SearchIndexFieldType;
 import org.jimmutable.core.exceptions.SerializeException;
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
+import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,7 +18,7 @@ public class SearchIndexFieldDefinitionTest
 	public void before()
 	{
 		JimmutableTypeNameRegister.registerAllTypes();
-		JimmutableCloudTypeNameRegister.registerAllTypes();
+		ObjectParseTree.registerTypeName(SearchIndexFieldDefinition.class);
 	}
 
 	@Test

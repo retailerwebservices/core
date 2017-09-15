@@ -33,11 +33,16 @@ public class SearchDocumentId extends Stringable
 		Validator.notNull(super.getSimpleValue());
 		Validator.min(super.getSimpleValue().length(), 1);
 		Validator.max(super.getSimpleValue().length(), 256);
-		Validator.containsOnlyValidCharacters(super.getSimpleValue(), Validator.LOWERCASE_LETTERS, Validator.DASH,
-				Validator.NUMBERS);
+		Validator.containsOnlyValidCharacters(super.getSimpleValue(), Validator.LOWERCASE_LETTERS, Validator.DASH, Validator.NUMBERS);
 
 	}
 
+	/**
+	 * Convert a string to a SearchDocumentId
+	 * 
+	 * @author trevorbox
+	 *
+	 */
 	static public class MyConverter extends Stringable.Converter<SearchDocumentId>
 	{
 		public SearchDocumentId fromString(String str, SearchDocumentId default_value)

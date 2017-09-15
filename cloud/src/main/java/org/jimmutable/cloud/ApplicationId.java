@@ -45,7 +45,7 @@ public class ApplicationId extends Stringable
 	public static ApplicationId getOptionalDevApplicationId(ApplicationId default_value)
 	{
 		// TODO verify if we just need this
-		String devEnvironment = System.getenv("DEV_APPLICATION_ID");
+		String devEnvironment = System.getProperty("DEV_APPLICATION_ID");
 		if (devEnvironment == null) {
 			return default_value;
 		}
@@ -66,7 +66,7 @@ public class ApplicationId extends Stringable
 	 */
 	public static ApplicationId createDevCurrentApplicationId() 
 	{
-		String devEnvironment = System.getenv("DEV_APPLICATION_ID");
+		String devEnvironment = System.getProperty("DEV_APPLICATION_ID");
 		if(devEnvironment==null) {
 			return null;
 		}
