@@ -33,6 +33,11 @@ public class AppTest
      */
     public void testApp()
     {
-        assertTrue( true );
+    		try{
+    			App.main(null);
+    			assertTrue( true );
+    		} catch (Exception e) {
+    			assert(false);
+    		}
     }
 }
