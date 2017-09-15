@@ -37,9 +37,10 @@ public class StorageApp
 		frame.setSize(750, 350);
 
 		frame.setLayout(new BorderLayout());
-		frame.setTitle("Messaging Application Trainer");
+		frame.setTitle("Storage Application Trainer");
 		
 		JTextField textField = new JTextField();
+		textField.setEditable(false);
 
 		StorageKey test_file = new StorageKey(new Kind("test"), new ObjectId("123"), new StorageKeyExtension(".txt"));
 
