@@ -19,7 +19,7 @@ public class SearchIndexConfigurationUtilsTest
 
 	// Uncomment this to run unit test with elasticsearch running
 	// @BeforeClass
-	public static void setup() throws UnknownHostException
+	public static void setup()
 	{
 
 		JimmutableTypeNameRegister.registerAllTypes();
@@ -44,7 +44,7 @@ public class SearchIndexConfigurationUtilsTest
 
 	// Uncomment this to run unit test with elasticsearch running
 	// @Test
-	public void upsert() throws IOException
+	public void upsert()
 	{
 
 		CloudExecutionEnvironment.startup(new ApplicationId("trevorApp"));

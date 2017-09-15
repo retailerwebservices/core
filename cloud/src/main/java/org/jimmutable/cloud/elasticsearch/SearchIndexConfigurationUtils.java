@@ -182,7 +182,7 @@ public class SearchIndexConfigurationUtils
 			return false;
 		}
 
-		logger.info("Created index %s", index.getSimpleIndex().getSimpleValue());
+		logger.info(String.format("Created index %s", index.getSimpleIndex().getSimpleValue()));
 		return true;
 	}
 
@@ -204,7 +204,7 @@ public class SearchIndexConfigurationUtils
 			logger.fatal(String.format("Index Deletion failed for index %s", index.getSimpleIndex().getSimpleValue()));
 			return false;
 		}
-		logger.info("Deleted index %s", index.getSimpleIndex().getSimpleValue());
+		logger.info(String.format("Deleted index %s", index.getSimpleIndex().getSimpleValue()));
 		return true;
 
 	}
