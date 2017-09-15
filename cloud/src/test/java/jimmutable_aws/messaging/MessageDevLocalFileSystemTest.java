@@ -13,6 +13,7 @@ import java.util.Random;
 import java.util.concurrent.RejectedExecutionException;
 
 import org.jimmutable.cloud.ApplicationId;
+import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
 import org.jimmutable.cloud.messaging.MessageListener;
 import org.jimmutable.cloud.messaging.MessagingDevLocalFileSystem;
@@ -25,6 +26,8 @@ import org.jimmutable.cloud.messaging.TopicId;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
+import org.junit.Before;
+import org.junit.BeforeClass;
 
 import junit.framework.TestCase;
 
@@ -33,12 +36,20 @@ public class MessageDevLocalFileSystemTest extends TestCase
 	static ApplicationId appId;
 	static MessagingDevLocalFileSystem messagingdevlocalfilesystem;
 
-	@Override
+	@BeforeClass
+	protected void setUpTest()
+	{
+		appId = new ApplicationId("Development");
+		CloudExecutionEnvironment.startup(appId);
+		JimmutableCloudTypeNameRegister.registerAllTypes();
+	}
+	
+	@Before
 	protected void setUp()
 	{
 		appId = new ApplicationId("Development");
 		messagingdevlocalfilesystem = new MessagingDevLocalFileSystem();
-		JimmutableCloudTypeNameRegister.registerAllTypes();
+		
 	}
 
 	public static void testSendAsync() throws InterruptedException

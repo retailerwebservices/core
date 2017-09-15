@@ -16,12 +16,14 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import javax.management.RuntimeErrorException;
 import javax.sql.rowset.serial.SerialException;
 
 import org.jimmutable.core.utils.Validator;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.storage.StorageKeyExtension;
 import org.jimmutable.core.objects.StandardImmutableObject;
@@ -50,7 +52,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 
 	private File root;
 	private ExecutorService executor_service = Executors.newSingleThreadExecutor();
-	private static final Logger logger = Logger.getLogger(MessagingDevLocalFileSystem.class.getName());
+	private static final Logger logger = LogManager.getLogger(MessagingDevLocalFileSystem.class.getName());
 
 	public MessagingDevLocalFileSystem()
 	{
@@ -159,7 +161,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 			}
 			catch ( Exception e )
 			{
-				logger.log(Level.WARNING, "Could not send message",e);
+				logger.log(Level.WARN, "Could not send message",e);
 			}
 		}
 
@@ -234,7 +236,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 				}
 				catch ( Exception e )
 				{
-					logger.log(Level.SEVERE, "Could not hear message",e);
+					logger.log(Level.ERROR, "Could not hear message",e);
 				}
 				watchKey.reset(); // need this so we can look again
 			}
@@ -258,7 +260,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 			}
 			catch ( IOException e )
 			{
-				logger.log(Level.SEVERE, "Could not setup listener", e);
+				logger.log(Level.ERROR, "Could not setup listener",e);
 			}
 			return watcher;
 		}
@@ -275,7 +277,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 			}
 			catch ( Exception e )
 			{
-				logger.log(Level.SEVERE, "Something went wrong with reading the file", e);
+				logger.log(Level.ERROR, "Something went wrong with reading the file", e);
 				return null;
 			}
 			finally
@@ -286,7 +288,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 				}
 				catch ( IOException e )
 				{
-					logger.log(Level.SEVERE, "Something went weird when trying to close the file stream", e);
+					logger.log(Level.ERROR, "Something went weird when trying to close the file stream", e);
 				}
 			}
 

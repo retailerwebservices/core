@@ -7,9 +7,13 @@ import java.nio.file.*;
 import java.util.Comparator;
 
 import org.jimmutable.cloud.ApplicationId;
+import org.jimmutable.cloud.CloudExecutionEnvironment;
+import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
 import org.jimmutable.cloud.storage.StorageDevLocalFileSystem;
 import org.jimmutable.cloud.storage.StorageKey;
 import org.jimmutable.core.objects.common.Kind;
+import org.junit.Before;
+import org.junit.BeforeClass;
 
 import junit.framework.TestCase;
 
@@ -17,8 +21,16 @@ public class StorageDevLocalFileSystemTest extends TestCase
 {
 	static ApplicationId appId;
 	static StorageDevLocalFileSystem sdlfs;
+	
+	@BeforeClass
+	protected void setUpTest()
+	{
+		appId = new ApplicationId("Development");
+		CloudExecutionEnvironment.startup(appId);
+		JimmutableCloudTypeNameRegister.registerAllTypes();
+	}
 
-	@Override
+	@Before
 	protected void setUp()
 	{
 		appId = new ApplicationId("Development");

@@ -1,6 +1,7 @@
 package org.jimmutable.cloud.storage;
 
 import org.jimmutable.core.utils.Validator;
+import org.apache.logging.log4j.LogManager;
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.core.objects.common.Kind;
 
@@ -110,7 +111,7 @@ public abstract class Storage
 		}
 		catch ( Exception e )
 		{
-			// LogManager.getRootLogger().error("Failure to list object "+obj,e);
+			LogManager.getRootLogger().error("Failure to list object "+obj,e);
 			return default_value;
 		}
 	}
