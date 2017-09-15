@@ -1,6 +1,8 @@
 package org.jimmutable.cloud.elasticsearch;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -12,10 +14,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHits;
+import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
+import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
+import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
+import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
+import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
+import org.jimmutable.core.serialization.FieldName;
 
 /**
  * Use this class for general searching and document upserts with Elasticsearch
@@ -70,7 +78,7 @@ public class Search
 	 * @return boolean
 	 * @throws InterruptedException
 	 */
-	public boolean upsertDocumentAsync(Indexable object) throws InterruptedException
+	public boolean upsertDocumentAsync(Indexable object)
 	{
 
 		if (object == null) {
@@ -125,42 +133,60 @@ public class Search
 		return true;
 	}
 
-	// TODO
-
-	// public JSONResponse search(IndexDefinition index, StandardSearchRequest
-	// request)
 	/**
-	 * IN PROGRESS DO NOT USE YET
+	 * Search an index with a query string.
+	 * 
+	 * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
 	 * 
 	 * @param index
-	 * @param queryString
+	 * @param request
 	 * @return
 	 */
-	public String search(IndexDefinition index, String queryString)
+	public JSONServletResponse search(IndexDefinition index, StandardSearchRequest request)
 	{
 
-		if (index == null || queryString == null) {
-			// return "";
+		if (index == null || request == null) {
+			return new SearchResponseError(request, "Null parameter(s)!");
 		}
 
 		try {
 
 			String index_name = index.getSimpleValue();
 			String index_type = Indexable.DEFAULT_TYPE;
+			int from = request.getSimpleStartResultsAfter();
+			int size = request.getSimpleMaxResults();
 
-			SearchResponse response = client.prepareSearch(index_name).setTypes(index_type).setQuery(QueryBuilders.queryStringQuery(queryString)).get();
+			SearchRequestBuilder builder = client.prepareSearch(index_name);
+			builder.setTypes(index_type);
+			builder.setFrom(from);
+			builder.setSize(size);
+			builder.setQuery(QueryBuilders.queryStringQuery(request.getSimpleQueryString()));
 
-			SearchHits hits = response.getHits();
+			SearchResponse response = builder.get();
 
-			Map<String, Map<String, Object>> documents = new HashMap<String, Map<String, Object>>();
+			List<OneSearchResult> results = new LinkedList<OneSearchResult>();
 
-			hits.forEach(hit -> {
-				documents.put(hit.getId(), hit.getSourceAsMap());
-				// hit.docId();
-				// hit.getSourceAsMap().forEach((k, v) -> {
-				// logger.info(String.format("%s %s %s", hit.getId(), k, v));
-				// });
+			response.getHits().forEach(hit -> {
+				Map<FieldName, String> map = new HashMap<FieldName, String>();
+				hit.getSourceAsMap().forEach((k, v) -> {
+					map.put(new FieldName(k), v.toString());
+				});
+				results.add(new OneSearchResult(map));
 			});
+
+			boolean has_more_results = false;
+
+			int next_page = from + size;
+
+			// if the size was met try and see if there are more results
+			logger.info(response.getHits().totalHits);
+			if (response.getHits().totalHits >= size) {
+				builder.setFrom(next_page);
+				builder.setSize(1);
+				has_more_results = builder.get().getHits().totalHits > 0;
+			}
+
+			boolean has_previous_results = from != 0;
 
 			Level level;
 			switch (response.status()) {
@@ -171,12 +197,16 @@ public class Search
 				level = Level.WARN;
 				break;
 			}
-			logger.log(level, String.format("Status:%s Index:%s/%s Query:%s Total hits:%s Took:%sms Documents:%s", response.status(), index_name, index_type, queryString, documents.size(), response.getTookInMillis(), documents.toString()));
+			logger.log(level, String.format("Status:%s Index:%s/%s Query:%s Total hits:%s Took:%sms", response.status(), index_name, index_type, request.getSimpleQueryString(), results.size(), response.getTookInMillis()));
+			logger.trace(results.toString());
+
+			return new SearchResponseOK(request, results, from, has_more_results, has_previous_results, next_page, from);
+
 		} catch (Exception e) {
 			logger.fatal("Failure during search!", e);
+			return new SearchResponseError(request, e.getMessage());
 		}
 
-		return null;
 	}
 
 }
