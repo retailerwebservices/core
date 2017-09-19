@@ -40,46 +40,16 @@ public class CloudExecutionEnvironment
 	// System properties
 	private static final String ENV_TYPE_VARIABLE_NAME = "JIMMUTABLE_ENV_TYPE";
 	private static final String ENV_APPLICATION_ID = "JIMMUTABLE_APP_ID";
-	private static final String ENV_LOGGING_DIR = "logging.dir";
-	private static final String ENV_LOGGNG_FILE_NAME = "logging.file.name";
-	private static final String ENV_LOGGING_LEVEL = "logging.level";
+	private static final String ENV_LOGGING_LEVEL = "JIMMUTABLE_LOGGING_LEVEL";
 
-	private static final Level DEFAULT_LEVEL = Level.INFO;
+	private static final Level DEFAULT_LEVEL = Level.TRACE;
 
-	// setup the required logging configurations
+	// setup the logging level programmatically
 	static {
-
-		String log_dir = System.getProperty(ENV_LOGGING_DIR);
-		if (log_dir == null) {
-			// default value
-			log_dir = String.format("%s%s%s%slogs", System.getProperty("user.home"), File.separator, "jummutable_aws_dev", File.separator);
-		}
-
-		String file_name = System.getProperty(ENV_LOGGNG_FILE_NAME);
-		if (file_name == null) {
-			// default value
-			file_name = "application.name";
-		}
-
 		Level level = Level.toLevel(System.getProperty(ENV_LOGGING_LEVEL), DEFAULT_LEVEL);
-
 		Log4jUtil.setAllLoggerLevels(level);
-
 		logger = LogManager.getLogger(CloudExecutionEnvironment.class);
-
-		File dir = new File(log_dir);
-		if (!dir.exists()) {
-			try {
-				dir.mkdirs();
-			} catch (Exception e) {
-				logger.log(Level.FATAL, String.format("Failed to create logs dir %s", log_dir), e);
-			}
-		}
-
-		logger.trace(String.format("Logging output directory: %s", log_dir));
-		logger.trace(String.format("Logging output file name: %s", file_name));
 		logger.trace(String.format("Logging level: %s", level));
-
 	}
 
 	private CloudExecutionEnvironment(EnvironmentType type, ApplicationId application_id, TransportClient elasticsearchClient, Search search, SearchIndexConfigurationUtils searchIndexConfigurationUtils)

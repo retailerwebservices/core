@@ -6,6 +6,7 @@ import org.joda.time.DateTime;
 
 /**
  * testclass
+ * 
  * @author trevorbox
  *
  */
@@ -24,13 +25,10 @@ public class MyIndexable implements Indexable
 	private IndexDefinition index_definition;
 	private SearchDocumentId document_id;
 
-	public MyIndexable()
+	public MyIndexable(IndexDefinition index_definition, SearchDocumentId document_id)
 	{
-
-		index_definition = new IndexDefinition("sanity:test:v0");
-
-		document_id = new SearchDocumentId("amigo");
-
+		this.index_definition = index_definition;
+		this.document_id = document_id;
 	}
 
 	@Override
