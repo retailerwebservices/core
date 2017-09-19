@@ -39,7 +39,7 @@ import com.amazonaws.util.IOUtils;
  * This is our local implementation of Messaging. It is designed so that a
  * person can run our messaging services without having to rely on AWS or
  * Google. Messages created are stored as .json files on the local machine, in:
- * ~/jimmutable_aws_dev/messaging/[topic def]/[queue def] This class has a
+ * ~/jimmutable_dev/messaging/[topic def]/[queue def] This class has a
  * Single thread executor to handle the sending of messages. It is created on
  * creation of this class and can be shutdown by running the SendAllAndShutdown
  * method.
