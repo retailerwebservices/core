@@ -2,6 +2,8 @@ package org.jimmutable.platform_test;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.jimmutable.cloud.ApplicationId;
+import org.jimmutable.cloud.CloudExecutionEnvironment;
 
 /**
  * Hello world!
@@ -11,6 +13,9 @@ public class App
 {
 	public static void main(String[] args) throws Exception 
 	{
+
+		CloudExecutionEnvironment.startup(new ApplicationId("platform_test"));
+		
 		// 1. Creating the server on port 8080
 		Server server = new Server(8080);
 
