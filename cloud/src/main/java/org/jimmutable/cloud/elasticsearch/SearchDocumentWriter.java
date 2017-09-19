@@ -220,9 +220,7 @@ public class SearchDocumentWriter
 
 		Validator.notNull(day);
 
-		// fields.put(name.getSimpleName(),
-		// DAY_FORMAT.format(day.createSimpleDate(DateTimeZone.forTimeZone(TimeZone.getTimeZone(TIMEZONE)))));
-		fields.put(name.getSimpleName(), String.format("%d-%02d-%02d", day.getSimpleYear(), day.getSimpleDayOfMonth(), day.getSimpleDayOfMonth()));
+		fields.put(name.getSimpleName(), String.format("%d-%02d-%02d", day.getSimpleYear(), day.getSimpleMonthOfYear(), day.getSimpleDayOfMonth()));
 
 	}
 

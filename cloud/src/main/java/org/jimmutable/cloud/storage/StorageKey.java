@@ -5,6 +5,7 @@ import java.io.File;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
+import org.jimmutable.core.objects.common.Day.MyConverter;
 import org.jimmutable.core.utils.Validator;
 
 /**
@@ -18,6 +19,9 @@ import org.jimmutable.core.utils.Validator;
 
 public class StorageKey extends Stringable
 {
+
+	static public final MyConverter CONVERTER = new MyConverter();
+
 	Kind kind;
 	ObjectId id;
 	StorageKeyExtension extension;
@@ -28,7 +32,7 @@ public class StorageKey extends Stringable
 	 *            if the String passed in is "Alpha/123.txt" then the Kind will be
 	 *            "alpha" the Object Id will be "123" the extension will be "txt"
 	 */
-	public StorageKey( String value )
+	public StorageKey(String value)
 	{
 		super(value);
 	}
@@ -42,7 +46,7 @@ public class StorageKey extends Stringable
 	 *            the extension of the StorageKey
 	 */
 
-	public StorageKey( Kind kind, ObjectId object_id, StorageKeyExtension extension )
+	public StorageKey(Kind kind, ObjectId object_id, StorageKeyExtension extension)
 	{
 		this(createStringFromComponents(kind, object_id, extension));
 	}
@@ -60,7 +64,7 @@ public class StorageKey extends Stringable
 	 *         of the parameters simple values. {alpha,123,"txt"}->"alpha/123.txt"
 	 */
 
-	static private String createStringFromComponents( Kind kind, ObjectId object_id, StorageKeyExtension extension )
+	static private String createStringFromComponents(Kind kind, ObjectId object_id, StorageKeyExtension extension)
 	{
 		Validator.notNull(kind, object_id, extension);
 		return String.format("%s/%s.%s", kind.getSimpleValue(), object_id.getSimpleValue(), extension);
@@ -118,14 +122,11 @@ public class StorageKey extends Stringable
 
 	static public class MyConverter extends Stringable.Converter<StorageKey>
 	{
-		public StorageKey fromString( String str, StorageKey default_value )
+		public StorageKey fromString(String str, StorageKey default_value)
 		{
-			try
-			{
+			try {
 				return new StorageKey(str);
-			}
-			catch ( Exception e )
-			{
+			} catch (Exception e) {
 				return default_value;
 			}
 		}

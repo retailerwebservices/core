@@ -11,7 +11,7 @@ import org.jimmutable.core.serialization.Format;
  *
  */
 
-public abstract class Storable
+public interface Storable
 {
 
 	/**
@@ -31,16 +31,13 @@ public abstract class Storable
 	 *            you want the Storable Object to be formatted to
 	 * @return the serialized version of the object
 	 */
-	abstract public String serialize( Format format );
+	abstract public String serialize(Format format);
 
-	
-	
-	
 	/**
 	 * @return a new Storage Key with an extension type of XML based on the Kind and
 	 *         ObjectId of the Storable object.
 	 */
-	public StorageKey createStorageKey()
+	public default StorageKey createStorageKey()
 	{
 		return new StorageKey(getSimpleKind(), getSimpleObjectId(), StorageKeyExtension.XML);
 	}

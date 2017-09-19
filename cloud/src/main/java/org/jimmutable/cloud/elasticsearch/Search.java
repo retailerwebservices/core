@@ -51,14 +51,14 @@ public class Search
 	 * 
 	 * @return
 	 */
-	public boolean shutdownThreadPool()
+	public boolean shutdownThreadPool(int seconds)
 	{
 		pool.shutdown();
 
 		boolean terminated = true;
 
 		try {
-			terminated = pool.awaitTermination(25, TimeUnit.SECONDS);
+			terminated = pool.awaitTermination(seconds, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			logger.log(Level.FATAL, "Shutdown of runnable pool was interrupted!", e);
 		}

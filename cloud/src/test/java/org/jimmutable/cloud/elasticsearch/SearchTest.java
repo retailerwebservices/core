@@ -25,7 +25,7 @@ public class SearchTest
 	static SearchIndexDefinition def;
 
 	// Uncomment to run test
-	// @BeforeClass
+	 @BeforeClass
 	public static void setup()
 	{
 
@@ -66,7 +66,7 @@ public class SearchTest
 	}
 
 	// Uncomment to run test
-	// @Test
+	 @Test
 	public void testSearchPaginationFirstPage()
 	{
 
@@ -91,7 +91,7 @@ public class SearchTest
 	}
 
 	// Uncomment to run test
-	// @Test
+	 @Test
 	public void testSearchPaginationSecondPage()
 	{
 
@@ -116,7 +116,7 @@ public class SearchTest
 	}
 
 	/// Uncomment to run test
-	// @Test
+	 @Test
 	public void testSearchPaginationNone()
 	{
 
@@ -140,7 +140,7 @@ public class SearchTest
 	}
 
 	// Uncomment to run test
-	// @Test
+	 @Test
 	public void testBadQuery()
 	{
 
@@ -152,10 +152,10 @@ public class SearchTest
 	}
 
 	// Uncomment to run test
-	// @AfterClass
+	 @AfterClass
 	public static void shutdown()
 	{
-		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().shutdownThreadPool();
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().shutdownThreadPool(25);
 
 	}
 
