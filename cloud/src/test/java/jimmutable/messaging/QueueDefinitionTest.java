@@ -1,21 +1,22 @@
-package jimmutable_aws.messaging;
+package jimmutable.messaging;
 
 
-import org.jimmutable.cloud.messaging.QueueId;
+
+import org.jimmutable.cloud.messaging.QueueDefinition;
 import org.jimmutable.core.utils.StringableTester;
 
 import junit.framework.TestCase;
 
-public class QueueIdTest extends TestCase
+public class QueueDefinitionTest extends TestCase
 {
-	private StringableTester<QueueId> tester = new StringableTester(new QueueId.MyConverter());
+	private StringableTester<QueueDefinition> tester = new StringableTester(new QueueDefinition.MyConverter());
 
 	public void testValid()
 	{
-		tester.assertValid("some-id", "some-id");
-		tester.assertValid("someid1234", "someid1234");
-		tester.assertValid("SOME-id", "some-id");
-		tester.assertValid(" SOME-id ", "some-id");
+		tester.assertValid("some/ids", "some/ids");
+		tester.assertValid("some/id1234", "some/id1234");
+		tester.assertValid("SOME/ids", "some/ids");
+		tester.assertValid(" SOME/ids ", "some/ids");
 	}
 
 	public void testInvalid()

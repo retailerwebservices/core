@@ -1,4 +1,4 @@
-package jimmutable_aws.messaging;
+package jimmutable.messaging;
 
 import org.jimmutable.cloud.messaging.SubscriptionDefinition;
 import org.jimmutable.core.utils.StringableTester;

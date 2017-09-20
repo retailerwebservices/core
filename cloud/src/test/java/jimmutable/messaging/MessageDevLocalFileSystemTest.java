@@ -1,4 +1,4 @@
-package jimmutable_aws.messaging;
+package jimmutable.messaging;
 
 import java.io.File;
 import java.io.FileInputStream;

@@ -1,4 +1,4 @@
-package jimmutable_aws.messaging;
+package jimmutable.messaging;
 
 import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
 import org.jimmutable.cloud.messaging.StandardMessageOnUpsert;
