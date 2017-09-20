@@ -8,6 +8,7 @@ import org.jimmutable.core.serialization.TypeName;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.utils.Comparison;
+import org.jimmutable.core.utils.Optional;
 import org.jimmutable.core.utils.Validator;
 
 public class Address extends StandardImmutableObject<Address>
@@ -44,8 +45,14 @@ public class Address extends StandardImmutableObject<Address>
 	public String getSimpleState() { return state; }
 	public PostalCode getSimplePostalCode() { return postal_code; }
 	public CountryCode getSimpleCountry() { return country; }
-	public float getOptionalLatitude(String default_value) { return latitude; }
-	public float getOptionalLongitude(String default_value) { return longitude; }
+	
+	public float getOptionalLatitude(float default_value) {
+		return Optional.getOptional(latitude, (float)0, default_value);
+	}
+	
+	public float getOptionalLongitude(float default_value) {
+		return Optional.getOptional(longitude, (float)0, default_value);
+	}
 	
 	public Address(String line1, String city, String state, PostalCode postal_code, CountryCode country) 
 	{
@@ -101,8 +108,8 @@ public class Address extends StandardImmutableObject<Address>
 		ret = Comparison.continueCompare(ret, getSimpleState(), other.getSimpleState());
 		ret = Comparison.continueCompare(ret, getSimplePostalCode(), other.getSimplePostalCode());
 		ret = Comparison.continueCompare(ret, getSimpleCountry(), other.getSimpleCountry());
-		ret = Comparison.continueCompare(ret, getOptionalLatitude(null), other.getOptionalLatitude(null));
-		ret = Comparison.continueCompare(ret, getOptionalLongitude(null), other.getOptionalLongitude(null));
+		ret = Comparison.continueCompare(ret, getOptionalLatitude(0), other.getOptionalLatitude(0));
+		ret = Comparison.continueCompare(ret, getOptionalLongitude(0), other.getOptionalLongitude(0));
 		
 		return ret;
 	}
@@ -134,8 +141,8 @@ public class Address extends StandardImmutableObject<Address>
 		if ( !getSimpleState().equals((other.getSimpleState())) ) return false;
 		if ( getSimplePostalCode() != other.getSimplePostalCode() ) return false;
 		if ( getSimpleCountry() != other.getSimpleCountry()) return false;
-		if ( getOptionalLatitude(null) != other.getOptionalLatitude(null)) return false;
-		if ( getOptionalLongitude(null) != other.getOptionalLongitude(null)) return false;
+		if ( getOptionalLatitude(0) != other.getOptionalLatitude(0)) return false;
+		if ( getOptionalLongitude(0) != other.getOptionalLongitude(0)) return false;
 		
 		return true;
 	}
