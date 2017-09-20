@@ -54,6 +54,7 @@ public class Address extends StandardImmutableObject<Address>
 		this.state = state;
 		this.postal_code = postal_code;
 		this.country = country;
+		complete();
 	}
 	
 	public Address(ObjectParseTree t)
