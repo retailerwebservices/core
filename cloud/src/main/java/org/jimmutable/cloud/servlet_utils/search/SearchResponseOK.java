@@ -31,9 +31,6 @@ public class SearchResponseOK extends JSONServletResponse
 		return TYPE_NAME;
 	}
 
-	// CODE REVIEW: Andrew has a new auto fomatter that won't break these lines at
-	// such a narrow width. Get each of these statemetns on one line
-
 	static public final FieldDefinition.StandardObject FIELD_SEARCH_REQUEST = new FieldDefinition.StandardObject("search_request", new StandardSearchRequest(""));
 	static public final FieldDefinition.Collection FIELD_RESULTS = new FieldDefinition.Collection("results", new ArrayList<OneSearchResult>());
 	static public final FieldDefinition.Integer FIELD_FIRST_RESULT_IDX = new FieldDefinition.Integer("first_result_idx", 0);
