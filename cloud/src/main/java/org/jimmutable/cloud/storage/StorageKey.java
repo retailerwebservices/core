@@ -18,6 +18,8 @@ import org.jimmutable.core.utils.Validator;
 
 public class StorageKey extends Stringable
 {
+	public static MyConverter CONVERTER = new MyConverter();
+
 	Kind kind;
 	ObjectId id;
 	StorageKeyExtension extension;
