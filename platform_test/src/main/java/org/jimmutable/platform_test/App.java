@@ -1,10 +1,10 @@
 package org.jimmutable.platform_test;
 
+import org.apache.log4j.BasicConfigurator;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
-import org.apache.log4j.Logger;
 
 /**
  * Hello world!
@@ -15,6 +15,7 @@ public class App
 	public static void main(String[] args) throws Exception 
 	{
 
+		BasicConfigurator.configure();
 		CloudExecutionEnvironment.startup(new ApplicationId("platform_test"));
 		
 		// 1. Creating the server on port 8080
