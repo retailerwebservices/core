@@ -130,8 +130,8 @@ public class SearchDocumentWriter
 	/**
 	 * Add a true or false datatype to a document
 	 * 
-	 * @param name
-	 *            The name of the field
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
 	 * @param value
 	 *            true or false
 	 */
@@ -149,7 +149,8 @@ public class SearchDocumentWriter
 	 * of 2^63-1 to a document.
 	 * 
 	 * 
-	 * * @param name The name of the field
+	 * @param name
+	 *            The name of the field
 	 * 
 	 * @param value
 	 *            the long
@@ -165,7 +166,8 @@ public class SearchDocumentWriter
 	 * of 2^63-1 to a document.
 	 * 
 	 * 
-	 * * @param name The name of the field
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
 	 * 
 	 * @param value
 	 *            the long
@@ -183,7 +185,9 @@ public class SearchDocumentWriter
 	 * Add a a single-precision 32-bit IEEE 754 floating point number to a document
 	 * 
 	 * @param name
+	 *            The name of the field
 	 * @param value
+	 *            the float value
 	 */
 	public void writeFloat(FieldName name, float value)
 	{
@@ -194,8 +198,10 @@ public class SearchDocumentWriter
 	/**
 	 * Add a a single-precision 32-bit IEEE 754 floating point number to a document
 	 * 
-	 * @param name
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
 	 * @param value
+	 *            the float value
 	 */
 	public void writeFloat(SearchIndexFieldDefinition search_index_definition, float value)
 	{
@@ -212,7 +218,9 @@ public class SearchDocumentWriter
 	 * Add a date datatype to a document. Written in the form yyyy-MM-dd.
 	 * 
 	 * @param name
+	 *            The name of the field
 	 * @param day
+	 *            the Day value
 	 */
 	public void writeDay(FieldName name, Day day)
 	{
@@ -227,8 +235,10 @@ public class SearchDocumentWriter
 	/**
 	 * Add a date datatype to a document. Written in the form yyyy-MM-dd.
 	 * 
-	 * @param name
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
 	 * @param day
+	 *            the Day value
 	 */
 	public void writeDay(SearchIndexFieldDefinition search_index_definition, Day day)
 	{
@@ -267,8 +277,8 @@ public class SearchDocumentWriter
 	 * then you should have two separate field names already mapped upon index
 	 * creation.
 	 * 
-	 * @param name
-	 *            The name of the field to write
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
 	 * @param id
 	 *            The ObjectId
 	 */
@@ -330,8 +340,8 @@ public class SearchDocumentWriter
 	 * Values for this field are limited to 50 characters. Any larger values will be
 	 * trimmed to 50 characters.
 	 * 
-	 * @param name
-	 *            The name of the field to write
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
 	 * @param text
 	 *            The text to write. Limited to 50 characters. Nulls and blanks are
 	 *            simply ignored.
@@ -346,7 +356,7 @@ public class SearchDocumentWriter
 	}
 
 	/**
-	 * Write a field witch contains un-tokenized text in such a way that it is
+	 * * Write a field witch contains un-tokenized text in such a way that it is
 	 * suitable for substring matching.
 	 * 
 	 * USE THIS FIELD SPARINGLY, IT IS *VERY VERY* EXPENSIVE. Try everything you can
@@ -355,6 +365,11 @@ public class SearchDocumentWriter
 	 * Values for this field are limited to 50 characters. Any larger values will be
 	 * trimmed to 50 characters.
 	 * 
+	 * @param name
+	 *            The name of the field to write
+	 * @param text
+	 *            The text to write. Limited to 50 characters. Nulls and blanks are
+	 *            simply ignored.
 	 */
 	public void writeTextWithSubstringMatchingSupport(FieldName name, String text)
 	{
@@ -374,7 +389,7 @@ public class SearchDocumentWriter
 	}
 
 	/**
-	 * Write a field witch contains un-tokenized text in such a way that it is
+	 * * Write a field witch contains un-tokenized text in such a way that it is
 	 * suitable for substring matching.
 	 * 
 	 * USE THIS FIELD SPARINGLY, IT IS *VERY VERY* EXPENSIVE. Try everything you can
@@ -383,6 +398,11 @@ public class SearchDocumentWriter
 	 * Values for this field are limited to 50 characters. Any larger values will be
 	 * trimmed to 50 characters.
 	 * 
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
+	 * @param text
+	 *            The text to write. Limited to 50 characters. Nulls and blanks are
+	 *            simply ignored.
 	 */
 	public void writeTextWithSubstringMatchingSupport(SearchIndexFieldDefinition search_index_definition, String text)
 	{
