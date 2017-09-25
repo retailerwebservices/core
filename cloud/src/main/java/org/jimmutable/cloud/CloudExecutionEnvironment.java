@@ -31,10 +31,10 @@ public class CloudExecutionEnvironment
 	private EnvironmentType type;
 	private ApplicationId application_id;
 	private Search search;
-	private SearchIndexConfigurationUtils searchIndexConfigurationUtils;
+	private SearchIndexConfigurationUtils searchIndexConfigurationUtils; // CODE REVEIEW: Should be contained inside SEARCH instance
 
 	// centrally managed client used by a couple classes
-	private TransportClient elasticsearchClient;
+	private TransportClient elasticsearchClient; // CODE REVEIEW: Should be contained inside SEARCH instance
 
 	// System properties
 	private static final String ENV_TYPE_VARIABLE_NAME = "JIMMUTABLE_ENV_TYPE";
@@ -60,11 +60,13 @@ public class CloudExecutionEnvironment
 		this.searchIndexConfigurationUtils = searchIndexConfigurationUtils;
 	}
 
+	// CODE REVEIEW: Should be contained inside SEARCH instance
 	public void closeElasticSearchClient()
 	{
 		elasticsearchClient.close();
 	}
 
+	// CODE REVEIEW: Should be contained inside SEARCH instance
 	public TransportClient getSimpleElasticsearchClient()
 	{
 		return elasticsearchClient;
@@ -95,7 +97,7 @@ public class CloudExecutionEnvironment
 	 * 
 	 * @return
 	 */
-	public SearchIndexConfigurationUtils getSimpleSearchIndexConfigurationUtils()
+	public SearchIndexConfigurationUtils getSimpleSearchIndexConfigurationUtils() // CODE REVEIEW: Should be contained inside SEARCH instance
 	{
 		return searchIndexConfigurationUtils;
 	}
@@ -116,6 +118,7 @@ public class CloudExecutionEnvironment
 	 */
 	public static void startup(ApplicationId default_id)
 	{
+		// CODE REVEIEW: function does not match our formatting standards (open braces should be on their own lines etc.)
 		if (CURRENT != null) {
 			logger.fatal("Startup has already been called!");
 			throw new RuntimeException("Startup has already been called!");
@@ -186,6 +189,7 @@ public class CloudExecutionEnvironment
 	static public CloudExecutionEnvironment getSimpleCurrent()
 	{
 		if (CURRENT == null) {
+			// CODE REVEIEW: Don't exit the JVM, just throw an unchecked (runtime) exception (killing the calling thread probably)
 			logger.fatal("The startup mathod was never called first to setup the singleton! Terminating the JVM...");
 			System.exit(1);
 		}
