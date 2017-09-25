@@ -14,6 +14,8 @@ import java.util.Map;
  * @author trevorbox
  *
  */
+
+// CODE REVIEW: Class looks great: I suggest you add new versions of each function that take a FieldDefinition object (e.g. writeText(FieldDefinition name, String text), just call writeText(name.getSimpleFieldName(), text)
 public class SearchDocumentWriter
 {
 
