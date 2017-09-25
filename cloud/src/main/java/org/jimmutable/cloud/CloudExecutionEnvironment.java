@@ -1,6 +1,5 @@
 package org.jimmutable.cloud;
 
-import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import org.apache.logging.log4j.Level;
@@ -42,7 +41,7 @@ public class CloudExecutionEnvironment
 	private static final String ENV_APPLICATION_ID = "JIMMUTABLE_APP_ID";
 	private static final String ENV_LOGGING_LEVEL = "JIMMUTABLE_LOGGING_LEVEL";
 
-	private static final Level DEFAULT_LEVEL = Level.TRACE;
+	private static final Level DEFAULT_LEVEL = Level.INFO;
 
 	// setup the logging level programmatically
 	static {

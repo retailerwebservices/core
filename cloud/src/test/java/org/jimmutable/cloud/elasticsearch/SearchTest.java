@@ -7,6 +7,7 @@ import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
+import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.core.objects.Builder;
@@ -23,7 +24,8 @@ public class SearchTest
 
 	static SearchIndexDefinition def;
 
-	@BeforeClass
+	// Uncomment to run test
+	// @BeforeClass
 	public static void setup()
 	{
 
@@ -31,6 +33,7 @@ public class SearchTest
 		ObjectParseTree.registerTypeName(SearchIndexFieldDefinition.class);
 		ObjectParseTree.registerTypeName(SearchIndexDefinition.class);
 		ObjectParseTree.registerTypeName(OneSearchResult.class);
+		ObjectParseTree.registerTypeName(StandardSearchRequest.class);
 
 		CloudExecutionEnvironment.startup(new ApplicationId("trevor"));
 
@@ -62,7 +65,8 @@ public class SearchTest
 
 	}
 
-	@Test
+	// Uncomment to run test
+	// @Test
 	public void testSearchPaginationFirstPage()
 	{
 
@@ -86,7 +90,8 @@ public class SearchTest
 
 	}
 
-	@Test
+	// Uncomment to run test
+	// @Test
 	public void testSearchPaginationSecondPage()
 	{
 
@@ -110,10 +115,47 @@ public class SearchTest
 
 	}
 
-	@AfterClass
+	/// Uncomment to run test
+	// @Test
+	public void testSearchPaginationNone()
+	{
+
+		StandardSearchRequest request = new StandardSearchRequest("day:>1970-01-01", 10, 20);
+		JSONServletResponse r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(def.getSimpleIndex(), request);
+
+		assertTrue(r1 instanceof SearchResponseOK);
+		if (r1 instanceof SearchResponseOK) {
+			SearchResponseOK ok = (SearchResponseOK) r1;
+
+			assertEquals(20, ok.getSimpleFirstResultIdx());
+			assertEquals(false, ok.getSimpleHasMoreResults());
+			assertEquals(true, ok.getSimpleHasPreviousResults());
+			assertEquals(200, ok.getSimpleHTTPResponseCode());
+			assertEquals(0, ok.getSimpleResults().size());
+			assertEquals(30, ok.getSimpleStartOfNextPageOfResults());
+			// TODO what is the point of this??
+			assertEquals(20, ok.getSimpleStartOfPreviousPageOfResults());
+		}
+
+	}
+
+	// Uncomment to run test
+	// @Test
+	public void testBadQuery()
+	{
+
+		StandardSearchRequest request = new StandardSearchRequest("this is a bad query!", 10, 20);
+		JSONServletResponse r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(def.getSimpleIndex(), request);
+
+		assertTrue(r1 instanceof SearchResponseError);
+
+	}
+
+	// Uncomment to run test
+	// @AfterClass
 	public static void shutdown()
 	{
-		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().shutdownThreadPool();
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().shutdownThreadPool(25);
 
 	}
 
