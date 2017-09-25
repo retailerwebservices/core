@@ -18,10 +18,10 @@
 			<param-name>keepgenerated</param-name>
 			<param-value>>true</param-value>
 		</init-param>
-		
+
 		<load-on-startup>0</load-on-startup>
-		
-		
+
+
 	</servlet>
 
 	<servlet-mapping>
@@ -35,15 +35,15 @@
 		<url-pattern>*.JSPX</url-pattern>
 		<url-pattern>*.XSP</url-pattern>
 	</servlet-mapping>
-	
+
 	<servlet>
   		<servlet-name>test</servlet-name>
   		<servlet-class>org.jimmutable.platform_test.TestServlet</servlet-class>
 	</servlet>
-	
+
 	<servlet-mapping>
   		<servlet-name>test</servlet-name>
   		<url-pattern>/test/index.html</url-pattern>
 	</servlet-mapping>
-	
+
 </web-app>
