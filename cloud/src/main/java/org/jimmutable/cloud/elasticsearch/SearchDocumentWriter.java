@@ -107,7 +107,8 @@ public class SearchDocumentWriter
 	public void writeAtom(SearchIndexFieldDefinition search_index_definition, String text)
 	{
 		Validator.notNull(search_index_definition.getSimpleFieldName());
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.ATOM)) {
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.ATOM))
+		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.ATOM, search_index_definition.getSimpleFieldName()));
 		}
 		writeAtom(search_index_definition.getSimpleFieldName(), text);
@@ -138,7 +139,8 @@ public class SearchDocumentWriter
 	public void writeBoolean(SearchIndexFieldDefinition search_index_definition, boolean value)
 	{
 		Validator.notNull(search_index_definition);
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.BOOLEAN)) {
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.BOOLEAN))
+		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.BOOLEAN, search_index_definition.getSimpleFieldName()));
 		}
 		writeBoolean(search_index_definition.getSimpleFieldName(), value);
@@ -175,7 +177,8 @@ public class SearchDocumentWriter
 	public void writeLong(SearchIndexFieldDefinition search_index_definition, long value)
 	{
 		Validator.notNull(search_index_definition);
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.LONG)) {
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.LONG))
+		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.LONG));
 		}
 		writeLong(search_index_definition.getSimpleFieldName(), value);
@@ -207,7 +210,8 @@ public class SearchDocumentWriter
 	{
 		Validator.notNull(search_index_definition);
 
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.FLOAT)) {
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.FLOAT))
+		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.FLOAT));
 		}
 
@@ -245,7 +249,8 @@ public class SearchDocumentWriter
 		Validator.notNull(search_index_definition);
 		Validator.notNull(day);
 
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.DAY)) {
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.DAY))
+		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.DAY));
 		}
 
@@ -287,7 +292,8 @@ public class SearchDocumentWriter
 		Validator.notNull(search_index_definition);
 		Validator.notNull(id);
 
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.OBJECTID)) {
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.OBJECTID))
+		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.OBJECTID));
 		}
 
@@ -349,7 +355,8 @@ public class SearchDocumentWriter
 	public void writeTextWithPrefixMatchingSupport(SearchIndexFieldDefinition search_index_definition, String text)
 	{
 		Validator.notNull(search_index_definition);
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.TEXT)) {
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.TEXT))
+		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.TEXT));
 		}
 		writeTextWithPrefixMatchingSupport(search_index_definition.getSimpleFieldName(), text);
@@ -408,7 +415,8 @@ public class SearchDocumentWriter
 	{
 		Validator.notNull(search_index_definition);
 
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.TEXT)) {
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.TEXT))
+		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.TEXT));
 		}
 
