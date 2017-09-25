@@ -68,7 +68,7 @@ public class AddressTest extends TestCase
 		builder.set(Address.FIELD_POSTAL_CODE, new PostalCode("85003"));
 		builder.set(Address.FIELD_COUNTRY, CountryCode.US);
 		Address no_specs = (Address)builder.create(null);
-		
+
 		assert(no_specs != null);
 		assert(no_specs.getSimpleLine1().equals("123 Main St"));
 		assert(no_specs.getSimpleCity().equals("Phoenix"));
@@ -101,6 +101,32 @@ public class AddressTest extends TestCase
 		assert(canadian_addr.getSimpleCountry() == CountryCode.CA);
 		
 		System.out.println(canadian_addr.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
+		
+		// Test optional fields
+		builder = new Builder(Address.TYPE_NAME);
+		builder.set(Address.FIELD_LINE1, "123 Main St");
+		builder.set(Address.FIELD_CITY, "Phoenix");
+		builder.set(Address.FIELD_STATE, "AZ");
+		builder.set(Address.FIELD_POSTAL_CODE, new PostalCode("85003"));
+		builder.set(Address.FIELD_COUNTRY, CountryCode.US);
+		builder.set(Address.FIELD_LATITUDE, 10.03F);
+		builder.set(Address.FIELD_LONGITUDE, 18.323F);
+		
+		Address addr_with_lat_long = (Address)builder.create(null);
+
+		assert(addr_with_lat_long.getOptionalLatitude(999999999) == 10.03F);
+		assert(addr_with_lat_long.getOptionalLongitude(999999999) == 18.323F);
+		
+		builder = new Builder(Address.TYPE_NAME);
+		builder.set(Address.FIELD_LINE1, "123 Main St");
+		builder.set(Address.FIELD_CITY, "Phoenix");
+		builder.set(Address.FIELD_STATE, "AZ");
+		builder.set(Address.FIELD_POSTAL_CODE, new PostalCode("85003"));
+		builder.set(Address.FIELD_COUNTRY, CountryCode.US);
+		Address addr_without_lat_long = (Address)builder.create(null);
+
+		assert(addr_without_lat_long.getOptionalLatitude(999999999) == 999999999F);
+		assert(addr_without_lat_long.getOptionalLongitude(999999999) == 999999999F);
 	}
 	
 	public void testSerialization()
@@ -116,8 +142,8 @@ public class AddressTest extends TestCase
 			     , "  \"state\" : \"Ontario\","
 			     , "  \"postal_code\" : \"L9T 2Y2\","
 			     , "  \"country\" : \"CA\","
-			     , "  \"latitude\" : 0.0,"
-			     , "  \"longitude\" : 0.0"
+			     , "  \"latitude\" : 2.0,"
+			     , "  \"longitude\" : 5.0"
 			     , "}"
 			);
 
@@ -131,6 +157,8 @@ public class AddressTest extends TestCase
 			assert(obj.getSimpleState().equals("Ontario"));
 			assert(obj.getSimplePostalCode().getSimpleValue().equals("L9T 2Y2"));
 			assert(obj.getSimpleCountry() == CountryCode.CA);
+			assert(obj.getOptionalLatitude(9999999) == 2F);
+			assert(obj.getOptionalLongitude(9999999) == 5F);
 	}
 
 }

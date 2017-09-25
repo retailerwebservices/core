@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jimmutable.cloud.s3.S3Path;
+
 
 public class MimeTypes 
 {
@@ -88,9 +88,9 @@ public class MimeTypes
 		return ret;
 	}
 	
-	static public String getMimeType(S3Path path)
-	{
-		if ( path == null ) return "content/unknown";
-		return getMimeType(path.getOptionalExtension(""));
-	}
+//	static public String getMimeType(S3Path path)
+//	{
+//		if ( path == null ) return "content/unknown";
+//		return getMimeType(path.getOptionalExtension(""));
+//	}
 }

@@ -85,7 +85,7 @@ public class CloudExecutionEnvironment
 	/**
 	 * Search instance used for document upsert and searching of indices
 	 * 
-	 * @return
+	 * @return The Search instance
 	 */
 	public Search getSimpleSearch()
 	{
@@ -95,7 +95,7 @@ public class CloudExecutionEnvironment
 	/**
 	 * Search index utility used for index upsert and maintenance
 	 * 
-	 * @return
+	 * @return The SearchIndexConfigurationUtils instance
 	 */
 	public SearchIndexConfigurationUtils getSimpleSearchIndexConfigurationUtils() // CODE REVEIEW: Should be contained inside SEARCH instance
 	{
