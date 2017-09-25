@@ -7,8 +7,8 @@ import org.jimmutable.core.utils.Validator;
  * <br><b>**WARNING**</b> <br>if you do not make your ExpirationCache large enough, it may remove an item that has not timed out if you put too many items in it. 
  * @author andrew.towe
  *
- * @param <K> can be anything
- * @param <V> can be anything
+ * @param <K> The key type
+ * @param <V> The value type
  */
 public class ExpirationCache<K, V>
 {
@@ -16,7 +16,11 @@ public class ExpirationCache<K, V>
 	private long maximum_allowed_entry_age_in_ms;
 	private LRUCache<K, V> data; 
 	private LRUCache<K, Long> put_times; 
-
+/**
+ * 
+ * @param maximum_allowed_entry_age_in_ms how long should something exist in the ExpirationCache
+ * @param maximum_size The most amount of items allowed in the cache. 
+ */
 	ExpirationCache( long maximum_allowed_entry_age_in_ms, int maximum_size )
 	{
 		Validator.min(maximum_allowed_entry_age_in_ms, 0);// strictly positive numbers
