@@ -31,6 +31,9 @@ import org.jimmutable.core.serialization.FieldName;
  * @author trevorbox
  *
  */
+
+// CODE REVIEW: follow our spacing conventions
+
 public class Search
 {
 
@@ -101,7 +104,7 @@ public class Search
 		object.writeSearchDocument(writer);
 
 		try {
-			pool.execute(new Runnable()
+			pool.execute(new Runnable()  // CODE REVIEW: create a named runnable for this with constructor etc. (variety of threading related reasons)
 			{
 				@Override
 				public void run()
