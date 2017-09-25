@@ -10,6 +10,9 @@ import org.jimmutable.core.utils.Validator;
  * @param <K> The key type
  * @param <V> The value type
  */
+
+//CODE REVIEW: Comment should read to the effect that ExpirationCache is a time limited LRU cache.  Entries are removed whenever (either) the cache becomes larger than the specified maximum size *or* an entry has been in the cache for longer than a specified time
+
 public class ExpirationCache<K, V>
 {
 
@@ -48,6 +51,7 @@ public class ExpirationCache<K, V>
 	 */
 	V getOptional( K key, V default_value )
 	{
+		// CODE REVIEW: spacing and formatting of this function is not correct
 		Long time_in_cache = put_times.get(key, null);
 		if(time_in_cache!=null) {//if it is not in the put times, return default value
 			if((System.currentTimeMillis()-time_in_cache)<=maximum_allowed_entry_age_in_ms) {//if it has been in the system more that the maximum time, return the default value
