@@ -26,7 +26,7 @@ public class StressTestSearch
 
 	static SearchIndexDefinition def;
 
-	@BeforeClass
+	// @BeforeClass
 	public static void setup2()
 	{
 
@@ -100,7 +100,7 @@ public class StressTestSearch
 
 	}
 
-	@Test
+	// @Test
 	public void testSearch()
 	{
 
@@ -116,11 +116,9 @@ public class StressTestSearch
 
 	}
 
-	@AfterClass
+	// @AfterClass
 	public static void shutdown()
 	{
-
-		CloudExecutionEnvironment.getSimpleCurrent();
 
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().shutdownThreadPool(10000);
 

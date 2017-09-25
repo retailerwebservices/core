@@ -53,6 +53,9 @@ public class Search
 	 */
 	public boolean shutdownThreadPool(int seconds)
 	{
+
+		long start = System.currentTimeMillis();
+
 		pool.shutdown();
 
 		boolean terminated = true;
@@ -64,10 +67,18 @@ public class Search
 		}
 
 		if (!terminated) {
+			logger.error("Failed to terminate in %s seconds. Calling shutdownNow...", seconds);
 			pool.shutdownNow();
 		}
 
-		return pool.isTerminated();
+		boolean success = pool.isTerminated();
+
+		if (success) {
+			logger.warn(String.format("Successfully terminated pool in %s milliseconds", (System.currentTimeMillis() - start)));
+		} else {
+			logger.warn(String.format("Unsuccessful termination of pool in %s milliseconds", (System.currentTimeMillis() - start)));
+		}
+		return success;
 	}
 
 	/**
