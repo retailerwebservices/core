@@ -49,7 +49,7 @@ public class Search
 	 * Gracefully shutdown the running threads. Note: the TransportClient should be
 	 * closed where instantiated. This is not handles by this.
 	 * 
-	 * @return
+	 * @return boolean if shutdown correctly or not
 	 */
 	public boolean shutdownThreadPool(int seconds)
 	{
@@ -147,11 +147,12 @@ public class Search
 	/**
 	 * Search an index with a query string.
 	 * 
-	 * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
+	 * @see <a href=
+	 *      "https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html">query-dsl-query-string-query</a>
 	 * 
 	 * @param index
 	 * @param request
-	 * @return
+	 * @return JSONServletResponse
 	 */
 	public JSONServletResponse search(IndexDefinition index, StandardSearchRequest request)
 	{
