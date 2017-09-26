@@ -37,7 +37,8 @@ public class IndexVersion extends Stringable
 	{
 		Validator.notNull(super.getSimpleValue());
 
-		if (!super.getSimpleValue().matches("^v\\d+")) {
+		if (!super.getSimpleValue().matches("^v\\d+"))
+		{
 			throw new ValidationException(String.format("Version does not match syntax ^v\\d+", super.getSimpleValue()));
 		}
 	}
@@ -52,9 +53,11 @@ public class IndexVersion extends Stringable
 	{
 		public IndexVersion fromString(String str, IndexVersion default_value)
 		{
-			try {
+			try
+			{
 				return new IndexVersion(str);
-			} catch (Exception e) {
+			} catch (Exception e)
+			{
 				return default_value;
 			}
 		}

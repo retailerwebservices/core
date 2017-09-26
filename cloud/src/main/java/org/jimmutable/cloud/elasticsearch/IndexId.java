@@ -47,9 +47,11 @@ public class IndexId extends Stringable
 	{
 		public IndexId fromString(String str, IndexId default_value)
 		{
-			try {
+			try
+			{
 				return new IndexId(str);
-			} catch (Exception e) {
+			} catch (Exception e)
+			{
 				return default_value;
 			}
 		}

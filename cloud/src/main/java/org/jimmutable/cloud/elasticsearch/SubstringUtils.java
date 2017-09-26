@@ -12,7 +12,8 @@ public class SubstringUtils
 		if (length > str.length())
 			return;
 
-		for (int start = 0; start < str.length() - length + 1; start++) {
+		for (int start = 0; start < str.length() - length + 1; start++)
+		{
 			if (builder.length() != 0 && builder.charAt(builder.length() - 1) != ' ')
 				builder.append(' ');
 
@@ -30,7 +31,8 @@ public class SubstringUtils
 
 		StringBuilder ret = new StringBuilder(str);
 
-		for (int cur_length = min_substring_size; cur_length < max_substring_size; cur_length++) {
+		for (int cur_length = min_substring_size; cur_length < max_substring_size; cur_length++)
+		{
 			appendAllSubstringsOfLength(ret, str, cur_length);
 		}
 
@@ -72,7 +74,8 @@ public class SubstringUtils
 
 		sb.append(text);
 		int count = text.length() - 1;
-		while (count > 0) {
+		while (count > 0)
+		{
 			sb.append(" ").append(text.substring(0, count));
 			count--;
 		}

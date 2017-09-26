@@ -5,7 +5,6 @@ import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
 
-
 /**
  * Search index definition applicaitonid:indexid
  * 
@@ -47,7 +46,8 @@ public class IndexDefinition extends Stringable
 
 		String[] values = super.getSimpleValue().split(SEPARATOR);
 
-		if (values.length != 3) {
+		if (values.length != 3)
+		{
 			throw new ValidationException(String.format("Expected the format applicationId:indexId:indexVersion but the definition was set to %s", super.getSimpleValue()));
 		}
 
@@ -71,9 +71,11 @@ public class IndexDefinition extends Stringable
 	{
 		public IndexDefinition fromString(String str, IndexDefinition default_value)
 		{
-			try {
+			try
+			{
 				return new IndexDefinition(str);
-			} catch (Exception e) {
+			} catch (Exception e)
+			{
 				return default_value;
 			}
 		}

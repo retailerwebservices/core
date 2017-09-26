@@ -60,7 +60,8 @@ public enum SearchIndexFieldType implements StandardEnum
 			if (code == null)
 				return default_value;
 
-			for (SearchIndexFieldType t : SearchIndexFieldType.values()) {
+			for (SearchIndexFieldType t : SearchIndexFieldType.values())
+			{
 				if (t.getSimpleCode().equalsIgnoreCase(code))
 					return t;
 			}
