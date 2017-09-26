@@ -16,7 +16,8 @@ public class IndexDefinitionTest extends StringableTest
 		assertNotValid("foo/bar");
 
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < 65; i++) {
+		for (int i = 0; i < 65; i++)
+		{
 			sb.append('a');
 		}
 

@@ -10,8 +10,6 @@ package org.jimmutable.cloud.elasticsearch;
 public interface Indexable
 {
 
-	public static final String DEFAULT_TYPE = "default";
-
 	/**
 	 * Get the index definition that this object should be added to
 	 * 
