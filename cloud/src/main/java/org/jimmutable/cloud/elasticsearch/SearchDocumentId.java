@@ -29,12 +29,10 @@ public class SearchDocumentId extends Stringable
 	@Override
 	public void validate()
 	{
-		// CODE REVIEW: Format
 		Validator.notNull(super.getSimpleValue());
 		Validator.min(super.getSimpleValue().length(), 1);
 		Validator.max(super.getSimpleValue().length(), 256);
 		Validator.containsOnlyValidCharacters(super.getSimpleValue(), Validator.LOWERCASE_LETTERS, Validator.DASH, Validator.NUMBERS);
-
 	}
 
 	/**
@@ -47,9 +45,11 @@ public class SearchDocumentId extends Stringable
 	{
 		public SearchDocumentId fromString(String str, SearchDocumentId default_value)
 		{
-			try {
+			try
+			{
 				return new SearchDocumentId(str);
-			} catch (Exception e) {
+			} catch (Exception e)
+			{
 				return default_value;
 			}
 		}

@@ -19,7 +19,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class SearchTest
+public class ElasticSearchTest
 {
 
 	static SearchIndexDefinition def;
@@ -51,15 +51,18 @@ public class SearchTest
 
 		def = (SearchIndexDefinition) b.create(null);
 
-		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearchIndexConfigurationUtils().upsertIndex(def);
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertIndex(def);
 
-		for (int i = 0; i < 20; i++) {
+		for (int i = 0; i < 20; i++)
+		{
 			CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocumentAsync(new MyIndexable(def.getSimpleIndex(), new SearchDocumentId(String.format("doc%s", i))));
 		}
 
-		try {
+		try
+		{
 			Thread.sleep(5000);
-		} catch (InterruptedException e) {
+		} catch (InterruptedException e)
+		{
 
 		}
 
@@ -74,7 +77,8 @@ public class SearchTest
 		JSONServletResponse r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(def.getSimpleIndex(), request);
 
 		assertTrue(r1 instanceof SearchResponseOK);
-		if (r1 instanceof SearchResponseOK) {
+		if (r1 instanceof SearchResponseOK)
+		{
 			SearchResponseOK ok = (SearchResponseOK) r1;
 
 			assertEquals(ok.getSimpleFirstResultIdx(), 0);
@@ -99,7 +103,8 @@ public class SearchTest
 		JSONServletResponse r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(def.getSimpleIndex(), request);
 
 		assertTrue(r1 instanceof SearchResponseOK);
-		if (r1 instanceof SearchResponseOK) {
+		if (r1 instanceof SearchResponseOK)
+		{
 			SearchResponseOK ok = (SearchResponseOK) r1;
 
 			assertEquals(10, ok.getSimpleFirstResultIdx());
@@ -124,7 +129,8 @@ public class SearchTest
 		JSONServletResponse r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(def.getSimpleIndex(), request);
 
 		assertTrue(r1 instanceof SearchResponseOK);
-		if (r1 instanceof SearchResponseOK) {
+		if (r1 instanceof SearchResponseOK)
+		{
 			SearchResponseOK ok = (SearchResponseOK) r1;
 
 			assertEquals(20, ok.getSimpleFirstResultIdx());
@@ -155,7 +161,7 @@ public class SearchTest
 	// @AfterClass
 	public static void shutdown()
 	{
-		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().shutdownThreadPool(25);
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().shutdownDocumentUpsertThreadPool(25);
 
 	}
 
