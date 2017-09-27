@@ -6,22 +6,23 @@ import org.jimmutable.core.utils.Validator;
 
 public class OpenGraphObjectId extends Stringable
 {
+	static public final MyConverter CONVERTER = new MyConverter();
+
 	public OpenGraphObjectId( String s )
 	{
 		super(s);
 	}
 
-	
 	public OpenGraphObjectId( ObjectParseTree reader )
 	{
 		super(reader);
-		
+
 	}
 
 	@Override
 	public void normalize()
 	{
-		
+
 	}
 
 	@Override
@@ -32,15 +33,16 @@ public class OpenGraphObjectId extends Stringable
 		Validator.max(getSimpleValue().length(), 128);
 		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.NUMBERS);
 	}
+
 	static public class MyConverter extends Stringable.Converter<OpenGraphObjectId>
 	{
-		public OpenGraphObjectId fromString(String str, OpenGraphObjectId default_value)
+		public OpenGraphObjectId fromString( String str, OpenGraphObjectId default_value )
 		{
 			try
 			{
 				return new OpenGraphObjectId(str);
 			}
-			catch(Exception e)
+			catch ( Exception e )
 			{
 				return default_value;
 			}
