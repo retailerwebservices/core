@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
+import org.jimmutable.cloud.EnvironmentType;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
@@ -37,7 +38,7 @@ public class StressTestSearch
 		ObjectParseTree.registerTypeName(StandardSearchRequest.class);
 		ObjectParseTree.registerTypeName(TestLibraryPatron.class);
 
-		CloudExecutionEnvironment.startup(new ApplicationId("trevor"));
+		CloudExecutionEnvironment.startup(new ApplicationId("trevor"), EnvironmentType.DEV);
 
 		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
 

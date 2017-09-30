@@ -25,11 +25,11 @@ public class StorageDevLocalFileSystem extends Storage
 	{
 		super(is_readonly);
 
-		if ( !ApplicationId.hasOptionalDevApplicationId() )
-		{
-			System.err.println("Hey -- you are trying to instantiate a dev local file system. This should not be happening in production. If you are a developer and you are trying to run this through eclipse, you need to setup the environment configurations in your run configurations");
-			throw new RuntimeException();
-		}
+//		if ( !ApplicationId.hasOptionalDevApplicationId() )
+//		{
+//			System.err.println("Hey -- you are trying to instantiate a dev local file system. This should not be happening in production. If you are a developer and you are trying to run this through eclipse, you need to setup the environment configurations in your run configurations");
+//			throw new RuntimeException();
+//		}
 		root = new File(System.getProperty("user.home") + "/jimmutable_dev/" + ApplicationId.getOptionalDevApplicationId(new ApplicationId("Development")));
 	}
 

@@ -39,7 +39,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  */
 
-public class ElasticSearch
+public class ElasticSearch implements ISearch
 {
 
 	private static final Logger logger = LogManager.getLogger(ElasticSearch.class);
@@ -61,6 +61,7 @@ public class ElasticSearch
 	 * 
 	 * @return boolean if shutdown correctly or not
 	 */
+	@Override
 	public boolean shutdownDocumentUpsertThreadPool(int seconds)
 	{
 
@@ -153,6 +154,7 @@ public class ElasticSearch
 	 * @return boolean
 	 * @throws InterruptedException
 	 */
+	@Override
 	public boolean upsertDocumentAsync(Indexable object)
 	{
 
@@ -188,6 +190,7 @@ public class ElasticSearch
 	 * @param request
 	 * @return JSONServletResponse
 	 */
+	@Override
 	public JSONServletResponse search(IndexDefinition index, StandardSearchRequest request)
 	{
 
@@ -266,6 +269,7 @@ public class ElasticSearch
 	 *            IndexDefinition
 	 * @return boolean if the index exists or not
 	 */
+	@Override
 	public boolean indexExists(IndexDefinition index)
 	{
 		if (index == null)
@@ -290,6 +294,7 @@ public class ElasticSearch
 	 *            SearchIndexDefinition
 	 * @return boolean if the index exists or not
 	 */
+	@Override
 	public boolean indexExists(SearchIndexDefinition index)
 	{
 		if (index == null)
@@ -315,6 +320,7 @@ public class ElasticSearch
 	 *            SearchIndexDefinition
 	 * @return boolean if the index is properly configured or not
 	 */
+	@Override
 	public boolean indexProperlyConfigured(SearchIndexDefinition index)
 	{
 
@@ -448,6 +454,7 @@ public class ElasticSearch
 	 *            SearchIndexDefinition
 	 * @return boolean if the upsert was successful or not
 	 */
+	@Override
 	public boolean upsertIndex(SearchIndexDefinition index)
 	{
 

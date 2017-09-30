@@ -16,7 +16,8 @@ public enum EnvironmentType implements StandardEnum
 	DEV("dev"),
 	STAGING("staging"),
 	PRODUCTION("production"),
-	UNKNOWN("unknown");
+	UNKNOWN("unknown"),
+	STUB("stub");
 
 	static public final MyConverter CONVERTER = new MyConverter();
 
@@ -45,7 +46,8 @@ public enum EnvironmentType implements StandardEnum
 			if (code == null)
 				return default_value;
 
-			for (EnvironmentType t : EnvironmentType.values()) {
+			for (EnvironmentType t : EnvironmentType.values())
+			{
 				if (t.getSimpleCode().equalsIgnoreCase(code))
 					return t;
 			}
