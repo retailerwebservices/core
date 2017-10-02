@@ -125,7 +125,6 @@ public class CloudExecutionEnvironment
 
 		if (CURRENT != null)
 		{
-			logger.fatal("Startup has already been called!");
 			throw new RuntimeException("Startup has already been called!");
 		}
 
