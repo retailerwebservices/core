@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
+import org.jimmutable.cloud.EnvironmentType;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
@@ -19,7 +20,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class SearchTest
+public class ElasticSearchTest
 {
 
 	static SearchIndexDefinition def;
@@ -35,7 +36,7 @@ public class SearchTest
 		ObjectParseTree.registerTypeName(OneSearchResult.class);
 		ObjectParseTree.registerTypeName(StandardSearchRequest.class);
 
-		CloudExecutionEnvironment.startup(new ApplicationId("trevor"));
+		CloudExecutionEnvironment.startup(new ApplicationId("trevor"), EnvironmentType.DEV);
 
 		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
 
@@ -51,15 +52,18 @@ public class SearchTest
 
 		def = (SearchIndexDefinition) b.create(null);
 
-		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearchIndexConfigurationUtils().upsertIndex(def);
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertIndex(def);
 
-		for (int i = 0; i < 20; i++) {
+		for (int i = 0; i < 20; i++)
+		{
 			CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocumentAsync(new MyIndexable(def.getSimpleIndex(), new SearchDocumentId(String.format("doc%s", i))));
 		}
 
-		try {
+		try
+		{
 			Thread.sleep(5000);
-		} catch (InterruptedException e) {
+		} catch (InterruptedException e)
+		{
 
 		}
 
@@ -74,7 +78,8 @@ public class SearchTest
 		JSONServletResponse r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(def.getSimpleIndex(), request);
 
 		assertTrue(r1 instanceof SearchResponseOK);
-		if (r1 instanceof SearchResponseOK) {
+		if (r1 instanceof SearchResponseOK)
+		{
 			SearchResponseOK ok = (SearchResponseOK) r1;
 
 			assertEquals(ok.getSimpleFirstResultIdx(), 0);
@@ -99,7 +104,8 @@ public class SearchTest
 		JSONServletResponse r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(def.getSimpleIndex(), request);
 
 		assertTrue(r1 instanceof SearchResponseOK);
-		if (r1 instanceof SearchResponseOK) {
+		if (r1 instanceof SearchResponseOK)
+		{
 			SearchResponseOK ok = (SearchResponseOK) r1;
 
 			assertEquals(10, ok.getSimpleFirstResultIdx());
@@ -124,7 +130,8 @@ public class SearchTest
 		JSONServletResponse r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(def.getSimpleIndex(), request);
 
 		assertTrue(r1 instanceof SearchResponseOK);
-		if (r1 instanceof SearchResponseOK) {
+		if (r1 instanceof SearchResponseOK)
+		{
 			SearchResponseOK ok = (SearchResponseOK) r1;
 
 			assertEquals(20, ok.getSimpleFirstResultIdx());
@@ -155,7 +162,7 @@ public class SearchTest
 	// @AfterClass
 	public static void shutdown()
 	{
-		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().shutdownThreadPool(25);
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().shutdownDocumentUpsertThreadPool(25);
 
 	}
 

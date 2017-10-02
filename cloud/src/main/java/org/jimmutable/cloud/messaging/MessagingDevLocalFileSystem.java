@@ -11,20 +11,17 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.management.RuntimeErrorException;
 import javax.sql.rowset.serial.SerialException;
 
 import org.jimmutable.core.utils.Validator;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.storage.StorageKeyExtension;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.objects.StandardObject;
@@ -39,10 +36,9 @@ import com.amazonaws.util.IOUtils;
  * This is our local implementation of Messaging. It is designed so that a
  * person can run our messaging services without having to rely on AWS or
  * Google. Messages created are stored as .json files on the local machine, in:
- * ~/jimmutable_dev/messaging/[topic def]/[queue def] This class has a
- * Single thread executor to handle the sending of messages. It is created on
- * creation of this class and can be shutdown by running the SendAllAndShutdown
- * method.
+ * ~/jimmutable_dev/messaging/[topic def]/[queue def] This class has a Single
+ * thread executor to handle the sending of messages. It is created on creation
+ * of this class and can be shutdown by running the SendAllAndShutdown method.
  * 
  * @author andrew.towe
  *
@@ -57,15 +53,18 @@ public class MessagingDevLocalFileSystem extends Messaging
 	public MessagingDevLocalFileSystem()
 	{
 		super();
-		
-		if ( !ApplicationId.hasOptionalDevApplicationId() )
-		{
-			System.err.println("Hey -- you are trying to instantiate a dev local file system. This should not be happening in production. If you are a developer and you are trying to run this through eclipse, you need to setup the environment configurations in your run configurations");
-			throw new RuntimeException();
-		}
+
+		// if ( !ApplicationId.hasOptionalDevApplicationId() )
+		// {
+		// System.err.println("Hey -- you are trying to instantiate a dev local file
+		// system. This should not be happening in production. If you are a developer
+		// and you are trying to run this through eclipse, you need to setup the
+		// environment configurations in your run configurations");
+		// throw new RuntimeException();
+		// }
 
 		ObjectParseTree.registerTypeName(StandardMessageOnUpsert.class);
-		
+
 		root = new File(System.getProperty("user.home"), "/jimmutable_dev/messaging");
 		root.mkdirs();
 	}
@@ -79,9 +78,9 @@ public class MessagingDevLocalFileSystem extends Messaging
 	 */
 	@SuppressWarnings("rawtypes")
 	@Override
-	public boolean sendAsync( TopicDefinition topic, StandardImmutableObject message )
+	public boolean sendAsync(TopicDefinition topic, StandardImmutableObject message)
 	{
-		if ( message == null )
+		if (message == null)
 		{
 			return false;
 		}
@@ -101,10 +100,10 @@ public class MessagingDevLocalFileSystem extends Messaging
 	 * @return true if the threads were created, false otherwise.
 	 */
 	@Override
-	public boolean startListening( SubscriptionDefinition subscription, MessageListener listener )
+	public boolean startListening(SubscriptionDefinition subscription, MessageListener listener)
 	{
 		File subscription_path = new File(root.getAbsolutePath(), subscription.getSimpleValue());
-		if ( !subscription_path.exists() )// if subscription does not exist, make it.
+		if (!subscription_path.exists())// if subscription does not exist, make it.
 		{
 			subscription_path.mkdirs();
 		}
@@ -131,7 +130,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 		private TopicDefinition topic;
 
 		@SuppressWarnings("rawtypes")
-		public SendMessageRunnable( TopicDefinition topic, StandardImmutableObject message )
+		public SendMessageRunnable(TopicDefinition topic, StandardImmutableObject message)
 		{
 			this.topic = topic;
 			this.message = message;
@@ -143,8 +142,6 @@ public class MessagingDevLocalFileSystem extends Messaging
 			Validator.notNull(topic);
 			ObjectId objectId = new ObjectId(new Random().nextLong());
 
-			FileOutputStream fos;
-
 			try
 			{
 				File pfile = new File(root.getAbsolutePath(), topic.getSimpleValue());
@@ -154,31 +151,30 @@ public class MessagingDevLocalFileSystem extends Messaging
 				// CODE ANSWER: We were having issues with Hidden directories (The one I found
 				// was ./DStore)
 
-				for ( File sub_file_header : listDirectoriesToPutMessagesInto(pfile) )
+				for (File sub_file_header : listDirectoriesToPutMessagesInto(pfile))
 				{
 					writeFile(objectId, sub_file_header);
 				}
-			}
-			catch ( Exception e )
+			} catch (Exception e)
 			{
-				logger.log(Level.WARN, "Could not send message",e);
+				logger.log(Level.WARN, "Could not send message", e);
 			}
 		}
 
-		private List<File> listDirectoriesToPutMessagesInto( File pfile )
+		private List<File> listDirectoriesToPutMessagesInto(File pfile)
 		{
 			List<File> filesToReturn = new ArrayList<File>();
 			File[] listFiles = pfile.listFiles();
-			if ( listFiles != null )
+			if (listFiles != null)
 			{
-				for ( File file_header : listFiles )
+				for (File file_header : listFiles)
 				{
 					listFiles = pfile.listFiles();
-					if ( !file_header.isHidden() && listFiles != null )
+					if (!file_header.isHidden() && listFiles != null)
 					{
-						for ( File sub_file_header : file_header.listFiles() )
+						for (File sub_file_header : file_header.listFiles())
 						{
-							if ( !sub_file_header.isHidden() )
+							if (!sub_file_header.isHidden())
 							{
 								filesToReturn.add(sub_file_header);
 							}
@@ -189,7 +185,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 			return filesToReturn;
 		}
 
-		private void writeFile( ObjectId objectId, File sub_file_header ) throws FileNotFoundException, IOException
+		private void writeFile(ObjectId objectId, File sub_file_header) throws FileNotFoundException, IOException
 		{
 			FileOutputStream fos;
 			File file = new File(sub_file_header.getAbsolutePath(), objectId.getSimpleValue() + "." + StorageKeyExtension.JSON);
@@ -205,7 +201,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 		private MessageListener listener;
 		private Path my_dir;
 
-		public ListenForMessageRunnable( File subscription_path, MessageListener listener )
+		public ListenForMessageRunnable(File subscription_path, MessageListener listener)
 		{
 			this.my_dir = subscription_path.toPath();
 			this.listener = listener;
@@ -217,7 +213,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 		{
 			WatchService watcher = setupListener();
 			WatchKey watchKey = null;
-			while ( true )
+			while (true)
 			{
 				try
 				{
@@ -226,23 +222,22 @@ public class MessagingDevLocalFileSystem extends Messaging
 					watchKey = watcher.take();
 
 					List<WatchEvent<?>> events = watchKey.pollEvents();
-					for ( WatchEvent event : events )
+					for (WatchEvent event : events)
 					{
-						if ( event.kind() == StandardWatchEventKinds.ENTRY_CREATE )
+						if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE)
 						{
 							handleEvent(event);
 						}
 					}
-				}
-				catch ( Exception e )
+				} catch (Exception e)
 				{
-					logger.log(Level.ERROR, "Could not hear message",e);
+					logger.log(Level.ERROR, "Could not hear message", e);
 				}
 				watchKey.reset(); // need this so we can look again
 			}
 		}
 
-		private void handleEvent( WatchEvent event ) throws SerialException
+		private void handleEvent(WatchEvent<?> event) throws SerialException
 		{
 			Path message_path = my_dir.resolve(((Path) event.context()));
 			File f = new File(message_path.toString());
@@ -257,15 +252,14 @@ public class MessagingDevLocalFileSystem extends Messaging
 			{
 				watcher = my_dir.getFileSystem().newWatchService();
 				my_dir.register(watcher, StandardWatchEventKinds.ENTRY_CREATE);
-			}
-			catch ( IOException e )
+			} catch (IOException e)
 			{
-				logger.log(Level.ERROR, "Could not setup listener",e);
+				logger.log(Level.ERROR, "Could not setup listener", e);
 			}
 			return watcher;
 		}
 
-		private String readFile( File f )
+		private String readFile(File f)
 		{
 			FileInputStream fis = null;
 			try
@@ -274,19 +268,16 @@ public class MessagingDevLocalFileSystem extends Messaging
 				byte[] byteArray = IOUtils.toByteArray(fis);
 				fis.close();
 				return new String(byteArray);
-			}
-			catch ( Exception e )
+			} catch (Exception e)
 			{
 				logger.log(Level.ERROR, "Something went wrong with reading the file", e);
 				return null;
-			}
-			finally
+			} finally
 			{
 				try
 				{
 					fis.close();
-				}
-				catch ( IOException e )
+				} catch (IOException e)
 				{
 					logger.log(Level.ERROR, "Something went weird when trying to close the file stream", e);
 				}

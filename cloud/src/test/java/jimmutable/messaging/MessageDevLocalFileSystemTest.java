@@ -14,6 +14,7 @@ import java.util.concurrent.RejectedExecutionException;
 
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
+import org.jimmutable.cloud.EnvironmentType;
 import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
 import org.jimmutable.cloud.messaging.MessageListener;
 import org.jimmutable.cloud.messaging.MessagingDevLocalFileSystem;
@@ -40,24 +41,24 @@ public class MessageDevLocalFileSystemTest extends TestCase
 	protected void setUpTest()
 	{
 		appId = new ApplicationId("Development");
-		CloudExecutionEnvironment.startup(appId);
+		CloudExecutionEnvironment.startup(appId, EnvironmentType.DEV);
 		JimmutableCloudTypeNameRegister.registerAllTypes();
 	}
-	
+
 	@Before
 	protected void setUp()
 	{
 		appId = new ApplicationId("Development");
 		messagingdevlocalfilesystem = new MessagingDevLocalFileSystem();
-		
+
 	}
 
 	public static void testSendAsync() throws InterruptedException
 	{
 		String mainpath = System.getProperty("user.home") + "/jimmutable_dev/messaging/development/knights-in-monty-python";
-		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
+		for (String queue_application_id : Arrays.asList("lancelot", "galahad"))
 		{
-			for ( String queue_queue_id : Arrays.asList("queue1", "queue2") )
+			for (String queue_queue_id : Arrays.asList("queue1", "queue2"))
 			{
 				String filepath = mainpath + "/" + queue_application_id + "/" + queue_queue_id;
 				File f = new File(filepath);
@@ -68,9 +69,9 @@ public class MessageDevLocalFileSystemTest extends TestCase
 		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("Knights-in-Monty-Python")), new StandardMessageOnUpsert(new Kind("niii"), new ObjectId(123456789))));
 		Thread.sleep(1000);// have it wait a second
 
-		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
+		for (String queue_application_id : Arrays.asList("lancelot", "galahad"))
 		{
-			for ( String queue_queue_id : Arrays.asList("queue1", "queue2") )
+			for (String queue_queue_id : Arrays.asList("queue1", "queue2"))
 			{
 				String filepath = mainpath + "/" + queue_application_id + "/" + queue_queue_id;
 				File f = new File(filepath);
@@ -93,7 +94,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 		File f = new File(filepath);
 		assertNull(f.listFiles());// prove that no the message got there.
 
-		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
+		for (String queue_application_id : Arrays.asList("lancelot", "galahad"))
 		{
 			filepath = mainpath + "/" + queue_application_id;
 			f = new File(filepath);
@@ -102,7 +103,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 		assertTrue(messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("Knights-in-Monty-Python")), new StandardMessageOnUpsert(new Kind("niii"), new ObjectId(123456789))));
 		Thread.sleep(1000);// have it wait a second
 
-		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
+		for (String queue_application_id : Arrays.asList("lancelot", "galahad"))
 		{
 			filepath = mainpath + "/" + queue_application_id;
 			f = new File(filepath);
@@ -110,7 +111,7 @@ public class MessageDevLocalFileSystemTest extends TestCase
 		}
 	}
 
-	private static String readFile( File f )
+	private static String readFile(File f)
 	{
 		FileInputStream fis = null;
 		byte[] bytesArray = new byte[(int) f.length()];
@@ -119,18 +120,15 @@ public class MessageDevLocalFileSystemTest extends TestCase
 			fis = new FileInputStream(f);
 			fis.read(bytesArray); // read file into bytes[]
 
-		}
-		catch ( Exception e )
+		} catch (Exception e)
 		{
 			fail("Something went wierd when reading the file");
-		}
-		finally
+		} finally
 		{
 			try
 			{
 				fis.close();
-			}
-			catch ( IOException e )
+			} catch (IOException e)
 			{
 				fail("Something went weird when trying to close the file stream");
 			}
@@ -176,25 +174,31 @@ public class MessageDevLocalFileSystemTest extends TestCase
 	public static void testSendAllAndShutdown() throws InterruptedException
 	{
 		String mainpath = System.getProperty("user.home") + "/jimmutable_dev/messaging/development/monty-python-jokes";
-		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
+		for (String queue_application_id : Arrays.asList("lancelot", "galahad"))
 		{
-			for ( String queue_queue_id : Arrays.asList("queue1", "queue2") )
+			for (String queue_queue_id : Arrays.asList("queue1", "queue2"))
 			{
 				String filepath = mainpath + "/" + queue_application_id + "/" + queue_queue_id;
 				File f = new File(filepath);
 				f.mkdirs();
 			}
 		}
-		for ( int i = 0; i < 10; i++ )
+		for (int i = 0; i < 10; i++)
 		{
-			messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty-python-jokes")), new StandardMessageOnUpsert(new Kind("Message"), new ObjectId(123456789)));// putting in a bunch of random information
+			messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty-python-jokes")), new StandardMessageOnUpsert(new Kind("Message"), new ObjectId(123456789)));// putting
+																																															// in
+																																															// a
+																																															// bunch
+																																															// of
+																																															// random
+																																															// information
 		}
 		messagingdevlocalfilesystem.sendAllAndShutdown();
 		int[] initialResults = new int[4];
 		int i = 0;
-		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
+		for (String queue_application_id : Arrays.asList("lancelot", "galahad"))
 		{
-			for ( String queue_queue_id : Arrays.asList("queue1", "queue2") )
+			for (String queue_queue_id : Arrays.asList("queue1", "queue2"))
 			{
 				String filepath = mainpath + "/" + queue_application_id + "/" + queue_queue_id;
 				File f = new File(filepath);
@@ -203,9 +207,9 @@ public class MessageDevLocalFileSystemTest extends TestCase
 		}
 		Thread.sleep(10000);// have it wait a millisecond to let things catch up
 		i = 0;
-		for ( String queue_application_id : Arrays.asList("lancelot", "galahad") )
+		for (String queue_application_id : Arrays.asList("lancelot", "galahad"))
 		{
-			for ( String queue_queue_id : Arrays.asList("queue1", "queue2") )
+			for (String queue_queue_id : Arrays.asList("queue1", "queue2"))
 			{
 				String filepath = mainpath + "/" + queue_application_id + "/" + queue_queue_id;
 				File f = new File(filepath);
@@ -217,9 +221,14 @@ public class MessageDevLocalFileSystemTest extends TestCase
 		boolean error_thrown = false;
 		try
 		{
-			messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty-python-jokes")), new StandardMessageOnUpsert(new Kind("Message"), new ObjectId(123456789)));// putting in a bunch of random information
-		}
-		catch ( RejectedExecutionException e )
+			messagingdevlocalfilesystem.sendAsync(new TopicDefinition(appId, new TopicId("monty-python-jokes")), new StandardMessageOnUpsert(new Kind("Message"), new ObjectId(123456789)));// putting
+																																															// in
+																																															// a
+																																															// bunch
+																																															// of
+																																															// random
+																																															// information
+		} catch (RejectedExecutionException e)
 		{
 			error_thrown = true;
 		}
@@ -229,16 +238,16 @@ public class MessageDevLocalFileSystemTest extends TestCase
 	@Override
 	protected void tearDown()
 	{
-		String filePathString = System.getProperty("user.home") + "/jimmutable_dev/messaging";// application id needs to go here
+		String filePathString = System.getProperty("user.home") + "/jimmutable_dev/messaging";// application id needs to
+																								// go here
 		File f = new File(filePathString);
-		if ( f.exists() )
+		if (f.exists())
 		{
 			Path rootPath = Paths.get(filePathString);
 			try
 			{
 				Files.walk(rootPath, FileVisitOption.FOLLOW_LINKS).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
-			}
-			catch ( IOException e )
+			} catch (IOException e)
 			{
 				e.printStackTrace();
 			}
@@ -252,9 +261,9 @@ class TestMessageListener implements MessageListener
 	public int messagesFound = 0;
 
 	@Override
-	public void onMessageReceived( @SuppressWarnings("rawtypes") StandardObject message )
+	public void onMessageReceived(@SuppressWarnings("rawtypes") StandardObject message)
 	{
-		messagesFound = messagesFound+1;
+		messagesFound = messagesFound + 1;
 		messageContent = ((StandardMessageOnUpsert) message).getSimpleKind().toString();
 	}
 }

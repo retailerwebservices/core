@@ -11,7 +11,6 @@ import org.jimmutable.core.utils.Validator;
  */
 public class ApplicationId extends Stringable
 {
-	 private static final ApplicationId DEV_CURRENT_APPLICATION_ID = createDevCurrentApplicationId();
 
 	public ApplicationId(String value)
 	{
@@ -31,8 +30,7 @@ public class ApplicationId extends Stringable
 		Validator.notNull(getSimpleValue());
 		Validator.min(getSimpleValue().length(), 1);
 		Validator.max(getSimpleValue().length(), 64);
-		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.UNDERSCORE, Validator.LOWERCASE_LETTERS,
-				Validator.NUMBERS);
+		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.UNDERSCORE, Validator.LOWERCASE_LETTERS, Validator.NUMBERS);
 
 	}
 
@@ -46,33 +44,13 @@ public class ApplicationId extends Stringable
 	{
 		// TODO verify if we just need this
 		String devEnvironment = System.getProperty("DEV_APPLICATION_ID");
-		if (devEnvironment == null) {
+		if (devEnvironment == null)
+		{
 			return default_value;
 		}
 		return new ApplicationId(devEnvironment);
 	}
 
-	/**
-	 * @return true if there is a current Development Application Id else false
-	 */
-
-	 public static boolean hasOptionalDevApplicationId()
-	 {
-	 return DEV_CURRENT_APPLICATION_ID != null;
-	 }
-
-	/**
-	 * @return either the Dev Application Id Environmental Variable or null
-	 */
-	public static ApplicationId createDevCurrentApplicationId() 
-	{
-		String devEnvironment = System.getProperty("DEV_APPLICATION_ID");
-		if(devEnvironment==null) {
-			return null;
-		}
-		return new ApplicationId(devEnvironment);
-	}
-	
 	static public class MyConverter extends Stringable.Converter<ApplicationId>
 	{
 		public ApplicationId fromString(String str, ApplicationId default_value)
@@ -80,8 +58,7 @@ public class ApplicationId extends Stringable
 			try
 			{
 				return new ApplicationId(str);
-			}
-			catch(Exception e)
+			} catch (Exception e)
 			{
 				return default_value;
 			}

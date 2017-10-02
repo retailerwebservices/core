@@ -2,6 +2,7 @@ package org.jimmutable.cloud.elasticsearch;
 
 import org.jimmutable.core.objects.common.Day;
 import org.jimmutable.core.objects.common.ObjectId;
+import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.utils.Validator;
 
@@ -14,6 +15,7 @@ import java.util.Map;
  * @author trevorbox
  *
  */
+
 public class SearchDocumentWriter
 {
 
@@ -61,7 +63,29 @@ public class SearchDocumentWriter
 	public void writeText(SearchIndexFieldDefinition search_index_definition, String text)
 	{
 		Validator.notNull(search_index_definition.getSimpleFieldName());
+
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.TEXT))
+		{
+			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.TEXT, search_index_definition.getSimpleFieldName()));
+		}
+
 		writeText(search_index_definition.getSimpleFieldName(), text);
+	}
+
+	/**
+	 * Add a text field to the document. These fields are analyzed, that is they are
+	 * passed through an analyzer to convert the string into a list of individual
+	 * terms before being indexed.
+	 * 
+	 * @param field_definition
+	 *            The FieldDefinition
+	 * @param text
+	 *            The text of the field. Nulls and blanks are ignored.
+	 */
+	public void writeText(FieldDefinition<?> field_definition, String text)
+	{
+		Validator.notNull(field_definition.getSimpleFieldName());
+		writeText(field_definition.getSimpleFieldName(), text);
 	}
 
 	/**
@@ -107,10 +131,31 @@ public class SearchDocumentWriter
 	public void writeAtom(SearchIndexFieldDefinition search_index_definition, String text)
 	{
 		Validator.notNull(search_index_definition.getSimpleFieldName());
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.ATOM)) {
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.ATOM))
+		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.ATOM, search_index_definition.getSimpleFieldName()));
 		}
 		writeAtom(search_index_definition.getSimpleFieldName(), text);
+	}
+
+	/**
+	 * A field to index structured content such as email addresses, hostnames,
+	 * status codes, zip codes or tags. They are typically used for filtering (Find
+	 * me all blog posts where status is published), for sorting, and for
+	 * aggregations. Keyword fields are only searchable by their exact value.
+	 * 
+	 * If you need to index full text content such as email bodies or product
+	 * descriptions, it is likely that you should rather use a text field.
+	 * 
+	 * @param field_definition
+	 *            The FieldDefinition
+	 * @param text
+	 *            The (atomic) text. Nulls and blanks are ignored.
+	 */
+	public void writeAtom(FieldDefinition<?> field_definition, String text)
+	{
+		Validator.notNull(field_definition.getSimpleFieldName());
+		writeAtom(field_definition.getSimpleFieldName(), text);
 	}
 
 	/**
@@ -130,18 +175,33 @@ public class SearchDocumentWriter
 	/**
 	 * Add a true or false datatype to a document
 	 * 
-	 * @param name
-	 *            The name of the field
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
 	 * @param value
 	 *            true or false
 	 */
 	public void writeBoolean(SearchIndexFieldDefinition search_index_definition, boolean value)
 	{
 		Validator.notNull(search_index_definition);
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.BOOLEAN)) {
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.BOOLEAN))
+		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.BOOLEAN, search_index_definition.getSimpleFieldName()));
 		}
 		writeBoolean(search_index_definition.getSimpleFieldName(), value);
+	}
+
+	/**
+	 * Add a true or false datatype to a document
+	 * 
+	 * @param field_definition
+	 *            The FieldDefinition
+	 * @param value
+	 *            true or false
+	 */
+	public void writeBoolean(FieldDefinition<?> field_definition, boolean value)
+	{
+		Validator.notNull(field_definition);
+		writeBoolean(field_definition.getSimpleFieldName(), value);
 	}
 
 	/**
@@ -149,7 +209,8 @@ public class SearchDocumentWriter
 	 * of 2^63-1 to a document.
 	 * 
 	 * 
-	 * * @param name The name of the field
+	 * @param name
+	 *            The name of the field
 	 * 
 	 * @param value
 	 *            the long
@@ -165,7 +226,8 @@ public class SearchDocumentWriter
 	 * of 2^63-1 to a document.
 	 * 
 	 * 
-	 * * @param name The name of the field
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
 	 * 
 	 * @param value
 	 *            the long
@@ -173,17 +235,37 @@ public class SearchDocumentWriter
 	public void writeLong(SearchIndexFieldDefinition search_index_definition, long value)
 	{
 		Validator.notNull(search_index_definition);
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.LONG)) {
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.LONG))
+		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.LONG));
 		}
 		writeLong(search_index_definition.getSimpleFieldName(), value);
 	}
 
 	/**
+	 * Add a signed 64-bit integer with a minimum value of -2^63 and a maximum value
+	 * of 2^63-1 to a document.
+	 * 
+	 * 
+	 * @param field_definition
+	 *            The FieldDefinition
+	 * 
+	 * @param value
+	 *            the long
+	 */
+	public void writeLong(FieldDefinition<?> field_definition, long value)
+	{
+		Validator.notNull(field_definition);
+		writeLong(field_definition.getSimpleFieldName(), value);
+	}
+
+	/**
 	 * Add a a single-precision 32-bit IEEE 754 floating point number to a document
 	 * 
 	 * @param name
+	 *            The name of the field
 	 * @param value
+	 *            the float value
 	 */
 	public void writeFloat(FieldName name, float value)
 	{
@@ -194,14 +276,17 @@ public class SearchDocumentWriter
 	/**
 	 * Add a a single-precision 32-bit IEEE 754 floating point number to a document
 	 * 
-	 * @param name
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
 	 * @param value
+	 *            the float value
 	 */
 	public void writeFloat(SearchIndexFieldDefinition search_index_definition, float value)
 	{
 		Validator.notNull(search_index_definition);
 
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.FLOAT)) {
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.FLOAT))
+		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.FLOAT));
 		}
 
@@ -209,10 +294,26 @@ public class SearchDocumentWriter
 	}
 
 	/**
+	 * Add a a single-precision 32-bit IEEE 754 floating point number to a document
+	 * 
+	 * @param field_definition
+	 *            The FieldDefinition
+	 * @param value
+	 *            the float value
+	 */
+	public void writeFloat(FieldDefinition<?> field_definition, float value)
+	{
+		Validator.notNull(field_definition);
+		writeFloat(field_definition.getSimpleFieldName(), value);
+	}
+
+	/**
 	 * Add a date datatype to a document. Written in the form yyyy-MM-dd.
 	 * 
 	 * @param name
+	 *            The name of the field
 	 * @param day
+	 *            the Day value
 	 */
 	public void writeDay(FieldName name, Day day)
 	{
@@ -227,19 +328,38 @@ public class SearchDocumentWriter
 	/**
 	 * Add a date datatype to a document. Written in the form yyyy-MM-dd.
 	 * 
-	 * @param name
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
 	 * @param day
+	 *            the Day value
 	 */
 	public void writeDay(SearchIndexFieldDefinition search_index_definition, Day day)
 	{
 		Validator.notNull(search_index_definition);
 		Validator.notNull(day);
 
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.DAY)) {
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.DAY))
+		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.DAY));
 		}
 
 		writeDay(search_index_definition.getSimpleFieldName(), day);
+	}
+
+	/**
+	 * Add a date datatype to a document. Written in the form yyyy-MM-dd.
+	 * 
+	 * @param field_definition
+	 *            The FieldDefinition
+	 * @param day
+	 *            the Day value
+	 */
+	public void writeDay(FieldDefinition<?> field_definition, Day day)
+	{
+		Validator.notNull(field_definition);
+		Validator.notNull(day);
+
+		writeDay(field_definition.getSimpleFieldName(), day);
 	}
 
 	/**
@@ -267,8 +387,8 @@ public class SearchDocumentWriter
 	 * then you should have two separate field names already mapped upon index
 	 * creation.
 	 * 
-	 * @param name
-	 *            The name of the field to write
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
 	 * @param id
 	 *            The ObjectId
 	 */
@@ -277,11 +397,31 @@ public class SearchDocumentWriter
 		Validator.notNull(search_index_definition);
 		Validator.notNull(id);
 
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.OBJECTID)) {
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.OBJECTID))
+		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.OBJECTID));
 		}
 
 		writeObjectId(search_index_definition.getSimpleFieldName(), id);
+	}
+
+	/**
+	 * Only writes an ObjectId's simple value. Note: The datatype is controlled at
+	 * index creation. If you need ObjectId to be written as an Atom and Text value
+	 * then you should have two separate field names already mapped upon index
+	 * creation.
+	 * 
+	 * @param field_definition
+	 *            The FieldDefinition
+	 * @param id
+	 *            The ObjectId
+	 */
+	public void writeObjectId(FieldDefinition<?> field_definition, ObjectId id)
+	{
+		Validator.notNull(field_definition);
+		Validator.notNull(id);
+
+		writeObjectId(field_definition.getSimpleFieldName(), id);
 	}
 
 	/**
@@ -330,8 +470,8 @@ public class SearchDocumentWriter
 	 * Values for this field are limited to 50 characters. Any larger values will be
 	 * trimmed to 50 characters.
 	 * 
-	 * @param name
-	 *            The name of the field to write
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
 	 * @param text
 	 *            The text to write. Limited to 50 characters. Nulls and blanks are
 	 *            simply ignored.
@@ -339,14 +479,40 @@ public class SearchDocumentWriter
 	public void writeTextWithPrefixMatchingSupport(SearchIndexFieldDefinition search_index_definition, String text)
 	{
 		Validator.notNull(search_index_definition);
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.TEXT)) {
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.TEXT))
+		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.TEXT));
 		}
 		writeTextWithPrefixMatchingSupport(search_index_definition.getSimpleFieldName(), text);
 	}
 
 	/**
-	 * Write a field witch contains un-tokenized text in such a way that it is
+	 * Write a field which contains tokenized text in such a way as to be suitable
+	 * for prefix matching. This means, for example, that if you write ABCDEFG as a
+	 * tokenized prefix string, searches like ABC will match (any start to the
+	 * string will match).
+	 * 
+	 * USE THIS FIELD TYPE SPARINGLY, IT IS VERY EXPENSIVE.
+	 * 
+	 * Use text fields unless absolutely required.
+	 * 
+	 * Values for this field are limited to 50 characters. Any larger values will be
+	 * trimmed to 50 characters.
+	 * 
+	 * @param field_definition
+	 *            The FieldDefinition
+	 * @param text
+	 *            The text to write. Limited to 50 characters. Nulls and blanks are
+	 *            simply ignored.
+	 */
+	public void writeTextWithPrefixMatchingSupport(FieldDefinition<?> field_definition, String text)
+	{
+		Validator.notNull(field_definition);
+		writeTextWithPrefixMatchingSupport(field_definition.getSimpleFieldName(), text);
+	}
+
+	/**
+	 * * Write a field witch contains un-tokenized text in such a way that it is
 	 * suitable for substring matching.
 	 * 
 	 * USE THIS FIELD SPARINGLY, IT IS *VERY VERY* EXPENSIVE. Try everything you can
@@ -355,6 +521,11 @@ public class SearchDocumentWriter
 	 * Values for this field are limited to 50 characters. Any larger values will be
 	 * trimmed to 50 characters.
 	 * 
+	 * @param name
+	 *            The name of the field to write
+	 * @param text
+	 *            The text to write. Limited to 50 characters. Nulls and blanks are
+	 *            simply ignored.
 	 */
 	public void writeTextWithSubstringMatchingSupport(FieldName name, String text)
 	{
@@ -374,7 +545,7 @@ public class SearchDocumentWriter
 	}
 
 	/**
-	 * Write a field witch contains un-tokenized text in such a way that it is
+	 * * Write a field witch contains un-tokenized text in such a way that it is
 	 * suitable for substring matching.
 	 * 
 	 * USE THIS FIELD SPARINGLY, IT IS *VERY VERY* EXPENSIVE. Try everything you can
@@ -383,16 +554,44 @@ public class SearchDocumentWriter
 	 * Values for this field are limited to 50 characters. Any larger values will be
 	 * trimmed to 50 characters.
 	 * 
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
+	 * @param text
+	 *            The text to write. Limited to 50 characters. Nulls and blanks are
+	 *            simply ignored.
 	 */
 	public void writeTextWithSubstringMatchingSupport(SearchIndexFieldDefinition search_index_definition, String text)
 	{
 		Validator.notNull(search_index_definition);
 
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.TEXT)) {
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.TEXT))
+		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.TEXT));
 		}
 
 		writeTextWithSubstringMatchingSupport(search_index_definition.getSimpleFieldName(), text);
+	}
+
+	/**
+	 * * Write a field witch contains un-tokenized text in such a way that it is
+	 * suitable for substring matching.
+	 * 
+	 * USE THIS FIELD SPARINGLY, IT IS *VERY VERY* EXPENSIVE. Try everything you can
+	 * to just use writeText or writeTextWithPrefixMatchingSupport.
+	 * 
+	 * Values for this field are limited to 50 characters. Any larger values will be
+	 * trimmed to 50 characters.
+	 * 
+	 * @param field_definition
+	 *            The FieldDefinition
+	 * @param text
+	 *            The text to write. Limited to 50 characters. Nulls and blanks are
+	 *            simply ignored.
+	 */
+	public void writeTextWithSubstringMatchingSupport(FieldDefinition<?> field_definition, String text)
+	{
+		Validator.notNull(field_definition);
+		writeTextWithSubstringMatchingSupport(field_definition.getSimpleFieldName(), text);
 	}
 
 	/**

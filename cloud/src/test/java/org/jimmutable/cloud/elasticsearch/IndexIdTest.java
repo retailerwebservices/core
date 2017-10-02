@@ -27,7 +27,8 @@ public class IndexIdTest extends StringableTest
 		assertNotValid("foo!");
 
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < 65; i++) {
+		for (int i = 0; i < 65; i++)
+		{
 			sb.append('a');
 		}
 

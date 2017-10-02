@@ -14,6 +14,8 @@ import org.jimmutable.core.serialization.Format;
 public interface Storable
 {
 
+	public static final StorageKeyExtension STORABLE_EXTENSION = StorageKeyExtension.JSON;
+
 	/**
 	 * @return The Kind for the Storable Object
 	 */
@@ -31,17 +33,19 @@ public interface Storable
 	 *            you want the Storable Object to be formatted to
 	 * @return the serialized version of the object
 	 */
-	abstract public String serialize( Format format );
+	abstract public String serialize(Format format);
 
-	
-	
-	
 	/**
 	 * @return a new Storage Key with an extension type of XML based on the Kind and
 	 *         ObjectId of the Storable object.
 	 */
 	default public StorageKey createStorageKey()
 	{
-		return new StorageKey(getSimpleKind(), getSimpleObjectId(), StorageKeyExtension.XML);
+		return new StorageKey(getSimpleKind(), getSimpleObjectId(), STORABLE_EXTENSION);
+	}
+
+	static public StorageKey createStorageKey(Kind kind, ObjectId id)
+	{
+		return new StorageKey(kind, id, STORABLE_EXTENSION);
 	}
 }
