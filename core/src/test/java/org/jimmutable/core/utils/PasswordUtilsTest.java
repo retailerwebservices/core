@@ -6,7 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-public class PassworkUtilsTest
+public class PasswordUtilsTest
 {
 
 	@Test
@@ -14,8 +14,8 @@ public class PassworkUtilsTest
 	{
 		String salted_hash = PasswordUtils.getSaltedHash("The Super Secret Password", null);
 		assertTrue(salted_hash.contains("$"));
-		assertTrue(PasswordUtils.passwordMatchesHash("The Super Secret Password", salted_hash));
-		assertFalse(PasswordUtils.passwordMatchesHash("Not The Super Secret Password", salted_hash));
+		assertTrue(PasswordUtils.authenticated("The Super Secret Password", salted_hash));
+		assertFalse(PasswordUtils.authenticated("Not The Super Secret Password", salted_hash));
 	}
 
 	@Test
@@ -24,14 +24,14 @@ public class PassworkUtilsTest
 		// test $ specifically
 		String salted_hash = PasswordUtils.getSaltedHash("The Super $ecret Password with a dollar sign", null);
 
-		assertTrue(PasswordUtils.passwordMatchesHash("The Super $ecret Password with a dollar sign", salted_hash));
+		assertTrue(PasswordUtils.authenticated("The Super $ecret Password with a dollar sign", salted_hash));
 
 		// test all other weird characters
 		salted_hash = PasswordUtils.getSaltedHash("~`!1@2#3$4%5^6&7*8(9)0_-+={[}]|;:<,>\\.\"\'?/", null);
-		assertTrue(PasswordUtils.passwordMatchesHash("~`!1@2#3$4%5^6&7*8(9)0_-+={[}]|;:<,>\\.\"\'?/", salted_hash));
+		assertTrue(PasswordUtils.authenticated("~`!1@2#3$4%5^6&7*8(9)0_-+={[}]|;:<,>\\.\"\'?/", salted_hash));
 
 		salted_hash = PasswordUtils.getSaltedHash("~`!1@2#3$4%5^6&7*8(9)0_-+={[}]|;:<,>\\.\"\'?/", null);
-		assertTrue(PasswordUtils.passwordMatchesHash("~`!1@2#3$4%5^6&7*8(9)0_-+={[}]|;:<,>\\.\"\'?/", salted_hash));
+		assertTrue(PasswordUtils.authenticated("~`!1@2#3$4%5^6&7*8(9)0_-+={[}]|;:<,>\\.\"\'?/", salted_hash));
 
 		// start of heading character
 		char SOH = (char) 1;
@@ -40,14 +40,14 @@ public class PassworkUtilsTest
 
 		// non-printable char in hash
 		salted_hash = PasswordUtils.getSaltedHash(more, null);
-		assertTrue(PasswordUtils.passwordMatchesHash(more, salted_hash));
+		assertTrue(PasswordUtils.authenticated(more, salted_hash));
 
 	}
 
 	@Test
 	public void nullParameterPasswordMatchesHash()
 	{
-		assertFalse(PasswordUtils.passwordMatchesHash("password", null));
+		assertFalse(PasswordUtils.authenticated("password", null));
 	}
 
 	@Test
@@ -59,13 +59,13 @@ public class PassworkUtilsTest
 	@Test
 	public void emptyParameterPasswordMatchesHash()
 	{
-		assertFalse(PasswordUtils.passwordMatchesHash("", "my_hash"));
+		assertFalse(PasswordUtils.authenticated("", "my_hash"));
 	}
 
 	@Test
 	public void badHash()
 	{
-		assertFalse(PasswordUtils.passwordMatchesHash("abc", "my_hash"));
+		assertFalse(PasswordUtils.authenticated("abc", "my_hash"));
 	}
 
 	@Test

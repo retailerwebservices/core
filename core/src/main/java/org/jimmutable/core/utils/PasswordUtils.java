@@ -29,11 +29,13 @@ public class PasswordUtils
 	/**
 	 * 
 	 * Computes a salted PBKDF2 hash of given plain text password suitable for
-	 * storing in a database. Empty passwords are not supported.
+	 * storing in a database. Empty passwords are not supported. If hashing fails
+	 * the default_value is returned.
 	 * 
 	 * @param password
 	 *            plain test password String
-	 * @return the hash value of the plain test password
+	 * @return the hash value of the plain test password or default_value if hashing
+	 *         fails
 	 * @throws Exception
 	 */
 	public static String getSaltedHash(String password, String default_value)
@@ -62,11 +64,11 @@ public class PasswordUtils
 	 *            plain test password String
 	 * @param password_hash
 	 *            stored hash value String
-	 * @return true if password matches the has value, else false
+	 * @return true if password matches the hash value, else false
 	 * 
 	 * @throws Exception
 	 */
-	public static boolean passwordMatchesHash(String password, String password_hash)
+	public static boolean authenticated(String password, String password_hash)
 	{
 		try
 		{
