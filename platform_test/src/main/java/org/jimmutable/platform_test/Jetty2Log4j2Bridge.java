@@ -2,15 +2,17 @@ package org.jimmutable.platform_test;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.eclipse.jetty.util.log.AbstractLogger;
-import org.eclipse.jetty.util.log.Logger;
+//import ;
 
 /**
  * User: Robert Franz Date: 2015-08-24 Time: 20:35
  */
 public class Jetty2Log4j2Bridge extends AbstractLogger
 {
-	private org.apache.logging.log4j.Logger logger;
+	private Logger logger;
 	private String name;
 
 	public Jetty2Log4j2Bridge(String name)
@@ -20,7 +22,7 @@ public class Jetty2Log4j2Bridge extends AbstractLogger
 	}
 
 	@Override
-	protected Logger newLogger(String fullname)
+	protected org.eclipse.jetty.util.log.Logger newLogger(String fullname)
 	{
 		return new Jetty2Log4j2Bridge(fullname);
 	}

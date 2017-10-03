@@ -21,6 +21,7 @@ import org.jimmutable.cloud.messaging.StubMessaging;
 import org.jimmutable.cloud.storage.IStorage;
 import org.jimmutable.cloud.storage.StorageDevLocalFileSystem;
 import org.jimmutable.cloud.storage.StubStorage;
+import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 
 /**
  * Configures environment and application specific setting, to be used by other
@@ -127,6 +128,10 @@ public class CloudExecutionEnvironment
 		{
 			throw new RuntimeException("Startup has already been called!");
 		}
+
+		// register objects
+		JimmutableTypeNameRegister.registerAllTypes();
+		JimmutableCloudTypeNameRegister.registerAllTypes();
 
 		ENV_TYPE = env_type;
 		APPLICATION_ID = application_id;

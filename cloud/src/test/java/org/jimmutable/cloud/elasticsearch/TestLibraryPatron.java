@@ -203,7 +203,7 @@ final public class TestLibraryPatron extends StandardImmutableObject<TestLibrary
 	@Override
 	public void writeSearchDocument(SearchDocumentWriter writer)
 	{
-		writer.writeObjectId(FIELD_OBJECT_ID.getSimpleFieldName(), id);
+		writer.writeAtom(FIELD_OBJECT_ID.getSimpleFieldName(), id.getSimpleValue());
 		writer.writeText(FIELD_FIRST_NAME.getSimpleFieldName(), first_name);
 		writer.writeText(FIELD_LAST_NAME.getSimpleFieldName(), last_name);
 		writer.writeText(FIELD_EMAIL_ADDRESS.getSimpleFieldName(), email_address);
