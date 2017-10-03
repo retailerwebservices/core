@@ -5,12 +5,16 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import java.security.SecureRandom;
 import org.apache.commons.codec.binary.Base64;
+
 /**
- * This is our class that we use to ensure that passwords are secure. 
+ * This is our class that we use to ensure that passwords are secure.
  * 
- * <br><b>Information about handling passwords</b><br>
- * 1) this will work with any java string. So ~`!@#$%^&*()-_=+{[}]:;|<,>.?/ , numbers, Lower and Upper Case Letters are all valid. 
- * 2) we need to make sure that all characters that needed to be escaped (i.e. \,",') are escaped.  
+ * <br>
+ * <b>Information about handling passwords</b><br>
+ * 1) this will work with any java string. So ~`!@#$%^&*()-_=+{[}]:;|<,>.?/ ,
+ * numbers, Lower and Upper Case Letters are all valid. 2) we need to make sure
+ * that all characters that needed to be escaped (i.e. \,",') are escaped.
+ * 
  * @author andrew.towe
  *
  */
@@ -22,24 +26,48 @@ public class PasswordUtils
 	private static final int desiredKeyLen = 256;
 
 	/**
-	 * Computes a salted PBKDF2 hash of given plaintext password suitable for
+	 * 
+	 * Computes a salted PBKDF2 hash of given plain text password suitable for
 	 * storing in a database. Empty passwords are not supported.
+	 * 
+	 * @param password
+	 *            plain test password String
+	 * @return the hash value of the plain test password
+	 * @throws Exception
 	 */
-	public static String getSaltedHash( String password ) throws Exception
+	public static String getSaltedHash(String password) throws Exception
 	{
+
+		Validator.notNull(password);
+		Validator.min(password.length(), 1);
+
 		byte[] salt = SecureRandom.getInstance("SHA1PRNG").generateSeed(saltLen);
 		// store the salt with the password
 		return Base64.encodeBase64String(salt) + "$" + hash(password, salt);
 	}
 
 	/**
-	 * Checks whether given plaintext password corresponds to a stored salted hash
+	 * 
+	 * Checks whether given plain text password corresponds to a stored salted hash
 	 * of the password.
+	 * 
+	 * @param password
+	 *            plain test password String
+	 * @param password_hash
+	 *            stored hash value String
+	 * @return true if password matches the has value, else false
+	 * 
+	 * @throws Exception
 	 */
-	public static boolean checkPassword( String password, String stored ) throws Exception
+	public static boolean passwordMatchesHash(String password, String password_hash) throws Exception
 	{
-		String[] saltAndPass = stored.split("\\$");
-		if ( saltAndPass.length != 2 )
+
+		Validator.notNull(password, password_hash);
+		Validator.min(password.length(), 1);
+		Validator.min(password_hash.length(), 1);
+
+		String[] saltAndPass = password_hash.split("\\$");
+		if (saltAndPass.length != 2)
 		{
 			throw new IllegalStateException("The stored password have the form 'salt$hash'");
 		}
@@ -49,10 +77,12 @@ public class PasswordUtils
 
 	// using PBKDF2 from Sun, an alternative is https://github.com/wg/scrypt
 	// cf. http://www.unlimitednovelty.com/2012/03/dont-use-bcrypt.html
-	private static String hash( String password, byte[] salt ) throws Exception
+	private static String hash(String password, byte[] salt) throws Exception
 	{
-		if ( password == null || password.length() == 0 )
-			throw new IllegalArgumentException("Empty passwords are not supported.");
+
+		Validator.notNull(password, salt);
+		Validator.min(password.length(), 1);
+
 		SecretKeyFactory f = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
 		SecretKey key = f.generateSecret(new PBEKeySpec(password.toCharArray(), salt, iterations, desiredKeyLen));
 		return Base64.encodeBase64String(key.getEncoded());
