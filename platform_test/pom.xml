@@ -5,8 +5,7 @@
 	<groupId>org.jimmutable</groupId>
 	<artifactId>platform_test</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
-
+	
 	<name>platform_test</name>
 	<url>http://maven.apache.org</url>
 
