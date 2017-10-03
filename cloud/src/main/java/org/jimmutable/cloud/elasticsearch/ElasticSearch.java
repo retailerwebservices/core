@@ -127,10 +127,10 @@ public class ElasticSearch implements ISearch
 				switch (response.getResult())
 				{
 				case CREATED:
-					level = Level.INFO;
+					level = Level.TRACE;
 					break;
 				case UPDATED:
-					level = Level.INFO;
+					level = Level.TRACE;
 					break;
 				default:
 					level = Level.FATAL;
@@ -351,7 +351,19 @@ public class ElasticSearch implements ISearch
 				{
 					actual.put(fieldMapping.getKey(), fieldMapping.getValue().get("type").asText());
 				});
-				return expected.equals(actual);
+
+				if (!expected.equals(actual))
+				{
+
+					logger.info("Index not properly configured");
+					logger.info(expected);
+					logger.info(actual);
+
+					return false;
+
+				}
+
+				return true;
 
 			} catch (Exception e)
 			{
@@ -378,25 +390,25 @@ public class ElasticSearch implements ISearch
 			mappingBuilder.startObject().startObject(ELASTICSEARCH_DEFAULT_TYPE).startObject("properties");
 			for (SearchIndexFieldDefinition field : index.getSimpleFields())
 			{
-				if (field.getSimpleType().equals(SearchIndexFieldType.OBJECTID))
-				{
-					// EXPLICIT MAPPING FOR OBJECTID - does not rely on enum's simple code
-					// https://www.elastic.co/blog/strings-are-dead-long-live-strings
-					mappingBuilder.startObject(field.getSimpleFieldName().getSimpleName());
-					/*		*/mappingBuilder.field("type", "text");
-					/*	*/mappingBuilder.startObject("fields");
-					/*		*/mappingBuilder.startObject("keyword");
-					/*			*/mappingBuilder.field("type", "keyword");
-					/*			*/mappingBuilder.field("ignore_above", 256);
-					/*		*/mappingBuilder.endObject();
-					/*	*/mappingBuilder.endObject();
-					mappingBuilder.endObject();
-				} else
-				{
-					mappingBuilder.startObject(field.getSimpleFieldName().getSimpleName());
-					/*	*/mappingBuilder.field("type", field.getSimpleType().getSimpleCode());
-					mappingBuilder.endObject();
-				}
+				// if (field.getSimpleType().equals(SearchIndexFieldType.OBJECTID))
+				// {
+				// // EXPLICIT MAPPING FOR OBJECTID - does not rely on enum's simple code
+				// // https://www.elastic.co/blog/strings-are-dead-long-live-strings
+				// mappingBuilder.startObject(field.getSimpleFieldName().getSimpleName());
+				// /* */mappingBuilder.field("type", "text");
+				// /* */mappingBuilder.startObject("fields");
+				// /* */mappingBuilder.startObject("keyword");
+				// /* */mappingBuilder.field("type", "keyword");
+				// /* */mappingBuilder.field("ignore_above", 256);
+				// /* */mappingBuilder.endObject();
+				// /* */mappingBuilder.endObject();
+				// mappingBuilder.endObject();
+				// } else
+				// {
+				mappingBuilder.startObject(field.getSimpleFieldName().getSimpleName());
+				/*	*/mappingBuilder.field("type", field.getSimpleType().getSimpleCode());
+				mappingBuilder.endObject();
+				// }
 			}
 			mappingBuilder.endObject().endObject().endObject();
 

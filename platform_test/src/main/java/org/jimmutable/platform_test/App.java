@@ -12,6 +12,9 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 
+import com.digitalpanda.auth.UserManager;
+import com.digitalpanda.server_core.ServerCoreTypeNameRegister;
+
 /**
  * Hello world!
  *
@@ -27,6 +30,8 @@ public class App
 		org.eclipse.jetty.util.log.Log.setLog(new Jetty2Log4j2Bridge("jetty"));
 
 		CloudExecutionEnvironment.startupIntegrationTest(new ApplicationId("platform_test"));
+		ServerCoreTypeNameRegister.registerAllTypes();
+		UserManager.startup();
 
 		logger.info("ABC!!!!!");
 

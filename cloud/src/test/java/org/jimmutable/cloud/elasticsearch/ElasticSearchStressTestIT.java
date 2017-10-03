@@ -1,13 +1,10 @@
 package org.jimmutable.cloud.elasticsearch;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
-import org.jimmutable.cloud.EnvironmentType;
+import org.jimmutable.cloud.IntegrationTest;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
-import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.storage.StorageKey;
@@ -16,33 +13,23 @@ import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.common.Day;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
-import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
-import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class StressTestSearch
+public class ElasticSearchStressTestIT extends IntegrationTest
 {
 
 	static SearchIndexDefinition def;
 
-	// @BeforeClass
+	@BeforeClass
 	public static void setupDocuments()
 	{
 
-		JimmutableTypeNameRegister.registerAllTypes();
-		ObjectParseTree.registerTypeName(SearchIndexFieldDefinition.class);
-		ObjectParseTree.registerTypeName(SearchIndexDefinition.class);
-		ObjectParseTree.registerTypeName(OneSearchResult.class);
-		ObjectParseTree.registerTypeName(StandardSearchRequest.class);
-		ObjectParseTree.registerTypeName(TestLibraryPatron.class);
-
-		CloudExecutionEnvironment.startup(new ApplicationId("trevor"), EnvironmentType.DEV);
+		setupEnvironment();
 
 		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
 
-		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(TestLibraryPatron.FIELD_OBJECT_ID.getSimpleFieldName(), SearchIndexFieldType.OBJECTID));
 		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(TestLibraryPatron.FIELD_FIRST_NAME.getSimpleFieldName(), SearchIndexFieldType.TEXT));
 		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(TestLibraryPatron.FIELD_LAST_NAME.getSimpleFieldName(), SearchIndexFieldType.TEXT));
 		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(TestLibraryPatron.FIELD_BIRTH_DATE.getSimpleFieldName(), SearchIndexFieldType.DAY));
@@ -75,7 +62,7 @@ public class StressTestSearch
 
 	}
 
-	// @Test
+	@Test
 	public void testSearch()
 	{
 
@@ -92,7 +79,7 @@ public class StressTestSearch
 
 	}
 
-	// @AfterClass
+	@AfterClass
 	public static void shutdown()
 	{
 

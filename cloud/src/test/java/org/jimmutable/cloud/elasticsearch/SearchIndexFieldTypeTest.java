@@ -48,11 +48,4 @@ public class SearchIndexFieldTypeTest
 		assertEquals("text", SearchIndexFieldType.CONVERTER.fromCode("TEXT", null).getSimpleCode());
 	}
 
-	@Test
-	public void testObjectId()
-	{
-		assertEquals(SearchIndexFieldType.OBJECTID, SearchIndexFieldType.CONVERTER.fromCode("TEXT:KEYWORD", null));
-		assertEquals("text:keyword", SearchIndexFieldType.CONVERTER.fromCode("TEXT:KEYWORD", null).getSimpleCode());
-	}
-
 }

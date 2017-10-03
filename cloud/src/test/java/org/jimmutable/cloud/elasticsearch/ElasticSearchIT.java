@@ -3,60 +3,29 @@ package org.jimmutable.cloud.elasticsearch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
-import org.jimmutable.cloud.EnvironmentType;
+import org.jimmutable.cloud.IntegrationTest;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
-import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
-import org.jimmutable.core.objects.Builder;
-import org.jimmutable.core.serialization.FieldName;
-import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
-import org.jimmutable.core.serialization.reader.ObjectParseTree;
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class ElasticSearchTest
+public class ElasticSearchIT extends IntegrationTest
 {
 
-	static SearchIndexDefinition def;
-
-	// Uncomment to run test
-	// @BeforeClass
+	@BeforeClass
 	public static void setup()
 	{
 
-		JimmutableTypeNameRegister.registerAllTypes();
-		ObjectParseTree.registerTypeName(SearchIndexFieldDefinition.class);
-		ObjectParseTree.registerTypeName(SearchIndexDefinition.class);
-		ObjectParseTree.registerTypeName(OneSearchResult.class);
-		ObjectParseTree.registerTypeName(StandardSearchRequest.class);
-
-		CloudExecutionEnvironment.startup(new ApplicationId("trevor"), EnvironmentType.DEV);
-
-		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
-
-		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("boolean"), SearchIndexFieldType.BOOLEAN));
-		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("text"), SearchIndexFieldType.TEXT));
-		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("atom"), SearchIndexFieldType.ATOM));
-		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("day"), SearchIndexFieldType.DAY));
-		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("float"), SearchIndexFieldType.FLOAT));
-		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("long"), SearchIndexFieldType.LONG));
-		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("objectid"), SearchIndexFieldType.OBJECTID));
-
-		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, new IndexDefinition("trevor:isawesome:v1"));
-
-		def = (SearchIndexDefinition) b.create(null);
-
-		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertIndex(def);
+		setupEnvironment();
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertIndex(MyIndexable.SEARCH_INDEX_DEFINITION);
 
 		for (int i = 0; i < 20; i++)
 		{
-			CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocumentAsync(new MyIndexable(def.getSimpleIndex(), new SearchDocumentId(String.format("doc%s", i))));
+			CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocumentAsync(new MyIndexable(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex(), new SearchDocumentId(String.format("doc%s", i))));
 		}
 
 		try
@@ -69,13 +38,12 @@ public class ElasticSearchTest
 
 	}
 
-	// Uncomment to run test
-	// @Test
+	@Test
 	public void testSearchPaginationFirstPage()
 	{
 
 		StandardSearchRequest request = new StandardSearchRequest("day:>1970-01-01", 10, 0);
-		JSONServletResponse r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(def.getSimpleIndex(), request);
+		JSONServletResponse r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex(), request);
 
 		assertTrue(r1 instanceof SearchResponseOK);
 		if (r1 instanceof SearchResponseOK)
@@ -95,13 +63,12 @@ public class ElasticSearchTest
 
 	}
 
-	// Uncomment to run test
-	// @Test
+	@Test
 	public void testSearchPaginationSecondPage()
 	{
 
 		StandardSearchRequest request = new StandardSearchRequest("day:>1970-01-01", 10, 10);
-		JSONServletResponse r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(def.getSimpleIndex(), request);
+		JSONServletResponse r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex(), request);
 
 		assertTrue(r1 instanceof SearchResponseOK);
 		if (r1 instanceof SearchResponseOK)
@@ -121,13 +88,12 @@ public class ElasticSearchTest
 
 	}
 
-	/// Uncomment to run test
-	// @Test
+	@Test
 	public void testSearchPaginationNone()
 	{
 
 		StandardSearchRequest request = new StandardSearchRequest("day:>1970-01-01", 10, 20);
-		JSONServletResponse r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(def.getSimpleIndex(), request);
+		JSONServletResponse r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex(), request);
 
 		assertTrue(r1 instanceof SearchResponseOK);
 		if (r1 instanceof SearchResponseOK)
@@ -146,20 +112,36 @@ public class ElasticSearchTest
 
 	}
 
-	// Uncomment to run test
-	// @Test
+	@Test
 	public void testBadQuery()
 	{
 
 		StandardSearchRequest request = new StandardSearchRequest("this is a bad query!", 10, 20);
-		JSONServletResponse r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(def.getSimpleIndex(), request);
+		JSONServletResponse r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex(), request);
 
 		assertTrue(r1 instanceof SearchResponseError);
 
 	}
 
-	// Uncomment to run test
-	// @AfterClass
+	@Test
+	public void IndexProperlyConfigured()
+	{
+		assertTrue(CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexProperlyConfigured(MyIndexable.SEARCH_INDEX_DEFINITION));
+	}
+
+	@Test
+	public void SearchIndexDefinitionExists()
+	{
+		assertTrue(CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexExists(MyIndexable.SEARCH_INDEX_DEFINITION));
+	}
+
+	@Test
+	public void IndexDefinitionExists()
+	{
+		assertTrue(CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexExists(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex()));
+	}
+
+	@AfterClass
 	public static void shutdown()
 	{
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().shutdownDocumentUpsertThreadPool(25);
