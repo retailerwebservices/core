@@ -4,6 +4,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import java.security.SecureRandom;
+
 import org.apache.commons.codec.binary.Base64;
 
 /**
@@ -35,15 +36,21 @@ public class PasswordUtils
 	 * @return the hash value of the plain test password
 	 * @throws Exception
 	 */
-	public static String getSaltedHash(String password) throws Exception
+	public static String getSaltedHash(String password, String default_value)
 	{
+		try
+		{
+			Validator.notNull(password);
+			Validator.min(password.length(), 1);
 
-		Validator.notNull(password);
-		Validator.min(password.length(), 1);
-
-		byte[] salt = SecureRandom.getInstance("SHA1PRNG").generateSeed(saltLen);
-		// store the salt with the password
-		return Base64.encodeBase64String(salt) + "$" + hash(password, salt);
+			byte[] salt = SecureRandom.getInstance("SHA1PRNG").generateSeed(saltLen);
+			// store the salt with the password
+			return Base64.encodeBase64String(salt) + "$" + hash(password, salt);
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		return default_value;
 	}
 
 	/**
@@ -59,20 +66,26 @@ public class PasswordUtils
 	 * 
 	 * @throws Exception
 	 */
-	public static boolean passwordMatchesHash(String password, String password_hash) throws Exception
+	public static boolean passwordMatchesHash(String password, String password_hash)
 	{
-
-		Validator.notNull(password, password_hash);
-		Validator.min(password.length(), 1);
-		Validator.min(password_hash.length(), 1);
-
-		String[] saltAndPass = password_hash.split("\\$");
-		if (saltAndPass.length != 2)
+		try
 		{
-			throw new IllegalStateException("The stored password have the form 'salt$hash'");
+			Validator.notNull(password, password_hash);
+			Validator.min(password.length(), 1);
+			Validator.min(password_hash.length(), 1);
+
+			String[] saltAndPass = password_hash.split("\\$");
+			if (saltAndPass.length != 2)
+			{
+				throw new IllegalStateException("The stored password have the form 'salt$hash'");
+			}
+			String hashOfInput = hash(password, Base64.decodeBase64(saltAndPass[0]));
+			return hashOfInput.equals(saltAndPass[1]);
+		} catch (Exception e)
+		{
+			e.printStackTrace();
 		}
-		String hashOfInput = hash(password, Base64.decodeBase64(saltAndPass[0]));
-		return hashOfInput.equals(saltAndPass[1]);
+		return false;
 	}
 
 	// using PBKDF2 from Sun, an alternative is https://github.com/wg/scrypt
