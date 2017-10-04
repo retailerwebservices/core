@@ -19,7 +19,13 @@ import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.utils.Comparison;
 import org.jimmutable.core.utils.Validator;
-
+/**
+ * This Class is used to bind our AdvancedSearch Combo box choices. 
+ * <br> the Label is the field that we put our selection in. 
+ * <br> the value of the choice selected
+ * @author andrew.towe
+ *
+ */
 public class AdvancedSearchComboBoxChoice extends StandardImmutableObject<AdvancedSearchComboBoxChoice>
 {
 	static public final FieldDefinition.String FIELD_LABEL = new FieldDefinition.String("label", null);
