@@ -23,7 +23,6 @@ public class SearchFieldIdTest extends StringableTest
 		assertNotValid("foo/bar");
 		assertNotValid("foo:bar");
 		assertNotValid("foo!");
-
 	}
 
 	@Test
@@ -31,6 +30,7 @@ public class SearchFieldIdTest extends StringableTest
 	{
 		assertValid("abb_1924 ", "abb-1924");
 		assertValid("abb-1924", "abb-1924");
+		assertValid("abB1924", "abb1924");
 		assertValid("abb1924", "abb1924");
 	}
 
