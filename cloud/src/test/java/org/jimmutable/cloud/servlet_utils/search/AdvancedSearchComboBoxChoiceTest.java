@@ -1,10 +1,14 @@
-package org.jimmutable.cloud.elasticsearch;
+package org.jimmutable.cloud.servlet_utils.search;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.jimmutable.cloud.StubTest;
+import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
+import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
+import org.jimmutable.cloud.servlet_utils.search.AdvancedSearchComboBoxChoice;
+import org.jimmutable.cloud.servlet_utils.search.IncludeFieldInView;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;

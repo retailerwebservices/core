@@ -1,4 +1,4 @@
-package org.jimmutable.cloud.elasticsearch;
+package org.jimmutable.cloud.servlet_utils.search;
 
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;

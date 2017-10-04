@@ -1,8 +1,14 @@
-package org.jimmutable.cloud.elasticsearch;
+package org.jimmutable.cloud.servlet_utils.search;
 
 import java.util.Objects;
 
 import org.jimmutable.cloud.CloudExecutionEnvironment;
+import org.jimmutable.cloud.elasticsearch.IndexDefinition;
+import org.jimmutable.cloud.elasticsearch.IndexId;
+import org.jimmutable.cloud.elasticsearch.IndexVersion;
+import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
+import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
+import org.jimmutable.cloud.elasticsearch.SearchIndexFieldType;
 import org.jimmutable.cloud.messaging.TopicDefinition;
 import org.jimmutable.cloud.messaging.TopicId;
 import org.jimmutable.core.objects.Builder;

@@ -1,8 +1,14 @@
-package org.jimmutable.cloud.elasticsearch;
+package org.jimmutable.cloud.servlet_utils.search;
 
 import java.util.Objects;
 
 import org.jimmutable.cloud.CloudExecutionEnvironment;
+import org.jimmutable.cloud.elasticsearch.IndexDefinition;
+import org.jimmutable.cloud.elasticsearch.IndexId;
+import org.jimmutable.cloud.elasticsearch.IndexVersion;
+import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
+import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
+import org.jimmutable.cloud.elasticsearch.SearchIndexFieldType;
 import org.jimmutable.cloud.messaging.TopicDefinition;
 import org.jimmutable.cloud.messaging.TopicId;
 import org.jimmutable.core.objects.Builder;
@@ -67,9 +73,8 @@ public class AdvancedSearchComboBoxChoice extends StandardImmutableObject<Advanc
 		ret = Comparison.continueCompare(ret, getSimpleLabel(), other.getSimpleLabel());
 		ret = Comparison.continueCompare(ret, getSimpleValue(), other.getSimpleValue());
 
-		
-		return ret==0 ? 0:ret>0?1:-1;// Comparison.continueCompare for strings returns other numbers besides 1 -1 and
-					// 0. We are only concerned with Greater then and less then or equal.
+		return ret == 0 ? 0 : ret > 0 ? 1 : -1;// Comparison.continueCompare for strings returns other numbers besides 1 -1 and
+		// 0. We are only concerned with Greater then and less then or equal.
 
 	}
 

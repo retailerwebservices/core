@@ -1,7 +1,8 @@
-package org.jimmutable.cloud.elasticsearch;
+package org.jimmutable.cloud.servlet_utils.search;
 
 import static org.junit.Assert.assertEquals;
 
+import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.util.StringableTest;
 import org.junit.Test;
