@@ -2,7 +2,14 @@ package org.jimmutable.cloud.servlet_utils.search;
 
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
-
+/**
+ * This is the class that we use to name our search fields
+ * <li>Normalizes to lower case
+ * <li>Normalizes underscore to dash
+ * <li>Allowed characters a-z, 0-9, -
+ * @author andrew.towe
+ *
+ */
 public class SearchFieldId extends Stringable
 {
 	public static final MyConverter CONVERTER = new MyConverter();
