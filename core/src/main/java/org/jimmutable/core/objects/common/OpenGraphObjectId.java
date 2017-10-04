@@ -3,7 +3,12 @@ package org.jimmutable.core.objects.common;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.core.utils.Validator;
-
+/**
+ * This is our class that we use to identify our Open Graphs
+ * Valid characters are limited to digits [0-9] From 1 to 128 digits are allowed
+ * @author andrew.towe
+ *
+ */
 public class OpenGraphObjectId extends Stringable
 {
 	static public final MyConverter CONVERTER = new MyConverter();
