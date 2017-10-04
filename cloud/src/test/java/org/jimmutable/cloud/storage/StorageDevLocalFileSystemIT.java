@@ -1,5 +1,9 @@
 package org.jimmutable.cloud.storage;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -8,46 +12,42 @@ import java.util.Comparator;
 
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
-import org.jimmutable.cloud.EnvironmentType;
-import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
+import org.jimmutable.cloud.IntegrationTest;
 import org.jimmutable.cloud.storage.StorageDevLocalFileSystem;
 import org.jimmutable.cloud.storage.StorageKey;
 import org.jimmutable.core.objects.common.Kind;
-import org.junit.Before;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
-import junit.framework.TestCase;
-
-public class StorageDevLocalFileSystemTest extends TestCase
+public class StorageDevLocalFileSystemIT extends IntegrationTest
 {
-	static ApplicationId appId;
-	static StorageDevLocalFileSystem sdlfs;
+
+	private static StorageDevLocalFileSystem sdlfs;
+
+	private static ApplicationId applicationId;
 
 	@BeforeClass
-	protected void setUpTest()
+	public static void setUpTest()
 	{
-		appId = new ApplicationId("Development");
-		CloudExecutionEnvironment.startup(appId, EnvironmentType.DEV);
-		JimmutableCloudTypeNameRegister.registerAllTypes();
+
+		IntegrationTest.setupEnvironment();
+
+		applicationId = CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId();
+		sdlfs = new StorageDevLocalFileSystem(false, applicationId);
 	}
 
-	@Before
-	protected void setUp()
-	{
-		appId = new ApplicationId("Development");
-		sdlfs = new StorageDevLocalFileSystem(false);
-	}
-
-	public static void testUpsert()
+	@Test
+	public void testUpsert()
 	{
 		// test insert
 		assertTrue(sdlfs.upsert(new StorageKey("alpha/0000-0000-0000-0123.txt"), "Hello from the other side".getBytes(), false));
-		File f = new File(System.getProperty("user.home") + "/jimmutable_dev/" + ApplicationId.getOptionalDevApplicationId(appId) + "/alpha/0000-0000-0000-0123.txt");// application
-																																										// id
-																																										// needs
-																																										// to
-																																										// go
-																																										// here
+		File f = new File(System.getProperty("user.home") + "/jimmutable_dev/" + applicationId + "/alpha/0000-0000-0000-0123.txt");// application
+		// id
+		// needs
+		// to
+		// go
+		// here
 		assertTrue(f.exists());
 		String result = readFile(f);
 		assertEquals("Hello from the other side", result);
@@ -91,7 +91,7 @@ public class StorageDevLocalFileSystemTest extends TestCase
 
 		} catch (Exception e)
 		{
-			fail("Something went wierd when reading the file");
+			throw new RuntimeException("Something went wierd when reading the file");
 		} finally
 		{
 			try
@@ -99,13 +99,14 @@ public class StorageDevLocalFileSystemTest extends TestCase
 				fis.close();
 			} catch (IOException e)
 			{
-				fail("Something went weird when trying to close the file stream");
+				throw new RuntimeException("Something went weird when trying to close the file stream");
 			}
 		}
 		return new String(bytesArray);
 	}
 
-	public static void testExists()
+	@Test
+	public void testExists()
 	{
 		StorageKey key = new StorageKey("epsilon/0000-0000-0000-0123.txt");
 		sdlfs.upsert(key, "Hello from the other side".getBytes(), false);
@@ -115,7 +116,8 @@ public class StorageDevLocalFileSystemTest extends TestCase
 		assertFalse(sdlfs.exists(key, false));// true negative
 	}
 
-	public static void testGetCurrentVersion()
+	@Test
+	public void testGetCurrentVersion()
 	{
 		// test that it will read from file
 		StorageKey key = new StorageKey("zeta/0000-0000-0000-0123.txt");
@@ -129,25 +131,27 @@ public class StorageDevLocalFileSystemTest extends TestCase
 		assertEquals("I wish I called a thousand times", new String(testvalue));
 	}
 
-	public static void testDelete()
+	@Test
+	public void testDelete()
 	{
 		// test deleting
 		StorageKey key = new StorageKey("beta/0000-0000-0000-0123.txt");
 		assertTrue(sdlfs.upsert(key, "Hello from the other side".getBytes(), false));
 		assertTrue(sdlfs.delete(key));
-		File f = new File(System.getProperty("user.home") + "/jimmutable_dev/" + ApplicationId.getOptionalDevApplicationId(appId) + "/beta/0000-0000-0000-0123.txt");// application
-																																										// id
-																																										// needs
-																																										// to
-																																										// go
-																																										// here
+		File f = new File(System.getProperty("user.home") + "/jimmutable_dev/" + applicationId + "/beta/0000-0000-0000-0123.txt");// application
+		// id
+		// needs
+		// to
+		// go
+		// here
 		assertFalse(f.exists());
 
 		// should not return a positive message if no file exists to delete.
 		assertFalse(sdlfs.delete(key));
 	}
 
-	public static void testList()
+	@Test
+	public void testList()
 	{
 		sdlfs.upsert(new StorageKey("gamma/1.txt"), "Hello from the other side".getBytes(), false);
 		sdlfs.upsert(new StorageKey("gamma/2.txt"), "Hello from the other side".getBytes(), false);
@@ -164,15 +168,16 @@ public class StorageDevLocalFileSystemTest extends TestCase
 		assertEquals(6, count);
 	}
 
-	public static void testCantWriteToReadOnly()
+	@Test
+	public void testCantWriteToReadOnly()
 	{
-		StorageDevLocalFileSystem readonly = new StorageDevLocalFileSystem(true);
+		StorageDevLocalFileSystem readonly = new StorageDevLocalFileSystem(true, applicationId);
 		// test that we cannot upsert
 		StorageKey key = new StorageKey("eta/0000-0000-0000-0123.txt");
 		assertFalse(readonly.upsert(key, "Hello from the other side".getBytes(), false));
 
 		// ensure that file was not actually created
-		File f = new File(System.getProperty("user.home") + "/jimmutable_dev/" + ApplicationId.getOptionalDevApplicationId(appId) + "/eta/0000-0000-0000-0123.txt");
+		File f = new File(System.getProperty("user.home") + "/jimmutable_dev/" + applicationId + "/eta/0000-0000-0000-0123.txt");
 		assertFalse(f.exists());
 
 		// create a file to ensure that we have something to delete.
@@ -181,15 +186,15 @@ public class StorageDevLocalFileSystemTest extends TestCase
 		assertTrue(f.exists());
 	}
 
-	@Override
-	protected void tearDown()
+	@AfterClass
+	public static void tearDown()
 	{
-		String filePathString = System.getProperty("user.home") + "/jimmutable_dev/" + ApplicationId.getOptionalDevApplicationId(appId);// application
-																																		// id
-																																		// needs
-																																		// to
-																																		// go
-																																		// here
+		String filePathString = System.getProperty("user.home") + "/jimmutable_dev/" + applicationId;// application
+		// id
+		// needs
+		// to
+		// go
+		// here
 		File f = new File(filePathString);
 		if (f.exists())
 		{

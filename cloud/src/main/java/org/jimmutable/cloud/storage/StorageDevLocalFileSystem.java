@@ -21,16 +21,10 @@ public class StorageDevLocalFileSystem extends Storage
 	 */
 	private File root;
 
-	public StorageDevLocalFileSystem( boolean is_readonly )
+	public StorageDevLocalFileSystem(boolean is_readonly, ApplicationId applicationId)
 	{
 		super(is_readonly);
-
-//		if ( !ApplicationId.hasOptionalDevApplicationId() )
-//		{
-//			System.err.println("Hey -- you are trying to instantiate a dev local file system. This should not be happening in production. If you are a developer and you are trying to run this through eclipse, you need to setup the environment configurations in your run configurations");
-//			throw new RuntimeException();
-//		}
-		root = new File(System.getProperty("user.home") + "/jimmutable_dev/" + ApplicationId.getOptionalDevApplicationId(new ApplicationId("Development")));
+		root = new File(System.getProperty("user.home") + "/jimmutable_dev/" + applicationId);
 	}
 
 	/**
@@ -41,10 +35,10 @@ public class StorageDevLocalFileSystem extends Storage
 	 * @return true if object is found, else Default_value
 	 */
 	@Override
-	public boolean exists( StorageKey key, boolean default_value )
+	public boolean exists(StorageKey key, boolean default_value)
 	{
 		File f = new File(root + "/" + key.getSimpleValue());
-		if ( f.exists() && !f.isDirectory() )
+		if (f.exists() && !f.isDirectory())
 		{
 			return true;
 		}
@@ -60,9 +54,9 @@ public class StorageDevLocalFileSystem extends Storage
 	 * @return true if the Object was updated/inserted, else false
 	 */
 	@Override
-	public boolean upsert( StorageKey key, byte[] bytes, boolean hint_content_likely_to_be_compressible )
+	public boolean upsert(StorageKey key, byte[] bytes, boolean hint_content_likely_to_be_compressible)
 	{
-		if ( isReadOnly() )
+		if (isReadOnly())
 		{
 			return false;
 		}
@@ -78,8 +72,7 @@ public class StorageDevLocalFileSystem extends Storage
 			fos.write(bytes);
 			fos.close();
 			return Arrays.equals(bytes, getCurrentVersion(key, null));
-		}
-		catch ( Exception e )
+		} catch (Exception e)
 		{
 			File f = new File(root.getAbsolutePath() + "/" + key.getSimpleValue());
 			f.delete();
@@ -97,10 +90,10 @@ public class StorageDevLocalFileSystem extends Storage
 	 *         default_value
 	 */
 	@Override
-	public byte[] getCurrentVersion( StorageKey key, byte[] default_value )
+	public byte[] getCurrentVersion(StorageKey key, byte[] default_value)
 	{
 		Validator.notNull(key);
-		if ( exists(key, false) )
+		if (exists(key, false))
 		{
 			File file = new File(root.getAbsolutePath() + "/" + key.getSimpleValue());
 			byte[] bytesArray = new byte[(int) file.length()];
@@ -109,18 +102,15 @@ public class StorageDevLocalFileSystem extends Storage
 			{
 				fis = new FileInputStream(file);
 				fis.read(bytesArray); // this method modifies bytesArray to contain the information from the file
-			}
-			catch ( Exception e )
+			} catch (Exception e)
 			{
 				return default_value;
-			}
-			finally
+			} finally
 			{
 				try
 				{
 					fis.close();
-				}
-				catch ( IOException e )
+				} catch (IOException e)
 				{
 					return default_value;
 				}
@@ -137,9 +127,9 @@ public class StorageDevLocalFileSystem extends Storage
 	 * @return true if Storage Object existed and was deleted, false otherwise
 	 */
 	@Override
-	public boolean delete( StorageKey key )
+	public boolean delete(StorageKey key)
 	{
-		if ( isReadOnly() )
+		if (isReadOnly())
 		{
 			return false;
 		}
@@ -148,8 +138,7 @@ public class StorageDevLocalFileSystem extends Storage
 		{
 			File f = new File(root.getAbsolutePath() + "/" + key.getSimpleValue());
 			return f.delete();
-		}
-		catch ( Exception e )
+		} catch (Exception e)
 		{
 			return false;
 		}
@@ -164,15 +153,15 @@ public class StorageDevLocalFileSystem extends Storage
 	 *         returned, Otherwise the Default_value that was passed in.
 	 */
 	@Override
-	public Iterable<StorageKey> listComplex( Kind kind, Iterable<StorageKey> default_value )
+	public Iterable<StorageKey> listComplex(Kind kind, Iterable<StorageKey> default_value)
 	{
 		Validator.notNull(kind);
 		File folder = new File(root.getAbsolutePath() + "/" + kind.getSimpleValue());
 		File[] listOfFiles = folder.listFiles();
 		List<StorageKey> keys = new ArrayList<>();
-		for ( int i = 0; i < listOfFiles.length; i++ )
+		for (int i = 0; i < listOfFiles.length; i++)
 		{
-			if ( listOfFiles[i].isFile() )
+			if (listOfFiles[i].isFile())
 			{
 				String key = kind + "/" + listOfFiles[i].getName();
 				keys.add(new StorageKey(key));
