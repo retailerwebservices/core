@@ -3,6 +3,7 @@ package org.jimmutable.cloud.storage;
 import org.jimmutable.core.utils.Validator;
 import org.apache.logging.log4j.LogManager;
 import org.jimmutable.cloud.ApplicationId;
+import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.core.objects.common.Kind;
 
 /**
@@ -15,33 +16,13 @@ import org.jimmutable.core.objects.common.Kind;
 public abstract class Storage implements IStorage
 {
 
-//	Storage instance = null;
+	// Storage instance = null;
 	private boolean is_readonly = false;
 
-	protected Storage( boolean is_readOnly )
+	protected Storage(boolean is_readOnly)
 	{
 		this.is_readonly = is_readOnly;
 	}
-
-	/**
-	 * @return either an instance of StorageDevLocalFileSystem if on a development
-	 *         application, otherwise will return a StorageGoogleCloudStorage
-	 */
-//	public Storage getSimpleInstance()
-//	{
-//		if ( instance == null )
-//		{
-//			if ( ApplicationId.hasOptionalDevApplicationId() )
-//			{
-//				instance = new StorageDevLocalFileSystem(isReadOnly());
-//			}
-//			else
-//			{
-//				// instance = new StorageGoogleCloudStorage(isReadOnly());
-//			}
-//		}
-//		return instance;
-//	}
 
 	/**
 	 * @param key
@@ -51,7 +32,7 @@ public abstract class Storage implements IStorage
 	 * @return true if object is found, else Default_value
 	 */
 
-	public abstract boolean exists( StorageKey key, boolean default_value );
+	public abstract boolean exists(StorageKey key, boolean default_value);
 
 	/**
 	 * @param key
@@ -62,7 +43,7 @@ public abstract class Storage implements IStorage
 	 * @return true if the Object was updated/inserted, else false
 	 */
 
-	public abstract boolean upsert( StorageKey key, byte bytes[], boolean hint_content_likely_to_be_compressible );
+	public abstract boolean upsert(StorageKey key, byte bytes[], boolean hint_content_likely_to_be_compressible);
 
 	/**
 	 * @param key
@@ -74,14 +55,14 @@ public abstract class Storage implements IStorage
 	 *         default_value
 	 */
 
-	public abstract byte[] getCurrentVersion( StorageKey key, byte[] default_value );
+	public abstract byte[] getCurrentVersion(StorageKey key, byte[] default_value);
 
 	/**
 	 * @param key
 	 *            StorageKey associated with StorageObject
 	 * @return true if Storage Object existed and was deleted, false otherwise
 	 */
-	public abstract boolean delete( StorageKey key );
+	public abstract boolean delete(StorageKey key);
 
 	/**
 	 * @param kind
@@ -92,35 +73,34 @@ public abstract class Storage implements IStorage
 	 *         returned, Otherwise the Default_value that was passed in.
 	 */
 
-	public abstract Iterable<StorageKey> listComplex( Kind kind, Iterable<StorageKey> default_value );
+	public abstract Iterable<StorageKey> listComplex(Kind kind, Iterable<StorageKey> default_value);
 
-	public boolean upsert( Storable obj )
+	public boolean upsert(Storable obj)
 	{
 		Validator.notNull(obj);
 		return upsert(obj.createStorageKey(), null, true);
 	}
 
-	public boolean exists( Storable obj, boolean default_value )
+	public boolean exists(Storable obj, boolean default_value)
 	{
-		if ( obj == null )
+		if (obj == null)
 			return default_value;
 
 		try
 		{
 			return exists(obj.createStorageKey(), false);
-		}
-		catch ( Exception e )
+		} catch (Exception e)
 		{
-			LogManager.getRootLogger().error("Failure to list object "+obj,e);
+			LogManager.getRootLogger().error("Failure to list object " + obj, e);
 			return default_value;
 		}
 	}
 
-	public boolean delete( Storable obj )
+	public boolean delete(Storable obj)
 	{
-		if ( obj == null )
+		if (obj == null)
 			return false;
-		if ( isReadOnly() )
+		if (isReadOnly())
 			return false;
 
 		return delete(obj.createStorageKey());
