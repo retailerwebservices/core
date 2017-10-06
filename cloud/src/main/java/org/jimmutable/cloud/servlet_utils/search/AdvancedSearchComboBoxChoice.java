@@ -79,8 +79,7 @@ public class AdvancedSearchComboBoxChoice extends StandardImmutableObject<Advanc
 		ret = Comparison.continueCompare(ret, getSimpleLabel(), other.getSimpleLabel());
 		ret = Comparison.continueCompare(ret, getSimpleValue(), other.getSimpleValue());
 
-		return ret == 0 ? 0 : ret > 0 ? 1 : -1;// Comparison.continueCompare for strings returns other numbers besides 1 -1 and
-		// 0. We are only concerned with Greater then and less then or equal.
+		return ret;
 
 	}
 
