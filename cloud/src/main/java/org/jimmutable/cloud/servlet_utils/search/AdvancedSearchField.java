@@ -26,6 +26,17 @@ import org.jimmutable.core.utils.Comparison;
 import org.jimmutable.core.utils.Optional;
 import org.jimmutable.core.utils.Validator;
 
+/**
+ * This is the class that we use for our advanced search fields
+ * We have a couple of things in this class
+ * <li> A label field for what our advanced search Field calls itself i.e. name
+ * <li> A Search Document Field that connects our advanced search field to the information that we are searching for
+ * <li> The Field type: either a text field or a Combo Box area
+ * <li> Combo Box Choices: all the things the user can select if the field type is a Combo box. 
+ * @author andrew.towe
+ *
+ */
+
 public class AdvancedSearchField extends StandardImmutableObject<AdvancedSearchField>
 {
 	static public final FieldDefinition.String FIELD_LABEL = new FieldDefinition.String("label", null);
@@ -187,6 +198,6 @@ public class AdvancedSearchField extends StandardImmutableObject<AdvancedSearchF
 
 	public boolean hasComboBoxChoices()
 	{
-		return getSimpleType().equals(SearchUIData.AdvancedSearchFieldType.TEXT);
+		return getSimpleType().equals(SearchUIData.AdvancedSearchFieldType.COMBO_BOX);
 	}
 }

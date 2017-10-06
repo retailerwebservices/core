@@ -42,7 +42,7 @@ public class AdvancedSearchFieldTest extends StubTest
 				"  \"type_hint\" : \"advancedsearchfield\",\n" + 
 				"  \"label\" : \"label\",\n" + 
 				"  \"searchdocumentfield\" : \"field\",\n" + 
-				"  \"type\" : null,\n" + 
+				"  \"type\" : \"combo-box\",\n" + 
 				"  \"combo_box_choices\" : [ ]\n" + 
 				"}", serialized_value);
 
@@ -51,7 +51,7 @@ public class AdvancedSearchFieldTest extends StubTest
 			     , "  \"type_hint\" : \"advancedsearchfield\","
 			     , "  \"label\" : \"label\","
 			     , "  \"searchdocumentfield\" : \"field\","
-			     , "  \"type\" : null,"
+			     , "  \"type\" : \"combo-box\","
 			     , "  \"combo_box_choices\" : [ ]"
 			     , "}"
 			);
