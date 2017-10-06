@@ -1,5 +1,7 @@
 package org.jimmutable.cloud.servlet_utils.search;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -17,12 +19,24 @@ import org.jimmutable.core.objects.StandardEnum;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.TypeName;
+import org.jimmutable.core.serialization.reader.ObjectParseTree;
+import org.jimmutable.core.serialization.reader.ObjectParseTree.OnError;
+import org.jimmutable.core.serialization.reader.ReadAs;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.serialization.writer.WriteAs;
 import org.jimmutable.core.utils.Comparison;
 import org.jimmutable.core.utils.Normalizer;
 import org.jimmutable.core.utils.Validator;
 
+/**
+ * This object is used to manage the user interface for searching. It contains 2
+ * fields
+ * <li>The Fields that we may want to search over (AdvancedSearchField)
+ * <li>The default presentation for each search field. (FieldsInView)
+ * 
+ * @author andrew.towe
+ *
+ */
 public class SearchUIData extends StandardImmutableObject<SearchUIData>
 {
 
@@ -56,15 +70,28 @@ public class SearchUIData extends StandardImmutableObject<SearchUIData>
 	private List<AdvancedSearchField> advanced_search_fields;
 	private List<IncludeFieldInView> fields_in_view;
 
+	public SearchUIData( List<AdvancedSearchField> advanced_search_fields, List<IncludeFieldInView> fields_in_view )
+	{
+		this.advanced_search_fields = advanced_search_fields;
+		this.fields_in_view = fields_in_view;
+		complete();
+	}
+
+	public SearchUIData( ObjectParseTree o )
+	{
+		this.advanced_search_fields =  o.getCollection(FIELD_ADVANCED_SEARCH_FIELDS, new ArrayList<AdvancedSearchField>(), ReadAs.OBJECT, OnError.THROW_EXCEPTION);
+		this.fields_in_view =  o.getCollection(FIELD_FIELDS_IN_VIEW, new ArrayList<IncludeFieldInView>(), ReadAs.OBJECT, OnError.THROW_EXCEPTION);
+	}
+
 	/**
-	 * This is how we tell if the advancedsearchfield is either a text field or 
+	 * This is how we tell if the advancedsearchfield is either a text field or New
+	 * 
 	 * @author andrew.towe
 	 *
 	 */
 	public enum AdvancedSearchFieldType implements StandardEnum
 	{
-		TEXT("text"), 
-		COMBO_BOX("combo-box");
+		TEXT("text"), COMBO_BOX("combo-box");
 		static public final MyConverter CONVERTER = new MyConverter();
 
 		private String code;
@@ -80,11 +107,12 @@ public class SearchUIData extends StandardImmutableObject<SearchUIData>
 			return code;
 		}
 
-		private AdvancedSearchFieldType(String code) {
+		private AdvancedSearchFieldType( String code )
+		{
 			Validator.notNull(code);
 			this.code = Normalizer.lowerCase(code);
 		}
-		
+
 		static public class MyConverter extends StandardEnum.Converter<AdvancedSearchFieldType>
 		{
 			public AdvancedSearchFieldType fromCode( String code, AdvancedSearchFieldType default_value )
@@ -106,14 +134,12 @@ public class SearchUIData extends StandardImmutableObject<SearchUIData>
 	@Override
 	public int compareTo( SearchUIData other )
 	{
-//		int ret = Comparison.startCompare();
-//
-//		ret = Comparison.continueCompare(ret, getSimpleAdvancedSearchFields(), other.getSimpleAdvancedSearchFields());
-//		ret = Comparison.continueCompare(ret, getSimpleFieldsInView(), other.getSimpleFieldsInView());
-//		
-//		return ret;
-		return 0;
-		
+		int ret = Comparison.startCompare();
+
+		ret = Comparison.continueCompare(ret, getSimpleAdvancedSearchFields().size(), other.getSimpleAdvancedSearchFields().size());
+		ret = Comparison.continueCompare(ret, getSimpleFieldsInView().size(), other.getSimpleFieldsInView().size());
+
+		return ret;
 	}
 
 	@Override
@@ -154,7 +180,7 @@ public class SearchUIData extends StandardImmutableObject<SearchUIData>
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(advanced_search_fields, fields_in_view);
+		return Objects.hash(getSimpleAdvancedSearchFields(), getSimpleFieldsInView());
 	}
 
 	@Override
