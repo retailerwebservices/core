@@ -12,10 +12,10 @@ import org.jimmutable.core.objects.common.Kind;
  *         listing of objects, and deletions.
  */
 
-public abstract class Storage
+public abstract class Storage implements IStorage
 {
 
-	Storage instance = null;
+//	Storage instance = null;
 	private boolean is_readonly = false;
 
 	protected Storage( boolean is_readOnly )
@@ -27,21 +27,21 @@ public abstract class Storage
 	 * @return either an instance of StorageDevLocalFileSystem if on a development
 	 *         application, otherwise will return a StorageGoogleCloudStorage
 	 */
-	public Storage getSimpleInstance()
-	{
-		if ( instance == null )
-		{
-			if ( ApplicationId.hasOptionalDevApplicationId() )
-			{
-				instance = new StorageDevLocalFileSystem(isReadOnly());
-			}
-			else
-			{
-				// instance = new StorageGoogleCloudStorage(isReadOnly());
-			}
-		}
-		return instance;
-	}
+//	public Storage getSimpleInstance()
+//	{
+//		if ( instance == null )
+//		{
+//			if ( ApplicationId.hasOptionalDevApplicationId() )
+//			{
+//				instance = new StorageDevLocalFileSystem(isReadOnly());
+//			}
+//			else
+//			{
+//				// instance = new StorageGoogleCloudStorage(isReadOnly());
+//			}
+//		}
+//		return instance;
+//	}
 
 	/**
 	 * @param key

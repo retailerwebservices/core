@@ -26,25 +26,31 @@ public class ElasticSearchEndpoint extends TransientImmutableObject<ElasticSearc
 	public static final ElasticSearchEndpoint CURRENT;
 
 	// set the static member to environment variable, else localhost:9300
-	static {
+	static
+	{
 		String endpoint = System.getProperty("elasticsearch.endpoint");
 
 		String tmp_host = null;
 		Integer tmp_port = null;
 
-		if (endpoint != null) {
+		if (endpoint != null)
+		{
 			String[] host_port = endpoint.split(":", -1);
-			if (host_port.length == 2) {
+			if (host_port.length == 2)
+			{
 				tmp_host = host_port[0];
-				try {
+				try
+				{
 					tmp_port = Integer.parseInt(host_port[1]);
-				} catch (NumberFormatException e) {
+				} catch (NumberFormatException e)
+				{
 					logger.log(Level.FATAL, "Port is not a valid integer", e);
 				}
 			}
 		}
 
-		if (tmp_host == null || tmp_host.isEmpty() || tmp_port == null) {
+		if (tmp_host == null || tmp_host.isEmpty() || tmp_port == null)
+		{
 			tmp_host = "localhost";
 			tmp_port = 9300;
 		}
@@ -122,10 +128,12 @@ public class ElasticSearchEndpoint extends TransientImmutableObject<ElasticSearc
 
 		ElasticSearchEndpoint other = (ElasticSearchEndpoint) obj;
 
-		if (!getSimpleHost().equals(other.getSimpleHost())) {
+		if (!getSimpleHost().equals(other.getSimpleHost()))
+		{
 			return false;
 		}
-		if (getSimplePort() != other.getSimplePort()) {
+		if (getSimplePort() != other.getSimplePort())
+		{
 			return false;
 		}
 

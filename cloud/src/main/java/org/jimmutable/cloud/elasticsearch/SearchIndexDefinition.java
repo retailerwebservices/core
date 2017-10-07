@@ -59,7 +59,7 @@ public class SearchIndexDefinition extends StandardImmutableObject<SearchIndexDe
 	/**
 	 * The search index
 	 * 
-	 * @return
+	 * @return the IndexDefinition
 	 */
 	public IndexDefinition getSimpleIndex()
 	{

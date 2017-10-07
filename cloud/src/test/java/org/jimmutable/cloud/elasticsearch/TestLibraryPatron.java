@@ -101,38 +101,45 @@ final public class TestLibraryPatron extends StandardImmutableObject<TestLibrary
 		if (getClass() != obj.getClass())
 			return false;
 		TestLibraryPatron other = (TestLibraryPatron) obj;
-		if (birth_date == null) {
+		if (birth_date == null)
+		{
 			if (other.birth_date != null)
 				return false;
 		} else if (!birth_date.equals(other.birth_date))
 			return false;
-		if (email_address == null) {
+		if (email_address == null)
+		{
 			if (other.email_address != null)
 				return false;
 		} else if (!email_address.equals(other.email_address))
 			return false;
-		if (first_name == null) {
+		if (first_name == null)
+		{
 			if (other.first_name != null)
 				return false;
 		} else if (!first_name.equals(other.first_name))
 			return false;
-		if (id == null) {
+		if (id == null)
+		{
 			if (other.id != null)
 				return false;
 		} else if (!id.equals(other.id))
 			return false;
 
-		if (last_name == null) {
+		if (last_name == null)
+		{
 			if (other.last_name != null)
 				return false;
 		} else if (!last_name.equals(other.last_name))
 			return false;
-		if (number_of_books_checked_out == null) {
+		if (number_of_books_checked_out == null)
+		{
 			if (other.number_of_books_checked_out != null)
 				return false;
 		} else if (!number_of_books_checked_out.equals(other.number_of_books_checked_out))
 			return false;
-		if (ssn == null) {
+		if (ssn == null)
+		{
 			if (other.ssn != null)
 				return false;
 		} else if (!ssn.equals(other.ssn))
@@ -196,7 +203,7 @@ final public class TestLibraryPatron extends StandardImmutableObject<TestLibrary
 	@Override
 	public void writeSearchDocument(SearchDocumentWriter writer)
 	{
-		writer.writeObjectId(FIELD_OBJECT_ID.getSimpleFieldName(), id);
+		writer.writeAtom(FIELD_OBJECT_ID.getSimpleFieldName(), id.getSimpleValue());
 		writer.writeText(FIELD_FIRST_NAME.getSimpleFieldName(), first_name);
 		writer.writeText(FIELD_LAST_NAME.getSimpleFieldName(), last_name);
 		writer.writeText(FIELD_EMAIL_ADDRESS.getSimpleFieldName(), email_address);

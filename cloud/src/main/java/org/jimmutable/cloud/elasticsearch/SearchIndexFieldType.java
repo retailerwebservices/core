@@ -17,9 +17,7 @@ public enum SearchIndexFieldType implements StandardEnum
 	LONG("long"),
 	BOOLEAN("boolean"),
 	FLOAT("float"),
-	DAY("date"),
-	// ok?
-	OBJECTID("text:keyword");
+	DAY("date");
 
 	static public final MyConverter CONVERTER = new MyConverter();
 
@@ -60,7 +58,8 @@ public enum SearchIndexFieldType implements StandardEnum
 			if (code == null)
 				return default_value;
 
-			for (SearchIndexFieldType t : SearchIndexFieldType.values()) {
+			for (SearchIndexFieldType t : SearchIndexFieldType.values())
+			{
 				if (t.getSimpleCode().equalsIgnoreCase(code))
 					return t;
 			}

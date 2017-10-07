@@ -11,9 +11,17 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.jimmutable.cloud.elasticsearch.ElasticSearchEndpoint;
-import org.jimmutable.cloud.elasticsearch.Search;
-import org.jimmutable.cloud.elasticsearch.SearchIndexConfigurationUtils;
+import org.jimmutable.cloud.elasticsearch.ISearch;
+import org.jimmutable.cloud.elasticsearch.StubSearch;
+import org.jimmutable.cloud.elasticsearch.ElasticSearch;
 import org.jimmutable.cloud.logging.Log4jUtil;
+import org.jimmutable.cloud.messaging.IMessaging;
+import org.jimmutable.cloud.messaging.MessagingDevLocalFileSystem;
+import org.jimmutable.cloud.messaging.StubMessaging;
+import org.jimmutable.cloud.storage.IStorage;
+import org.jimmutable.cloud.storage.StorageDevLocalFileSystem;
+import org.jimmutable.cloud.storage.StubStorage;
+import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 
 /**
  * Configures environment and application specific setting, to be used by other
@@ -22,82 +30,80 @@ import org.jimmutable.cloud.logging.Log4jUtil;
  * @author trevorbox
  *
  */
-@SuppressWarnings("resource")
 public class CloudExecutionEnvironment
 {
 	private static Logger logger;
 	private static CloudExecutionEnvironment CURRENT;
 
-	private EnvironmentType type;
-	private ApplicationId application_id;
-	private Search search;
-	private SearchIndexConfigurationUtils searchIndexConfigurationUtils;
-
-	// centrally managed client used by a couple classes
-	private TransportClient elasticsearchClient;
+	private ISearch search;
+	private IStorage storage;
+	private IMessaging messaging;
 
 	// System properties
 	private static final String ENV_TYPE_VARIABLE_NAME = "JIMMUTABLE_ENV_TYPE";
-	private static final String ENV_APPLICATION_ID = "JIMMUTABLE_APP_ID";
 	private static final String ENV_LOGGING_LEVEL = "JIMMUTABLE_LOGGING_LEVEL";
 
 	private static final Level DEFAULT_LEVEL = Level.INFO;
 
+	private static EnvironmentType ENV_TYPE;
+	private static ApplicationId APPLICATION_ID;
+
 	// setup the logging level programmatically
-	static {
+	static
+	{
 		Level level = Level.toLevel(System.getProperty(ENV_LOGGING_LEVEL), DEFAULT_LEVEL);
 		Log4jUtil.setAllLoggerLevels(level);
 		logger = LogManager.getLogger(CloudExecutionEnvironment.class);
 		logger.trace(String.format("Logging level: %s", level));
 	}
 
-	private CloudExecutionEnvironment(EnvironmentType type, ApplicationId application_id, TransportClient elasticsearchClient, Search search, SearchIndexConfigurationUtils searchIndexConfigurationUtils)
+	private CloudExecutionEnvironment(ISearch search, IStorage storage, IMessaging messaging)
 	{
-		this.type = type;
-		this.application_id = application_id;
-		this.elasticsearchClient = elasticsearchClient;
+
 		this.search = search;
-		this.searchIndexConfigurationUtils = searchIndexConfigurationUtils;
-	}
+		this.storage = storage;
+		this.messaging = messaging;
 
-	public void closeElasticSearchClient()
-	{
-		elasticsearchClient.close();
-	}
-
-	public TransportClient getSimpleElasticsearchClient()
-	{
-		return elasticsearchClient;
 	}
 
 	public EnvironmentType getSimpleEnvironmentType()
 	{
-		return type;
+		return ENV_TYPE;
 	}
 
 	public ApplicationId getSimpleApplicationId()
 	{
-		return application_id;
+		return APPLICATION_ID;
 	}
 
 	/**
 	 * Search instance used for document upsert and searching of indices
 	 * 
-	 * @return
+	 * @return The Search instance
 	 */
-	public Search getSimpleSearch()
+	public ISearch getSimpleSearch()
 	{
 		return search;
 	}
 
 	/**
-	 * Search index utility used for index upsert and maintenance
+	 * Storage system the application uses to store objects
+	 * 
+	 * @return Storage The storage system
+	 */
+	public IStorage getSimpleStorage()
+	{
+		return storage;
+	}
+
+	/**
+	 * Messaging system the application uses to send messages (pub/sub)
 	 * 
 	 * @return
 	 */
-	public SearchIndexConfigurationUtils getSimpleSearchIndexConfigurationUtils()
+	public IMessaging getSimpleMessaging()
 	{
-		return searchIndexConfigurationUtils;
+		return messaging;
 	}
 
 	/**
@@ -114,65 +120,131 @@ public class CloudExecutionEnvironment
 	 *            A default application id in case the environment variable is not
 	 *            set
 	 */
-	public static void startup(ApplicationId default_id)
+	@SuppressWarnings("resource")
+	public static void startup(ApplicationId application_id, EnvironmentType env_type)
 	{
-		if (CURRENT != null) {
-			logger.fatal("Startup has already been called!");
+
+		if (CURRENT != null)
+		{
 			throw new RuntimeException("Startup has already been called!");
 		}
-		// default
-		EnvironmentType tmp_type = EnvironmentType.DEV;
+
+		// register objects
+		JimmutableTypeNameRegister.registerAllTypes();
+		JimmutableCloudTypeNameRegister.registerAllTypes();
+
+		ENV_TYPE = env_type;
+		APPLICATION_ID = application_id;
+
+		logger.trace(String.format("ApplicationID=%s Environment=%s", APPLICATION_ID, ENV_TYPE));
+
+		switch (env_type)
+		{
+		case DEV:
+
+			checkOs();
+
+			TransportClient client = null;
+			try
+			{
+				client = new PreBuiltTransportClient(Settings.EMPTY).addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(ElasticSearchEndpoint.CURRENT.getSimpleHost()), ElasticSearchEndpoint.CURRENT.getSimplePort()));
+			} catch (UnknownHostException e)
+			{
+				logger.log(Level.FATAL, "Failed to instantiate the elasticsearch client!", e);
+			}
+
+			if (client == null)
+			{
+				throw new RuntimeException("Failed to instantiate the elasticsearch client!");
+			}
+
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearch(client), new StorageDevLocalFileSystem(false), new MessagingDevLocalFileSystem());
+
+			break;
+		case STUB:
+
+			checkOs();
+			CURRENT = new CloudExecutionEnvironment(new StubSearch(), new StubStorage(), new StubMessaging());
+
+			break;
+
+		default:
+
+			throw new RuntimeException(String.format("Unhandled EnvironmentType: %s! Add the environment to startup to handle it correctly.", env_type));
+
+		}
+
+	}
+
+	/**
+	 * Use this for running unit tests. Search, Storage, and Messaging are just stub
+	 * classes and throw Runtime Exceptions if their methods are called.
+	 * 
+	 * @param application_id
+	 *            The ApplicationId
+	 */
+	public static void startupStubTest(ApplicationId application_id)
+	{
+		startup(application_id, EnvironmentType.STUB);
+	}
+
+	/**
+	 * Use this for running integration tests. Search, Storage, and Messaging are
+	 * initialized to the Dev instances. Any local clients needed for Search,
+	 * Storage or Messaging should be running.
+	 * 
+	 * @param application_id
+	 *            The ApplicationId
+	 */
+	public static void startupIntegrationTest(ApplicationId application_id)
+	{
+		startup(application_id, EnvironmentType.DEV);
+	}
+
+	/**
+	 * Get the environment type from the system property JIMMUTABLE_ENV_TYPE. If it
+	 * fails the default value is returned.
+	 * 
+	 * @param default_value
+	 * @return The EnvironmentType from the system variable or the default_value
+	 */
+	public static EnvironmentType getEnvironmentTypeFromSystemProperty(EnvironmentType default_value)
+	{
 
 		String env_level = System.getProperty(ENV_TYPE_VARIABLE_NAME);
-		if (env_level != null) {
-			try {
+		if (env_level != null)
+		{
+			EnvironmentType tmp_type = null;
+			try
+			{
 				tmp_type = EnvironmentType.valueOf(env_level);
-			} catch (Exception e) {
+			} catch (Exception e)
+			{
 				logger.fatal(String.format("Invalid Environment type %s using default type %s", env_level, tmp_type));
-			}
-		}
-
-		logger.trace(String.format("Environment type set to %s", tmp_type));
-
-		if (tmp_type.equals(EnvironmentType.DEV)) {
-
-			String operating_system_property = System.getProperty("os.name");
-
-			if (operating_system_property != null) {
-				String os = operating_system_property.toLowerCase();
-				if (os.indexOf("win") < 0 && os.indexOf("mac") < 0) {
-					logger.fatal(String.format("Unexpected operating system (%s) detected for %s environment! This is probabaly because the environment variable %s was not set correctly.", os, tmp_type, ENV_TYPE_VARIABLE_NAME));
-				}
-			} else {
-				logger.fatal("Failed to detect operating system!");
+				return default_value;
 			}
 
-		}
+			return tmp_type;
 
-		ApplicationId tmp_application_id = default_id;
-		try {
-			tmp_application_id = new ApplicationId(System.getProperty(ENV_APPLICATION_ID));
-		} catch (Exception e) {
-			if (tmp_application_id == null) {
-				logger.fatal("Failed to set the application id! Terminating the JVM...");
-				System.exit(1);
+		}
+		return default_value;
+	}
+
+	private static void checkOs()
+	{
+		String operating_system_property = System.getProperty("os.name");
+
+		if (operating_system_property != null)
+		{
+			String os = operating_system_property.toLowerCase();
+			if (os.indexOf("win") < 0 && os.indexOf("mac") < 0)
+			{
+				logger.fatal(String.format("Unexpected operating system (%s) detected for %s environment!", os, ENV_TYPE));
 			}
+		} else
+		{
+			logger.fatal("Failed to detect operating system!");
 		}
-		logger.trace(String.format("Application Id set to %s", tmp_application_id));
-
-		TransportClient client = null;
-		try {
-			client = new PreBuiltTransportClient(Settings.EMPTY).addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(ElasticSearchEndpoint.CURRENT.getSimpleHost()), ElasticSearchEndpoint.CURRENT.getSimplePort()));
-		} catch (UnknownHostException e) {
-			logger.log(Level.FATAL, "Failed to instantiate the elasticsearch client!", e);
-		}
-
-		if (client == null) {
-			throw new RuntimeException("Failed to instantiate the elasticsearch client!");
-		}
-
-		CURRENT = new CloudExecutionEnvironment(tmp_type, tmp_application_id, client, new Search(client), new SearchIndexConfigurationUtils(client));
-
 	}
 
 	/**
@@ -185,9 +257,9 @@ public class CloudExecutionEnvironment
 	 */
 	static public CloudExecutionEnvironment getSimpleCurrent()
 	{
-		if (CURRENT == null) {
-			logger.fatal("The startup mathod was never called first to setup the singleton! Terminating the JVM...");
-			System.exit(1);
+		if (CURRENT == null)
+		{
+			throw new RuntimeException("The startup mathod was never called first to setup the singleton!");
 		}
 		return CURRENT;
 	}
