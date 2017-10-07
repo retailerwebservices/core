@@ -101,6 +101,15 @@ final public class LibraryPatron extends StandardImmutableObject<LibraryPatron> 
 			return false;
 		}
 
+		/**
+		 * CODE REVIEW: 
+		 * 
+		 * This equals code is still not right,
+		 * 
+		 * You can simply do:  if ( !Objects.equals(getOptionalBirthDate(null), ohter.getOptionalBirthDate(null) ) return false;
+		 * 
+		 * Please fix.
+		 */
 		LibraryPatron other = (LibraryPatron) obj;
 		if ( getOptionalBirthDate(null) == null )
 		{
