@@ -51,6 +51,8 @@ public class SearchUIData extends StandardImmutableObject<SearchUIData>
 	static private final SearchIndexFieldDefinition SEARCH_FIELD_LABEL = new SearchIndexFieldDefinition(FIELD_ADVANCED_SEARCH_FIELDS.getSimpleFieldName(), SearchIndexFieldType.TEXT);
 	static private final SearchIndexFieldDefinition SEARCH_FIELD_VALUE = new SearchIndexFieldDefinition(FIELD_FIELDS_IN_VIEW.getSimpleFieldName(), SearchIndexFieldType.TEXT);
 
+	
+	// CODE REVIEW: This object is not indexable, therefore not INDEX_MAPPING is needed
 	static public final SearchIndexDefinition INDEX_MAPPING;
 
 	static
@@ -67,11 +69,14 @@ public class SearchUIData extends StandardImmutableObject<SearchUIData>
 
 	}
 
+	// CODE REVIEW: You should use FieldList / FieldArrayList so that your object can be immutable (as it stands right now, the freeze function does not make these lists unchangeable)
 	private List<AdvancedSearchField> advanced_search_fields;
 	private List<IncludeFieldInView> fields_in_view;
 
 	public SearchUIData( List<AdvancedSearchField> advanced_search_fields, List<IncludeFieldInView> fields_in_view )
 	{
+		// CODE REVEIW: This code does not probide for immutability... if advanced search fields or fields_in_view are modified by the calling code the contents of this object will change
+		// You need to copy them over
 		this.advanced_search_fields = advanced_search_fields;
 		this.fields_in_view = fields_in_view;
 		complete();
@@ -89,6 +94,7 @@ public class SearchUIData extends StandardImmutableObject<SearchUIData>
 	 * @author andrew.towe
 	 *
 	 */
+	// CODE REVIEW: Place this class in its own file
 	public enum AdvancedSearchFieldType implements StandardEnum
 	{
 		TEXT("text"), COMBO_BOX("combo-box");
@@ -159,7 +165,7 @@ public class SearchUIData extends StandardImmutableObject<SearchUIData>
 	@Override
 	public void freeze()
 	{
-		// TODO Auto-generated method stub
+		// TODO: YOU need to freeze 
 
 	}
 
@@ -174,7 +180,8 @@ public class SearchUIData extends StandardImmutableObject<SearchUIData>
 	public void validate()
 	{
 		Validator.notNull(getSimpleAdvancedSearchFields(), getSimpleFieldsInView());
-
+		
+		// CODE REVIEW: You also need to make sure that the collections contain no nulls using a call to 	Validator.containsNoNulls(collection);
 	}
 
 	@Override
