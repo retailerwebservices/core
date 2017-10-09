@@ -42,7 +42,7 @@ public class AdvancedSearchField extends StandardImmutableObject<AdvancedSearchF
 {
 	static public final FieldDefinition.String FIELD_LABEL = new FieldDefinition.String("label", null);
 	static public final FieldDefinition.Stringable<SearchFieldId> FIELD_SEARCH_DOCUMENT_FIELD = new FieldDefinition.Stringable<SearchFieldId>("searchdocumentfield", null, SearchFieldId.CONVERTER);
-	static public final FieldDefinition.Enum<SearchUIData.AdvancedSearchFieldType> FIELD_TYPE = new FieldDefinition.Enum<SearchUIData.AdvancedSearchFieldType>("type", SearchUIData.AdvancedSearchFieldType.TEXT, SearchUIData.AdvancedSearchFieldType.CONVERTER);
+	static public final FieldDefinition.Enum<AdvancedSearchFieldType> FIELD_TYPE = new FieldDefinition.Enum<AdvancedSearchFieldType>("type", AdvancedSearchFieldType.TEXT, AdvancedSearchFieldType.CONVERTER);
 	static public final FieldDefinition.Collection FIELD_COMBO_BOX_CHOICES = new FieldDefinition.Collection("combo_box_choices", null);
 
 	static public final TypeName TYPE_NAME = new TypeName("advancedsearchfield");
@@ -76,10 +76,10 @@ public class AdvancedSearchField extends StandardImmutableObject<AdvancedSearchF
 
 	private String label;// required
 	private SearchFieldId search_document_field;// required
-	private SearchUIData.AdvancedSearchFieldType type;// required // CODE REVIEW: AdvancedSearchFieldType should be moved into its own file
+	private AdvancedSearchFieldType type;// required // CODE REVIEW: AdvancedSearchFieldType should be moved into its own file
 	private List<AdvancedSearchComboBoxChoice> combo_box_choices;// optional // CODE REVIEW: You need to use FieldArrayList to ensure immutability
 
-	public AdvancedSearchField( String label, SearchFieldId search_document_field, SearchUIData.AdvancedSearchFieldType type, List<AdvancedSearchComboBoxChoice> combo_box_choices )
+	public AdvancedSearchField( String label, SearchFieldId search_document_field, AdvancedSearchFieldType type, List<AdvancedSearchComboBoxChoice> combo_box_choices )
 	{
 		this.label = label;
 		this.search_document_field = search_document_field;
@@ -190,7 +190,7 @@ public class AdvancedSearchField extends StandardImmutableObject<AdvancedSearchF
 		return search_document_field;
 	}
 
-	public SearchUIData.AdvancedSearchFieldType getSimpleType()
+	public AdvancedSearchFieldType getSimpleType()
 	{
 		return type;
 	}
@@ -202,6 +202,6 @@ public class AdvancedSearchField extends StandardImmutableObject<AdvancedSearchF
 
 	public boolean hasComboBoxChoices()
 	{
-		return getSimpleType().equals(SearchUIData.AdvancedSearchFieldType.COMBO_BOX);
+		return getSimpleType().equals(AdvancedSearchFieldType.COMBO_BOX);
 	}
 }

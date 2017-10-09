@@ -9,7 +9,6 @@ import java.util.List;
 import org.jimmutable.cloud.StubTest;
 import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
-import org.jimmutable.cloud.servlet_utils.search.SearchUIData.AdvancedSearchFieldType;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
