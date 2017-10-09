@@ -7,22 +7,29 @@ import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.elasticsearch.IndexDefinition;
 import org.jimmutable.cloud.elasticsearch.IndexId;
 import org.jimmutable.cloud.elasticsearch.IndexVersion;
-import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
-import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
-import org.jimmutable.cloud.elasticsearch.SearchIndexFieldType;
 import org.jimmutable.cloud.messaging.TopicDefinition;
 import org.jimmutable.cloud.messaging.TopicId;
-import org.jimmutable.core.objects.Builder;
-import org.jimmutable.core.objects.StandardEnum;
+import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.TypeName;
+import org.jimmutable.core.serialization.reader.ObjectParseTree;
+import org.jimmutable.core.serialization.reader.ObjectParseTree.OnError;
+import org.jimmutable.core.serialization.reader.ReadAs;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.serialization.writer.WriteAs;
 import org.jimmutable.core.utils.Comparison;
-import org.jimmutable.core.utils.Normalizer;
 import org.jimmutable.core.utils.Validator;
 
+/**
+ * This object is used to manage the user interface for searching. It contains 2
+ * fields
+ * <li>The Fields that we may want to search over (AdvancedSearchField)
+ * <li>The default presentation for each search field. (FieldsInView)
+ * 
+ * @author andrew.towe
+ *
+ */
 public class SearchUIData extends StandardImmutableObject<SearchUIData>
 {
 
@@ -34,86 +41,33 @@ public class SearchUIData extends StandardImmutableObject<SearchUIData>
 
 	static public final TopicDefinition TOPIC_DEF = new TopicDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new TopicId("searchuidata"));
 
-	static private final SearchIndexFieldDefinition SEARCH_FIELD_LABEL = new SearchIndexFieldDefinition(FIELD_ADVANCED_SEARCH_FIELDS.getSimpleFieldName(), SearchIndexFieldType.TEXT);
-	static private final SearchIndexFieldDefinition SEARCH_FIELD_VALUE = new SearchIndexFieldDefinition(FIELD_FIELDS_IN_VIEW.getSimpleFieldName(), SearchIndexFieldType.TEXT);
+	private FieldArrayList<AdvancedSearchField> advanced_search_fields;
+	private FieldArrayList<IncludeFieldInView> fields_in_view;
 
-	static public final SearchIndexDefinition INDEX_MAPPING;
-
-	static
+	public SearchUIData( List<AdvancedSearchField> advanced_search_fields, List<IncludeFieldInView> fields_in_view )
 	{
-
-		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
-
-		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_LABEL);
-		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
-
-		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
-
-		INDEX_MAPPING = (SearchIndexDefinition) b.create(null);
-
+		// CODE REVEIW: This code does not probide for immutability... if advanced search fields or fields_in_view are modified by the calling code the contents of this object will change
+		// You need to copy them over
+		this.advanced_search_fields = new FieldArrayList<>(advanced_search_fields);
+		this.fields_in_view = new FieldArrayList<>(fields_in_view);
+		complete();
 	}
 
-	private List<AdvancedSearchField> advanced_search_fields;
-	private List<IncludeFieldInView> fields_in_view;
-
-	/**
-	 * This is how we tell if the advancedsearchfield is either a text field or 
-	 * @author andrew.towe
-	 *
-	 */
-	public enum AdvancedSearchFieldType implements StandardEnum
+	public SearchUIData( ObjectParseTree o )
 	{
-		TEXT("text"), 
-		COMBO_BOX("combo-box");
-		static public final MyConverter CONVERTER = new MyConverter();
-
-		private String code;
-
-		@Override
-		public String getSimpleCode()
-		{
-			return code;
-		}
-
-		public String toString()
-		{
-			return code;
-		}
-
-		private AdvancedSearchFieldType(String code) {
-			Validator.notNull(code);
-			this.code = Normalizer.lowerCase(code);
-		}
-		
-		static public class MyConverter extends StandardEnum.Converter<AdvancedSearchFieldType>
-		{
-			public AdvancedSearchFieldType fromCode( String code, AdvancedSearchFieldType default_value )
-			{
-				if ( code == null )
-					return default_value;
-
-				for ( AdvancedSearchFieldType t : AdvancedSearchFieldType.values() )
-				{
-					if ( t.getSimpleCode().equalsIgnoreCase(code) )
-						return t;
-				}
-
-				return default_value;
-			}
-		}
+		this.advanced_search_fields =  o.getCollection(FIELD_ADVANCED_SEARCH_FIELDS, new FieldArrayList<AdvancedSearchField>(), ReadAs.OBJECT, OnError.THROW_EXCEPTION);
+		this.fields_in_view =  o.getCollection(FIELD_FIELDS_IN_VIEW, new FieldArrayList<IncludeFieldInView>(), ReadAs.OBJECT, OnError.THROW_EXCEPTION);
 	}
 
 	@Override
 	public int compareTo( SearchUIData other )
 	{
-//		int ret = Comparison.startCompare();
-//
-//		ret = Comparison.continueCompare(ret, getSimpleAdvancedSearchFields(), other.getSimpleAdvancedSearchFields());
-//		ret = Comparison.continueCompare(ret, getSimpleFieldsInView(), other.getSimpleFieldsInView());
-//		
-//		return ret;
-		return 0;
-		
+		int ret = Comparison.startCompare();
+
+		ret = Comparison.continueCompare(ret, getSimpleAdvancedSearchFields().size(), other.getSimpleAdvancedSearchFields().size());
+		ret = Comparison.continueCompare(ret, getSimpleFieldsInView().size(), other.getSimpleFieldsInView().size());
+
+		return ret;
 	}
 
 	@Override
@@ -133,7 +87,7 @@ public class SearchUIData extends StandardImmutableObject<SearchUIData>
 	@Override
 	public void freeze()
 	{
-		// TODO Auto-generated method stub
+		// TODO: YOU need to freeze 
 
 	}
 
@@ -148,13 +102,15 @@ public class SearchUIData extends StandardImmutableObject<SearchUIData>
 	public void validate()
 	{
 		Validator.notNull(getSimpleAdvancedSearchFields(), getSimpleFieldsInView());
-
+		
+		Validator.containsNoNulls(getSimpleAdvancedSearchFields());
+		Validator.containsNoNulls(getSimpleFieldsInView());
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(advanced_search_fields, fields_in_view);
+		return Objects.hash(getSimpleAdvancedSearchFields(), getSimpleFieldsInView());
 	}
 
 	@Override

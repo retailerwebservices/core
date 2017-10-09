@@ -56,7 +56,7 @@ final public class LibraryPatron extends StandardImmutableObject<LibraryPatron> 
 
 	private StorageKey picture; // optional
 
-	public LibraryPatron(ObjectId id, String first_name, String last_name, EmailAddress email_address, String ssn, Day birth_date, int number_of_books_checked_out, StorageKey picture)
+	public LibraryPatron( ObjectId id, String first_name, String last_name, EmailAddress email_address, String ssn, Day birth_date, int number_of_books_checked_out, StorageKey picture )
 	{
 		this.id = id;
 		this.first_name = first_name;
@@ -69,7 +69,7 @@ final public class LibraryPatron extends StandardImmutableObject<LibraryPatron> 
 		complete();
 	}
 
-	public LibraryPatron(ObjectParseTree t)
+	public LibraryPatron( ObjectParseTree t )
 	{
 		this.id = t.getStringable(FIELD_OBJECT_ID);
 		this.first_name = t.getString(FIELD_FIRST_NAME);
@@ -88,95 +88,52 @@ final public class LibraryPatron extends StandardImmutableObject<LibraryPatron> 
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals( Object obj )
 	{
-		if (this == obj)
+		if ( this == obj )
 		{
 			return true;
 		}
-		if (obj == null)
+		if ( obj == null )
 		{
 			return false;
 		}
-		if (getClass() != obj.getClass())
+		if ( getClass() != obj.getClass() )
 		{
 			return false;
 		}
 
 		LibraryPatron other = (LibraryPatron) obj;
-		if (getOptionalBirthDate(null) == null)
-		{
-			if (!Objects.equals(other.getOptionalBirthDate(null), null))
-			{
-				return false;
-			}
-		} else if (!Objects.equals(getOptionalBirthDate(null), other.getOptionalBirthDate(null)))
+		if ( !Objects.equals(getSimpleObjectId(), other.getSimpleObjectId()) )
 		{
 			return false;
 		}
-		if (Objects.equals(getOptionalEmailAddress(null), null))
-		{
-			if (!Objects.equals(other.getOptionalEmailAddress(null), null))
-			{
-				return false;
-			}
-		} else if (!Objects.equals(getOptionalEmailAddress(null), other.getOptionalEmailAddress(null)))
+		if ( !Objects.equals(getSimpleFirstName(), other.getSimpleFirstName()) )
 		{
 			return false;
 		}
-		if (Objects.equals(getSimpleFirstName(), null))
-		{
-			if (!Objects.equals(other.getSimpleFirstName(), null))
-			{
-				return false;
-			}
-		} else if (!Objects.equals(getSimpleFirstName(), other.getSimpleFirstName()))
+		if ( !Objects.equals(getSimpleLastName(), other.getSimpleLastName()) )
 		{
 			return false;
 		}
-		if (Objects.equals(getSimpleObjectId(), null))
+		if ( !Objects.equals(getOptionalBirthDate(null), other.getOptionalBirthDate(null)) )
 		{
-			if (!Objects.equals(other.getSimpleObjectId(), null))
-			{
-				return false;
-			}
-		} else if (!Objects.equals(getSimpleObjectId(), other.getSimpleObjectId()))
+			return false;
+		}
+		if ( !Objects.equals(getOptionalEmailAddress(null), other.getOptionalEmailAddress(null)) )
 		{
 			return false;
 		}
 
-		if (Objects.equals(getSimpleLastName(), null))
-
-		{
-			if (!Objects.equals(other.getSimpleLastName(), null))
-			{
-				return false;
-			}
-		} else if (!Objects.equals(getSimpleLastName(), other.getSimpleLastName()))
+		if ( !Objects.equals(getOptionalSSN(null), other.getOptionalSSN(null)) )
 		{
 			return false;
 		}
-		if (Objects.equals(getSimpleNumberOfBooksCheckedOut(), null))
-		{
-			if (!Objects.equals(other.getSimpleNumberOfBooksCheckedOut(), null))
-				return false;
-		} else if (!Objects.equals(getSimpleNumberOfBooksCheckedOut(), other.getSimpleNumberOfBooksCheckedOut()))
-			return false;
-		if (Objects.equals(getOptionalSSN(null), null))
-		{
-			if (!Objects.equals(other.getOptionalSSN(null), null))
-				return false;
-		} else if (!Objects.equals(getOptionalSSN(null), other.getOptionalSSN(null)))
+		if ( !Objects.equals(getSimpleNumberOfBooksCheckedOut(), other.getSimpleNumberOfBooksCheckedOut()) )
 		{
 			return false;
 		}
-		if (Objects.equals(getOptionalPicture(null), null))
-		{
-			if (!Objects.equals(other.getOptionalPicture(null), null))
-			{
-				return false;
-			}
-		} else if (!Objects.equals(getOptionalPicture(null), other.getOptionalPicture(null)))
+		if ( !Objects.equals(getOptionalPicture(null), other.getOptionalPicture(null)) )
 		{
 			return false;
 		}
@@ -193,7 +150,7 @@ final public class LibraryPatron extends StandardImmutableObject<LibraryPatron> 
 		return last_name;
 	}
 
-	public Day getOptionalBirthDate(Day default_value)
+	public Day getOptionalBirthDate( Day default_value )
 	{
 		return Optional.getOptional(birth_date, null, default_value);
 	}
@@ -203,7 +160,7 @@ final public class LibraryPatron extends StandardImmutableObject<LibraryPatron> 
 		return birth_date != null;
 	}
 
-	public EmailAddress getOptionalEmailAddress(EmailAddress default_value)
+	public EmailAddress getOptionalEmailAddress( EmailAddress default_value )
 	{
 		return Optional.getOptional(email_address, null, default_value);
 	}
@@ -213,7 +170,7 @@ final public class LibraryPatron extends StandardImmutableObject<LibraryPatron> 
 		return email_address != null;
 	}
 
-	public String getOptionalSSN(String default_value)
+	public String getOptionalSSN( String default_value )
 	{
 		return Optional.getOptional(ssn, null, default_value);
 	}
@@ -228,13 +185,13 @@ final public class LibraryPatron extends StandardImmutableObject<LibraryPatron> 
 		return number_of_books_checked_out;
 	}
 
-	public StorageKey getOptionalPicture(StorageKey default_value)
+	public StorageKey getOptionalPicture( StorageKey default_value )
 	{
 		return Optional.getOptional(picture, null, default_value);
 	}
 
 	@Override
-	public String serialize(Format format)
+	public String serialize( Format format )
 	{
 		return ObjectWriter.serialize(format, this);
 	}
@@ -252,7 +209,7 @@ final public class LibraryPatron extends StandardImmutableObject<LibraryPatron> 
 	}
 
 	@Override
-	public void writeSearchDocument(SearchDocumentWriter writer)
+	public void writeSearchDocument( SearchDocumentWriter writer )
 	{
 		writer.writeAtom(FIELD_OBJECT_ID.getSimpleFieldName(), id.getSimpleValue());
 		writer.writeText(FIELD_FIRST_NAME.getSimpleFieldName(), first_name);
@@ -265,7 +222,7 @@ final public class LibraryPatron extends StandardImmutableObject<LibraryPatron> 
 	}
 
 	@Override
-	public int compareTo(LibraryPatron other)
+	public int compareTo( LibraryPatron other )
 	{
 		int ret = Comparison.startCompare();
 
@@ -288,7 +245,7 @@ final public class LibraryPatron extends StandardImmutableObject<LibraryPatron> 
 	}
 
 	@Override
-	public void write(ObjectWriter writer)
+	public void write( ObjectWriter writer )
 	{
 		writer.writeObject(FIELD_OBJECT_ID.getSimpleFieldName(), id.getSimpleValue());
 		writer.writeString(FIELD_FIRST_NAME.getSimpleFieldName(), first_name);

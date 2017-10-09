@@ -57,11 +57,11 @@ public class AdvancedSearchComboBoxChoiceTest extends StubTest
 
 		field_modified = new AdvancedSearchComboBoxChoice("Name", "Trevor");
 		assertFalse(field.equals(field_modified));
-		assertEquals(-1,field.compareTo(field_modified));
+		assertTrue(0>field.compareTo(field_modified));
 
 		field_modified = new AdvancedSearchComboBoxChoice("Name", "Aaron");
 		assertFalse(field.equals(field_modified));
-		assertEquals(1,field.compareTo(field_modified));
+		assertTrue(0<field.compareTo(field_modified));
 	}
 
 }
