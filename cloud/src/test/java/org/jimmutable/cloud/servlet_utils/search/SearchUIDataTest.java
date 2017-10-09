@@ -2,6 +2,7 @@ package org.jimmutable.cloud.servlet_utils.search;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -41,45 +42,26 @@ public class SearchUIDataTest extends StubTest
 		String serialized_value = field.serialize(Format.JSON_PRETTY_PRINT);
 
 		System.out.println(field.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
-		assertEquals("{\n" + 
-		"  \"type_hint\" : \"searchuidata\",\n" + 
-		"  \"advancedsearchfields\" : [ {\n" + 
-		"    \"type_hint\" : \"advancedsearchfield\",\n" + 
-		"    \"label\" : \"Label\",\n" +
-		"    \"searchdocumentfield\" : \"searchfieldid\",\n" +
-		"    \"type\" : \"text\",\n" +
-		"    \"combo_box_choices\" : [ ]\n" +
-		"  } ],\n" +
-		"  \"fieldsinview\" : [ {\n" +
-		"    \"type_hint\" : \"includefieldinview\",\n" +
-		"    \"label\" : \"fieldLabel\",\n" +
-		"    \"search_document_field\" : \"searchfieldid\",\n" +
-		"    \"included_by_default\" : false\n" +
-		"  } ]\n" +
-		"}", serialized_value);
+		assertEquals("{\n" + "  \"type_hint\" : \"searchuidata\",\n" + "  \"advancedsearchfields\" : [ {\n" + "    \"type_hint\" : \"advancedsearchfield\",\n" + "    \"label\" : \"Label\",\n" + "    \"searchdocumentfield\" : \"searchfieldid\",\n" + "    \"type\" : \"text\",\n" + "    \"combo_box_choices\" : [ ]\n" + "  } ],\n" + "  \"fieldsinview\" : [ {\n" + "    \"type_hint\" : \"includefieldinview\",\n" + "    \"label\" : \"fieldLabel\",\n" + "    \"search_document_field\" : \"searchfieldid\",\n" + "    \"included_by_default\" : false\n" + "  } ]\n" + "}", serialized_value);
 
-		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s"
-			     , "{"
-			     , "  \"type_hint\" : \"searchuidata\","
-			     , "  \"advancedsearchfields\" : [ {"
-			     , "    \"type_hint\" : \"advancedsearchfield\","
-			     , "    \"label\" : \"Label\","
-			     , "    \"searchdocumentfield\" : \"searchfieldid\","
-			     , "    \"type\" : \"text\","
-			     , "    \"combo_box_choices\" : [ ]"
-			     , "  } ],"
-			     , "  \"fieldsinview\" : [ {"
-			     , "    \"type_hint\" : \"includefieldinview\","
-			     , "    \"label\" : \"fieldLabel\","
-			     , "    \"search_document_field\" : \"searchfieldid\","
-			     , "    \"included_by_default\" : false"
-			     , "  } ]"
-			     , "}"
-			);
+		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s", "{", "  \"type_hint\" : \"searchuidata\",", "  \"advancedsearchfields\" : [ {", "    \"type_hint\" : \"advancedsearchfield\",", "    \"label\" : \"Label\",", "    \"searchdocumentfield\" : \"searchfieldid\",", "    \"type\" : \"text\",", "    \"combo_box_choices\" : [ ]", "  } ],", "  \"fieldsinview\" : [ {", "    \"type_hint\" : \"includefieldinview\",", "    \"label\" : \"fieldLabel\",", "    \"search_document_field\" : \"searchfieldid\",", "    \"included_by_default\" : false", "  } ]", "}");
 
-		SearchUIData obj = (SearchUIData)StandardObject.deserialize(obj_string);
+		SearchUIData obj = (SearchUIData) StandardObject.deserialize(obj_string);
 
 		assertEquals("Label", obj.getSimpleAdvancedSearchFields().get(0).getSimpleLabel());
+	}
+
+	@Test
+	public void testImmutableCreation()
+	{
+		List<AdvancedSearchField> search_field2 = new ArrayList<AdvancedSearchField>();
+		search_field2.add(new AdvancedSearchField("Label", new SearchFieldId("SearchFieldId"), AdvancedSearchFieldType.TEXT, Collections.emptyList()));
+		List<IncludeFieldInView> fields_in_view2 = Collections.singletonList(new IncludeFieldInView("fieldLabel", new SearchFieldId("SearchFieldId"), false));
+
+		SearchUIData field = new SearchUIData(search_field2, fields_in_view2);
+		assertTrue(field.getSimpleAdvancedSearchFields().size() == 1);
+		search_field2.add(new AdvancedSearchField("Label2", new SearchFieldId("SearchFieldId2"), AdvancedSearchFieldType.TEXT, Collections.emptyList()));
+		assertTrue(field.getSimpleAdvancedSearchFields().size() == 1);
 	}
 
 	@Test

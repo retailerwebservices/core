@@ -46,8 +46,6 @@ public class SearchUIData extends StandardImmutableObject<SearchUIData>
 
 	public SearchUIData( List<AdvancedSearchField> advanced_search_fields, List<IncludeFieldInView> fields_in_view )
 	{
-		// CODE REVEIW: This code does not probide for immutability... if advanced search fields or fields_in_view are modified by the calling code the contents of this object will change
-		// You need to copy them over
 		this.advanced_search_fields = new FieldArrayList<>(advanced_search_fields);
 		this.fields_in_view = new FieldArrayList<>(fields_in_view);
 		complete();
@@ -55,8 +53,8 @@ public class SearchUIData extends StandardImmutableObject<SearchUIData>
 
 	public SearchUIData( ObjectParseTree o )
 	{
-		this.advanced_search_fields =  o.getCollection(FIELD_ADVANCED_SEARCH_FIELDS, new FieldArrayList<AdvancedSearchField>(), ReadAs.OBJECT, OnError.THROW_EXCEPTION);
-		this.fields_in_view =  o.getCollection(FIELD_FIELDS_IN_VIEW, new FieldArrayList<IncludeFieldInView>(), ReadAs.OBJECT, OnError.THROW_EXCEPTION);
+		this.advanced_search_fields = o.getCollection(FIELD_ADVANCED_SEARCH_FIELDS, new FieldArrayList<AdvancedSearchField>(), ReadAs.OBJECT, OnError.THROW_EXCEPTION);
+		this.fields_in_view = o.getCollection(FIELD_FIELDS_IN_VIEW, new FieldArrayList<IncludeFieldInView>(), ReadAs.OBJECT, OnError.THROW_EXCEPTION);
 	}
 
 	@Override
@@ -87,8 +85,8 @@ public class SearchUIData extends StandardImmutableObject<SearchUIData>
 	@Override
 	public void freeze()
 	{
-		// TODO: YOU need to freeze 
-
+		advanced_search_fields.freeze();
+		fields_in_view.freeze();
 	}
 
 	@Override
