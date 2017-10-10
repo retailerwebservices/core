@@ -26,6 +26,11 @@ public class SubscriptionDefinition extends Stringable
 	{
 		this(createStringFromComponents(topic_definition, queue_definition));
 	}
+	
+	public SubscriptionDefinition( String topic_app, String topic_id, String queue_app, String queue_id )
+	{
+		this(new TopicDefinition(topic_app,topic_id),new QueueDefinition(queue_app, queue_id));
+	}
 
 	private static String createStringFromComponents( TopicDefinition topic_definition,
 			QueueDefinition queue_definition )
