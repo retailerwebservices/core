@@ -84,11 +84,22 @@ public class ObjectId  extends Stringable
 	}
 
 	/**
+	 * Generate a new, random ObjectId.  Deprecated because the naming convention is incorrect, use createRandomId instead
+	 * 
+	 * @return A new, random ObjectId
+	 */
+	 @Deprecated
+	static public ObjectId randomID()
+	{
+		return createRandomId();
+	}
+	
+	/**
 	 * Generate a new, random ObjectId
 	 * 
 	 * @return A new, random ObjectId
 	 */
-	static public ObjectId randomID()
+	static public ObjectId createRandomId()
 	{
 		return new ObjectId(random.nextLong());
 	}
