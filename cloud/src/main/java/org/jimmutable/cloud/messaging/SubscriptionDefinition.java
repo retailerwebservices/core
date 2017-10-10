@@ -82,4 +82,8 @@ public class SubscriptionDefinition extends Stringable
 			}
 		}
 	}
+	
+	public TopicDefinition getSimpleTopicDefinition() { return topic_definition; }
+	public QueueDefinition getSimpleQueueDefinition() { return queue_definition; }
+	
 }
