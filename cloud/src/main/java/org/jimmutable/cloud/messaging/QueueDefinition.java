@@ -27,6 +27,11 @@ public class QueueDefinition extends Stringable
 	{
 		this(createStringFromComponents(application_id, queue_id));
 	}
+	
+	public QueueDefinition( String application_id, String queue_id )
+	{
+		this(new ApplicationId(application_id), new QueueId(queue_id));
+	}
 
 	private static String createStringFromComponents( ApplicationId application_id, QueueId queue_id )
 	{

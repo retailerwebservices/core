@@ -28,6 +28,11 @@ public class TopicDefinition extends Stringable
 	{
 		this(createStringFromComponents(application_id, topic_id));
 	}
+	
+	public TopicDefinition(String application_id, String topic_id)
+	{
+		this(new ApplicationId(application_id), new TopicId(topic_id));
+	}
 
 	private static String createStringFromComponents( ApplicationId application_id, TopicId topic_id )
 	{
