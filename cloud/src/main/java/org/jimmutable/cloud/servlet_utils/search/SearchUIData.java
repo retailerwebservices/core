@@ -37,10 +37,7 @@ public class SearchUIData extends StandardImmutableObject<SearchUIData>
 	static public final FieldDefinition.Collection FIELD_FIELDS_IN_VIEW = new FieldDefinition.Collection("fieldsinview", null);
 
 	static public final TypeName TYPE_NAME = new TypeName("searchuidata");
-	static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("searchuidata"), new IndexVersion("v1"));
-
-	static public final TopicDefinition TOPIC_DEF = new TopicDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new TopicId("searchuidata"));
-
+	
 	private FieldArrayList<AdvancedSearchField> advanced_search_fields;
 	private FieldArrayList<IncludeFieldInView> fields_in_view;
 
