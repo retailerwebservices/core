@@ -19,7 +19,13 @@ import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.utils.Comparison;
 import org.jimmutable.core.utils.Validator;
-
+/**
+ * This Class is used to bind our AdvancedSearch Combo box choices. 
+ * <br> the Label is the field that we put our selection in. 
+ * <br> the value of the choice selected
+ * @author andrew.towe
+ *
+ */
 public class AdvancedSearchComboBoxChoice extends StandardImmutableObject<AdvancedSearchComboBoxChoice>
 {
 	static public final FieldDefinition.String FIELD_LABEL = new FieldDefinition.String("label", null);
@@ -73,8 +79,7 @@ public class AdvancedSearchComboBoxChoice extends StandardImmutableObject<Advanc
 		ret = Comparison.continueCompare(ret, getSimpleLabel(), other.getSimpleLabel());
 		ret = Comparison.continueCompare(ret, getSimpleValue(), other.getSimpleValue());
 
-		return ret == 0 ? 0 : ret > 0 ? 1 : -1;// Comparison.continueCompare for strings returns other numbers besides 1 -1 and
-		// 0. We are only concerned with Greater then and less then or equal.
+		return ret;
 
 	}
 

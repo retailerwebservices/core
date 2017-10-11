@@ -26,11 +26,23 @@ import org.jimmutable.core.utils.Comparison;
 import org.jimmutable.core.utils.Optional;
 import org.jimmutable.core.utils.Validator;
 
+// CODE REVIEW: You need closing LI tags in the java doc...
+/**
+ * This is the class that we use for our advanced search fields
+ * We have a couple of things in this class
+ * <li> A label field for what our advanced search Field calls itself i.e. name
+ * <li> A Search Document Field that connects our advanced search field to the information that we are searching for
+ * <li> The Field type: either a text field or a Combo Box area
+ * <li> Combo Box Choices: all the things the user can select if the field type is a Combo box. 
+ * @author andrew.towe
+ *
+ */
+
 public class AdvancedSearchField extends StandardImmutableObject<AdvancedSearchField>
 {
 	static public final FieldDefinition.String FIELD_LABEL = new FieldDefinition.String("label", null);
 	static public final FieldDefinition.Stringable<SearchFieldId> FIELD_SEARCH_DOCUMENT_FIELD = new FieldDefinition.Stringable<SearchFieldId>("searchdocumentfield", null, SearchFieldId.CONVERTER);
-	static public final FieldDefinition.Enum<SearchUIData.AdvancedSearchFieldType> FIELD_TYPE = new FieldDefinition.Enum<SearchUIData.AdvancedSearchFieldType>("type", SearchUIData.AdvancedSearchFieldType.TEXT, SearchUIData.AdvancedSearchFieldType.CONVERTER);
+	static public final FieldDefinition.Enum<AdvancedSearchFieldType> FIELD_TYPE = new FieldDefinition.Enum<AdvancedSearchFieldType>("type", AdvancedSearchFieldType.TEXT, AdvancedSearchFieldType.CONVERTER);
 	static public final FieldDefinition.Collection FIELD_COMBO_BOX_CHOICES = new FieldDefinition.Collection("combo_box_choices", null);
 
 	static public final TypeName TYPE_NAME = new TypeName("advancedsearchfield");
@@ -38,6 +50,8 @@ public class AdvancedSearchField extends StandardImmutableObject<AdvancedSearchF
 
 	static public final TopicDefinition TOPIC_DEF = new TopicDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new TopicId("advancedsearchfield"));
 
+	// CODE REVIEW: This class does not implement indexable, so no search index definitions etc. are needed...
+	
 	static private final SearchIndexFieldDefinition SEARCH_FIELD_LABEL = new SearchIndexFieldDefinition(FIELD_LABEL.getSimpleFieldName(), SearchIndexFieldType.TEXT);
 	static private final SearchIndexFieldDefinition SEARCH_SEARCH_DOCUMENT_FIELD = new SearchIndexFieldDefinition(FIELD_SEARCH_DOCUMENT_FIELD.getSimpleFieldName(), SearchIndexFieldType.TEXT);
 	static private final SearchIndexFieldDefinition SEARCH_TYPE = new SearchIndexFieldDefinition(FIELD_TYPE.getSimpleFieldName(), SearchIndexFieldType.TEXT);
@@ -62,15 +76,15 @@ public class AdvancedSearchField extends StandardImmutableObject<AdvancedSearchF
 
 	private String label;// required
 	private SearchFieldId search_document_field;// required
-	private SearchUIData.AdvancedSearchFieldType type;// required
-	private List<AdvancedSearchComboBoxChoice> combo_box_choices;// optional
+	private AdvancedSearchFieldType type;// required // CODE REVIEW: AdvancedSearchFieldType should be moved into its own file
+	private List<AdvancedSearchComboBoxChoice> combo_box_choices;// optional // CODE REVIEW: You need to use FieldArrayList to ensure immutability
 
-	public AdvancedSearchField( String label, SearchFieldId search_document_field, SearchUIData.AdvancedSearchFieldType type, List<AdvancedSearchComboBoxChoice> combo_box_choices )
+	public AdvancedSearchField( String label, SearchFieldId search_document_field, AdvancedSearchFieldType type, List<AdvancedSearchComboBoxChoice> combo_box_choices )
 	{
 		this.label = label;
 		this.search_document_field = search_document_field;
 		this.type = type;
-		this.combo_box_choices = combo_box_choices;
+		this.combo_box_choices = combo_box_choices; // CODE REVIEW: This breaks immutability.  Use FieldArrayList and copy
 		complete();
 	}
 
@@ -79,7 +93,7 @@ public class AdvancedSearchField extends StandardImmutableObject<AdvancedSearchF
 		this.label = o.getString(FIELD_LABEL);
 		this.search_document_field = o.getStringable(FIELD_SEARCH_DOCUMENT_FIELD);
 		this.type = o.getEnum(FIELD_TYPE);
-		this.combo_box_choices = o.getCollection(FIELD_COMBO_BOX_CHOICES, new ArrayList<AdvancedSearchComboBoxChoice>(), ReadAs.OBJECT, OnError.SKIP);
+		this.combo_box_choices = o.getCollection(FIELD_COMBO_BOX_CHOICES, new ArrayList<AdvancedSearchComboBoxChoice>(), ReadAs.OBJECT, OnError.SKIP); // Code review: Use field array list
 	}
 
 	@Override
@@ -114,7 +128,7 @@ public class AdvancedSearchField extends StandardImmutableObject<AdvancedSearchF
 	@Override
 	public void freeze()
 	{
-		
+		// CODE REVIEW: Freeze the combo_box_choices feild
 	}
 
 	@Override
@@ -128,6 +142,7 @@ public class AdvancedSearchField extends StandardImmutableObject<AdvancedSearchF
 	public void validate()
 	{
 		Validator.notNull(getSimpleLabel(), getSimpleSearchDocumentField(), getSimpleType());
+		// CODE REVIEW: You need to verify that combo_box_choices does not contain any null values
 
 	}
 
@@ -175,7 +190,7 @@ public class AdvancedSearchField extends StandardImmutableObject<AdvancedSearchF
 		return search_document_field;
 	}
 
-	public SearchUIData.AdvancedSearchFieldType getSimpleType()
+	public AdvancedSearchFieldType getSimpleType()
 	{
 		return type;
 	}
@@ -187,6 +202,6 @@ public class AdvancedSearchField extends StandardImmutableObject<AdvancedSearchF
 
 	public boolean hasComboBoxChoices()
 	{
-		return getSimpleType().equals(SearchUIData.AdvancedSearchFieldType.TEXT);
+		return getSimpleType().equals(AdvancedSearchFieldType.COMBO_BOX);
 	}
 }

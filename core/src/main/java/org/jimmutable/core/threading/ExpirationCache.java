@@ -3,8 +3,9 @@ package org.jimmutable.core.threading;
 import org.jimmutable.core.utils.Validator;
 
 /**
- * This class allows us to do caching for a short duration. <br>
- * <b>**WARNING**</b> <br>
+ * A time limited LRU cache. Entries are removed whenever (either) the cache
+ * becomes larger than the specified maximum size *or* an entry has been in the
+ * cache for longer than a specified time <b>**WARNING**</b> <br>
  * if you do not make your ExpirationCache large enough, it may remove an item
  * that has not timed out if you put too many items in it.
  * 
@@ -29,7 +30,7 @@ public class ExpirationCache<K, V>
 	 * @param maximum_size
 	 *            The most amount of items allowed in the cache.
 	 */
-	public ExpirationCache(long maximum_allowed_entry_age_in_ms, int maximum_size)
+	public ExpirationCache( long maximum_allowed_entry_age_in_ms, int maximum_size )
 	{
 		Validator.min(maximum_allowed_entry_age_in_ms, 0);// strictly positive numbers
 		this.maximum_allowed_entry_age_in_ms = maximum_allowed_entry_age_in_ms;
@@ -45,7 +46,7 @@ public class ExpirationCache<K, V>
 	 * @param value
 	 *            to be associated with the key.
 	 */
-	public void put(K key, V value)
+	public void put( K key, V value )
 	{
 		data.put(key, value);
 		put_times.put(key, System.currentTimeMillis());
@@ -60,18 +61,22 @@ public class ExpirationCache<K, V>
 	 * @return the value associated with the key if the value has not timed out,
 	 *         otherwise default_value
 	 */
-	public V getOptional(K key, V default_value)
+	public V getOptional( K key, V default_value )
 	{
+		// CODE REVIEW: spacing and formatting of this function is not correct
 		Long time_in_cache = put_times.get(key, null);
-		if (time_in_cache != null)
-		{// if it is not in the put times, return default value
-			if ((System.currentTimeMillis() - time_in_cache) <= maximum_allowed_entry_age_in_ms)
-			{// if it has been in the system more that the maximum time, return the default
-				// value
+		
+		if ( time_in_cache != null )
+		{
+			// if it is not in the put times, return default value
+			if ( (System.currentTimeMillis() - time_in_cache) <= maximum_allowed_entry_age_in_ms )
+			{
+				// if it has been in the system more that the maximum time, return the default value
 				return data.get(key, default_value);
 			}
 		}
-		return default_value;// if any of the conditions are not met, return default_value
+		
+		return default_value; // if any of the conditions are not met, return default_value
 	}
 
 	/**
@@ -82,7 +87,7 @@ public class ExpirationCache<K, V>
 	 *         Otherwise false.
 	 */
 
-	public boolean has(K key)
+	public boolean has( K key )
 	{
 		return getOptional(key, null) != null;
 	}
@@ -91,7 +96,7 @@ public class ExpirationCache<K, V>
 	 * @param key
 	 *            to remove from the Expiration Cache.
 	 */
-	public void remove(K key)
+	public void remove( K key )
 	{
 		data.remove(key);
 		put_times.remove(key);

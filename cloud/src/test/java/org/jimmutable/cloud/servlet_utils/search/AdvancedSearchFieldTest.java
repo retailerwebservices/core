@@ -34,7 +34,7 @@ public class AdvancedSearchFieldTest extends StubTest
 	@Test
 	public void testUserSerialization()
 	{
-		AdvancedSearchField field = new AdvancedSearchField("label", new SearchFieldId("field"), SearchUIData.AdvancedSearchFieldType.COMBO_BOX, Collections.EMPTY_LIST); 
+		AdvancedSearchField field = new AdvancedSearchField("label", new SearchFieldId("field"), AdvancedSearchFieldType.COMBO_BOX, Collections.EMPTY_LIST); 
 		String serialized_value = field.serialize(Format.JSON_PRETTY_PRINT);
 
 		System.out.println(field.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
@@ -42,7 +42,7 @@ public class AdvancedSearchFieldTest extends StubTest
 				"  \"type_hint\" : \"advancedsearchfield\",\n" + 
 				"  \"label\" : \"label\",\n" + 
 				"  \"searchdocumentfield\" : \"field\",\n" + 
-				"  \"type\" : null,\n" + 
+				"  \"type\" : \"combo-box\",\n" + 
 				"  \"combo_box_choices\" : [ ]\n" + 
 				"}", serialized_value);
 
@@ -51,7 +51,7 @@ public class AdvancedSearchFieldTest extends StubTest
 			     , "  \"type_hint\" : \"advancedsearchfield\","
 			     , "  \"label\" : \"label\","
 			     , "  \"searchdocumentfield\" : \"field\","
-			     , "  \"type\" : null,"
+			     , "  \"type\" : \"combo-box\","
 			     , "  \"combo_box_choices\" : [ ]"
 			     , "}"
 			);
@@ -63,17 +63,17 @@ public class AdvancedSearchFieldTest extends StubTest
 	@Test
 	public void testUserComparisonAndEquals()
 	{
-		AdvancedSearchField field = new AdvancedSearchField("label", new SearchFieldId("field"), SearchUIData.AdvancedSearchFieldType.COMBO_BOX, Collections.EMPTY_LIST); 
-		AdvancedSearchField field_modified = new AdvancedSearchField("label", new SearchFieldId("field"), SearchUIData.AdvancedSearchFieldType.COMBO_BOX, Collections.EMPTY_LIST); 
+		AdvancedSearchField field = new AdvancedSearchField("label", new SearchFieldId("field"), AdvancedSearchFieldType.COMBO_BOX, Collections.EMPTY_LIST); 
+		AdvancedSearchField field_modified = new AdvancedSearchField("label", new SearchFieldId("field"), AdvancedSearchFieldType.COMBO_BOX, Collections.EMPTY_LIST); 
 
 		assertTrue(field.equals(field_modified));
 		assertEquals(0, field.compareTo(field_modified));
 		
-		field_modified = new AdvancedSearchField("label", new SearchFieldId("fielda"), SearchUIData.AdvancedSearchFieldType.TEXT, Collections.EMPTY_LIST); 
+		field_modified = new AdvancedSearchField("label", new SearchFieldId("fielda"), AdvancedSearchFieldType.TEXT, Collections.EMPTY_LIST); 
 		assertFalse(field.equals(field_modified));
 		assertTrue(0>field.compareTo(field_modified));
 
-		field_modified = new AdvancedSearchField("label", new SearchFieldId("afield"), SearchUIData.AdvancedSearchFieldType.COMBO_BOX, Collections.EMPTY_LIST); 
+		field_modified = new AdvancedSearchField("label", new SearchFieldId("afield"), AdvancedSearchFieldType.COMBO_BOX, Collections.EMPTY_LIST); 
 		assertFalse(field.equals(field_modified));
 		assertTrue(0<field.compareTo(field_modified));
 	}
@@ -81,17 +81,17 @@ public class AdvancedSearchFieldTest extends StubTest
 	@Test
 	public void testOptionalFields()
 	{
-		AdvancedSearchField field = new AdvancedSearchField("label", new SearchFieldId("field"), SearchUIData.AdvancedSearchFieldType.COMBO_BOX, Collections.EMPTY_LIST); 
-		AdvancedSearchField field_modified = new AdvancedSearchField("label", new SearchFieldId("field"), SearchUIData.AdvancedSearchFieldType.COMBO_BOX, Collections.EMPTY_LIST); 
+		AdvancedSearchField field = new AdvancedSearchField("label", new SearchFieldId("field"), AdvancedSearchFieldType.COMBO_BOX, Collections.EMPTY_LIST); 
+		AdvancedSearchField field_modified = new AdvancedSearchField("label", new SearchFieldId("field"), AdvancedSearchFieldType.COMBO_BOX, Collections.EMPTY_LIST); 
 
 		assertTrue(field.equals(field_modified));
 		assertEquals(0, field.compareTo(field_modified));
 		
-		field_modified = new AdvancedSearchField("label", new SearchFieldId("fielda"), SearchUIData.AdvancedSearchFieldType.TEXT, Collections.EMPTY_LIST); 
+		field_modified = new AdvancedSearchField("label", new SearchFieldId("fielda"), AdvancedSearchFieldType.TEXT, Collections.EMPTY_LIST); 
 		assertFalse(field.equals(field_modified));
 		assertTrue(0>field.compareTo(field_modified));
 
-		field_modified = new AdvancedSearchField("label", new SearchFieldId("afield"), SearchUIData.AdvancedSearchFieldType.COMBO_BOX, Collections.EMPTY_LIST); 
+		field_modified = new AdvancedSearchField("label", new SearchFieldId("afield"), AdvancedSearchFieldType.COMBO_BOX, Collections.EMPTY_LIST); 
 		assertFalse(field.equals(field_modified));
 		assertTrue(0<field.compareTo(field_modified));
 	}

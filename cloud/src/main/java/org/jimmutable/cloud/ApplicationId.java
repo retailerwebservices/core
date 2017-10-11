@@ -1,5 +1,6 @@
 package org.jimmutable.cloud;
 
+import org.jimmutable.cloud.http.QueryStringKey;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
 
@@ -31,6 +32,23 @@ public class ApplicationId extends Stringable
 		Validator.max(getSimpleValue().length(), 64);
 		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.UNDERSCORE, Validator.LOWERCASE_LETTERS, Validator.NUMBERS);
 
+	}
+
+	/**
+	 * @param default_value
+	 * @return either the current Application Id for Development or the
+	 *         default_value passed in
+	 */
+
+	public static ApplicationId getOptionalDevApplicationId(ApplicationId default_value)
+	{
+		// TODO verify if we just need this
+		String devEnvironment = System.getProperty("DEV_APPLICATION_ID");
+		if (devEnvironment == null)
+		{
+			return default_value;
+		}
+		return new ApplicationId(devEnvironment);
 	}
 
 	static public class MyConverter extends Stringable.Converter<ApplicationId>
