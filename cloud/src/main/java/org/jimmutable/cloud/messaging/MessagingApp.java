@@ -23,6 +23,7 @@ import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
+import org.jimmutable.cloud.messaging.dev_local.MessagingDevLocalFileSystem;
 
 public class MessagingApp
 {

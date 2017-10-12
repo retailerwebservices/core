@@ -102,7 +102,7 @@ public class FileSystemTest
 		
 		assert(all_subs.size() == 5);
 	}
-
+	@Test
 	public void testListAllTopics()
 	{
 		Set<TopicDefinition> topics = fs.listAllTopics();

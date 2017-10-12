@@ -49,30 +49,34 @@ import com.amazonaws.util.IOUtils;
 public class MessagingDevLocalFileSystem extends Messaging
 {
 	private static final Logger logger = Logger.getLogger(MessagingDevLocalFileSystem.class.getName());
-	
+
 	private FileSystem fs;
-	
+
 	/**
-	 * A single, daemon (won't block application exit) thread pool is shared by all send operations
+	 * A single, daemon (won't block application exit) thread pool is shared by all
+	 * send operations
 	 **/
 	private ExecutorService daemon_thread_pool = DaemonThreadFactory.createDaemonFixedThreadPool(2);
-	
+
 	private MessageListenerDaemon message_listener_daemon;
-	
-	
+
 	public MessagingDevLocalFileSystem()
 	{
 		super();
-		
-		
+
 		fs = new FileSystem();
-	
+
 		// Setup and start the listener daemon
+		try
 		{
 			message_listener_daemon = new MessageListenerDaemon(fs);
-			
+
 			DaemonThreadFactory factory = new DaemonThreadFactory();
 			factory.newThread(message_listener_daemon);
+		}
+		catch ( IOException e )
+		{
+			logger.severe("Problem registering Message Listener Daemon");
 		}
 	}
 
@@ -124,7 +128,7 @@ public class MessagingDevLocalFileSystem extends Messaging
 			daemon_thread_pool.shutdown();
 			daemon_thread_pool.awaitTermination(100_000, TimeUnit.DAYS);
 		}
-		catch(Exception e)
+		catch ( Exception e )
 		{
 			logger.log(Level.SEVERE, "Error in messing shutdown", e);
 		}
