@@ -30,7 +30,7 @@ public class ApplicationId extends Stringable
 		Validator.notNull(getSimpleValue());
 		Validator.min(getSimpleValue().length(), 1);
 		Validator.max(getSimpleValue().length(), 64);
-		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.UNDERSCORE, Validator.LOWERCASE_LETTERS, Validator.NUMBERS);
+		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.DASH, Validator.LOWERCASE_LETTERS, Validator.NUMBERS);
 
 	}
 

@@ -17,9 +17,9 @@ public class ApplicationIdTest extends TestCase
 		tester.assertValid("foo", "foo");
 		tester.assertValid("FOO", "foo");
 
-		tester.assertValid("abcdefghijklmnopqrstuvwxyz0123456789_", "abcdefghijklmnopqrstuvwxyz0123456789_");
+		tester.assertValid("abcdefghijklmnopqrstuvwxyz0123456789-", "abcdefghijklmnopqrstuvwxyz0123456789-");
 
-		tester.assertValid("FoO_BAR", "foo_bar");
+		tester.assertValid("FoO-BAR", "foo-bar");
 	}
 
 	@Test
@@ -28,7 +28,7 @@ public class ApplicationIdTest extends TestCase
 		tester.assertInvalid(null);
 		tester.assertInvalid("");
 		tester.assertInvalid("&&!(#$");
-		tester.assertInvalid("foo-bar");
+		tester.assertInvalid("foo_bar");
 		tester.assertInvalid("foo bar");
 	}
 }

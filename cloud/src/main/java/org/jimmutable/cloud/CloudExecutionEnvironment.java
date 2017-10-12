@@ -16,8 +16,9 @@ import org.jimmutable.cloud.elasticsearch.StubSearch;
 import org.jimmutable.cloud.elasticsearch.ElasticSearch;
 import org.jimmutable.cloud.logging.Log4jUtil;
 import org.jimmutable.cloud.messaging.IMessaging;
-import org.jimmutable.cloud.messaging.MessagingDevLocalFileSystem;
+
 import org.jimmutable.cloud.messaging.StubMessaging;
+import org.jimmutable.cloud.messaging.dev_local.MessagingDevLocalFileSystem;
 import org.jimmutable.cloud.storage.IStorage;
 import org.jimmutable.cloud.storage.StorageDevLocalFileSystem;
 import org.jimmutable.cloud.storage.StubStorage;
@@ -130,8 +131,7 @@ public class CloudExecutionEnvironment
 		}
 
 		// register objects
-		JimmutableTypeNameRegister.registerAllTypes();
-		JimmutableCloudTypeNameRegister.registerAllTypes();
+		
 
 		ENV_TYPE = env_type;
 		APPLICATION_ID = application_id;
@@ -173,6 +173,8 @@ public class CloudExecutionEnvironment
 			throw new RuntimeException(String.format("Unhandled EnvironmentType: %s! Add the environment to startup to handle it correctly.", env_type));
 
 		}
+		JimmutableTypeNameRegister.registerAllTypes();
+		JimmutableCloudTypeNameRegister.registerAllTypes();
 
 	}
 

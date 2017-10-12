@@ -29,7 +29,7 @@ public class App
 
 		org.eclipse.jetty.util.log.Log.setLog(new Jetty2Log4j2Bridge("jetty"));
 
-		CloudExecutionEnvironment.startupIntegrationTest(new ApplicationId("platform_test"));
+		CloudExecutionEnvironment.startupIntegrationTest(new ApplicationId("platform-test"));
 		ServerCoreTypeNameRegister.registerAllTypes();
 		UserManager.startup();
 
