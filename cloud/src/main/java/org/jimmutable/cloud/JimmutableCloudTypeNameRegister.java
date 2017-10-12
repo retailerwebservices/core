@@ -7,9 +7,12 @@ import org.jimmutable.cloud.servlet_utils.common_objects.GeneralResponseError;
 import org.jimmutable.cloud.servlet_utils.common_objects.GeneralResponseOK;
 import org.jimmutable.cloud.servlet_utils.get.GetResponseError;
 import org.jimmutable.cloud.servlet_utils.get.GetResponseOK;
+import org.jimmutable.cloud.servlet_utils.search.AdvancedSearchField;
+import org.jimmutable.cloud.servlet_utils.search.IncludeFieldInView;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
+import org.jimmutable.cloud.servlet_utils.search.SearchUIData;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.servlet_utils.upsert.UpsertResponseOK;
 import org.jimmutable.cloud.servlet_utils.upsert.UpsertResponseValidationError;
@@ -52,5 +55,8 @@ public class JimmutableCloudTypeNameRegister
 		ObjectParseTree.registerTypeName(SearchIndexDefinition.class);
 		
 		ObjectParseTree.registerTypeName(StandardMessageOnUpsert.class);
+		ObjectParseTree.registerTypeName(SearchUIData.class);
+		ObjectParseTree.registerTypeName(AdvancedSearchField.class);
+		ObjectParseTree.registerTypeName(IncludeFieldInView.class);
 	}
 }

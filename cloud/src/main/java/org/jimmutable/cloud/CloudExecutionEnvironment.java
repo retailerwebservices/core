@@ -129,14 +129,10 @@ public class CloudExecutionEnvironment
 			throw new RuntimeException("Startup has already been called!");
 		}
 
-		// register objects
-		JimmutableTypeNameRegister.registerAllTypes();
-		JimmutableCloudTypeNameRegister.registerAllTypes();
-
 		ENV_TYPE = env_type;
 		APPLICATION_ID = application_id;
 
-		logger.trace(String.format("ApplicationID=%s Environment=%s", APPLICATION_ID, ENV_TYPE));
+		logger.info(String.format("ApplicationID=%s Environment=%s", APPLICATION_ID, ENV_TYPE));
 
 		switch (env_type)
 		{
@@ -165,7 +161,6 @@ public class CloudExecutionEnvironment
 
 			checkOs();
 			CURRENT = new CloudExecutionEnvironment(new StubSearch(), new StubStorage(), new StubMessaging());
-
 			break;
 
 		default:
@@ -173,6 +168,10 @@ public class CloudExecutionEnvironment
 			throw new RuntimeException(String.format("Unhandled EnvironmentType: %s! Add the environment to startup to handle it correctly.", env_type));
 
 		}
+
+		// register objects
+		JimmutableTypeNameRegister.registerAllTypes();
+		JimmutableCloudTypeNameRegister.registerAllTypes();
 
 	}
 

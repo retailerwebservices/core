@@ -356,9 +356,8 @@ public class ElasticSearch implements ISearch
 				{
 
 					logger.info("Index not properly configured");
-					logger.info(expected);
-					logger.info(actual);
-
+					logger.info(String.format("Expected fields=%s", expected));
+					logger.info(String.format("Actual   fields=%s", actual));
 					return false;
 
 				}
