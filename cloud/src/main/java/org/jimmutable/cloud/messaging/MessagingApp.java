@@ -23,6 +23,7 @@ import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
+import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.cloud.messaging.dev_local.MessagingDevLocalFileSystem;
 
 public class MessagingApp
@@ -33,7 +34,8 @@ public class MessagingApp
 
 	public static void main(String[] args)
 	{
-		appId = new ApplicationId("Development");
+		ObjectParseTree.registerTypeName(StandardMessageOnUpsert.class);
+		appId = new ApplicationId("MessagingApp-development");
 		messagingsystem = new MessagingDevLocalFileSystem();
 
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -51,16 +53,15 @@ public class MessagingApp
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				String mainpath = System.getProperty("user.home") + "/jimmutable_dev/messaging/development/monty-python-jokes";
-				for (String queue_application_id : Arrays.asList("lancelot", "galahad"))
-				{
+				String mainpath = System.getProperty("user.home") + "/jimmutable_aws_dev/messaging/messagingapp-development/monty-python-jokes/messagingapp-development";
+				
 					for (String queue_queue_id : Arrays.asList("queue1", "queue2"))
 					{
-						String filepath = mainpath + "/" + queue_application_id + "/" + queue_queue_id;
+						String filepath = mainpath + "/" + queue_queue_id;
 						File f = new File(filepath);
 						f.mkdirs();
 					}
-				}
+				
 
 			}
 		});
@@ -81,7 +82,7 @@ public class MessagingApp
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				messagingsystem.startListening(new SubscriptionDefinition(new TopicDefinition(appId, new TopicId("monty-python-jokes")), new QueueDefinition(appId, new QueueId("the-holy-grail"))), new TestAppMessageListener());
+				messagingsystem.startListening(new SubscriptionDefinition(new TopicDefinition(appId, new TopicId("monty-python-jokes")), new QueueDefinition(appId, new QueueId("queue1"))), new TestAppMessageListener());
 			}
 		});
 
@@ -91,7 +92,7 @@ public class MessagingApp
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				String filePathString = System.getProperty("user.home") + "/jimmutable_dev/messaging";// application id
+				String filePathString = System.getProperty("user.home") + "/jimmutable_aws_dev/messaging/messagingapp-development/";
 																										// needs to go
 																										// here
 				File f = new File(filePathString);
