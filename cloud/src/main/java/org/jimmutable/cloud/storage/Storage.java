@@ -5,6 +5,8 @@ import org.apache.logging.log4j.LogManager;
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.core.objects.common.Kind;
+import org.jimmutable.core.serialization.Format;
+import org.jimmutable.core.serialization.writer.ObjectWriter;
 
 /**
  *
@@ -75,10 +77,10 @@ public abstract class Storage implements IStorage
 
 	public abstract Iterable<StorageKey> listComplex(Kind kind, Iterable<StorageKey> default_value);
 
-	public boolean upsert(Storable obj)
+	public boolean upsert(Storable obj, Format format)
 	{
 		Validator.notNull(obj);
-		return upsert(obj.createStorageKey(), null, true);
+		return upsert(obj.createStorageKey(), ObjectWriter.serialize(format, obj).getBytes(), true);
 	}
 
 	public boolean exists(Storable obj, boolean default_value)
