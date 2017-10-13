@@ -34,7 +34,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class MessagingDevLocalFileSystemTest extends StubTest
+public class MessagingDevLocalFileSystemIT extends StubTest
 {
 	private static final Kind KIND = new Kind("testKind");
 	private static final TopicDefinition TOPIC_DEF_SEND = new TopicDefinition(new ApplicationId("test-application"), new TopicId("test-send"));
