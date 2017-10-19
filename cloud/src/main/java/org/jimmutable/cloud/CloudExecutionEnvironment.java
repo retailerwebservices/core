@@ -27,7 +27,7 @@ import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 /**
  * Configures environment and application specific setting, to be used by other
  * classes. This includes EnvironmantType, ApplicationId, and logging settings.
- * 
+ *
  * @author trevorbox
  *
  */
@@ -79,7 +79,7 @@ public class CloudExecutionEnvironment
 
 	/**
 	 * Search instance used for document upsert and searching of indices
-	 * 
+	 *
 	 * @return The Search instance
 	 */
 	public ISearch getSimpleSearch()
@@ -89,7 +89,7 @@ public class CloudExecutionEnvironment
 
 	/**
 	 * Storage system the application uses to store objects
-	 * 
+	 *
 	 * @return Storage The storage system
 	 */
 	public IStorage getSimpleStorage()
@@ -99,7 +99,7 @@ public class CloudExecutionEnvironment
 
 	/**
 	 * Messaging system the application uses to send messages (pub/sub)
-	 * 
+	 *
 	 * @return
 	 */
 	public IMessaging getSimpleMessaging()
@@ -108,15 +108,15 @@ public class CloudExecutionEnvironment
 	}
 
 	/**
-	 * 
+	 *
 	 * ONLY CALL THIS METHOD ONCE
-	 * 
+	 *
 	 * Startup must be called within the main method of the application and will
 	 * attempt to set the environment type and application id based on the
 	 * environment variables JIMMUTABLE_ENV_TYPE and JIMMUTABLE_APP_ID.
-	 * 
+	 *
 	 * The DEV environment variable is the default if the variable is not provided
-	 * 
+	 *
 	 * @param default_id
 	 *            A default application id in case the environment variable is not
 	 *            set
@@ -131,12 +131,12 @@ public class CloudExecutionEnvironment
 		}
 
 		// register objects
-		
+
 
 		ENV_TYPE = env_type;
 		APPLICATION_ID = application_id;
 
-		logger.trace(String.format("ApplicationID=%s Environment=%s", APPLICATION_ID, ENV_TYPE));
+		logger.info(String.format("ApplicationID=%s Environment=%s", APPLICATION_ID, ENV_TYPE));
 
 		switch (env_type)
 		{
@@ -165,7 +165,6 @@ public class CloudExecutionEnvironment
 
 			checkOs();
 			CURRENT = new CloudExecutionEnvironment(new StubSearch(), new StubStorage(), new StubMessaging());
-
 			break;
 
 		default:
@@ -176,12 +175,16 @@ public class CloudExecutionEnvironment
 		JimmutableTypeNameRegister.registerAllTypes();
 		JimmutableCloudTypeNameRegister.registerAllTypes();
 
+		// register objects
+		JimmutableTypeNameRegister.registerAllTypes();
+		JimmutableCloudTypeNameRegister.registerAllTypes();
+
 	}
 
 	/**
 	 * Use this for running unit tests. Search, Storage, and Messaging are just stub
 	 * classes and throw Runtime Exceptions if their methods are called.
-	 * 
+	 *
 	 * @param application_id
 	 *            The ApplicationId
 	 */
@@ -194,7 +197,7 @@ public class CloudExecutionEnvironment
 	 * Use this for running integration tests. Search, Storage, and Messaging are
 	 * initialized to the Dev instances. Any local clients needed for Search,
 	 * Storage or Messaging should be running.
-	 * 
+	 *
 	 * @param application_id
 	 *            The ApplicationId
 	 */
@@ -206,7 +209,7 @@ public class CloudExecutionEnvironment
 	/**
 	 * Get the environment type from the system property JIMMUTABLE_ENV_TYPE. If it
 	 * fails the default value is returned.
-	 * 
+	 *
 	 * @param default_value
 	 * @return The EnvironmentType from the system variable or the default_value
 	 */
@@ -251,10 +254,10 @@ public class CloudExecutionEnvironment
 
 	/**
 	 * MAKE SURE YOU CALLED STARTUP ONCE BEFORE
-	 * 
+	 *
 	 * Make sure your application calls startup first to setup the singleton. If
 	 * CURRENT is not set the JVM will be terminated!
-	 * 
+	 *
 	 * @return the cloud execution environment
 	 */
 	static public CloudExecutionEnvironment getSimpleCurrent()

@@ -1,6 +1,7 @@
 package org.jimmutable.cloud.storage;
 
 import org.jimmutable.core.objects.common.Kind;
+import org.jimmutable.core.serialization.Format;
 
 public interface IStorage
 {
@@ -15,7 +16,7 @@ public interface IStorage
 
 	public abstract Iterable<StorageKey> listComplex(Kind kind, Iterable<StorageKey> default_value);
 
-	public boolean upsert(Storable obj);
+	public boolean upsert(Storable obj, Format format);
 
 	public boolean exists(Storable obj, boolean default_value);
 

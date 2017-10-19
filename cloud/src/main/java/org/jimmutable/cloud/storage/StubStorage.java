@@ -1,6 +1,7 @@
 package org.jimmutable.cloud.storage;
 
 import org.jimmutable.core.objects.common.Kind;
+import org.jimmutable.core.serialization.Format;
 
 public class StubStorage implements IStorage
 {
@@ -36,7 +37,7 @@ public class StubStorage implements IStorage
 	}
 
 	@Override
-	public boolean upsert(Storable obj)
+	public boolean upsert(Storable obj, Format format)
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
