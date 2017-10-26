@@ -13,7 +13,7 @@ import org.jimmutable.core.utils.Validator;
  */
 public enum AdvancedSearchFieldType implements StandardEnum
 {
-	TEXT("text"), COMBO_BOX("combo-box");
+	TEXT("text"), COMBO_BOX("combo-box"), CHECK_BOX("checkbox");
 	static public final AdvancedSearchFieldType.MyConverter CONVERTER = new MyConverter();
 
 	private String code;
