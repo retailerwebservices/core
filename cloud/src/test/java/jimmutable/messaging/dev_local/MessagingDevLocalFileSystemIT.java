@@ -49,8 +49,10 @@ public class MessagingDevLocalFileSystemIT extends IntegrationTest
 	public static void moreSetup() throws InterruptedException
 	{
 		setupEnvironment();
-		app_id = CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId();
-		Thread.sleep(58500);//need to give the system time to get it's act together. 
+		app_id = CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId();		
+	}
+	@Before
+	public void beforeMethod() {
 		messagingdevlocalfilesystem = new MessagingDevLocalFileSystem();
 	}
 
@@ -89,7 +91,6 @@ public class MessagingDevLocalFileSystemIT extends IntegrationTest
 				f.mkdirs();
 			}
 		}
-		Random r = new Random();
 		for ( int i = 0; i < 10; i++ )
 		{
 			messagingdevlocalfilesystem.sendAsync(TOPIC_DEF_SHUTDOWN, new StandardMessageOnUpsert(KIND, ObjectId.createRandomId()));// putting in a bunch of random information
