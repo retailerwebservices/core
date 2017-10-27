@@ -46,11 +46,11 @@ public class MessagingDevLocalFileSystemIT extends IntegrationTest
 	static MessagingDevLocalFileSystem messagingdevlocalfilesystem;
 
 	@BeforeClass
-	public static void moreSetup()
+	public static void moreSetup() throws InterruptedException
 	{
 		setupEnvironment();
 		app_id = CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId();
-//		ObjectParseTree.registerTypeName(StandardMessageOnUpsert.class);
+		Thread.sleep(58500);//need to give the system time to get it's act together. 
 		messagingdevlocalfilesystem = new MessagingDevLocalFileSystem();
 	}
 
