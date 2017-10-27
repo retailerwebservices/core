@@ -1,28 +1,14 @@
 package org.jimmutable.cloud.servlet_utils.common_objects;
 
-import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
+import org.jimmutable.cloud.StubTest;
 import org.jimmutable.cloud.servlet_utils.common_objects.GeneralResponseError;
 import org.jimmutable.core.objects.StandardObject;
-import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
+import org.junit.Test;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
-public class GeneralResponseErrorTest extends TestCase
+public class GeneralResponseErrorTest extends StubTest
 {
-	public GeneralResponseErrorTest( String testName )
-	{
-		super(testName);
-	}
 
-	public static Test suite()
-	{
-		JimmutableTypeNameRegister.registerAllTypes();
-		JimmutableCloudTypeNameRegister.registerAllTypes();
-		return new TestSuite(GeneralResponseErrorTest.class);
-	}
-
+	@Test
 	public void testGeneralResponseError()
 	{
 		GeneralResponseError result = null;
@@ -41,7 +27,8 @@ public class GeneralResponseErrorTest extends TestCase
 		assert (result.getOptionalMessage(null).equals("Test Message"));
 		assert (result.getOptionalMessage("default").equals("Test Message"));
 	}
-
+	
+	@Test
 	public void testSerialization()
 	{
 		String obj_string = String.format("%s\n%s\n%s\n%s"

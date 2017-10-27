@@ -7,7 +7,7 @@ import junit.framework.TestCase;
 
 public class OpenGraphObjectIdTest extends TestCase
 {
-	private StringableTester<OpenGraphObjectId> tester = new StringableTester(new OpenGraphObjectId.MyConverter());
+	private StringableTester<OpenGraphObjectId> tester = new StringableTester<OpenGraphObjectId>(new OpenGraphObjectId.MyConverter());
 
 	@Test
 	public void testValid()

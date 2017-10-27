@@ -7,29 +7,13 @@ import static org.junit.Assert.assertTrue;
 import java.util.Collections;
 
 import org.jimmutable.cloud.StubTest;
-import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
-import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
-import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
-import org.jimmutable.core.serialization.reader.ObjectParseTree;
-import org.junit.Before;
 import org.junit.Test;
 
 public class AdvancedSearchFieldTest extends StubTest
 {
-	@Before
-	public void before()
-	{
 
-		JimmutableTypeNameRegister.registerAllTypes();
-		ObjectParseTree.registerTypeName(SearchIndexDefinition.class);
-		ObjectParseTree.registerTypeName(SearchIndexFieldDefinition.class);
-		ObjectParseTree.registerTypeName(IncludeFieldInView.class);
-		ObjectParseTree.registerTypeName(AdvancedSearchComboBoxChoice.class);
-		ObjectParseTree.registerTypeName(AdvancedSearchField.class);
-
-	}
 
 	@Test
 	public void testUserSerialization()

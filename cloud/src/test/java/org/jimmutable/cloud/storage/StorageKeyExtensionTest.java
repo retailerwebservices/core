@@ -1,11 +1,10 @@
 package org.jimmutable.cloud.storage;
 
+import org.jimmutable.cloud.StubTest;
 import org.jimmutable.core.utils.StringableTester;
 import org.junit.Test;
 
-import junit.framework.TestCase;
-
-public class StorageKeyExtensionTest extends TestCase
+public class StorageKeyExtensionTest extends StubTest
 {
 	private StringableTester<StorageKeyExtension> tester = new StringableTester(new StorageKeyExtension.MyConverter());
 

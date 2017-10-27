@@ -7,65 +7,77 @@ import java.util.Set;
 
 import org.jimmutable.cloud.StubTest;
 import org.jimmutable.cloud.elasticsearch.IndexDefinition;
+import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
+import org.jimmutable.cloud.elasticsearch.SearchIndexFieldType;
 import org.jimmutable.core.objects.StandardObject;
-import org.jimmutable.core.serialization.Format;
+import org.jimmutable.core.objects.common.ObjectId;
+import org.jimmutable.core.serialization.FieldDefinition;
+import org.jimmutable.core.serialization.FieldName;
 import org.junit.Test;
 
 public class RequestExportCSVTest extends StubTest
 {
 
-		// TODO Objects dont equal after deserializing
+	static private final FieldDefinition.Stringable<ObjectId> FIELD_ID = new FieldDefinition.Stringable<ObjectId>("id", null, ObjectId.CONVERTER);
+	static private final FieldDefinition.String FIELD_FIRST_NAME = new FieldDefinition.String("first_name", null);
 
-		/*
-		 * This test seems to fail because the deserialized object is not read in as a
-		 * Stringable, but a String. ContainAll() calls Stringable's equals
-		 * method and fails because the deserialized Set contains Strings not Stringable.
-		 * 
-		 * We cannot however write it as an Object because we cannot register Stringable
-		 * object types (an exception is thrown).
-		 */
-		@Test
-		public void deserializeEquals()
-		{
-			Set<SearchFieldId> set = new HashSet<>();
-			set.add(new SearchFieldId("myField"));
-			set.add(new SearchFieldId("myOtherField"));
+	static private final SearchIndexFieldDefinition SEARCH_FIELD_ID = new SearchIndexFieldDefinition(FIELD_ID.getSimpleFieldName(), SearchIndexFieldType.TEXT);
+	static private final SearchIndexFieldDefinition SEARCH_FIELD_ID_ATOM = new SearchIndexFieldDefinition(new FieldName(String.format("%s_atom", FIELD_ID.getSimpleFieldName().getSimpleName())), SearchIndexFieldType.ATOM);
+	static private final SearchIndexFieldDefinition SEARCH_FIELD_FIRST_NAME = new SearchIndexFieldDefinition(FIELD_FIRST_NAME.getSimpleFieldName(), SearchIndexFieldType.TEXT);
 
-			RequestExportCSV export = new RequestExportCSV(new IndexDefinition("dev:dev:v1"), false, "blaa", set);
+	@Test
+	public void deserializeEquals()
+	{
 
-			System.out.println(export.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
+		Set<SearchIndexFieldDefinition> set = new HashSet<SearchIndexFieldDefinition>();
+		set.add(SEARCH_FIELD_ID);
+		set.add(SEARCH_FIELD_ID_ATOM);
 
-			String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s"
-				     , "{"
-				     , "  \"type_hint\" : \"request_export_csv\","
-				     , "  \"index\" : \"dev:dev:v1\","
-				     , "  \"export_all_documents\" : false,"
-				     , "  \"field_to_include_in_export\" : [ \"myotherfield\", \"myfield\" ],"
-				     , "  \"query_string\" : \"blaa\""
-				     , "}"
-				);
+		RequestExportCSV export = new RequestExportCSV(new IndexDefinition("dev:dev:v1"), false, "blaa", set);
 
-			RequestExportCSV obj = (RequestExportCSV)StandardObject.deserialize(obj_string);
+		//System.out.println(export.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 
+		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s"
+		     , "{"
+		     , "  \"type_hint\" : \"request_export_csv\","
+		     , "  \"index\" : \"dev:dev:v1\","
+		     , "  \"export_all_documents\" : false,"
+		     , "  \"field_to_include_in_export\" : [ {"
+		     , "    \"type_hint\" : \"org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition\","
+		     , "    \"name\" : {"
+		     , "      \"type_hint\" : \"jimmutable.FieldName\","
+		     , "      \"name\" : \"id_atom\""
+		     , "    },"
+		     , "    \"type\" : \"keyword\""
+		     , "  }, {"
+		     , "    \"type_hint\" : \"org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition\","
+		     , "    \"name\" : {"
+		     , "      \"type_hint\" : \"jimmutable.FieldName\","
+		     , "      \"name\" : \"id\""
+		     , "    },"
+		     , "    \"type\" : \"text\""
+		     , "  } ],"
+		     , "  \"query_string\" : \"blaa\""
+		     , "}"
+		);
+		RequestExportCSV obj = (RequestExportCSV) StandardObject.deserialize(obj_string);
 
-			assertEquals(obj, export);
-		}
-	
+		assertEquals(obj, export);
+	}
+
 	@Test
 	public void sanityTestStringable()
 	{
-		SearchFieldId one = new SearchFieldId("one");
-		SearchFieldId same = new SearchFieldId("one");
 
-		Set<SearchFieldId> set = new HashSet<SearchFieldId>();
+		Set<SearchIndexFieldDefinition> set = new HashSet<SearchIndexFieldDefinition>();
 
-		set.add(one);
-		set.add(same);
+		set.add(SEARCH_FIELD_ID_ATOM);
+		set.add(SEARCH_FIELD_FIRST_NAME);
 
-		assertTrue(set.contains(one));
-		assertTrue(set.contains(same));
+		assertTrue(set.contains(SEARCH_FIELD_ID_ATOM));
+		assertTrue(set.contains(SEARCH_FIELD_FIRST_NAME));
 
-		assertEquals(one, same);
+		assertEquals(SEARCH_FIELD_FIRST_NAME, SEARCH_FIELD_FIRST_NAME);
 	}
 
 	@Test
@@ -73,8 +85,8 @@ public class RequestExportCSVTest extends StubTest
 	{
 		RequestExportCSV export = new RequestExportCSV(new IndexDefinition("dev:dev:v1"), false, "blaa", null);
 
-		System.out.println(export.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
-		
+		//System.out.println(export.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
+
 		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s"
 			     , "{"
 			     , "  \"type_hint\" : \"request_export_csv\","
@@ -85,7 +97,7 @@ public class RequestExportCSVTest extends StubTest
 			     , "}"
 			);
 
-			RequestExportCSV obj = (RequestExportCSV)StandardObject.deserialize(obj_string);
+		RequestExportCSV obj = (RequestExportCSV)StandardObject.deserialize(obj_string);
 
 		assertEquals(obj, export);
 

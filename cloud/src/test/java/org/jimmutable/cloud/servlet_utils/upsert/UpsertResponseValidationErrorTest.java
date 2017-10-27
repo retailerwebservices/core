@@ -1,28 +1,16 @@
 package org.jimmutable.cloud.servlet_utils.upsert;
 
-import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
+import org.jimmutable.cloud.StubTest;
 import org.jimmutable.cloud.servlet_utils.upsert.UpsertResponseValidationError;
 import org.jimmutable.core.objects.StandardObject;
-import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
+import org.junit.Test;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
-public class UpsertResponseValidationErrorTest extends TestCase
+public class UpsertResponseValidationErrorTest extends StubTest
 {
-	public UpsertResponseValidationErrorTest( String testName )
-	{
-		super(testName);
-	}
-
-	public static Test suite()
-	{
-		JimmutableTypeNameRegister.registerAllTypes();
-		JimmutableCloudTypeNameRegister.registerAllTypes();
-		return new TestSuite(UpsertResponseValidationErrorTest.class);
-	}
-
+	
+	
+	@Test
 	public void testUpsertResponseValidationError()
 	{
 		UpsertResponseValidationError result = null;
@@ -45,6 +33,7 @@ public class UpsertResponseValidationErrorTest extends TestCase
 
 	}
 
+	@Test
 	public void testSerialization()
 	{
 		String obj_string = String.format("%s\n%s\n%s\n%s", "{",

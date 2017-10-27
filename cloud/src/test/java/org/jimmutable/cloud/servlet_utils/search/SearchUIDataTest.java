@@ -19,18 +19,7 @@ import org.junit.Test;
 
 public class SearchUIDataTest extends StubTest
 {
-	@Before
-	public void before()
-	{
-
-		JimmutableTypeNameRegister.registerAllTypes();
-		ObjectParseTree.registerTypeName(SearchIndexDefinition.class);
-		ObjectParseTree.registerTypeName(SearchIndexFieldDefinition.class);
-		ObjectParseTree.registerTypeName(IncludeFieldInView.class);
-		ObjectParseTree.registerTypeName(AdvancedSearchComboBoxChoice.class);
-		ObjectParseTree.registerTypeName(SearchUIData.class);
-		ObjectParseTree.registerTypeName(AdvancedSearchField.class);
-	}
+	
 
 	List<AdvancedSearchField> search_field = Collections.singletonList(new AdvancedSearchField("Label", new SearchFieldId("SearchFieldId"), AdvancedSearchFieldType.TEXT, Collections.emptyList()));
 	List<IncludeFieldInView> fields_in_view = Collections.singletonList(new IncludeFieldInView("fieldLabel", new SearchFieldId("SearchFieldId"), false));

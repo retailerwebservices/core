@@ -2,6 +2,8 @@ package org.jimmutable.cloud.elasticsearch;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,14 +23,21 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
+import org.jimmutable.core.fields.FieldMap;
 import org.jimmutable.core.serialization.FieldName;
+import org.supercsv.cellprocessor.ift.CellProcessor;
+import org.supercsv.io.ICsvListWriter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -53,6 +62,50 @@ public class ElasticSearch implements ISearch
 	public ElasticSearch(TransportClient client)
 	{
 		this.client = client;
+	}
+
+	public boolean writeAllToCSV(IndexDefinition index, String query_string, List<FieldName> sorted_header, ICsvListWriter list_writer, CellProcessor[] cell_processors)
+	{
+		if (index == null || query_string == null)
+		{
+			return false;
+		}
+
+		SearchResponse scrollResp = client.prepareSearch(index.getSimpleValue()).addSort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC).setScroll(new TimeValue(60000)).setQuery(QueryBuilders.queryStringQuery(query_string)).setSize(1000).get();
+
+		do
+		{
+
+			String[] document;
+			for (SearchHit hit : scrollResp.getHits().getHits())
+			{
+
+				document = new String[sorted_header.size()];
+
+				Map<String, Object> resultMap = hit.getSourceAsMap();
+
+				for (int i = 0; i < sorted_header.size(); i++)
+				{
+					if (resultMap.containsKey(sorted_header.get(i).getSimpleName()))
+					{
+						document[i] = resultMap.get(sorted_header.get(i).getSimpleName()).toString();
+					}
+				}
+
+				try
+				{
+					list_writer.write(Arrays.asList(document), cell_processors);
+				} catch (IOException e)
+				{
+					logger.error(e);
+					return false;
+				}
+
+			}
+			scrollResp = client.prepareSearchScroll(scrollResp.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
+		} while (scrollResp.getHits().getHits().length != 0); // Zero hits mark the end of the scroll and the while
+																// loop.
+		return true;
 	}
 
 	/**
