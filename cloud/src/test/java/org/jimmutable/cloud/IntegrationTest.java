@@ -13,6 +13,7 @@ public abstract class IntegrationTest
 			CloudExecutionEnvironment.startupIntegrationTest(new ApplicationId("integration"));
 		} catch (RuntimeException e)
 		{
+			System.out.println(e);
 		}
 	}
 

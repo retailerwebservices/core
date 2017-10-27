@@ -17,6 +17,7 @@ import javax.swing.JOptionPane;
 
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
+import org.jimmutable.cloud.IntegrationTest;
 import org.jimmutable.cloud.StubTest;
 import org.jimmutable.cloud.messaging.MessageListener;
 import org.jimmutable.cloud.messaging.QueueDefinition;
@@ -32,21 +33,24 @@ import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class MessagingDevLocalFileSystemIT extends StubTest
+public class MessagingDevLocalFileSystemIT extends IntegrationTest
 {
 	private static final Kind KIND = new Kind("testKind");
 	private static final TopicDefinition TOPIC_DEF_SEND = new TopicDefinition(new ApplicationId("test-application"), new TopicId("test-send"));
 	private static final TopicDefinition TOPIC_DEF_LISTEN = new TopicDefinition(new ApplicationId("test-application"), new TopicId("test-listen"));
 	private static final TopicDefinition TOPIC_DEF_SHUTDOWN = new TopicDefinition(new ApplicationId("test-application"), new TopicId("test-shutdown"));
-	private static final ApplicationId app_id = CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId();
+	private static ApplicationId app_id;
 	static MessagingDevLocalFileSystem messagingdevlocalfilesystem;
 
-	@Before
-	public void moreSetup()
+	@BeforeClass
+	public static void moreSetup()
 	{
-		ObjectParseTree.registerTypeName(StandardMessageOnUpsert.class);
+		setupEnvironment();
+		app_id = CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId();
+//		ObjectParseTree.registerTypeName(StandardMessageOnUpsert.class);
 		messagingdevlocalfilesystem = new MessagingDevLocalFileSystem();
 	}
 

@@ -16,6 +16,7 @@ import org.junit.Test;
 public class ElasticSearchIT extends IntegrationTest
 {
 
+	
 	@BeforeClass
 	public static void setup()
 	{
