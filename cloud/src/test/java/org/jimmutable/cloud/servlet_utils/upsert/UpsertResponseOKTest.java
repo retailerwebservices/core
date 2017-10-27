@@ -1,28 +1,14 @@
 package org.jimmutable.cloud.servlet_utils.upsert;
 
-import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
+import org.jimmutable.cloud.StubTest;
 import org.jimmutable.cloud.servlet_utils.upsert.UpsertResponseOK;
 import org.jimmutable.core.objects.StandardObject;
-import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
+import org.junit.Test;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
-public class UpsertResponseOKTest extends TestCase
+public class UpsertResponseOKTest extends StubTest
 {
-	public UpsertResponseOKTest(String testName)
-	{
-		super(testName);
-	}
 	
-    public static Test suite()
-    {
-		JimmutableTypeNameRegister.registerAllTypes();
-		JimmutableCloudTypeNameRegister.registerAllTypes();
-        return new TestSuite( UpsertResponseOKTest.class );
-    }
-    
+    @Test
 	public void testUpsertResponseOKTest()
 	{
 		UpsertResponseOK result = null;
@@ -44,6 +30,7 @@ public class UpsertResponseOKTest extends TestCase
 		assert(result.getOptionalObject(null) == data_object);
 	}
 	 
+    @Test
 	public void testSerialization()
 	{
 		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s"

@@ -1,11 +1,8 @@
 package org.jimmutable.cloud.storage;
 
-import java.io.File;
-
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
-import org.jimmutable.core.objects.common.Day.MyConverter;
 import org.jimmutable.core.utils.Validator;
 
 /**
@@ -22,9 +19,10 @@ public class StorageKey extends Stringable
 
 	static public final MyConverter CONVERTER = new MyConverter();
 
-	Kind kind;
-	ObjectId id;
-	StorageKeyExtension extension;
+	private Kind kind;
+	private String name;
+	private ObjectId id;
+	private StorageKeyExtension extension;
 
 	/**
 	 * @param value
@@ -52,6 +50,52 @@ public class StorageKey extends Stringable
 	}
 
 	/**
+	 * @param kind
+	 *            the Kind used for the StorageKey
+	 * @param name
+	 *            A nice name for the file (usually useful for attachments so the
+	 *            user can set a recognizable filename themselves)
+	 * @param object_id
+	 *            the ObjectId used for the StorageKey
+	 * @param extension
+	 *            the extension of the StorageKey
+	 */
+
+	public StorageKey(Kind kind, String name, ObjectId object_id, StorageKeyExtension extension)
+	{
+		this(createStringFromComponents(kind, name, object_id, extension));
+	}
+
+	/**
+	 *
+	 * @param kind
+	 *            the Kind used for the StorageKey
+	 * 
+	 * @param name
+	 *            the nice name
+	 * @param object_id
+	 *            the ObjectId used for the StorageKey
+	 * @param extension
+	 *            the extension of the StorageKey
+	 *
+	 * @return if Everything validates it will return a string that concatenates all
+	 *         of the parameters simple values. {alpha,123,"txt"}->"alpha/123.txt"
+	 */
+
+	static private String createStringFromComponents(Kind kind, String name, ObjectId object_id, StorageKeyExtension extension)
+	{
+		Validator.notNull(kind, object_id, extension);
+
+		if (name == null || name.isEmpty())
+		{
+			return createStringFromComponents(kind, object_id, extension);
+		}
+
+		return String.format("%s/%s~%s.%s", kind.getSimpleValue(), name, object_id.getSimpleValue(), extension.getSimpleValue());
+	}
+
+	
+	/**
 	 *
 	 * @param kind
 	 *            the Kind used for the StorageKey
@@ -67,33 +111,64 @@ public class StorageKey extends Stringable
 	static private String createStringFromComponents(Kind kind, ObjectId object_id, StorageKeyExtension extension)
 	{
 		Validator.notNull(kind, object_id, extension);
-		return String.format("%s/%s.%s", kind.getSimpleValue(), object_id.getSimpleValue(), extension);
+		return String.format("%s/%s.%s", kind.getSimpleValue(), object_id.getSimpleValue(), extension.getSimpleValue());
 	}
 
 	@Override
 	public void normalize()
 	{
-		normalizeLowerCase();
+		super.normalizeTrim();
+		super.normalizeLowerCase();
+
+		int kind_delim_index = super.getSimpleValue().indexOf("/");
+		int name_delim_index = super.getSimpleValue().lastIndexOf("~");
+		int extension_delim_index = super.getSimpleValue().lastIndexOf(".");
+
+		kind = new Kind(super.getSimpleValue().substring(0, kind_delim_index));
+
+		try
+		{
+			name = super.getSimpleValue().substring(kind_delim_index + 1, name_delim_index).replaceAll(" ", "_");
+		} catch (Exception e)
+		{
+			name = "";
+		}
+
+		if (name.isEmpty())
+		{
+			id = new ObjectId(super.getSimpleValue().substring(kind_delim_index + 1, extension_delim_index));
+		} else
+		{
+			id = new ObjectId(super.getSimpleValue().substring(name_delim_index + 1, extension_delim_index));
+		}
+
+		extension = new StorageKeyExtension(super.getSimpleValue().substring(extension_delim_index));
+
+		super.setValue(createStringFromComponents(getSimpleKind(), getOptionalName(null), getSimpleObjectId(), getSimpleExtension()));
+
 	}
 
 	@Override
 	public void validate()
 	{
 
-		Validator.notNull(getSimpleValue());
+		Validator.notNull(super.getSimpleValue(), getSimpleKind(), getSimpleObjectId(), getSimpleExtension());
+		Validator.max(super.getSimpleValue().length(), 255);
 
-		String[] breakonslash = getSimpleValue().split("/");
-		Validator.min(breakonslash.length, 2);
-		kind = new Kind(breakonslash[0]);
+	}
 
-		String[] breakondot = breakonslash[1].split("\\.");
-		Validator.min(breakonslash.length, 2);
-		id = new ObjectId(breakondot[0]);
-
-		extension = new StorageKeyExtension(breakondot[1]);
-
-		setValue(createStringFromComponents(getSimpleKind(), getSimpleObjectId(), getSimpleExtension()));
-
+	/**
+	 * The nice name of the file (usually useful for attachments)
+	 * 
+	 * @return
+	 */
+	public String getOptionalName(String default_value)
+	{
+		if (name == null)
+		{
+			return default_value;
+		}
+		return name;
 	}
 
 	/**
@@ -124,9 +199,11 @@ public class StorageKey extends Stringable
 	{
 		public StorageKey fromString(String str, StorageKey default_value)
 		{
-			try {
+			try
+			{
 				return new StorageKey(str);
-			} catch (Exception e) {
+			} catch (Exception e)
+			{
 				return default_value;
 			}
 		}

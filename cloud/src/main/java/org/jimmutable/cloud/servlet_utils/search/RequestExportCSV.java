@@ -4,13 +4,13 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.jimmutable.cloud.elasticsearch.IndexDefinition;
+import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
 import org.jimmutable.core.fields.FieldHashSet;
 import org.jimmutable.core.fields.FieldSet;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.TypeName;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
-import org.jimmutable.core.serialization.reader.ReadAs;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.serialization.writer.WriteAs;
 import org.jimmutable.core.utils.Comparison;
@@ -28,9 +28,9 @@ public class RequestExportCSV extends StandardImmutableObject<RequestExportCSV>
 	private IndexDefinition index;// (IndexDefinition, required)
 	private boolean export_all_documents;// (boolean, required)
 	private String query_string; // (String required, only has meaning when export_all_documents is false)
-	private FieldSet<SearchFieldId> field_to_include_in_export;// (Set<SearchFieldId>, required, can be empty)
+	private FieldSet<SearchIndexFieldDefinition> field_to_include_in_export;// (Set<SearchIndexFieldDefinition>, required, can be empty)
 
-	public RequestExportCSV(IndexDefinition index, boolean export_all_documents, String query_string, Set<SearchFieldId> field_to_include_in_export)
+	public RequestExportCSV(IndexDefinition index, boolean export_all_documents, String query_string, Set<SearchIndexFieldDefinition> field_to_include_in_export)
 	{
 		this.index = index;
 		this.export_all_documents = export_all_documents;
@@ -43,7 +43,8 @@ public class RequestExportCSV extends StandardImmutableObject<RequestExportCSV>
 	{
 		this.index = t.getStringable(FIELD_INDEX);
 		this.export_all_documents = t.getBoolean(FIELD_EXPORT_ALL_DOCUMENTS);
-		this.field_to_include_in_export = t.getCollection(FIELD_FIELD_TO_INCLUDE_IN_EXPORT, new FieldHashSet<SearchFieldId>(), ReadAs.STRING, ObjectParseTree.OnError.SKIP);
+		this.field_to_include_in_export = t.getCollection(FIELD_FIELD_TO_INCLUDE_IN_EXPORT, new FieldHashSet<SearchIndexFieldDefinition>(), SearchIndexFieldDefinition.CONVERTER, ObjectParseTree.OnError.SKIP);
+		
 		this.query_string = t.getString(FIELD_QUERY_STRING);
 	}
 
@@ -62,7 +63,7 @@ public class RequestExportCSV extends StandardImmutableObject<RequestExportCSV>
 		return query_string;
 	}
 
-	public Set<SearchFieldId> getSimpleFieldToIncludeInExport()
+	public Set<SearchIndexFieldDefinition> getSimpleFieldToIncludeInExport()
 	{
 		return field_to_include_in_export;
 	}
@@ -91,7 +92,7 @@ public class RequestExportCSV extends StandardImmutableObject<RequestExportCSV>
 	{
 		writer.writeStringable(FIELD_INDEX, getSimpleIndex());
 		writer.writeBoolean(FIELD_EXPORT_ALL_DOCUMENTS, getSimpleExportAllDocuments());
-		writer.writeCollection(FIELD_FIELD_TO_INCLUDE_IN_EXPORT, getSimpleFieldToIncludeInExport(), WriteAs.STRING);
+		writer.writeCollection(FIELD_FIELD_TO_INCLUDE_IN_EXPORT, getSimpleFieldToIncludeInExport(), WriteAs.OBJECT);
 		writer.writeString(FIELD_QUERY_STRING, getSimpleQueryString());
 	}
 

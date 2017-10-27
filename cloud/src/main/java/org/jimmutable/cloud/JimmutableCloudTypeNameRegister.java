@@ -1,6 +1,5 @@
 package org.jimmutable.cloud;
 
-import org.jimmutable.cloud.elasticsearch.IndexDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
 import org.jimmutable.cloud.messaging.StandardMessageOnUpsert;
@@ -8,10 +7,9 @@ import org.jimmutable.cloud.servlet_utils.common_objects.GeneralResponseError;
 import org.jimmutable.cloud.servlet_utils.common_objects.GeneralResponseOK;
 import org.jimmutable.cloud.servlet_utils.get.GetResponseError;
 import org.jimmutable.cloud.servlet_utils.get.GetResponseOK;
+import org.jimmutable.cloud.servlet_utils.search.AdvancedSearchComboBoxChoice;
 import org.jimmutable.cloud.servlet_utils.search.AdvancedSearchField;
-
 import org.jimmutable.cloud.servlet_utils.search.IncludeFieldInView;
-
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
 import org.jimmutable.cloud.servlet_utils.search.RequestExportCSV;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
@@ -35,7 +33,7 @@ import org.jimmutable.core.serialization.reader.ObjectParseTree;
  *
  * Every TypeNameRegister of cloud specific classes should call
  * JimmutableCloudTypeNameRegister.registerAllTypes().
- *
+ * 
  * @author Preston McCumber
  */
 public class JimmutableCloudTypeNameRegister
@@ -60,13 +58,12 @@ public class JimmutableCloudTypeNameRegister
 
 
 		ObjectParseTree.registerTypeName(StandardMessageOnUpsert.class);
-
-		ObjectParseTree.registerTypeName(AdvancedSearchField.class);
-
 		ObjectParseTree.registerTypeName(SearchUIData.class);
 		ObjectParseTree.registerTypeName(AdvancedSearchField.class);
+		ObjectParseTree.registerTypeName(AdvancedSearchComboBoxChoice.class);
+		
 		ObjectParseTree.registerTypeName(IncludeFieldInView.class);
 		ObjectParseTree.registerTypeName(RequestExportCSV.class);
-
+		
 	}
 }

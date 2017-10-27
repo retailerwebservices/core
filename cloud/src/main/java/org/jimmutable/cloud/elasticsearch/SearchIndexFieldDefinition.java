@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
+import org.jimmutable.core.serialization.reader.ReadAs;
 import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.TypeName;
@@ -19,6 +20,8 @@ import org.jimmutable.core.utils.Validator;
  */
 public class SearchIndexFieldDefinition extends StandardImmutableObject<SearchIndexFieldDefinition>
 {
+
+	static public final Converter<SearchIndexFieldDefinition> CONVERTER = new Converter<>();
 
 	public static final FieldDefinition.StandardObject FIELD_FIELD_NAME = new FieldDefinition.StandardObject("name", null);
 	public static final FieldDefinition.Enum<SearchIndexFieldType> FIELD_SEARCH_INDEX_FIELD_TYPE = new FieldDefinition.Enum<SearchIndexFieldType>("type", null, SearchIndexFieldType.CONVERTER);
@@ -123,6 +126,28 @@ public class SearchIndexFieldDefinition extends StandardImmutableObject<SearchIn
 			return false;
 
 		return true;
+	}
+
+	static private class Converter<S extends SearchIndexFieldDefinition> extends ReadAs
+	{
+		public SearchIndexFieldDefinition from(FieldName name, SearchIndexFieldType type, SearchIndexFieldDefinition default_value)
+		{
+			try
+			{
+				return new SearchIndexFieldDefinition(name, type);
+			} catch (Exception e)
+			{
+				return default_value;
+			}
+		}
+
+		@Override
+		public Object readAs(ObjectParseTree t)
+		{
+			FieldName name = (FieldName) t.getObject(FIELD_FIELD_NAME);
+			SearchIndexFieldType type = t.getEnum(FIELD_SEARCH_INDEX_FIELD_TYPE);
+			return from(name, type, null);
+		}
 	}
 
 }

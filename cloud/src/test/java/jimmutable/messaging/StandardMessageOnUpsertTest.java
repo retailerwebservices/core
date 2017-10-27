@@ -1,47 +1,21 @@
 package jimmutable.messaging;
 
-import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
+import static org.junit.Assert.assertEquals;
+
+import org.jimmutable.cloud.StubTest;
 import org.jimmutable.cloud.messaging.StandardMessageOnUpsert;
-import org.jimmutable.core.examples.product_data.ItemAttribute;
-import org.jimmutable.core.examples.product_data.ItemKey;
-import org.jimmutable.core.examples.product_data.ItemSpecifications;
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.serialization.Format;
-//import org.jimmutable.gcloud.GCloudTypeNameRegister;
-import org.jimmutable.core.serialization.reader.ObjectParseTree;
+import org.junit.Test;
 
 
-import com.fasterxml.jackson.databind.ObjectReader;
-
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
-public class StandardMessageOnUpsertTest extends TestCase
+public class StandardMessageOnUpsertTest extends StubTest
 {
-	/**
-	 * Create the test case
-	 *
-	 * @param testName name of the test case
-	 */
-	public StandardMessageOnUpsertTest( String testName )
-	{
-		super( testName );
-	}
 
-	/**
-	 * @return the suite of tests being tested
-	 */
-	public static Test suite()
-	{
-//		ObjectParseTree.registerTypeName(SearchExampleLibraryPatron.class);
-		JimmutableCloudTypeNameRegister.registerAllTypes();
-		return new TestSuite( StandardMessageOnUpsertTest.class );
-	}
-
+	@Test
 	public void testBuilder()
 	{
 		Builder builder = new Builder(StandardMessageOnUpsert.TYPE_NAME);
@@ -62,6 +36,7 @@ public class StandardMessageOnUpsertTest extends TestCase
 		System.out.println(obj.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 	}
 	
+	@Test
 	public void testSerialization()
 	{
 		String obj_string = String.format("%s\n%s\n%s\n%s\n%s"
@@ -77,6 +52,7 @@ public class StandardMessageOnUpsertTest extends TestCase
 		assertEquals(new StandardMessageOnUpsert(new Kind("foo"),new ObjectId(1)), obj);
 	}
 	
+	@Test
 	public void testSerializationXML() {
 	
 		/*

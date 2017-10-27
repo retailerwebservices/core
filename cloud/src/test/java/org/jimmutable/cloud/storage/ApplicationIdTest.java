@@ -1,13 +1,11 @@
 package org.jimmutable.cloud.storage;
 
 import org.jimmutable.cloud.ApplicationId;
-import org.jimmutable.cloud.http.QueryStringKey;
+import org.jimmutable.cloud.StubTest;
 import org.jimmutable.core.utils.StringableTester;
 import org.junit.Test;
 
-import junit.framework.TestCase;
-
-public class ApplicationIdTest extends TestCase
+public class ApplicationIdTest extends StubTest
 {
 	private StringableTester<ApplicationId> tester = new StringableTester(new ApplicationId.MyConverter());
 

@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.jimmutable.cloud.ApplicationId;
+import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.StubTest;
 import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
@@ -14,22 +16,27 @@ import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class AdvancedSearchComboBoxChoiceTest extends StubTest
+public class AdvancedSearchComboBoxChoiceTest
 {
-	@Before
-	public void before()
-	{
 
-		JimmutableTypeNameRegister.registerAllTypes();
-		ObjectParseTree.registerTypeName(SearchIndexDefinition.class);
-		ObjectParseTree.registerTypeName(SearchIndexFieldDefinition.class);
-		ObjectParseTree.registerTypeName(IncludeFieldInView.class);
-		ObjectParseTree.registerTypeName(AdvancedSearchComboBoxChoice.class);
+	
+	@BeforeClass
+	public static void setUp()
+	{
+		
+		try
+		{
+			CloudExecutionEnvironment.startupStubTest(new ApplicationId("stub"));
+		} catch (RuntimeException e)
+		{
+
+		}
 
 	}
-
+	
 	@Test
 	public void testUserSerialization()
 	{

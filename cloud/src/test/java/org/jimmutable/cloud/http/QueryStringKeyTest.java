@@ -1,12 +1,11 @@
 package org.jimmutable.cloud.http;
 
+import org.jimmutable.cloud.StubTest;
 import org.jimmutable.cloud.http.QueryStringKey;
 import org.jimmutable.core.utils.StringableTester;
 import org.junit.Test;
 
-import junit.framework.TestCase;
-
-public class QueryStringKeyTest extends TestCase
+public class QueryStringKeyTest extends StubTest
 {
 	private StringableTester<QueryStringKey> tester = new StringableTester(new QueryStringKey.MyConverter());
 

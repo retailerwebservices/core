@@ -1,29 +1,15 @@
 package org.jimmutable.cloud.servlet_utils.common_objects;
 
-import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
+import org.jimmutable.cloud.StubTest;
 import org.jimmutable.cloud.servlet_utils.common_objects.GeneralResponseOK;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
-import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
+import org.junit.Test;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
-public class GeneralResponseOKTest extends TestCase
+public class GeneralResponseOKTest extends StubTest
 {
-	public GeneralResponseOKTest( String testName )
-	{
-		super(testName);
-	}
 
-	public static Test suite()
-	{
-		JimmutableTypeNameRegister.registerAllTypes();
-		JimmutableCloudTypeNameRegister.registerAllTypes();
-		return new TestSuite(GeneralResponseOKTest.class);
-	}
-
+	@Test
 	public void testGeneralResponseOK()
 	{
 		GeneralResponseOK result = null;
@@ -44,7 +30,7 @@ public class GeneralResponseOKTest extends TestCase
 		
 		System.out.println(result.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 	}
-
+	@Test
 	public void testSerialization()
 	{
 		String obj_string = String.format("%s\n%s\n%s\n%s"

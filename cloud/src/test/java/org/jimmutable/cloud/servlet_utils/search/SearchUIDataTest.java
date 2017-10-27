@@ -19,25 +19,19 @@ import org.junit.Test;
 
 public class SearchUIDataTest extends StubTest
 {
-	@Before
-	public void before()
-	{
+	
 
-		JimmutableTypeNameRegister.registerAllTypes();
-		ObjectParseTree.registerTypeName(SearchIndexDefinition.class);
-		ObjectParseTree.registerTypeName(SearchIndexFieldDefinition.class);
-		ObjectParseTree.registerTypeName(IncludeFieldInView.class);
-		ObjectParseTree.registerTypeName(AdvancedSearchComboBoxChoice.class);
-		ObjectParseTree.registerTypeName(SearchUIData.class);
-		ObjectParseTree.registerTypeName(AdvancedSearchField.class);
-	}
+//	List<AdvancedSearchField> search_field = Collections.singletonList(new AdvancedSearchField("Label", new SearchFieldId("SearchFieldId"), AdvancedSearchFieldType.TEXT, Collections.emptyList()));
+//	List<IncludeFieldInView> fields_in_view = Collections.singletonList(new IncludeFieldInView("fieldLabel", new SearchFieldId("SearchFieldId"), false));
 
-	List<AdvancedSearchField> search_field = Collections.singletonList(new AdvancedSearchField("Label", new SearchFieldId("SearchFieldId"), AdvancedSearchFieldType.TEXT, Collections.emptyList()));
-	List<IncludeFieldInView> fields_in_view = Collections.singletonList(new IncludeFieldInView("fieldLabel", new SearchFieldId("SearchFieldId"), false));
-
+	
 	@Test
 	public void testUserSerialization()
 	{
+		
+		List<AdvancedSearchField> search_field = Collections.singletonList(new AdvancedSearchField("Label", new SearchFieldId("SearchFieldId"), AdvancedSearchFieldType.TEXT, Collections.emptyList()));
+		List<IncludeFieldInView> fields_in_view = Collections.singletonList(new IncludeFieldInView("fieldLabel", new SearchFieldId("SearchFieldId"), false));
+		
 		SearchUIData field = new SearchUIData(search_field, fields_in_view);
 		String serialized_value = field.serialize(Format.JSON_PRETTY_PRINT);
 
@@ -67,6 +61,8 @@ public class SearchUIDataTest extends StubTest
 	@Test
 	public void testUserComparisonAndEquals()
 	{
+		List<AdvancedSearchField> search_field = Collections.singletonList(new AdvancedSearchField("Label", new SearchFieldId("SearchFieldId"), AdvancedSearchFieldType.TEXT, Collections.emptyList()));
+		List<IncludeFieldInView> fields_in_view = Collections.singletonList(new IncludeFieldInView("fieldLabel", new SearchFieldId("SearchFieldId"), false));
 		SearchUIData field = new SearchUIData(search_field, fields_in_view);
 		SearchUIData field_modified = new SearchUIData(search_field, fields_in_view);
 

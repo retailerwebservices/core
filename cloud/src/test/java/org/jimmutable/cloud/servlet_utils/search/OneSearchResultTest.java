@@ -1,34 +1,24 @@
 package org.jimmutable.cloud.servlet_utils.search;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Map;
 
-import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
+import org.jimmutable.cloud.StubTest;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
 import org.jimmutable.core.fields.FieldHashMap;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.Format;
-import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
+import org.junit.Test;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
-public class OneSearchResultTest extends TestCase
+
+public class OneSearchResultTest extends StubTest
 {
 
-	public OneSearchResultTest( String testName )
-	{
-		super(testName);
-	}
-
-	public static Test suite()
-	{
-		JimmutableTypeNameRegister.registerAllTypes();
-		JimmutableCloudTypeNameRegister.registerAllTypes();
-		return new TestSuite(OneSearchResultTest.class);
-	}
-
+	
+	@Test
 	public void testOneSearchResultTest()
 	{
 		OneSearchResult result = null;
@@ -57,6 +47,7 @@ public class OneSearchResultTest extends TestCase
 		}
 	}
 
+	@Test
 	public void testSerialization()
 	{
 		 String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s"

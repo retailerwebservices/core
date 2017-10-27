@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
+import org.jimmutable.cloud.StubTest;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
@@ -13,26 +13,12 @@ import org.jimmutable.core.fields.FieldHashMap;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.Format;
-import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
+import org.junit.Test;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
-public class SearchResponseOKTest extends TestCase
+public class SearchResponseOKTest extends StubTest
 {
-	public SearchResponseOKTest( String testName )
-	{
-		super(testName);
-	}
-
-	public static Test suite()
-	{
-		JimmutableTypeNameRegister.registerAllTypes();
-		JimmutableCloudTypeNameRegister.registerAllTypes();
-		return new TestSuite(SearchResponseOKTest.class);
-	}
-
+	
+	@Test
 	public void testSearchResponseOKTest()
 	{
 		SearchResponseOK result = null;
@@ -89,7 +75,8 @@ public class SearchResponseOKTest extends TestCase
 		assert (result.getSimpleStartOfPreviousPageOfResults() == -1);
 
 	}
-
+	
+	@Test
 	public void testSerialization()
 	{
 		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s"
