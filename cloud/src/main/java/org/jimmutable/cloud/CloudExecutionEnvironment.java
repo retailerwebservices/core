@@ -174,6 +174,7 @@ public class CloudExecutionEnvironment
 		JimmutableCloudTypeNameRegister.registerAllTypes();
 
 	}
+	
 
 	/**
 	 * Use this for running unit tests. Search, Storage, and Messaging are just stub

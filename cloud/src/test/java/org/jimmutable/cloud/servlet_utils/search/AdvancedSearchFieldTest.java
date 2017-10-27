@@ -14,7 +14,6 @@ import org.junit.Test;
 public class AdvancedSearchFieldTest extends StubTest
 {
 
-
 	@Test
 	public void testUserSerialization()
 	{
