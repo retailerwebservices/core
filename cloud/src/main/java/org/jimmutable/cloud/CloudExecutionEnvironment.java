@@ -269,14 +269,4 @@ public class CloudExecutionEnvironment
 		}
 		return CURRENT;
 	}
-	
-	static public boolean isSetupAlreadyDone()
-	{
-		if (CURRENT == null)
-		{
-			return false;
-		}
-		return true;
-	}
-
 }
