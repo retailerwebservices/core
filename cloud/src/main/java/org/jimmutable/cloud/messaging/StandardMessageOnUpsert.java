@@ -5,6 +5,7 @@ import java.util.Objects;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
+import org.jimmutable.core.objects.common.ObjectReference;
 import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.TypeName;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
@@ -81,5 +82,9 @@ public class StandardMessageOnUpsert extends StandardImmutableObject<StandardMes
 		StandardMessageOnUpsert other = (StandardMessageOnUpsert)obj;
 		
 		return compareTo(other) == 0;
+	}
+	
+	public ObjectReference createObjectReference() {
+		return new ObjectReference(getSimpleKind(), getSimpleObjectId());
 	}
 }
