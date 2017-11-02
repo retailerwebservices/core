@@ -12,7 +12,6 @@ public class ObjectReference extends Stringable
 	public ObjectReference( String value )
 	{
 		super(value);
-		// TODO Auto-generated constructor stub
 	}
 
 	public ObjectReference( Kind kind, ObjectId id )
@@ -28,11 +27,23 @@ public class ObjectReference extends Stringable
 	@Override
 	public void normalize()
 	{
+	    /*
+	     * CODEREVIEW
+	     * You don't need to use super all the time.
+	     * Unless you are explicitly trying to differentiate between this.doSomething() and super.doSomething(), it's just extra verbosity.
+	     * In fact, if you ever decide to override a method, the use of super will cause an unexpected bug because the override will be ignored.
+	     */
 		super.normalizeTrim();
 		super.normalizeLowerCase();
 		int kind_delim_index = super.getSimpleValue().indexOf(":");
 		kind = new Kind(super.getSimpleValue().substring(0, kind_delim_index));
 		id = new ObjectId(super.getSimpleValue().substring(kind_delim_index + 1, super.getSimpleValue().length()));
+		/*
+		 * CODEREVIEW
+		 * I think you want to set kind and id in validate(), _after_ you have had the chance to check the inputs.
+		 * Otherwise you run the risk of throwing an exception b/c of invalid input (which validate would catch).
+         * (See org.jimmutable.core.objects.common.Day as an example. Let me know if this is a stale reference point.)
+		 */
 	}
 
 	@Override
