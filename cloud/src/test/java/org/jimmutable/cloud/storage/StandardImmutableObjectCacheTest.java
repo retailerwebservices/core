@@ -4,6 +4,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
+import org.jimmutable.cloud.IntegrationTest;
 import org.jimmutable.cloud.StubTest;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.objects.common.Kind;
@@ -18,8 +19,12 @@ import org.junit.Test;
 
 import com.amazonaws.services.ec2.model.AssociateRouteTableRequest;
 
-public class StandardImmutableObjectCacheTest extends StubTest
+public class StandardImmutableObjectCacheTest extends IntegrationTest
 {
+	@BeforeClass
+	public static void dothisbefore() {
+		CloudExecutionEnvironment.startupIntegrationTest(new ApplicationId("standardimmutableobjectcachetest"));
+	}
 	@Test
 	public void testConvenienceMethod() {
 		TestStorable storable = new TestStorable(new ObjectId("0000-0000-0000-0000"));
