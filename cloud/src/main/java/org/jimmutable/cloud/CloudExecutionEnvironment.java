@@ -16,10 +16,15 @@ import org.jimmutable.cloud.elasticsearch.StubSearch;
 import org.jimmutable.cloud.elasticsearch.ElasticSearch;
 import org.jimmutable.cloud.logging.Log4jUtil;
 import org.jimmutable.cloud.messaging.IMessaging;
-
+import org.jimmutable.cloud.messaging.QueueDefinition;
+import org.jimmutable.cloud.messaging.QueueId;
 import org.jimmutable.cloud.messaging.StubMessaging;
+import org.jimmutable.cloud.messaging.SubscriptionDefinition;
+import org.jimmutable.cloud.messaging.TopicDefinition;
+import org.jimmutable.cloud.messaging.TopicId;
 import org.jimmutable.cloud.messaging.dev_local.MessagingDevLocalFileSystem;
 import org.jimmutable.cloud.storage.IStorage;
+import org.jimmutable.cloud.storage.StandardImmutableObjectCache;
 import org.jimmutable.cloud.storage.StorageDevLocalFileSystem;
 import org.jimmutable.cloud.storage.StubStorage;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
@@ -48,6 +53,7 @@ public class CloudExecutionEnvironment
 
 	private static EnvironmentType ENV_TYPE;
 	private static ApplicationId APPLICATION_ID;
+	private static StandardImmutableObjectCache STANDARD_IMMUTABLE_OBJECT_CACHE;
 
 	// setup the logging level programmatically
 	static
@@ -75,6 +81,11 @@ public class CloudExecutionEnvironment
 	public ApplicationId getSimpleApplicationId()
 	{
 		return APPLICATION_ID;
+	}
+	
+	public StandardImmutableObjectCache getSimpleCache()
+	{
+		return STANDARD_IMMUTABLE_OBJECT_CACHE;
 	}
 
 	/**
@@ -138,6 +149,8 @@ public class CloudExecutionEnvironment
 
 		logger.info(String.format("ApplicationID=%s Environment=%s", APPLICATION_ID, ENV_TYPE));
 
+		STANDARD_IMMUTABLE_OBJECT_CACHE = new StandardImmutableObjectCache();
+
 		switch (env_type)
 		{
 		case DEV:
@@ -172,6 +185,9 @@ public class CloudExecutionEnvironment
 			throw new RuntimeException(String.format("Unhandled EnvironmentType: %s! Add the environment to startup to handle it correctly.", env_type));
 
 		}
+		//Implement a message listener that listens for StandardMessageOnUpsert messages on current application's public and private channels -WHAT DOES THIS MEAN?
+		//CURRENT.getSimpleMessaging().startListening(new SubscriptionDefinition(new TopicDefinition(application_id,new TopicId("")), new QueueDefinition(application_id,new QueueId(""))), STANDARD_IMMUTABLE_OBJECT_CACHE.new UpsertListener());
+		
 		JimmutableTypeNameRegister.registerAllTypes();
 		JimmutableCloudTypeNameRegister.registerAllTypes();
 
@@ -269,5 +285,4 @@ public class CloudExecutionEnvironment
 		}
 		return CURRENT;
 	}
-
 }
