@@ -19,7 +19,7 @@ import org.junit.Test;
 
 import com.amazonaws.services.ec2.model.AssociateRouteTableRequest;
 
-public class StandardImmutableObjectCacheTest extends IntegrationTest
+public class StandardImmutableObjectCacheIT extends IntegrationTest
 {
 	@BeforeClass
 	public static void dothisbefore() {

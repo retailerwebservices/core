@@ -13,6 +13,7 @@ public class StorageKeyExtension extends Stringable
 	public static StorageKeyExtension XML = new StorageKeyExtension("xml");
 	public static StorageKeyExtension JSON = new StorageKeyExtension("json");
 	public static StorageKeyExtension BIN = new StorageKeyExtension("bin");
+	public static StorageKeyExtension PNG = new StorageKeyExtension("png");
 
 	public StorageKeyExtension( String value )
 	{
