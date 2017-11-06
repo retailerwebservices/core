@@ -186,7 +186,8 @@ public class CloudExecutionEnvironment
 
 		}
 		//Implement a message listener that listens for StandardMessageOnUpsert messages on current application's public and private channels -WHAT DOES THIS MEAN?
-		//CURRENT.getSimpleMessaging().startListening(new SubscriptionDefinition(new TopicDefinition(application_id,new TopicId("")), new QueueDefinition(application_id,new QueueId(""))), STANDARD_IMMUTABLE_OBJECT_CACHE.new UpsertListener());
+		CURRENT.getSimpleMessaging().startListening(new SubscriptionDefinition(new TopicDefinition(application_id,TopicId.application_public), new QueueDefinition(application_id,new QueueId(""))), STANDARD_IMMUTABLE_OBJECT_CACHE.new UpsertListener());
+		CURRENT.getSimpleMessaging().startListening(new SubscriptionDefinition(new TopicDefinition(application_id,TopicId.application_private), new QueueDefinition(application_id,new QueueId(""))), STANDARD_IMMUTABLE_OBJECT_CACHE.new UpsertListener());
 		
 		JimmutableTypeNameRegister.registerAllTypes();
 		JimmutableCloudTypeNameRegister.registerAllTypes();
