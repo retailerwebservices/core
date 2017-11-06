@@ -1,6 +1,7 @@
 package org.jimmutable.core.objects.common;
 
 import org.jimmutable.core.objects.Stringable;
+import org.jimmutable.core.objects.common.ObjectId.MyConverter;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.core.utils.Validator;
 
@@ -12,6 +13,8 @@ import org.jimmutable.core.utils.Validator;
 
 public class ObjectReference extends Stringable
 {
+	static public final MyConverter CONVERTER = new MyConverter();
+	
 	private Kind kind;
 	private ObjectId id;
 
