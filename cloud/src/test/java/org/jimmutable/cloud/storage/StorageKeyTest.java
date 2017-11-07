@@ -33,32 +33,5 @@ public class StorageKeyTest extends StubTest
 	}
 
 	
-	@Test
-	public void testPrettyName()
-	{
 
-		StorageKey key = new StorageKey(new Kind("blaa"), "Screen Shot 2017-09-15 at 1.33.18 PM.png", new ObjectId(1), StorageKeyExtension.JSON);
-
-		tester.assertValid("blaa/Screen Shot 2017-09-15 at 1.33.18 PM.png~0000-0000-0000-0001.json");
-
-		assertEquals("blaa/screen_shot_2017-09-15_at_1.33.18_pm.png~0000-0000-0000-0001.json", key.getSimpleValue());
-
-	}
-
-	@Test(expected = ValidationException.class)
-	public void invalidPrettyName()
-	{
-		StringBuilder bigFileName = new StringBuilder();
-
-		bigFileName.append("12345/");
-		for (int i = 0; i < 300; i++)
-		{
-			bigFileName.append("c");
-		}
-		bigFileName.append("~0");
-		bigFileName.append(".html");
-
-		new StorageKey(bigFileName.toString());
-
-	}
 }
