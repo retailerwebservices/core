@@ -20,7 +20,6 @@ public class StorageKey extends Stringable
 	static public final MyConverter CONVERTER = new MyConverter();
 
 	private Kind kind;
-	private String name;
 	private ObjectId id;
 	private StorageKeyExtension extension;
 
@@ -94,7 +93,6 @@ public class StorageKey extends Stringable
 		return String.format("%s/%s~%s.%s", kind.getSimpleValue(), name, object_id.getSimpleValue(), extension.getSimpleValue());
 	}
 
-	
 	/**
 	 *
 	 * @param kind
@@ -121,30 +119,15 @@ public class StorageKey extends Stringable
 		super.normalizeLowerCase();
 
 		int kind_delim_index = super.getSimpleValue().indexOf("/");
-		int name_delim_index = super.getSimpleValue().lastIndexOf("~");
 		int extension_delim_index = super.getSimpleValue().lastIndexOf(".");
 
 		kind = new Kind(super.getSimpleValue().substring(0, kind_delim_index));
 
-		try
-		{
-			name = super.getSimpleValue().substring(kind_delim_index + 1, name_delim_index).replaceAll(" ", "_");
-		} catch (Exception e)
-		{
-			name = "";
-		}
-
-		if (name.isEmpty())
-		{
-			id = new ObjectId(super.getSimpleValue().substring(kind_delim_index + 1, extension_delim_index));
-		} else
-		{
-			id = new ObjectId(super.getSimpleValue().substring(name_delim_index + 1, extension_delim_index));
-		}
+		id = new ObjectId(super.getSimpleValue().substring(kind_delim_index + 1, extension_delim_index));
 
 		extension = new StorageKeyExtension(super.getSimpleValue().substring(extension_delim_index));
 
-		super.setValue(createStringFromComponents(getSimpleKind(), getOptionalName(null), getSimpleObjectId(), getSimpleExtension()));
+		super.setValue(createStringFromComponents(getSimpleKind(), getSimpleObjectId(), getSimpleExtension()));
 
 	}
 
@@ -155,20 +138,6 @@ public class StorageKey extends Stringable
 		Validator.notNull(super.getSimpleValue(), getSimpleKind(), getSimpleObjectId(), getSimpleExtension());
 		Validator.max(super.getSimpleValue().length(), 255);
 
-	}
-
-	/**
-	 * The nice name of the file (usually useful for attachments)
-	 * 
-	 * @return
-	 */
-	public String getOptionalName(String default_value)
-	{
-		if (name == null)
-		{
-			return default_value;
-		}
-		return name;
 	}
 
 	/**
