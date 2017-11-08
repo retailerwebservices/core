@@ -22,8 +22,9 @@ import com.amazonaws.services.ec2.model.AssociateRouteTableRequest;
 public class StandardImmutableObjectCacheIT extends IntegrationTest
 {
 	@BeforeClass
-	public static void dothisbefore() {
-		CloudExecutionEnvironment.startupIntegrationTest(new ApplicationId("standardimmutableobjectcachetest"));
+	public static void moreSetup() throws InterruptedException
+	{
+		setupEnvironment();	
 	}
 	@Test
 	public void testConvenienceMethod() {

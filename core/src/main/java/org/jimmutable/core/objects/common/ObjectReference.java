@@ -1,7 +1,6 @@
 package org.jimmutable.core.objects.common;
 
 import org.jimmutable.core.objects.Stringable;
-import org.jimmutable.core.objects.common.ObjectId.MyConverter;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.core.utils.Validator;
 
