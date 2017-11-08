@@ -88,12 +88,12 @@ public class UpsertResponseOK extends JSONServletResponse
 		return HTTP_STATUS_CODE_OK;
 	}
 
-	public String getOptionalMessage(String default_value)
+	public String getOptionalMessage( String default_value )
 	{
 		return Optional.getOptional(message, null, default_value);
 	}
 
-	public StandardImmutableObject getOptionalObject(String default_value)
+	public StandardImmutableObject getOptionalObject( String default_value )
 	{
 		return (StandardImmutableObject) Optional.getOptional(object, null, default_value);
 	}
@@ -120,15 +120,15 @@ public class UpsertResponseOK extends JSONServletResponse
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals( Object obj )
 	{
-		if (!(obj instanceof UpsertResponseOK))
+		if ( !(obj instanceof UpsertResponseOK) )
 			return false;
 
 		UpsertResponseOK other = (UpsertResponseOK) obj;
-		if (!Objects.equals(getOptionalMessage(null), other.getOptionalMessage(null)))
+		if ( !Objects.equals(getOptionalMessage(null), other.getOptionalMessage(null)) )
 			return false;
-		if (!Objects.equals(getOptionalObject(null), other.getOptionalObject(null)))
+		if ( !Objects.equals(getOptionalObject(null), other.getOptionalObject(null)) )
 			return false;
 
 		return true;
