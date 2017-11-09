@@ -4,7 +4,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
-import org.jimmutable.cloud.IntegrationTest;
 import org.jimmutable.cloud.StubTest;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.objects.common.Kind;
@@ -19,13 +18,9 @@ import org.junit.Test;
 
 import com.amazonaws.services.ec2.model.AssociateRouteTableRequest;
 
-public class StandardImmutableObjectCacheIT extends IntegrationTest
+// CODEREVIEW I don't see a test that runs the main "check RAM then load from storage" code path. -JMD
+public class StandardImmutableObjectCacheTest extends StubTest
 {
-	@BeforeClass
-	public static void moreSetup() throws InterruptedException
-	{
-		setupEnvironment();	
-	}
 	@Test
 	public void testConvenienceMethod() {
 		TestStorable storable = new TestStorable(new ObjectId("0000-0000-0000-0000"));
@@ -39,7 +34,7 @@ public class StandardImmutableObjectCacheIT extends IntegrationTest
 		TestStorable storable = new TestStorable(new ObjectId("0000-0000-0000-0000"));
 		StandardImmutableObjectCache simple_cache = CloudExecutionEnvironment.getSimpleCurrent().getSimpleCache();
 		simple_cache.put(new ObjectReference(storable.getSimpleKind(), storable.getSimpleObjectId()), storable);
-		Thread.sleep(TimeUnit.MINUTES.toMillis(5)+1);
+		Thread.sleep(TimeUnit.MINUTES.toMillis(5)+1); // CODEREVIEW Doesn't this sort of test blow up the execution of unit tests? -JMD
 		assert(simple_cache.has(storable)==false);
 	}
 	
