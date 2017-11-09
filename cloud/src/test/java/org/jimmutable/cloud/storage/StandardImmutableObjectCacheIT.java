@@ -4,6 +4,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
+import org.jimmutable.cloud.IntegrationTest;
 import org.jimmutable.cloud.StubTest;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.objects.common.Kind;
@@ -19,7 +20,7 @@ import org.junit.Test;
 import com.amazonaws.services.ec2.model.AssociateRouteTableRequest;
 
 // CODEREVIEW I don't see a test that runs the main "check RAM then load from storage" code path. -JMD
-public class StandardImmutableObjectCacheTest extends StubTest
+public class StandardImmutableObjectCacheIT extends IntegrationTest
 {
 	@Test
 	public void testConvenienceMethod() {
