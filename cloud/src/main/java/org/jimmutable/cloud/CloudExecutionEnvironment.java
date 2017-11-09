@@ -149,7 +149,7 @@ public class CloudExecutionEnvironment
 
 		logger.info(String.format("ApplicationID=%s Environment=%s", APPLICATION_ID, ENV_TYPE));
 
-		STANDARD_IMMUTABLE_OBJECT_CACHE = new StandardImmutableObjectCache();
+		
 
 		switch (env_type)
 		{
@@ -187,11 +187,9 @@ public class CloudExecutionEnvironment
 		}
 		JimmutableTypeNameRegister.registerAllTypes();
 		JimmutableCloudTypeNameRegister.registerAllTypes();
-
 		//Implement a message listener that listens for StandardMessageOnUpsert messages on current application's public and private channels -WHAT DOES THIS MEAN?
-		CURRENT.getSimpleMessaging().startListening(new SubscriptionDefinition(new TopicDefinition(application_id,TopicId.application_public), new QueueDefinition(application_id,new QueueId(""))), STANDARD_IMMUTABLE_OBJECT_CACHE.new UpsertListener());
-		CURRENT.getSimpleMessaging().startListening(new SubscriptionDefinition(new TopicDefinition(application_id,TopicId.application_private), new QueueDefinition(application_id,new QueueId(""))), STANDARD_IMMUTABLE_OBJECT_CACHE.new UpsertListener());
-	}
+		STANDARD_IMMUTABLE_OBJECT_CACHE = new StandardImmutableObjectCache(CURRENT);
+		}
 	
 
 	/**
