@@ -20,7 +20,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class StorageDevLocalFileSystemIT extends IntegrationTest
+public class StorageDevLocalFileSystemTest extends IntegrationTest
 {
 
 	private static StorageDevLocalFileSystem sdlfs;
