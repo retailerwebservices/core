@@ -38,6 +38,7 @@ import org.jimmutable.core.fields.FieldMap;
 import org.jimmutable.core.serialization.FieldName;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.ICsvListWriter;
+import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -64,7 +65,7 @@ public class ElasticSearch implements ISearch
 		this.client = client;
 	}
 
-	public boolean writeAllToCSV(IndexDefinition index, String query_string, List<FieldName> sorted_header, ICsvListWriter list_writer, CellProcessor[] cell_processors)
+	public boolean writeAllToCSV(IndexDefinition index, String query_string, List<SearchFieldId> sorted_header, ICsvListWriter list_writer, CellProcessor[] cell_processors)
 	{
 		if (index == null || query_string == null)
 		{
@@ -86,9 +87,9 @@ public class ElasticSearch implements ISearch
 
 				for (int i = 0; i < sorted_header.size(); i++)
 				{
-					if (resultMap.containsKey(sorted_header.get(i).getSimpleName()))
+					if (resultMap.containsKey(sorted_header.get(i).getSimpleValue()))
 					{
-						document[i] = resultMap.get(sorted_header.get(i).getSimpleName()).toString();
+						document[i] = resultMap.get(sorted_header.get(i).getSimpleValue()).toString();
 					}
 				}
 

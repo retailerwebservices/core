@@ -7,12 +7,10 @@ import java.util.Set;
 
 import org.jimmutable.cloud.StubTest;
 import org.jimmutable.cloud.elasticsearch.IndexDefinition;
-import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
-import org.jimmutable.cloud.elasticsearch.SearchIndexFieldType;
+
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.serialization.FieldDefinition;
-import org.jimmutable.core.serialization.FieldName;
 import org.junit.Test;
 
 public class RequestExportCSVTest extends StubTest
@@ -20,16 +18,15 @@ public class RequestExportCSVTest extends StubTest
 
 	static private final FieldDefinition.Stringable<ObjectId> FIELD_ID = new FieldDefinition.Stringable<ObjectId>("id", null, ObjectId.CONVERTER);
 	static private final FieldDefinition.String FIELD_FIRST_NAME = new FieldDefinition.String("first_name", null);
-
-	static private final SearchIndexFieldDefinition SEARCH_FIELD_ID = new SearchIndexFieldDefinition(FIELD_ID.getSimpleFieldName(), SearchIndexFieldType.TEXT);
-	static private final SearchIndexFieldDefinition SEARCH_FIELD_ID_ATOM = new SearchIndexFieldDefinition(new FieldName(String.format("%s_atom", FIELD_ID.getSimpleFieldName().getSimpleName())), SearchIndexFieldType.ATOM);
-	static private final SearchIndexFieldDefinition SEARCH_FIELD_FIRST_NAME = new SearchIndexFieldDefinition(FIELD_FIRST_NAME.getSimpleFieldName(), SearchIndexFieldType.TEXT);
-
+	
+	static private final SearchFieldId SEARCH_FIELD_ID = new SearchFieldId(FIELD_ID.getSimpleFieldName().getSimpleName());
+	static private final SearchFieldId SEARCH_FIELD_ID_ATOM = new SearchFieldId(String.format("%s_atom", FIELD_ID.getSimpleFieldName().getSimpleName()));
+	static private final SearchFieldId SEARCH_FIELD_FIRST_NAME = new SearchFieldId(FIELD_FIRST_NAME.getSimpleFieldName().getSimpleName());
 	@Test
 	public void deserializeEquals()
 	{
 
-		Set<SearchIndexFieldDefinition> set = new HashSet<SearchIndexFieldDefinition>();
+		Set<SearchFieldId> set = new HashSet<SearchFieldId>();
 		set.add(SEARCH_FIELD_ID);
 		set.add(SEARCH_FIELD_ID_ATOM);
 
@@ -37,30 +34,17 @@ public class RequestExportCSVTest extends StubTest
 
 		//System.out.println(export.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 
-		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s"
-		     , "{"
-		     , "  \"type_hint\" : \"request_export_csv\","
-		     , "  \"index\" : \"dev:dev:v1\","
-		     , "  \"export_all_documents\" : false,"
-		     , "  \"field_to_include_in_export\" : [ {"
-		     , "    \"type_hint\" : \"org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition\","
-		     , "    \"name\" : {"
-		     , "      \"type_hint\" : \"jimmutable.FieldName\","
-		     , "      \"name\" : \"id_atom\""
-		     , "    },"
-		     , "    \"type\" : \"keyword\""
-		     , "  }, {"
-		     , "    \"type_hint\" : \"org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition\","
-		     , "    \"name\" : {"
-		     , "      \"type_hint\" : \"jimmutable.FieldName\","
-		     , "      \"name\" : \"id\""
-		     , "    },"
-		     , "    \"type\" : \"text\""
-		     , "  } ],"
-		     , "  \"query_string\" : \"blaa\""
-		     , "}"
-		);
-		RequestExportCSV obj = (RequestExportCSV) StandardObject.deserialize(obj_string);
+		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s"
+			     , "{"
+			     , "  \"type_hint\" : \"request_export_csv\","
+			     , "  \"index\" : \"dev:dev:v1\","
+			     , "  \"export_all_documents\" : false,"
+			     , "  \"field_to_include_in_export\" : [ \"id\", \"id_atom\" ],"
+			     , "  \"query_string\" : \"blaa\""
+			     , "}"
+			);
+
+		RequestExportCSV obj = (RequestExportCSV)StandardObject.deserialize(obj_string);
 
 		assertEquals(obj, export);
 	}
@@ -69,7 +53,7 @@ public class RequestExportCSVTest extends StubTest
 	public void sanityTestStringable()
 	{
 
-		Set<SearchIndexFieldDefinition> set = new HashSet<SearchIndexFieldDefinition>();
+		Set<SearchFieldId> set = new HashSet<SearchFieldId>();
 
 		set.add(SEARCH_FIELD_ID_ATOM);
 		set.add(SEARCH_FIELD_FIRST_NAME);

@@ -2,25 +2,40 @@ package org.jimmutable.cloud.storage;
 
 import java.util.concurrent.TimeUnit;
 
+import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
+import org.jimmutable.cloud.StubTest;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.objects.common.ObjectReference;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.TypeName;
+import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
-public class StandardImmutableObjectCacheTest
+import com.amazonaws.services.ec2.model.AssociateRouteTableRequest;
+
+public class StandardImmutableObjectCacheLongRunningTest extends StubTest
 {
-	
 	@Test
 	public void testConvenienceMethod() {
 		TestStorable storable = new TestStorable(new ObjectId("0000-0000-0000-0000"));
 		StandardImmutableObjectCache simple_cache = CloudExecutionEnvironment.getSimpleCurrent().getSimpleCache();
 		simple_cache.put(new ObjectReference(storable.getSimpleKind(), storable.getSimpleObjectId()), storable);
 		assert(simple_cache.has(storable)==true);
+	}
+	
+	@Test
+	public void testTiming() throws InterruptedException {
+		TestStorable storable = new TestStorable(new ObjectId("0000-0000-0000-0000"));
+		StandardImmutableObjectCache simple_cache = CloudExecutionEnvironment.getSimpleCurrent().getSimpleCache();
+		simple_cache.put(new ObjectReference(storable.getSimpleKind(), storable.getSimpleObjectId()), storable);
+		Thread.sleep(TimeUnit.MINUTES.toMillis(5)+1);
+		assert(simple_cache.has(storable)==false);
 	}
 	
 	@Test
@@ -116,5 +131,4 @@ public class StandardImmutableObjectCacheTest
 		}
 		
 	}
-
 }
