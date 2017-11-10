@@ -23,7 +23,8 @@ public class SearchFieldId extends Stringable
 	public void normalize()
 	{
 		Validator.notNull(getSimpleValue());
-		setValue(getSimpleValue().replace("_", "-"));
+//		setValue(getSimpleValue().replace("_", "-"));
+//		setValue(getSimpleValue().replace("-", "_"));
 		normalizeTrim();
 		normalizeLowerCase();
 	}
@@ -31,7 +32,8 @@ public class SearchFieldId extends Stringable
 	@Override
 	public void validate()
 	{
-		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.LOWERCASE_LETTERS, Validator.NUMBERS, Validator.DASH);
+//		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.LOWERCASE_LETTERS, Validator.NUMBERS, Validator.DASH);
+//		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.LOWERCASE_LETTERS, Validator.NUMBERS, Validator.DASH, Validator.UNDERSCORE);
 	}
 
 	static public class MyConverter extends Stringable.Converter<SearchFieldId>

@@ -3,8 +3,8 @@ package org.jimmutable.cloud.elasticsearch;
 import java.util.List;
 
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
+import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
-import org.jimmutable.core.serialization.FieldName;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.ICsvListWriter;
 
@@ -31,5 +31,5 @@ public interface ISearch
 
 	public boolean upsertIndex(SearchIndexDefinition index);
 
-	public boolean writeAllToCSV(IndexDefinition index, String query_string, List<FieldName> sorted_header, ICsvListWriter list_writer, CellProcessor[] cell_processors);
+	public boolean writeAllToCSV(IndexDefinition index, String query_string, List<SearchFieldId> sorted_header, ICsvListWriter list_writer, CellProcessor[] cell_processors);
 }
