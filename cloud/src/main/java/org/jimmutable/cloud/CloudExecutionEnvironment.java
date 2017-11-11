@@ -2,26 +2,21 @@ package org.jimmutable.cloud;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
+import org.jimmutable.cloud.elasticsearch.ElasticSearch;
 import org.jimmutable.cloud.elasticsearch.ElasticSearchEndpoint;
 import org.jimmutable.cloud.elasticsearch.ISearch;
 import org.jimmutable.cloud.elasticsearch.StubSearch;
-import org.jimmutable.cloud.elasticsearch.ElasticSearch;
 import org.jimmutable.cloud.logging.Log4jUtil;
 import org.jimmutable.cloud.messaging.IMessaging;
-import org.jimmutable.cloud.messaging.QueueDefinition;
-import org.jimmutable.cloud.messaging.QueueId;
 import org.jimmutable.cloud.messaging.StubMessaging;
-import org.jimmutable.cloud.messaging.SubscriptionDefinition;
-import org.jimmutable.cloud.messaging.TopicDefinition;
-import org.jimmutable.cloud.messaging.TopicId;
 import org.jimmutable.cloud.messaging.dev_local.MessagingDevLocalFileSystem;
 import org.jimmutable.cloud.storage.IStorage;
 import org.jimmutable.cloud.storage.StandardImmutableObjectCache;
@@ -70,7 +65,8 @@ public class CloudExecutionEnvironment
 		this.search = search;
 		this.storage = storage;
 		this.messaging = messaging;
-
+		
+				
 	}
 
 	public EnvironmentType getSimpleEnvironmentType()
@@ -83,11 +79,6 @@ public class CloudExecutionEnvironment
 		return APPLICATION_ID;
 	}
 	
-	public StandardImmutableObjectCache getSimpleCache()
-	{
-		return STANDARD_IMMUTABLE_OBJECT_CACHE;
-	}
-
 	/**
 	 * Search instance used for document upsert and searching of indices
 	 *
@@ -185,11 +176,10 @@ public class CloudExecutionEnvironment
 			throw new RuntimeException(String.format("Unhandled EnvironmentType: %s! Add the environment to startup to handle it correctly.", env_type));
 
 		}
+		
 		JimmutableTypeNameRegister.registerAllTypes();
 		JimmutableCloudTypeNameRegister.registerAllTypes();
-		//Implement a message listener that listens for StandardMessageOnUpsert messages on current application's public and private channels -WHAT DOES THIS MEAN?
-		STANDARD_IMMUTABLE_OBJECT_CACHE = new StandardImmutableObjectCache(CURRENT);
-		}
+	}
 	
 
 	/**
@@ -261,6 +251,13 @@ public class CloudExecutionEnvironment
 		{
 			logger.fatal("Failed to detect operating system!");
 		}
+	}
+	
+	public StandardImmutableObjectCache getSimpleCache() {
+		if(STANDARD_IMMUTABLE_OBJECT_CACHE==null) {
+			STANDARD_IMMUTABLE_OBJECT_CACHE= new StandardImmutableObjectCache();
+		}
+		return STANDARD_IMMUTABLE_OBJECT_CACHE;
 	}
 
 	/**
