@@ -21,7 +21,7 @@ public class StandardImmutableObjectCache
 {
 	private ExpirationCache<ObjectReference, StandardImmutableObject> cache = new ExpirationCache<>(TimeUnit.MINUTES.toMillis(5), 100_000);
 	
-	public  StandardImmutableObjectCache()
+	public static void setupListeners()
 	{
 		ApplicationId application_id= CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId();
 		UpsertListener upser_listener = new UpsertListener();
