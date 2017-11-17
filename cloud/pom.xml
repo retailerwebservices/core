@@ -303,6 +303,7 @@
 					<skipITs>${skipITs}</skipITs>
 					<excludes>
 						<exclude>*StressTestIT.java</exclude>
+						<exclude>*LongRunningIT.java</exclude>
 					</excludes>
 				</configuration>
 			</plugin>

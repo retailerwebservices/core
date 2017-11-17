@@ -4,16 +4,12 @@ import java.util.concurrent.TimeUnit;
 
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
-import org.jimmutable.cloud.messaging.MessageListener;
 import org.jimmutable.cloud.messaging.QueueDefinition;
 import org.jimmutable.cloud.messaging.QueueId;
-import org.jimmutable.cloud.messaging.StandardMessageOnUpsert;
 import org.jimmutable.cloud.messaging.SubscriptionDefinition;
 import org.jimmutable.cloud.messaging.TopicDefinition;
 import org.jimmutable.cloud.messaging.TopicId;
-import org.jimmutable.cloud.storage.StandardImmutableObjectCache.UpsertListener;
 import org.jimmutable.core.objects.StandardImmutableObject;
-import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.objects.common.ObjectReference;
@@ -24,12 +20,13 @@ import org.jimmutable.core.threading.ExpirationCache;
 public class StandardImmutableObjectCache
 {
 	private ExpirationCache<ObjectReference, StandardImmutableObject> cache = new ExpirationCache<>(TimeUnit.MINUTES.toMillis(5), 100_000);
-
-	public StandardImmutableObjectCache(CloudExecutionEnvironment current) {
-		ApplicationId application_id = current.getSimpleApplicationId();
+	
+	public static void setupListeners()
+	{
+		ApplicationId application_id= CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId();
 		UpsertListener upser_listener = new UpsertListener();
-		current.getSimpleMessaging().startListening(new SubscriptionDefinition(new TopicDefinition(application_id,TopicId.application_public), new QueueDefinition(application_id,new QueueId("object-cache-public-queue"))), upser_listener);
-		current.getSimpleMessaging().startListening(new SubscriptionDefinition(new TopicDefinition(application_id,TopicId.application_private), new QueueDefinition(application_id,new QueueId("object-cache-private-queue"))), upser_listener);
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleMessaging().startListening(new SubscriptionDefinition(new TopicDefinition(application_id,TopicId.application_public), new QueueDefinition(application_id,new QueueId("object-cache-public-queue"))), upser_listener);
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleMessaging().startListening(new SubscriptionDefinition(new TopicDefinition(application_id,TopicId.application_private), new QueueDefinition(application_id,new QueueId("object-cache-private-queue"))), upser_listener);
 	}
 	
 	public void put( Kind kind, ObjectId id, StandardImmutableObject object )
@@ -125,17 +122,5 @@ public class StandardImmutableObjectCache
 	}
 	
 	//we use this class in CloudExecutionEnvironment. 
-	public class UpsertListener implements MessageListener
-	{
-		@Override
-		public void onMessageReceived( StandardObject message )
-		{
-			if ( message instanceof StandardMessageOnUpsert )
-			{
-				StandardMessageOnUpsert standard_message = (StandardMessageOnUpsert) message;
-				cache.remove(new ObjectReference(standard_message.getSimpleKind(), standard_message.getSimpleObjectId()));
-			}
-		}
-
-	}
+	
 }

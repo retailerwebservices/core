@@ -108,13 +108,13 @@ public class MessageListenerDaemon implements Runnable
 		Path prev = keys.get(key);
 		if ( prev == null )
 		{
-			System.out.format("register: %s\n", dir);
+			logger.info(String.format("register: %s\n", dir));
 		}
 		else
 		{
 			if ( !dir.equals(prev) )
 			{
-				System.out.format("update: %s -> %s\n", prev, dir);
+				logger.info(String.format("update: %s -> %s\n", prev, dir));
 			}
 		}
 

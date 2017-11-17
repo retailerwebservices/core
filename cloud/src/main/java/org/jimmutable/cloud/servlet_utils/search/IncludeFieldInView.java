@@ -37,31 +37,31 @@ public class IncludeFieldInView extends StandardImmutableObject<IncludeFieldInVi
 	static public final FieldDefinition.Boolean FIELD_INCLUDED_BY_DEFAULT = new FieldDefinition.Boolean("included_by_default", null);
 
 	static public final TypeName TYPE_NAME = new TypeName("includefieldinview");
-	static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("includefieldinview"), new IndexVersion("v1"));
-
-	static public final TopicDefinition TOPIC_DEF = new TopicDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new TopicId("includefieldinview"));
-
-	static private final SearchIndexFieldDefinition SEARCH_FIELD_LABEL = new SearchIndexFieldDefinition(FIELD_LABEL.getSimpleFieldName(), SearchIndexFieldType.TEXT);
-	static private final SearchIndexFieldDefinition SEARCH_FIELD_SEARCH_DOCUMENT_FIELD = new SearchIndexFieldDefinition(FIELD_SEARCH_DOCUMENT_FIELD.getSimpleFieldName(), SearchIndexFieldType.TEXT);
-	static private final SearchIndexFieldDefinition SEARCH_FIELD_INCLUDED_BY_DEFAULT = new SearchIndexFieldDefinition(FIELD_INCLUDED_BY_DEFAULT.getSimpleFieldName(), SearchIndexFieldType.BOOLEAN);
-	
-	static public final SearchIndexDefinition INDEX_MAPPING;
-
-	static
-	{
-
-		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
-
-		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_LABEL);
-		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_SEARCH_DOCUMENT_FIELD);
-		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_INCLUDED_BY_DEFAULT);
-		
-		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
-
-		INDEX_MAPPING = (SearchIndexDefinition) b.create(null);
-
-	}
-	
+//	static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("includefieldinview"), new IndexVersion("v1"));
+//
+//	static public final TopicDefinition TOPIC_DEF = new TopicDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new TopicId("includefieldinview"));
+//
+//	static private final SearchIndexFieldDefinition SEARCH_FIELD_LABEL = new SearchIndexFieldDefinition(FIELD_LABEL.getSimpleFieldName(), SearchIndexFieldType.TEXT);
+//	static private final SearchIndexFieldDefinition SEARCH_FIELD_SEARCH_DOCUMENT_FIELD = new SearchIndexFieldDefinition(FIELD_SEARCH_DOCUMENT_FIELD.getSimpleFieldName(), SearchIndexFieldType.TEXT);
+//	static private final SearchIndexFieldDefinition SEARCH_FIELD_INCLUDED_BY_DEFAULT = new SearchIndexFieldDefinition(FIELD_INCLUDED_BY_DEFAULT.getSimpleFieldName(), SearchIndexFieldType.BOOLEAN);
+//	
+//	static public final SearchIndexDefinition INDEX_MAPPING;
+//
+//	static
+//	{
+//
+//		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+//
+//		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_LABEL);
+//		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_SEARCH_DOCUMENT_FIELD);
+//		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_INCLUDED_BY_DEFAULT);
+//		
+//		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
+//
+//		INDEX_MAPPING = (SearchIndexDefinition) b.create(null);
+//
+//	}
+//	
 	private String label;//required
 	private SearchFieldId search_document_field;//required
 	private boolean includeded_by_default;//required
