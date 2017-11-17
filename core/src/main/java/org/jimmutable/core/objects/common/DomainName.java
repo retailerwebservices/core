@@ -29,7 +29,7 @@ public class DomainName extends Stringable
 	{
 		String simpleValue = getSimpleValue();
 		Validator.notNull(simpleValue);
-		Validator.containsOnlyValidCharacters(simpleValue, Validator.DOT, Validator.UPPERCASE_LETTERS,Validator.LOWERCASE_LETTERS, Validator.NUMBERS);
+		Validator.containsOnlyValidCharacters(simpleValue, Validator.DOT, Validator.UPPERCASE_LETTERS,Validator.LOWERCASE_LETTERS, Validator.NUMBERS,Validator.DASH);
 		Validator.isTrue(simpleValue.contains("."));
 		String[] split = simpleValue.split("\\.");
 		Validator.isTrue(split.length==2);
