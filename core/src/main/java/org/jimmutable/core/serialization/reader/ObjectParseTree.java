@@ -253,6 +253,64 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 	}
 	
 	/**
+	 * "Reads" a child -- a read is a combination of a find and remove
+	 * 
+	 * @param field_name
+	 *            The field to read
+	 * @param default_value
+	 *            The value to return in the event that the field does not exist
+	 * @return The object parse tree associated with the field name, or
+	 *         default_value if no such parse tree exists
+	 */
+	public ObjectParseTree readChild(FieldName field_name, ObjectParseTree default_value)
+	{
+		if ( field_name == null ) return default_value;
+		
+		Iterator<ObjectParseTree> itr = this.iterator();
+		
+		while(itr.hasNext())
+		{
+			ObjectParseTree child = itr.next();
+			
+			if ( child == null ) break;
+			
+			if ( child.getSimpleFieldName().equals(field_name) )
+			{
+				itr.remove();
+				return child;
+			}
+		}
+		
+		return default_value;
+	}
+	
+	/**
+	 * Remove the first child with the specified name
+	 */
+	
+	public boolean remove(FieldName field_name)
+	{
+		if ( field_name == null ) return false;
+		
+		Iterator<ObjectParseTree> itr = this.iterator();
+		
+		while(itr.hasNext())
+		{
+			ObjectParseTree child = itr.next();
+			
+			if ( child == null ) break;
+			
+			if ( child.getSimpleFieldName().equals(field_name) )
+			{
+				itr.remove();
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * Does this tree have a type hint?
 	 * 
 	 * @return True if this reader has a type hint, false otherwise
@@ -695,6 +753,107 @@ final public class ObjectParseTree implements Iterable<ObjectParseTree>
 		
 		return default_value;
 	}
+	
+	/**
+	 * Read the value of a given child (field_name) as a String (read deletes the child)
+	 */
+	public String readString(FieldName field_name, String default_value)
+	{
+		ObjectParseTree child = readChild(field_name, null);
+		if ( child == null ) return default_value;
+		return child.asString(default_value);
+	}
+	
+	/**
+	 * Read the value of a given child (field_name) as a boolean (read deletes the child)
+	 */
+	public Boolean readBoolean(FieldName field_name, Boolean default_value)
+	{
+		ObjectParseTree child = readChild(field_name, null);
+		if ( child == null ) return default_value;
+		return child.asBoolean(default_value);
+	}
+	
+	/**
+	 * Read the value of a given child (field_name) as a char (read deletes the child)
+	 */
+	public Character readCharacter(FieldName field_name, Character default_value)
+	{
+		ObjectParseTree child = readChild(field_name, null);
+		if ( child == null ) return default_value;
+		return child.asCharacter(default_value);
+	}
+	
+	/**
+	 * Read the value of a given child (field_name) as a byte (read deletes the child)
+	 */
+	public Byte readByte(FieldName field_name, Byte default_value)
+	{
+		ObjectParseTree child = readChild(field_name, null);
+		if ( child == null ) return default_value;
+		return child.asByte(default_value);
+	}
+	
+	/**
+	 * Read the value of a given child (field_name) as a short (read deletes the child)
+	 */
+	public Short readShort(FieldName field_name, Short default_value)
+	{
+		ObjectParseTree child = readChild(field_name, null);
+		if ( child == null ) return default_value;
+		return child.asShort(default_value);
+	}
+	
+	/**
+	 * Read the value of a given child (field_name) as a int (read deletes the child)
+	 */
+	public Integer readInt(FieldName field_name, Integer default_value)
+	{
+		ObjectParseTree child = readChild(field_name, null);
+		if ( child == null ) return default_value;
+		return child.asInteger(default_value);
+	}
+	
+	/**
+	 * Read the value of a given child (field_name) as a long (read deletes the child)
+	 */
+	public Long readLong(FieldName field_name, Long default_value)
+	{
+		ObjectParseTree child = readChild(field_name, null);
+		if ( child == null ) return default_value;
+		return child.asLong(default_value);
+	}
+	
+	/**
+	 * Read the value of a given child (field_name) as a float (read deletes the child)
+	 */
+	public Float readFloat(FieldName field_name, Float default_value)
+	{
+		ObjectParseTree child = readChild(field_name, null);
+		if ( child == null ) return default_value;
+		return child.asFloat(default_value);
+	}
+	
+	/**
+	 * Read the value of a given child (field_name) as a double (read deletes the child)
+	 */
+	public Double readDouble(FieldName field_name, Double default_value)
+	{
+		ObjectParseTree child = readChild(field_name, null);
+		if ( child == null ) return default_value;
+		return child.asDouble(default_value);
+	}
+	
+	/**
+	 * Read the value of a given child (field_name) as a object (read deletes the child)
+	 */
+	public Object readObject(FieldName field_name, Object default_value)
+	{
+		ObjectParseTree child = readChild(field_name, null);
+		if ( child == null ) return default_value;
+		return child.asObject(default_value);
+	}
+	
 	
 	/**
 	 * Get the value of a given child (field_name) as a String
