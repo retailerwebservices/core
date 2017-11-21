@@ -11,11 +11,14 @@ public class SimpleHandReaderTest
 	{
 		String json_string = "{ \"foo\":\"bar\", \"baz\":[2,3,5,7,11], \"quz\":{ \"first\":\"James\", \"last\":\"Kane\" } }";
 		
+		
 		HandReader r = new HandReader(json_string);
 		
 		
+		String foo = r.readString("foo", null);
+		
 		// Simple reading of a string
-		System.out.println(String.format("foo = %s", r.readString("foo", null)));
+		System.out.println(String.format("foo = %s", foo));
 		
 		// Read an array of integers
 		while(true)
@@ -34,5 +37,7 @@ public class SimpleHandReaderTest
 			
 			System.out.println(String.format("quz.first = %s, quz.last = %s", first_name, last_name));
 		}
+		
+		
 	}
 }

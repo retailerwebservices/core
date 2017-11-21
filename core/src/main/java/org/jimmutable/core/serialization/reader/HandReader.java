@@ -3,6 +3,12 @@ package org.jimmutable.core.serialization.reader;
 import org.jimmutable.core.exceptions.SerializeException;
 import org.jimmutable.core.serialization.FieldName;
 
+
+/**
+ * TODO: Write a really good explanation of read semantics, including arrays, etc.
+ * @author kanej
+ *
+ */
 public class HandReader
 {
 	private ObjectParseTree tree;
@@ -10,6 +16,11 @@ public class HandReader
 	public HandReader(String json_or_xml_data)  throws SerializeException
 	{
 		tree = Parser.parse(json_or_xml_data);
+	}
+	
+	private HandReader(ObjectParseTree tree)
+	{
+		this.tree = tree;
 	}
 	
 	/**
@@ -23,7 +34,7 @@ public class HandReader
 	 * @return The object parse tree specified by xpath, default value if the tree
 	 *         can not be found.
 	 */
-	public ObjectParseTree readChild(String xpath, ObjectParseTree default_value)
+	private ObjectParseTree readChild(String xpath, ObjectParseTree default_value)
 	{
 		if ( xpath == null ) return default_value;
 	
@@ -45,6 +56,26 @@ public class HandReader
 		{
 			return default_value;
 		}
+	}
+	
+	/**
+	 * Create a new hand reader by reading the specified child
+	 * 
+	 * @param xpath
+	 *            The path of the child to read
+	 * @param default_value
+	 *            The value to return in the event that the child can not be deleted
+	 * @return The HandReader from the specified child, or default_value if the
+	 *         child can not be read
+	 */
+	public HandReader read(String xpath, HandReader default_value)
+	{ 
+		if ( xpath == null ) return default_value;
+		
+		ObjectParseTree tmp = readChild(xpath,null);
+		if ( tmp == null ) return default_value;
+		
+		return new HandReader(tmp);
 	}
 	
 	/**
