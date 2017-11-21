@@ -42,6 +42,7 @@ public class ObjectReference extends Stringable
 	@Override
 	public void validate()
 	{
+	    // CODEREVIEW This will throw an NPE if value is null -JMD
 		int kind_delim_index = super.getSimpleValue().indexOf(":");
 		kind = new Kind(super.getSimpleValue().substring(0, kind_delim_index));
 		id = new ObjectId(super.getSimpleValue().substring(kind_delim_index + 1, super.getSimpleValue().length()));
