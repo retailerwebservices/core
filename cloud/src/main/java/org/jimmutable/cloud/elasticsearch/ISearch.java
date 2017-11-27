@@ -32,4 +32,6 @@ public interface ISearch
 	public boolean upsertIndex(SearchIndexDefinition index);
 
 	public boolean writeAllToCSV(IndexDefinition index, String query_string, List<SearchFieldId> sorted_header, ICsvListWriter list_writer, CellProcessor[] cell_processors);
+	
+	public boolean deleteDocument(IndexDefinition index, SearchDocumentId document_id);
 }
