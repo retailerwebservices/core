@@ -16,9 +16,11 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.elasticsearch.action.DocWriteResponse.Result;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
+import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -26,6 +28,7 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -34,7 +37,6 @@ import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
-import org.jimmutable.core.fields.FieldMap;
 import org.jimmutable.core.serialization.FieldName;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.ICsvListWriter;
@@ -552,6 +554,36 @@ public class ElasticSearch implements ISearch
 		// index exists and already configured correctly
 		logger.info(String.format("No upsert needed for index %s", index.getSimpleIndex().getSimpleValue()));
 		return true;
+	}
+
+	/**
+	 * Delete a document within an index
+	 * 
+	 * @param index
+	 * @param document_id
+	 * @return
+	 */
+	public boolean deleteDocument(IndexDefinition index, SearchDocumentId document_id)
+	{
+
+		if (index == null || document_id == null)
+		{
+			logger.fatal("Null index or document id");
+			return false;
+		}
+
+		try
+		{
+			DeleteResponse response = client.prepareDelete(index.getSimpleValue(), ELASTICSEARCH_DEFAULT_TYPE, document_id.getSimpleValue()).get();
+
+			logger.info(String.format("Result:%s SearchDocumentId:%s IndexDefinition:%s", response.getResult(), response.getId(), response.getIndex()));
+
+			return response.getResult().equals(Result.DELETED);
+		} catch (Exception e)
+		{
+			logger.error(e);
+			return false;
+		}
 	}
 
 }
