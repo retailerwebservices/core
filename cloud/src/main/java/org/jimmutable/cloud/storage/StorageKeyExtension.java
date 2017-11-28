@@ -15,6 +15,7 @@ public class StorageKeyExtension extends Stringable
 	public static StorageKeyExtension BIN = new StorageKeyExtension("bin");
 	public static StorageKeyExtension PNG = new StorageKeyExtension("png");
 	public static StorageKeyExtension JPG = new StorageKeyExtension("jpg");
+	public static StorageKeyExtension JPEG = new StorageKeyExtension("jpeg");
 
 	public StorageKeyExtension( String value )
 	{
