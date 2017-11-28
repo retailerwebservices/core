@@ -28,5 +28,6 @@ public class HostNameTest extends TestCase
 		tester.assertInvalid(".com");
 		tester.assertInvalid("google.");
 		tester.assertInvalid("&&!(#$");
+		
 	}
 }
