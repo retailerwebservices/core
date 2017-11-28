@@ -14,6 +14,9 @@ public class HostNameTest extends TestCase
 		tester.assertValid("https://www.google.com", "www.google.com");
 		tester.assertValid("http://www.FARK.com/index.html", "www.fark.com");
 		tester.assertValid("http://www.FARK9-.com/index.html", "www.fark9-.com");
+		tester.assertValid("www.fark9-.com", "www.fark9-.com");
+		tester.assertValid("www.lol.fark9-.com", "www.lol.fark9-.com");
+		tester.assertValid("G.Q", "g.q");
 	}
 
 	@Test
@@ -21,6 +24,7 @@ public class HostNameTest extends TestCase
 	{
 		tester.assertInvalid(null);
 		tester.assertInvalid("");
+		tester.assertInvalid(".");
 		tester.assertInvalid(".com");
 		tester.assertInvalid("google.");
 		tester.assertInvalid("&&!(#$");

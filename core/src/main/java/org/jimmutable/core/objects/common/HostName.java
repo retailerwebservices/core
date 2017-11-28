@@ -17,6 +17,8 @@ public class HostName extends Stringable
 		super(tree);
 	}
 	
+	//CODE REVIEW: put this in the normalize step instead
+	
 	static private String getNecessaryInfo( String value)
 	{
 		Validator.notNull(value);
