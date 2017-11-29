@@ -4,19 +4,13 @@
 
 	<groupId>org.jimmutable</groupId>
 	<artifactId>core</artifactId>
-	<version>0.0.7-SNAPSHOT</version>
+	<version>0.0.7</version>
 	<packaging>jar</packaging>
 
 	<name>jimmutable core</name>
 	<description>The core classes of the jimmutable project</description>
 	<url>http://www.jimmutable.org</url>
 
-	<parent>
-		<groupId>com.rws</groupId>
-		<artifactId>rws-parent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
-		<relativePath></relativePath>
-	</parent>
 
 	<licenses>
 		<license>
@@ -41,6 +35,23 @@
 		</developer>
 	</developers>
 
+
+
+
+
+	<!-- http://central.sonatype.org/pages/apache-maven.html -->
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
+
+
 	<scm>
 		<url>https://github.com/jim-kane/jimmutable</url>
 		<connection>scm:git:git://github.com/jim-kane/jimmutable.git</connection>
@@ -53,17 +64,20 @@
 
 
 	<dependencies>
+
 		<dependency>
 			<groupId>net.sf.supercsv</groupId>
 			<artifactId>super-csv</artifactId>
 			<version>2.4.0</version>
 		</dependency>
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.12</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
