@@ -9,17 +9,15 @@ public class HostName extends Stringable
 	static public final MyConverter CONVERTER = new MyConverter();
 	public HostName( String value )
 	{
-		super(getNecessaryInfo(value));
+		super(value);
 	}
 
 	public HostName( ObjectParseTree tree )
 	{
 		super(tree);
 	}
-	
-	//CODE REVIEW: put this in the normalize step instead
-	
-	static private String getNecessaryInfo( String value)
+		
+	private String getNecessaryInfo( String value)
 	{
 		Validator.notNull(value);
 		String[] split = value.split("/");
@@ -35,6 +33,7 @@ public class HostName extends Stringable
 	@Override
 	public void normalize()
 	{
+		setValue(getNecessaryInfo(getSimpleValue()));
 		normalizeLowerCase();
 	}
 
