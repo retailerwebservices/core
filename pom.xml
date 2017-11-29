@@ -10,6 +10,13 @@
     <version>1.0.0-SNAPSHOT</version>
     <name>jimmutable parent</name>
 
+    <parent>
+      <groupId>com.rws</groupId>
+      <artifactId>rws-parent</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+      <relativePath></relativePath>
+    </parent>
+
     <modules>
         <module>core</module>
         <module>cloud</module>
