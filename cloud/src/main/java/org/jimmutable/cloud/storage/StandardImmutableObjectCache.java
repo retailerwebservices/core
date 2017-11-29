@@ -100,7 +100,7 @@ public class StandardImmutableObjectCache
 	public StandardImmutableObject get( ObjectReference reference, StandardImmutableObject default_value )
 	{		
 		StandardImmutableObject standard_immutable_object =  cache.getOptional(reference, default_value);
-		if(standard_immutable_object==null||standard_immutable_object.equals(default_value)) return default_value;
+		if(default_value!=null&&standard_immutable_object.equals(default_value)) return default_value;
 		
 		//if you did not find it in the cache go find it in storage. 
 		byte[] object = CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(new StorageKey(reference.getSimpleKind(), reference.getSimpleObjectId(), StorageKeyExtension.JSON), new byte[0]);
