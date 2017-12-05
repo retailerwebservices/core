@@ -16,6 +16,7 @@ public class StorageKeyExtension extends Stringable
 	public static StorageKeyExtension PNG = new StorageKeyExtension("png");
 	public static StorageKeyExtension JPG = new StorageKeyExtension("jpg");
 	public static StorageKeyExtension JPEG = new StorageKeyExtension("jpeg");
+	public static StorageKeyExtension MOV = new StorageKeyExtension("mov");
 
 	public StorageKeyExtension( String value )
 	{
@@ -58,6 +59,8 @@ public class StorageKeyExtension extends Stringable
 			return "text/csv";
 		case "txt":
 			return "text/txt";
+		case "mov":
+            return "video/quicktime";
 		default:
 			return "application/octet-stream";
 		}

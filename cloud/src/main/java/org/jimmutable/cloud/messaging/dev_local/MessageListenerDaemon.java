@@ -157,7 +157,7 @@ public class MessageListenerDaemon implements Runnable
 		try
 		{
 			Path message_path = fs.getSimpleRoot().toPath().resolve(((Path) event.context()));
-			String file_name = message_path.toString().substring(message_path.toString().lastIndexOf("/"));
+			String file_name = message_path.toString().substring(message_path.toString().lastIndexOf(File.separator));
 			String path_to_file = dir.toString()+file_name;
 			File message_file = Paths.get(path_to_file).toFile();
 
