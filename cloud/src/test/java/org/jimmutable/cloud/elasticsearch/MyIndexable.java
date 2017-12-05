@@ -21,6 +21,8 @@ public class MyIndexable implements Indexable
 	public static final SearchIndexFieldDefinition theFloat = new SearchIndexFieldDefinition(new FieldName("float"), SearchIndexFieldType.FLOAT);
 	public static final SearchIndexFieldDefinition theLong = new SearchIndexFieldDefinition(new FieldName("long"), SearchIndexFieldType.LONG);
 
+	public static final SearchIndexFieldDefinition theTimestamp = new SearchIndexFieldDefinition(new FieldName("timestamp"), SearchIndexFieldType.DAY);
+
 	private IndexDefinition index_definition;
 	private SearchDocumentId document_id;
 
@@ -36,6 +38,7 @@ public class MyIndexable implements Indexable
 		b.add(SearchIndexDefinition.FIELD_FIELDS, theDay);
 		b.add(SearchIndexDefinition.FIELD_FIELDS, theFloat);
 		b.add(SearchIndexDefinition.FIELD_FIELDS, theLong);
+		b.add(SearchIndexDefinition.FIELD_FIELDS, theTimestamp);
 
 		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, new IndexDefinition("trevor:isawesome:v1"));
 
@@ -65,6 +68,7 @@ public class MyIndexable implements Indexable
 		writer.writeFloat(theFloat.getSimpleFieldName(), 0.1f);
 		writer.writeLong(theLong.getSimpleFieldName(), 100L);
 
+		writer.writeTimestamp(theTimestamp, 1420070400001L);
 	}
 
 	@Override

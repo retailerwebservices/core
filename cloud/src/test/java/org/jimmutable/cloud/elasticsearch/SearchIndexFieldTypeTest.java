@@ -48,4 +48,5 @@ public class SearchIndexFieldTypeTest
 		assertEquals("text", SearchIndexFieldType.CONVERTER.fromCode("TEXT", null).getSimpleCode());
 	}
 
+
 }

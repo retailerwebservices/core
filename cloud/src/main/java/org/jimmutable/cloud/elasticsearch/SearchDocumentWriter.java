@@ -1,7 +1,6 @@
 package org.jimmutable.cloud.elasticsearch;
 
 import org.jimmutable.core.objects.common.Day;
-import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.utils.Validator;
@@ -205,6 +204,31 @@ public class SearchDocumentWriter
 	}
 
 	/**
+	 * Writes a timestamp (unix epoch) of type long to a date field type.
+	 * 
+	 * If the field type is not set to DAY in the SearchIndexFieldDefinition a
+	 * runtime exception is thrown
+	 * 
+	 * You can get the timestamp from the helpful function
+	 * System.currentTimeMillis().
+	 * 
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
+	 * @param value
+	 *
+	 */
+	public void writeTimestamp(SearchIndexFieldDefinition search_index_definition, long value)
+	{
+
+		Validator.notNull(search_index_definition);
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.DAY))
+		{
+			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.DAY));
+		}
+		writeLong(search_index_definition.getSimpleFieldName(), value);
+	}
+
+	/**
 	 * Add a signed 64-bit integer with a minimum value of -2^63 and a maximum value
 	 * of 2^63-1 to a document.
 	 * 
@@ -362,67 +386,73 @@ public class SearchDocumentWriter
 		writeDay(field_definition.getSimpleFieldName(), day);
 	}
 
-//	/**
-//	 * Only writes an ObjectId's simple value. Note: The datatype is controlled at
-//	 * index creation. If you need ObjectId to be written as an Atom and Text value
-//	 * then you should have two separate field names already mapped upon index
-//	 * creation.
-//	 * 
-//	 * @param name
-//	 *            The name of the field to write
-//	 * @param id
-//	 *            The ObjectId
-//	 */
-//	public void writeObjectId(FieldName name, ObjectId id)
-//	{
-//		Validator.notNull(name);
-//		Validator.notNull(id);
-//
-//		fields.put(name.getSimpleName(), id.getSimpleValue());
-//	}
+	// /**
+	// * Only writes an ObjectId's simple value. Note: The datatype is controlled at
+	// * index creation. If you need ObjectId to be written as an Atom and Text
+	// value
+	// * then you should have two separate field names already mapped upon index
+	// * creation.
+	// *
+	// * @param name
+	// * The name of the field to write
+	// * @param id
+	// * The ObjectId
+	// */
+	// public void writeObjectId(FieldName name, ObjectId id)
+	// {
+	// Validator.notNull(name);
+	// Validator.notNull(id);
+	//
+	// fields.put(name.getSimpleName(), id.getSimpleValue());
+	// }
 
-//	/**
-//	 * Only writes an ObjectId's simple value. Note: The datatype is controlled at
-//	 * index creation. If you need ObjectId to be written as an Atom and Text value
-//	 * then you should have two separate field names already mapped upon index
-//	 * creation.
-//	 * 
-//	 * @param search_index_definition
-//	 *            The SearchIndexFieldDefinition
-//	 * @param id
-//	 *            The ObjectId
-//	 */
-//	public void writeObjectId(SearchIndexFieldDefinition search_index_definition, ObjectId id)
-//	{
-//		Validator.notNull(search_index_definition);
-//		Validator.notNull(id);
-//
-//		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.OBJECTID))
-//		{
-//			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.OBJECTID));
-//		}
-//
-//		writeObjectId(search_index_definition.getSimpleFieldName(), id);
-//	}
+	// /**
+	// * Only writes an ObjectId's simple value. Note: The datatype is controlled at
+	// * index creation. If you need ObjectId to be written as an Atom and Text
+	// value
+	// * then you should have two separate field names already mapped upon index
+	// * creation.
+	// *
+	// * @param search_index_definition
+	// * The SearchIndexFieldDefinition
+	// * @param id
+	// * The ObjectId
+	// */
+	// public void writeObjectId(SearchIndexFieldDefinition search_index_definition,
+	// ObjectId id)
+	// {
+	// Validator.notNull(search_index_definition);
+	// Validator.notNull(id);
+	//
+	// if
+	// (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.OBJECTID))
+	// {
+	// throw new RuntimeException(String.format("Invalid type %s, expected %s",
+	// search_index_definition.getTypeName(), SearchIndexFieldType.OBJECTID));
+	// }
+	//
+	// writeObjectId(search_index_definition.getSimpleFieldName(), id);
+	// }
 
-//	/**
-//	 * Only writes an ObjectId's simple value. Note: The datatype is controlled at
-//	 * index creation. If you need ObjectId to be written as an Atom and Text value
-//	 * then you should have two separate field names already mapped upon index
-//	 * creation.
-//	 * 
-//	 * @param field_definition
-//	 *            The FieldDefinition
-//	 * @param id
-//	 *            The ObjectId
-//	 */
-//	public void writeObjectId(FieldDefinition<?> field_definition, ObjectId id)
-//	{
-//		Validator.notNull(field_definition);
-//		Validator.notNull(id);
-//
-//		writeObjectId(field_definition.getSimpleFieldName(), id);
-//	}
+	// /**
+	// * Only writes an ObjectId's simple value. Note: The datatype is controlled at
+	// * index creation. If you need ObjectId to be written as an Atom and Text
+	// value
+	// * then you should have two separate field names already mapped upon index
+	// * creation.
+	// *
+	// * @param field_definition
+	// * The FieldDefinition
+	// * @param id
+	// * The ObjectId
+	// */
+	// public void writeObjectId(FieldDefinition<?> field_definition, ObjectId id)
+	// {
+	// Validator.notNull(field_definition);
+	// Validator.notNull(id);
+	//
+	// writeObjectId(field_definition.getSimpleFieldName(), id);
+	// }
 
 	/**
 	 * Write a field which contains tokenized text in such a way as to be suitable

@@ -36,6 +36,8 @@ public class SearchDocumentWriterTest
 		SearchIndexFieldDefinition theFloat = new SearchIndexFieldDefinition(new FieldName("float"), SearchIndexFieldType.FLOAT);
 		SearchIndexFieldDefinition theLong = new SearchIndexFieldDefinition(new FieldName("long"), SearchIndexFieldType.LONG);
 
+		SearchIndexFieldDefinition theTimestamp = new SearchIndexFieldDefinition(new FieldName("timestamp"), SearchIndexFieldType.DAY);
+
 		SearchDocumentWriter writer = new SearchDocumentWriter();
 		writer.writeBoolean(theBoolean.getSimpleFieldName(), true);
 		writer.writeText(theText1.getSimpleFieldName(), "abc");
@@ -45,6 +47,7 @@ public class SearchDocumentWriterTest
 		writer.writeDay(theDay.getSimpleFieldName(), new Day(new DateTime("1972-1-1")));
 		writer.writeFloat(theFloat.getSimpleFieldName(), 0.1f);
 		writer.writeLong(theLong.getSimpleFieldName(), 100L);
+		writer.writeTimestamp(theTimestamp, 1420070400001L);
 
 		Map<String, Object> expected = new HashMap<String, Object>();
 
@@ -56,6 +59,7 @@ public class SearchDocumentWriterTest
 		expected.put("day", "1972-01-01");
 		expected.put("float", 0.1f);
 		expected.put("long", 100L);
+		expected.put("timestamp", 1420070400001L);
 
 		assertEquals(expected, writer.getSimpleFieldsMap());
 
