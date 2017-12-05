@@ -268,15 +268,9 @@ public class ElasticSearch implements ISearch
 			builder.setFrom(from);
 			builder.setSize(size);
 			builder.setQuery(QueryBuilders.queryStringQuery(request.getSimpleQueryString()));
-			
-			
-			;
-		
-			
-		
-			builder.addSort(SortBuilders.fieldSort("").order(SortOrder.ASC));
-			
-			
+
+			// TODO add sorting
+			// builder.addSort(SortBuilders.fieldSort("").order(SortOrder.ASC));
 
 			SearchResponse response = builder.get();
 
