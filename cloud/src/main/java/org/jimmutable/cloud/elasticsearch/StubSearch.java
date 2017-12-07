@@ -2,6 +2,7 @@ package org.jimmutable.cloud.elasticsearch;
 
 import java.util.List;
 
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
@@ -61,6 +62,12 @@ public class StubSearch implements ISearch
 
 	@Override
 	public boolean deleteDocument(IndexDefinition index, SearchDocumentId document_id)
+	{
+		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
+	}
+
+	@Override
+	public SearchRequestBuilder getBuilder(IndexDefinition index)
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}

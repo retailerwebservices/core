@@ -1,6 +1,7 @@
 package org.jimmutable.cloud.elasticsearch;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+import static org.elasticsearch.common.xcontent.XContentFactory.*;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -22,11 +23,15 @@ import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.sort.FieldSortBuilder;
@@ -35,6 +40,7 @@ import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
+import org.jimmutable.cloud.servlet_utils.search.SearchBuilderRequest;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
@@ -62,6 +68,84 @@ public class ElasticSearch implements ISearch
 	private static final String ELASTICSEARCH_DEFAULT_TYPE = "default";
 
 	private volatile TransportClient client;
+
+	// TODO Useful to create your own search from the search builder for more non-standard searches such as aggregations, sorting, etc... any better
+	// way?
+	@Override
+	public SearchRequestBuilder getBuilder(IndexDefinition index)
+	{
+		if (index == null)
+		{
+			throw new RuntimeException("Null IndexDefinition");
+		}
+		return client.prepareSearch(index.getSimpleValue());
+	}
+	/*
+	public JSONServletResponse search(SearchBuilderRequest request) {
+		
+		
+		try
+		{
+			SearchRequestBuilder builder = request.getSimpleBuilder();
+			builder.setTypes(ELASTICSEARCH_DEFAULT_TYPE);
+			builder.setFrom(request.getSimpleStartResultsAfter());
+			builder.setSize(request.getSimpleMaxResults());
+			
+		
+			
+			logger.info(builder.toString());
+
+			
+			SearchResponse response = builder.get();
+
+			List<OneSearchResult> results = new LinkedList<OneSearchResult>();
+
+			response.getHits().forEach(hit ->
+			{
+				Map<FieldName, String> map = new HashMap<FieldName, String>();
+				hit.getSourceAsMap().forEach((k, v) ->
+				{
+					map.put(new FieldName(k), v.toString());
+				});
+				results.add(new OneSearchResult(map));
+			});
+
+			int next_page = request.getSimpleStartResultsAfter() + request.getSimpleMaxResults();
+
+			// if the size was met try and see if there are more results
+
+			logger.info(String.format("TOTAL:%s SIZE:%s", response.getHits().totalHits, response.getHits().getHits().length));
+
+			boolean has_more_results = response.getHits().totalHits > next_page;
+
+			boolean has_previous_results = request.getSimpleStartResultsAfter() != 0;
+
+			Level level;
+			switch (response.status())
+			{
+			case OK:
+				level = Level.INFO;
+				break;
+			default:
+				level = Level.WARN;
+				break;
+			}
+
+			SearchResponseOK ok = new SearchResponseOK(request, results, request.getSimpleStartResultsAfter(), has_more_results, has_previous_results, next_page, request.getSimpleStartResultsAfter());
+
+			logger.log(level, String.format("Index:%s Status:%s Hits:%s TotalHits:%s StandardSearchRequest:%s first_result_idx:%s has_more_results:%s has_previous_results:%s start_of_next_page_of_results:%s start_of_previous_page_of_results:%s", index.getSimpleValue(), response.status(), results.size(), response.getHits().totalHits, ok.getSimpleSearchRequest(), ok.getSimpleFirstResultIdx(), ok.getSimpleHasMoreResults(), ok.getSimpleHasMoreResults(), ok.getSimpleStartOfNextPageOfResults(), ok.getSimpleStartOfPreviousPageOfResults()));
+			logger.trace(ok.getSimpleResults().toString());
+
+			return ok;
+
+		} catch (Exception e)
+		{
+			logger.warn(String.format("Search failed for %s", request), e);
+			return new SearchResponseError(request, e.getMessage());
+		}
+	}
+	*/
+
 
 	public ElasticSearch(TransportClient client)
 	{
@@ -268,6 +352,17 @@ public class ElasticSearch implements ISearch
 			builder.setFrom(from);
 			builder.setSize(size);
 			builder.setQuery(QueryBuilders.queryStringQuery(request.getSimpleQueryString()));
+			
+			
+			
+//			XContentBuilder x_builder = 
+//					XContentFactory.contentBuilder(XContentType.JSON); 
+//			QueryBuilders.queryStringQuery(request.getSimpleQueryString()).toXContent(x_builder, ToXContent.EMPTY_PARAMS);
+//			
+//			logger.info(x_builder.string());
+//			
+//			
+//			logger.info(builder.toString());
 
 			// TODO add sorting
 			// builder.addSort(SortBuilders.fieldSort("").order(SortOrder.ASC));

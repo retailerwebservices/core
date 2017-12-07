@@ -12,6 +12,7 @@ import org.jimmutable.cloud.servlet_utils.search.AdvancedSearchField;
 import org.jimmutable.cloud.servlet_utils.search.IncludeFieldInView;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
 import org.jimmutable.cloud.servlet_utils.search.RequestExportCSV;
+import org.jimmutable.cloud.servlet_utils.search.SearchBuilderRequest;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.SearchUIData;

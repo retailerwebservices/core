@@ -2,6 +2,7 @@ package org.jimmutable.cloud.elasticsearch;
 
 import java.util.List;
 
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
@@ -34,4 +35,7 @@ public interface ISearch
 	public boolean writeAllToCSV(IndexDefinition index, String query_string, List<SearchFieldId> sorted_header, ICsvListWriter list_writer, CellProcessor[] cell_processors);
 	
 	public boolean deleteDocument(IndexDefinition index, SearchDocumentId document_id);
+	
+	//TODO
+	public SearchRequestBuilder getBuilder(IndexDefinition index);
 }
