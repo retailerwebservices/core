@@ -38,4 +38,5 @@ public interface ISearch
 	
 	//TODO
 	public SearchRequestBuilder getBuilder(IndexDefinition index);
+//	public JSONServletResponse search(SearchRequestBuilder builder);
 }

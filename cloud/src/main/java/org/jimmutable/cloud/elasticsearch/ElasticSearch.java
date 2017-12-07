@@ -34,6 +34,7 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
@@ -41,6 +42,8 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
 import org.jimmutable.cloud.servlet_utils.search.SearchBuilderRequest;
+import org.jimmutable.cloud.servlet_utils.search.SearchBuilderResponseError;
+import org.jimmutable.cloud.servlet_utils.search.SearchBuilderResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
@@ -65,12 +68,28 @@ public class ElasticSearch implements ISearch
 
 	private static final ExecutorService document_upsert_pool = (ExecutorService) new ThreadPoolExecutor(8, 8, 5, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
 
-	private static final String ELASTICSEARCH_DEFAULT_TYPE = "default";
+	public static final String ELASTICSEARCH_DEFAULT_TYPE = "default";
 
 	private volatile TransportClient client;
 
-	// TODO Useful to create your own search from the search builder for more non-standard searches such as aggregations, sorting, etc... any better
-	// way?
+	/**
+	 * Useful to call custom searches from the builder class when simple text search
+	 * is not enough. NOTE: Be sure to set the TYPE. For example
+	 * builder.setTypes(ElasticSearch.ELASTICSEARCH_DEFAULT_TYPE); This method will
+	 * not set anything for you in the builder. </br>
+	 * Example: </br>
+	 * SearchRequestBuilder builder =
+	 * CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().getBuilder(index_name);</br>
+	 * builder.setTypes(ElasticSearch.ELASTICSEARCH_DEFAULT_TYPE);</br>
+	 * builder.setSize(size); builder.set String my_field_name =
+	 * "the_field_name";</br>
+	 * //get the max value from a field</br>
+	 * builder.addAggregation(AggregationBuilders.max(my_field_name)); </br>
+	 * //order the results ascending by field </br>
+	 * builder.addSort(SortBuilders.fieldSort(my_field_name).order(SortOrder.ASC));</br>
+	 * builder.setQuery(QueryBuilders.queryStringQuery("search string"));</br>
+	 * </br>
+	 */
 	@Override
 	public SearchRequestBuilder getBuilder(IndexDefinition index)
 	{
@@ -80,72 +99,74 @@ public class ElasticSearch implements ISearch
 		}
 		return client.prepareSearch(index.getSimpleValue());
 	}
-	/*
-	public JSONServletResponse search(SearchBuilderRequest request) {
-		
-		
-		try
-		{
-			SearchRequestBuilder builder = request.getSimpleBuilder();
-			builder.setTypes(ELASTICSEARCH_DEFAULT_TYPE);
-			builder.setFrom(request.getSimpleStartResultsAfter());
-			builder.setSize(request.getSimpleMaxResults());
-			
-		
-			
-			logger.info(builder.toString());
 
-			
-			SearchResponse response = builder.get();
-
-			List<OneSearchResult> results = new LinkedList<OneSearchResult>();
-
-			response.getHits().forEach(hit ->
-			{
-				Map<FieldName, String> map = new HashMap<FieldName, String>();
-				hit.getSourceAsMap().forEach((k, v) ->
-				{
-					map.put(new FieldName(k), v.toString());
-				});
-				results.add(new OneSearchResult(map));
-			});
-
-			int next_page = request.getSimpleStartResultsAfter() + request.getSimpleMaxResults();
-
-			// if the size was met try and see if there are more results
-
-			logger.info(String.format("TOTAL:%s SIZE:%s", response.getHits().totalHits, response.getHits().getHits().length));
-
-			boolean has_more_results = response.getHits().totalHits > next_page;
-
-			boolean has_previous_results = request.getSimpleStartResultsAfter() != 0;
-
-			Level level;
-			switch (response.status())
-			{
-			case OK:
-				level = Level.INFO;
-				break;
-			default:
-				level = Level.WARN;
-				break;
-			}
-
-			SearchResponseOK ok = new SearchResponseOK(request, results, request.getSimpleStartResultsAfter(), has_more_results, has_previous_results, next_page, request.getSimpleStartResultsAfter());
-
-			logger.log(level, String.format("Index:%s Status:%s Hits:%s TotalHits:%s StandardSearchRequest:%s first_result_idx:%s has_more_results:%s has_previous_results:%s start_of_next_page_of_results:%s start_of_previous_page_of_results:%s", index.getSimpleValue(), response.status(), results.size(), response.getHits().totalHits, ok.getSimpleSearchRequest(), ok.getSimpleFirstResultIdx(), ok.getSimpleHasMoreResults(), ok.getSimpleHasMoreResults(), ok.getSimpleStartOfNextPageOfResults(), ok.getSimpleStartOfPreviousPageOfResults()));
-			logger.trace(ok.getSimpleResults().toString());
-
-			return ok;
-
-		} catch (Exception e)
-		{
-			logger.warn(String.format("Search failed for %s", request), e);
-			return new SearchResponseError(request, e.getMessage());
-		}
-	}
-	*/
-
+	/**
+	 * Executes a SearchRequestBuilder obtained from getBuilder() method
+	 * 
+	 * 
+	 * 
+	 * @param builder
+	 *            The ElasticSearch SearchRequestBuilder implementation. You can
+	 * @return
+	 * 
+	 */
+//	public JSONServletResponse search(SearchRequestBuilder builder)
+//	{
+//
+//		if (builder == null)
+//		{
+//			throw new RuntimeException("The builder is null");
+//		}
+//
+//		try
+//		{
+//
+//			SearchResponse response = builder.get();
+//			
+//		
+//			
+//			
+//
+//			List<OneSearchResult> results = new LinkedList<OneSearchResult>();
+//
+//			response.getHits().forEach(hit ->
+//			{
+//				Map<FieldName, String> map = new HashMap<FieldName, String>();
+//				hit.getSourceAsMap().forEach((k, v) ->
+//				{
+//					map.put(new FieldName(k), v.toString());
+//				});
+//				results.add(new OneSearchResult(map));
+//			});
+//
+//			long total_hits = response.getHits().totalHits;
+//
+//			boolean has_more_results = response.getHits().totalHits > results.size();
+//
+//			Level level;
+//			switch (response.status())
+//			{
+//			case OK:
+//				level = Level.INFO;
+//				break;
+//			default:
+//				level = Level.WARN;
+//				break;
+//			}
+//
+//			SearchBuilderResponseOK ok = new SearchBuilderResponseOK(builder.toString(), results, total_hits, has_more_results);
+//
+//			logger.log(level, String.format("Status:%s Hits:%s TotalHits:%s HasMoreResults:%s SearchRequestBuilder:%s ", response.status(), ok.getSimpleResults().size(), ok.getTotalHits(), ok.getSimpleHasMoreResults(), ok.getSimpleSearchRequest()));
+//			logger.trace(ok.getSimpleResults().toString());
+//
+//			return ok;
+//
+//		} catch (Exception e)
+//		{
+//			logger.warn(String.format("Search failed for %s", builder.toString()), e);
+//			return new SearchBuilderResponseError(builder.toString(), e.getMessage());
+//		}
+//	}
 
 	public ElasticSearch(TransportClient client)
 	{
@@ -352,17 +373,16 @@ public class ElasticSearch implements ISearch
 			builder.setFrom(from);
 			builder.setSize(size);
 			builder.setQuery(QueryBuilders.queryStringQuery(request.getSimpleQueryString()));
-			
-			
-			
-//			XContentBuilder x_builder = 
-//					XContentFactory.contentBuilder(XContentType.JSON); 
-//			QueryBuilders.queryStringQuery(request.getSimpleQueryString()).toXContent(x_builder, ToXContent.EMPTY_PARAMS);
-//			
-//			logger.info(x_builder.string());
-//			
-//			
-//			logger.info(builder.toString());
+
+			// XContentBuilder x_builder =
+			// XContentFactory.contentBuilder(XContentType.JSON);
+			// QueryBuilders.queryStringQuery(request.getSimpleQueryString()).toXContent(x_builder,
+			// ToXContent.EMPTY_PARAMS);
+			//
+			// logger.info(x_builder.string());
+			//
+			//
+			// logger.info(builder.toString());
 
 			// TODO add sorting
 			// builder.addSort(SortBuilders.fieldSort("").order(SortOrder.ASC));
