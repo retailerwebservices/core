@@ -1,8 +1,6 @@
 package org.jimmutable.cloud.elasticsearch;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-import static org.elasticsearch.common.xcontent.XContentFactory.*;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -23,27 +21,18 @@ import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.support.WriteRequest.RefreshPolicy;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.sort.FieldSortBuilder;
-import org.elasticsearch.search.sort.SortBuilder;
-import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
-import org.jimmutable.cloud.servlet_utils.search.SearchBuilderRequest;
-import org.jimmutable.cloud.servlet_utils.search.SearchBuilderResponseError;
-import org.jimmutable.cloud.servlet_utils.search.SearchBuilderResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
@@ -99,74 +88,6 @@ public class ElasticSearch implements ISearch
 		}
 		return client.prepareSearch(index.getSimpleValue());
 	}
-
-	/**
-	 * Executes a SearchRequestBuilder obtained from getBuilder() method
-	 * 
-	 * 
-	 * 
-	 * @param builder
-	 *            The ElasticSearch SearchRequestBuilder implementation. You can
-	 * @return
-	 * 
-	 */
-//	public JSONServletResponse search(SearchRequestBuilder builder)
-//	{
-//
-//		if (builder == null)
-//		{
-//			throw new RuntimeException("The builder is null");
-//		}
-//
-//		try
-//		{
-//
-//			SearchResponse response = builder.get();
-//			
-//		
-//			
-//			
-//
-//			List<OneSearchResult> results = new LinkedList<OneSearchResult>();
-//
-//			response.getHits().forEach(hit ->
-//			{
-//				Map<FieldName, String> map = new HashMap<FieldName, String>();
-//				hit.getSourceAsMap().forEach((k, v) ->
-//				{
-//					map.put(new FieldName(k), v.toString());
-//				});
-//				results.add(new OneSearchResult(map));
-//			});
-//
-//			long total_hits = response.getHits().totalHits;
-//
-//			boolean has_more_results = response.getHits().totalHits > results.size();
-//
-//			Level level;
-//			switch (response.status())
-//			{
-//			case OK:
-//				level = Level.INFO;
-//				break;
-//			default:
-//				level = Level.WARN;
-//				break;
-//			}
-//
-//			SearchBuilderResponseOK ok = new SearchBuilderResponseOK(builder.toString(), results, total_hits, has_more_results);
-//
-//			logger.log(level, String.format("Status:%s Hits:%s TotalHits:%s HasMoreResults:%s SearchRequestBuilder:%s ", response.status(), ok.getSimpleResults().size(), ok.getTotalHits(), ok.getSimpleHasMoreResults(), ok.getSimpleSearchRequest()));
-//			logger.trace(ok.getSimpleResults().toString());
-//
-//			return ok;
-//
-//		} catch (Exception e)
-//		{
-//			logger.warn(String.format("Search failed for %s", builder.toString()), e);
-//			return new SearchBuilderResponseError(builder.toString(), e.getMessage());
-//		}
-//	}
 
 	public ElasticSearch(TransportClient client)
 	{
@@ -309,12 +230,12 @@ public class ElasticSearch implements ISearch
 	}
 
 	/**
-	 * Upsert a document to a search index
+	 * Upsert a document to a search index asynchronously
+	 * 
 	 * 
 	 * @param object
 	 *            The Indexable object
-	 * @return boolean
-	 * @throws InterruptedException
+	 * @return boolean If successful or not
 	 */
 	@Override
 	public boolean upsertDocumentAsync(Indexable object)
@@ -343,13 +264,68 @@ public class ElasticSearch implements ISearch
 	}
 
 	/**
+	 * Upsert a document to a search index
+	 * 
+	 * @param object
+	 *            The Indexable object
+	 * @return boolean If successful or not
+	 */
+	@Override
+	public boolean upsertDocument(Indexable object)
+	{
+
+		if (object == null)
+		{
+			logger.error("Null object!");
+			return false;
+		}
+
+		try
+		{
+
+			SearchDocumentWriter writer = new SearchDocumentWriter();
+			object.writeSearchDocument(writer);
+			Map<String, Object> data = writer.getSimpleFieldsMap();
+
+			String index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
+			String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
+			IndexResponse response = client.prepareIndex(index_name, ELASTICSEARCH_DEFAULT_TYPE, document_name).setRefreshPolicy(RefreshPolicy.IMMEDIATE).setSource(data).get();
+
+			Level level;
+			switch (response.getResult())
+			{
+			case CREATED:
+				level = Level.INFO;
+				break;
+			case UPDATED:
+				level = Level.INFO;
+				break;
+			default:
+				level = Level.FATAL;
+				break;
+			}
+
+			logger.log(level, String.format("%s %s/%s/%s %s", response.getResult().name(), index_name, ELASTICSEARCH_DEFAULT_TYPE, document_name, data));
+
+		} catch (Exception e)
+		{
+			logger.log(Level.FATAL, "Failure during upsert operation!", e);
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Search an index with a query string.
 	 * 
 	 * @see <a href=
 	 *      "https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html">query-dsl-query-string-query</a>
 	 * 
 	 * @param index
+	 *            The IndexDefinition
 	 * @param request
+	 *            The StandardSearchRequest
 	 * @return JSONServletResponse
 	 */
 	@Override
@@ -373,19 +349,6 @@ public class ElasticSearch implements ISearch
 			builder.setFrom(from);
 			builder.setSize(size);
 			builder.setQuery(QueryBuilders.queryStringQuery(request.getSimpleQueryString()));
-
-			// XContentBuilder x_builder =
-			// XContentFactory.contentBuilder(XContentType.JSON);
-			// QueryBuilders.queryStringQuery(request.getSimpleQueryString()).toXContent(x_builder,
-			// ToXContent.EMPTY_PARAMS);
-			//
-			// logger.info(x_builder.string());
-			//
-			//
-			// logger.info(builder.toString());
-
-			// TODO add sorting
-			// builder.addSort(SortBuilders.fieldSort("").order(SortOrder.ASC));
 
 			SearchResponse response = builder.get();
 
