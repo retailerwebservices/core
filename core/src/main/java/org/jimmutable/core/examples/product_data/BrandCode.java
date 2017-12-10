@@ -35,15 +35,8 @@ public class BrandCode extends Stringable
 		Validator.notNull(getSimpleValue());
 		Validator.min(getSimpleValue().length(), 1);
 		
-		char chars[] = getSimpleValue().toCharArray();
-		for ( char ch : chars )
-		{
-			if ( ch >= 'A' && ch <= 'Z' ) continue;
-			if ( ch >= '0' && ch <= '9' ) continue;
-			if ( ch == '_' ) continue;
-			
-			throw new ValidationException(String.format("Illegal character \'%c\' in brand code %s.  Only upper case letters, numbers and underscore (_) are allowed", ch, getSimpleValue()));
-		}
+		
+		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.UPPERCASE_LETTERS, Validator.NUMBERS, Validator.UNDERSCORE);
 	}
 	
 	static public class MyConverter extends Stringable.Converter<BrandCode>
