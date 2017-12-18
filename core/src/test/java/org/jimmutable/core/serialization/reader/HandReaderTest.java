@@ -1,16 +1,15 @@
 package org.jimmutable.core.serialization.reader;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import org.jimmutable.core.fields.FieldHashMap;
-import org.jimmutable.core.fields.FieldMap;
-import org.jimmutable.core.serialization.FieldName;
-import org.jimmutable.core.serialization.reader.ObjectParseTree.OnError;
+import org.jimmutable.core.exceptions.SerializeException;
+import org.jimmutable.core.objects.StandardObject;
+import org.jimmutable.core.objects.common.Address;
+import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 import org.junit.Test;
 
 public class HandReaderTest
@@ -24,6 +23,7 @@ public class HandReaderTest
 			"    \"firstname\": \"trevor\",\n" + 
 			"    \"lastname\": \"box\",\n" + 
 			"    \"hobby\": \"writing code\",\n" + 
+			"    \"char\": \"X\",\n" + 
 			"    \"monies\": [\n" + 
 			"      1.5,\n" + 
 			"      5.1\n" + 
@@ -44,6 +44,111 @@ public class HandReaderTest
 			"    555\n" + 
 			"  ]\n" + 
 			"}";
+	
+	
+	@Test
+	public void testAllReadTypes() {
+		HandReader r = new HandReader(json);
+		//String
+		assertEquals("trevor", r.readString("person/firstname", null));
+		//boolean
+		assertEquals(true, r.readBoolean("is_awesone", null));
+		//byte
+		assertEquals((int) new Integer(1).byteValue(), (int) r.readByte("favoritenumbers", null));
+		//char
+		assertEquals(new Character('X'),r.readCharacter("person/char", null));
+		//double
+		assertEquals(new Double(2d),r.readDouble("favoritenumbers", null));
+		//float
+		assertEquals(new Float(1.5f),r.readFloat("person/monies", null));
+		//int
+		assertEquals(new Integer(3),r.readInt("favoritenumbers", null));
+		//long
+		assertEquals(new Long(4l),r.readLong("favoritenumbers", null));
+		//short
+		assertEquals(new Short((short) 555),r.readShort("favoritenumbers", null));
+	}
+
+	
+	@Test
+	public void testStandardObjectRead() {
+		
+		JimmutableTypeNameRegister.registerAllTypes();
+		ObjectParseTree.registerTypeName(Address.class);
+
+		String json = "{\n" + 
+				"  \"address\": {\n" + 
+				"    \"type_hint\": \"jimmutable.common.Address\",\n" + 
+				"    \"name\": \"Bob Smith\",\n" + 
+				"    \"line1\": \"2713 Bridgeport Rd.\",\n" + 
+				"    \"line2\": \"test line 2\",\n" + 
+				"    \"line3\": \"test line 3\",\n" + 
+				"    \"city\": \"Milton\",\n" + 
+				"    \"state\": \"Ontario\",\n" + 
+				"    \"postal_code\": \"L9T 2Y2\",\n" + 
+				"    \"country\": \"CA\",\n" + 
+				"    \"latitude\": 2.0,\n" + 
+				"    \"longitude\": 5.0\n" + 
+				"  }\n" + 
+				"}";
+		HandReader r = new HandReader(json);
+		
+		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s"
+			     , "{"
+			     , "  \"type_hint\" : \"jimmutable.common.Address\","
+			     , "  \"name\" : \"Bob Smith\","
+			     , "  \"line1\" : \"2713 Bridgeport Rd.\","
+			     , "  \"line2\" : \"test line 2\","
+			     , "  \"line3\" : \"test line 3\","
+			     , "  \"city\" : \"Milton\","
+			     , "  \"state\" : \"Ontario\","
+			     , "  \"postal_code\" : \"L9T 2Y2\","
+			     , "  \"country\" : \"CA\","
+			     , "  \"latitude\" : 2.0,"
+			     , "  \"longitude\" : 5.0"
+			     , "}"
+			);
+
+		Address obj = (Address)StandardObject.deserialize(obj_string);
+		
+		assertEquals(obj, (Address)r.readObject("address", null));
+
+		json = "{\n" + 
+				"  \"type_hint\" : \"jimmutable.common.Address\",\n" + 
+				"  \"name\" : \"Bob Smith\",\n" + 
+				"  \"line1\" : \"2713 Bridgeport Rd.\",\n" + 
+				"  \"line2\" : \"test line 2\",\n" + 
+				"  \"line3\" : \"test line 3\",\n" + 
+				"  \"city\" : \"Milton\",\n" + 
+				"  \"state\" : \"Ontario\",\n" + 
+				"  \"postal_code\" : \"L9T 2Y2\",\n" + 
+				"  \"country\" : \"CA\",\n" + 
+				"  \"latitude\" : 2.0,\n" + 
+				"  \"longitude\" : 5.0\n" + 
+				"}";
+		
+		 r = new HandReader(json);
+		assertEquals(obj, (Address)r.asObject(null));
+		
+		json = "{\n" + 
+				"  \"address\": {\n" + 
+				"    \"type_hint\": \"jimmutable.common.Address\",\n" + 
+				"    \"name\": \"Bob Smith\",\n" + 
+				"    \"line1\": \"2713 Bridgeport Rd.\",\n" + 
+				"    \"line2\": \"test line 2\",\n" + 
+				"    \"line3\": \"test line 3\",\n" + 
+				"    \"city\": \"Milton\",\n" + 
+				"    \"state\": \"Ontario\",\n" + 
+				"    \"postal_code\": \"L9T 2Y2\",\n" + 
+				"    \"country\": \"CA\",\n" + 
+				"    \"latitude\": 2.0,\n" + 
+				"    \"longitude\": 5.0\n" + 
+				"  }\n" + 
+				"}";
+		r = new HandReader(json).read("address", null);
+		
+		assertEquals(obj, (Address)r.asObject(null));
+	}
 
 	@Test
 	public void testNestedRead()
@@ -260,6 +365,39 @@ public class HandReaderTest
 		assertTrue(aceInhibitorNames.contains("lisinopril"));
 		assertTrue(aceInhibitorNames.contains("foggle"));
 
+	}
+	
+	
+	@Test(expected=SerializeException.class)
+	public void badJSON() {
+		String json =
+				"{\n" + 
+				"  \"medications\": [\n" + 
+				"    \n" + 
+				"      \"aceinhibitors\": [\n" + 
+				"        {\n" + 
+				"          \"name\": \"lisinopril\",\n" + 
+				"          \"strength\": \"10 mg Tab\",\n" + 
+				"          \"dose\": \"1 tab\",\n" + 
+				"          \"route\": \"PO\",\n" + 
+				"          \"sig\": \"daily\",\n" + 
+				"          \"pillcount\": \"#90\",\n" + 
+				"          \"refills\": \"Refill 3\"\n" + 
+				"        },\n" + 
+				"        {\n" + 
+				"          \"name\": \"foggle\",\n" + 
+				"          \"strength\": \"10 mg Tab\",\n" + 
+				"          \"dose\": \"1 tab\",\n" + 
+				"          \"route\": \"PO\",\n" + 
+				"          \"sig\": \"daily\",\n" + 
+				"          \"pillcount\": \"#90\",\n" + 
+				"          \"refills\": \"Refill 3\"\n" + 
+				"        }\n" + 
+				"      ]\n" + 
+				"    }\n" + 
+				"  ]\n" + 
+				"}";
+	 new HandReader(json);
 	}
 	
 

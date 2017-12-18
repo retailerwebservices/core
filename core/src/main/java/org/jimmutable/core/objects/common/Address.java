@@ -139,8 +139,8 @@ public class Address extends StandardImmutableObject<Address>
 		if ( !getOptionalLine3(null).equals((other.getOptionalLine3(null))) ) return false;
 		if ( !getSimpleCity().equals((other.getSimpleCity())) ) return false;
 		if ( !getSimpleState().equals((other.getSimpleState())) ) return false;
-		if ( getSimplePostalCode() != other.getSimplePostalCode() ) return false;
-		if ( getSimpleCountry() != other.getSimpleCountry()) return false;
+		if ( !getSimplePostalCode().equals(other.getSimplePostalCode()) ) return false;
+		if ( !getSimpleCountry().equals(other.getSimpleCountry())) return false;
 		if ( getOptionalLatitude(0) != other.getOptionalLatitude(0)) return false;
 		if ( getOptionalLongitude(0) != other.getOptionalLongitude(0)) return false;
 		

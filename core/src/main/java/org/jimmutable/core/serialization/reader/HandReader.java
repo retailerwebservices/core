@@ -4,28 +4,51 @@ import org.jimmutable.core.exceptions.SerializeException;
 import org.jimmutable.core.serialization.FieldName;
 
 /**
- * TODO: Write a really good explanation of read semantics, including arrays,
- * etc.
+ * Used for parsing JSON in our internal processing. This class expects valid
+ * FieldName values for JSON names. This means that is a name/value pair is
+ * {"myName" : "value"} an exception will be thrown since myName is not valid
+ * FieldName (capital 'N') </br>
+ * For usage examples see HandReaderTest
  * 
- * 
- * 
- * JSON support the following types: string, number, object (JSON Object),
- * array, boolean, null
- * 
- * 
- * 
- * @author kanej
+ * @see HandReaderTest
+ * @author kanej, trevorbox
  *
  */
 public class HandReader
 {
 	private ObjectParseTree tree;
 
+	/**
+	 * 
+	 * Used for parsing JSON in our internal processing. This class expects valid
+	 * FieldName values for JSON names. This means that if a name/value pair is
+	 * {"myName" : "value"} an exception will be thrown since FieldName does not
+	 * accept capital letters </br>
+	 * For usage examples see HandReaderTest
+	 * 
+	 * @see HandReaderTest
+	 * @param json_or_xml_data
+	 *            The json or xml string
+	 * @throws SerializeException
+	 */
 	public HandReader(String json_or_xml_data) throws SerializeException
 	{
 		tree = Parser.parse(json_or_xml_data);
 	}
 
+	/**
+	 * 
+	 * Used for parsing JSON in our internal processing. This class expects valid
+	 * FieldName values for JSON names. This means that if a name/value pair is
+	 * {"myName" : "value"} an exception will be thrown since FieldName does not
+	 * accept capital letters </br>
+	 *
+	 * For usage examples see HandReaderTest
+	 * 
+	 * @see HandReaderTest
+	 * @param tree
+	 *            ObjectParseTree
+	 */
 	private HandReader(ObjectParseTree tree)
 	{
 		this.tree = tree;
@@ -92,6 +115,13 @@ public class HandReader
 
 	/**
 	 * Read the value of a given child (xpath) as a String (read deletes the child)
+	 * 
+	 * @param xpath
+	 *            The location of the object parse tree to read
+	 * 
+	 * @param default_value
+	 *            The value to return if the tree can not be read
+	 * @return String
 	 */
 	public String readString(String xpath, String default_value)
 	{
@@ -103,6 +133,13 @@ public class HandReader
 
 	/**
 	 * Read the value of a given child (xpath) as a boolean (read deletes the child)
+	 * 
+	 * @param xpath
+	 *            The location of the object parse tree to read
+	 * 
+	 * @param default_value
+	 *            The value to return if the tree can not be read
+	 * @return Boolean
 	 */
 	public Boolean readBoolean(String xpath, Boolean default_value)
 	{
@@ -114,6 +151,13 @@ public class HandReader
 
 	/**
 	 * Read the value of a given child (xpath) as a char (read deletes the child)
+	 * 
+	 * @param xpath
+	 *            The location of the object parse tree to read
+	 * 
+	 * @param default_value
+	 *            The value to return if the tree can not be read
+	 * @return Character
 	 */
 	public Character readCharacter(String xpath, Character default_value)
 	{
@@ -125,6 +169,13 @@ public class HandReader
 
 	/**
 	 * Read the value of a given child (xpath) as a byte (read deletes the child)
+	 * 
+	 * @param xpath
+	 *            The location of the object parse tree to read
+	 * 
+	 * @param default_value
+	 *            The value to return if the tree can not be read
+	 * @return Byte
 	 */
 	public Byte readByte(String xpath, Byte default_value)
 	{
@@ -136,6 +187,12 @@ public class HandReader
 
 	/**
 	 * Read the value of a given child (xpath) as a short (read deletes the child)
+	 * 
+	 * * @param xpath The location of the object parse tree to read
+	 * 
+	 * @param default_value
+	 *            The value to return if the tree can not be read
+	 * @return Short
 	 */
 	public Short readShort(String xpath, Short default_value)
 	{
@@ -147,6 +204,13 @@ public class HandReader
 
 	/**
 	 * Read the value of a given child (xpath) as a int (read deletes the child)
+	 * 
+	 * @param xpath
+	 *            The location of the object parse tree to read
+	 * 
+	 * @param default_value
+	 *            The value to return if the tree can not be read
+	 * @return Integer
 	 */
 	public Integer readInt(String xpath, Integer default_value)
 	{
@@ -158,6 +222,13 @@ public class HandReader
 
 	/**
 	 * Read the value of a given child (xpath) as a long (read deletes the child)
+	 * 
+	 * @param xpath
+	 *            The location of the object parse tree to read
+	 * 
+	 * @param default_value
+	 *            The value to return if the tree can not be read
+	 * @return Long
 	 */
 	public Long readLong(String xpath, Long default_value)
 	{
@@ -169,6 +240,13 @@ public class HandReader
 
 	/**
 	 * Read the value of a given child (xpath) as a float (read deletes the child)
+	 * 
+	 * @param xpath
+	 *            The location of the object parse tree to read
+	 * 
+	 * @param default_value
+	 *            The value to return if the tree can not be read
+	 * @return Float
 	 */
 	public Float readFloat(String xpath, Float default_value)
 	{
@@ -180,6 +258,13 @@ public class HandReader
 
 	/**
 	 * Read the value of a given child (xpath) as a double (read deletes the child)
+	 * 
+	 * @param xpath
+	 *            The location of the object parse tree to read
+	 * 
+	 * @param default_value
+	 *            The value to return if the tree can not be read
+	 * @return Double
 	 */
 	public Double readDouble(String xpath, Double default_value)
 	{
@@ -190,7 +275,15 @@ public class HandReader
 	}
 
 	/**
-	 * Read the value of a given child (xpath) as a object (read deletes the child)
+	 * Read the value of a given child (xpath) as a StandardObject or primitive
+	 * object (read deletes the child)
+	 * 
+	 * @param xpath
+	 *            The location of the object parse tree to read
+	 * 
+	 * @param default_value
+	 *            The value to return if the tree can not be read
+	 * @return Object
 	 */
 	public Object readObject(String xpath, Object default_value)
 	{
@@ -198,6 +291,19 @@ public class HandReader
 		if (child == null)
 			return default_value;
 		return child.asObject(default_value);
+	}
+
+	/**
+	 * Interpret the current node as an Object (either StandardObject or a primitive
+	 * object) Nothing is removed
+	 * 
+	 * @param default_value
+	 *            The value to return if the tree can not be read
+	 * @return The node as Object
+	 */
+	public Object asObject(Object default_value)
+	{
+		return tree.asObject(default_value);
 	}
 
 	/**
