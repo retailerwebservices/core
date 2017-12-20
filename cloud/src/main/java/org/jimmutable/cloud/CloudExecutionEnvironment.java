@@ -272,7 +272,7 @@ public class CloudExecutionEnvironment
 	{
 		if (CURRENT == null)
 		{
-			throw new RuntimeException("The startup mathod was never called first to setup the singleton!");
+			throw new RuntimeException("The startup method was never called first to setup the singleton!");
 		}
 		return CURRENT;
 	}
