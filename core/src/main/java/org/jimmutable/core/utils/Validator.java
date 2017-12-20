@@ -25,6 +25,7 @@ public class Validator
 	static public final ValidCharacters FORWARD_SLASH = new ValidCharactersOthers('/');
 	static public final ValidCharacters BACKWARD_SLASH = new ValidCharactersOthers('\\');
 	static public final ValidCharacters COLON = new ValidCharactersOthers(':');
+	static public final ValidCharacters MONEY_SYMBOLS = new ValidMoneyCharacters();
 	
 	/**
 	 * Guarantee that obj is not null (i.e. thrown a ValidationException if obj 
@@ -258,6 +259,16 @@ public class Validator
 			{
 				if ( ch == chars[i] ) return true;
 			}
+			return false;
+		}
+	}
+	
+	static private class ValidMoneyCharacters implements ValidCharacters
+	{
+		public boolean isValid(char ch)
+		{
+			if ( ch >= '0' && ch <= '9' ||ch==('$')||ch==('.')||ch==(',')) return true;
+			
 			return false;
 		}
 	}
