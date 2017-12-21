@@ -3,6 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.jimmutable</groupId>
+	<artifactId>cloud</artifactId>
 	<version>0.0.6-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
@@ -48,9 +49,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<elasticsearch.version>5.5.2</elasticsearch.version>
-		<log4j.version>2.8.2</log4j.version>
-		<lucene.version>6.6.0</lucene.version>
+		<elasticsearch.version>6.1.1</elasticsearch.version>
+		<log4j.version>2.9.1</log4j.version>
 		<skipITs>true</skipITs>
 	</properties>
 
@@ -105,21 +105,21 @@
 		<!-- <version>2.8.2</version> -->
 		<!-- </dependency> -->
 
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.6.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.6.1</version>
-		</dependency>
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.16</version>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.slf4j</groupId> -->
+<!-- 			<artifactId>slf4j-api</artifactId> -->
+<!-- 			<version>1.6.1</version> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.slf4j</groupId> -->
+<!-- 			<artifactId>slf4j-log4j12</artifactId> -->
+<!-- 			<version>1.6.1</version> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>log4j</groupId> -->
+<!-- 			<artifactId>log4j</artifactId> -->
+<!-- 			<version>1.2.16</version> -->
+<!-- 		</dependency> -->
 	</dependencies>
 
 	<profiles>
@@ -311,6 +311,4 @@
 		</plugins>
 	</build>
 
-
-	<artifactId>cloud</artifactId>
 </project>
