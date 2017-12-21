@@ -1,6 +1,5 @@
 package org.jimmutable.cloud.servlet_utils.search;
 
-
 import org.jimmutable.core.objects.StandardEnum;
 import org.jimmutable.core.utils.Normalizer;
 import org.jimmutable.core.utils.Validator;
@@ -13,7 +12,12 @@ import org.jimmutable.core.utils.Validator;
  */
 public enum AdvancedSearchFieldType implements StandardEnum
 {
-	TEXT("text"), COMBO_BOX("combo-box"), CHECK_BOX("checkbox");
+	TEXT("text"),
+	COMBO_BOX("combo-box"),
+	CHECK_BOX("checkbox"),
+	DAY("day"),
+	INSTANT("instant");
+
 	static public final AdvancedSearchFieldType.MyConverter CONVERTER = new MyConverter();
 
 	private String code;
@@ -29,7 +33,7 @@ public enum AdvancedSearchFieldType implements StandardEnum
 		return code;
 	}
 
-	private AdvancedSearchFieldType( String code )
+	private AdvancedSearchFieldType(String code)
 	{
 		Validator.notNull(code);
 		this.code = Normalizer.lowerCase(code);
@@ -37,14 +41,14 @@ public enum AdvancedSearchFieldType implements StandardEnum
 
 	static public class MyConverter extends StandardEnum.Converter<AdvancedSearchFieldType>
 	{
-		public AdvancedSearchFieldType fromCode( String code, AdvancedSearchFieldType default_value )
+		public AdvancedSearchFieldType fromCode(String code, AdvancedSearchFieldType default_value)
 		{
-			if ( code == null )
+			if (code == null)
 				return default_value;
 
-			for ( AdvancedSearchFieldType t : AdvancedSearchFieldType.values() )
+			for (AdvancedSearchFieldType t : AdvancedSearchFieldType.values())
 			{
-				if ( t.getSimpleCode().equalsIgnoreCase(code) )
+				if (t.getSimpleCode().equalsIgnoreCase(code))
 					return t;
 			}
 
