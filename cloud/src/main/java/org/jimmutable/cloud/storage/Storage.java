@@ -34,7 +34,7 @@ public abstract class Storage implements IStorage
 	 * @return true if object is found, else Default_value
 	 */
 
-	public abstract boolean exists(StorageKey key, boolean default_value);
+	public abstract boolean exists(ObjectIdStorageKey key, boolean default_value);
 
 	/**
 	 * @param key
@@ -45,7 +45,7 @@ public abstract class Storage implements IStorage
 	 * @return true if the Object was updated/inserted, else false
 	 */
 
-	public abstract boolean upsert(StorageKey key, byte bytes[], boolean hint_content_likely_to_be_compressible);
+	public abstract boolean upsert(ObjectIdStorageKey key, byte bytes[], boolean hint_content_likely_to_be_compressible);
 
 	/**
 	 * @param key
@@ -57,14 +57,14 @@ public abstract class Storage implements IStorage
 	 *         default_value
 	 */
 
-	public abstract byte[] getCurrentVersion(StorageKey key, byte[] default_value);
+	public abstract byte[] getCurrentVersion(ObjectIdStorageKey key, byte[] default_value);
 
 	/**
 	 * @param key
 	 *            StorageKey associated with StorageObject
 	 * @return true if Storage Object existed and was deleted, false otherwise
 	 */
-	public abstract boolean delete(StorageKey key);
+	public abstract boolean delete(ObjectIdStorageKey key);
 
 	/**
 	 * @param kind
@@ -75,7 +75,7 @@ public abstract class Storage implements IStorage
 	 *         returned, Otherwise the Default_value that was passed in.
 	 */
 
-	public abstract Iterable<StorageKey> listComplex(Kind kind, Iterable<StorageKey> default_value);
+	public abstract Iterable<ObjectIdStorageKey> listComplex(Kind kind, Iterable<ObjectIdStorageKey> default_value);
 
 	public boolean upsert(Storable obj, Format format)
 	{

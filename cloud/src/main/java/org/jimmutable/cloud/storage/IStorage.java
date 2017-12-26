@@ -6,15 +6,15 @@ import org.jimmutable.core.serialization.Format;
 public interface IStorage
 {
 
-	public boolean exists(StorageKey key, boolean default_value);
+	public boolean exists(ObjectIdStorageKey key, boolean default_value);
 
-	public abstract boolean upsert(StorageKey key, byte bytes[], boolean hint_content_likely_to_be_compressible);
+	public abstract boolean upsert(ObjectIdStorageKey key, byte bytes[], boolean hint_content_likely_to_be_compressible);
 
-	public abstract byte[] getCurrentVersion(StorageKey key, byte[] default_value);
+	public abstract byte[] getCurrentVersion(ObjectIdStorageKey key, byte[] default_value);
 
-	public abstract boolean delete(StorageKey key);
+	public abstract boolean delete(ObjectIdStorageKey key);
 
-	public abstract Iterable<StorageKey> listComplex(Kind kind, Iterable<StorageKey> default_value);
+	public abstract Iterable<ObjectIdStorageKey> listComplex(Kind kind, Iterable<ObjectIdStorageKey> default_value);
 
 	public boolean upsert(Storable obj, Format format);
 

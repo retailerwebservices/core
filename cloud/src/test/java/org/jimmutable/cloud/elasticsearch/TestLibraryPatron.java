@@ -5,7 +5,7 @@ import org.jimmutable.cloud.elasticsearch.Indexable;
 import org.jimmutable.cloud.elasticsearch.SearchDocumentId;
 import org.jimmutable.cloud.elasticsearch.SearchDocumentWriter;
 import org.jimmutable.cloud.storage.Storable;
-import org.jimmutable.cloud.storage.StorageKey;
+import org.jimmutable.cloud.storage.ObjectIdStorageKey;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.objects.common.Day;
 import org.jimmutable.core.objects.common.Kind;
@@ -30,7 +30,7 @@ final public class TestLibraryPatron extends StandardImmutableObject<TestLibrary
 	static public final FieldDefinition.String FIELD_SSN = new FieldDefinition.String("ssn", null);
 
 	static public final FieldDefinition.Integer FIELD_NUM_BOOKS = new FieldDefinition.Integer("number_of_books_checked_out", -1);
-	static public final FieldDefinition.Stringable<StorageKey> FIELD_PICTURE = new FieldDefinition.Stringable<StorageKey>("picture", null, StorageKey.CONVERTER);
+	static public final FieldDefinition.Stringable<ObjectIdStorageKey> FIELD_PICTURE = new FieldDefinition.Stringable<ObjectIdStorageKey>("picture", null, ObjectIdStorageKey.CONVERTER);
 
 	// static public final FieldDefinition.Integer FIELD_NUM_PICTURES = new
 	// FieldDefinition.Integer("number_of_pictures", -1);
@@ -48,10 +48,10 @@ final public class TestLibraryPatron extends StandardImmutableObject<TestLibrary
 	private Integer number_of_books_checked_out; // required and > 0
 	// private Integer number_of_pictures; // required and > 0
 
-	private StorageKey picture; // optional
+	private ObjectIdStorageKey picture; // optional
 	private IndexDefinition index;
 
-	public TestLibraryPatron(IndexDefinition index, ObjectId id, String first_name, String last_name, String email_address, String ssn, Day birth_date, int number_of_books_checked_out, StorageKey picture)
+	public TestLibraryPatron(IndexDefinition index, ObjectId id, String first_name, String last_name, String email_address, String ssn, Day birth_date, int number_of_books_checked_out, ObjectIdStorageKey picture)
 	{
 
 		this.index = index;
@@ -177,7 +177,7 @@ final public class TestLibraryPatron extends StandardImmutableObject<TestLibrary
 		return number_of_books_checked_out;
 	}
 
-	public StorageKey getPicture()
+	public ObjectIdStorageKey getPicture()
 	{
 		return picture;
 	}

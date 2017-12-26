@@ -14,7 +14,7 @@ import org.jimmutable.core.utils.Validator;
  *
  */
 
-public class StorageKey extends Stringable
+public class ObjectIdStorageKey extends Stringable
 {
 
 	static public final MyConverter CONVERTER = new MyConverter();
@@ -29,7 +29,7 @@ public class StorageKey extends Stringable
 	 *            if the String passed in is "Alpha/123.txt" then the Kind will be
 	 *            "alpha" the Object Id will be "123" the extension will be "txt"
 	 */
-	public StorageKey(String value)
+	public ObjectIdStorageKey(String value)
 	{
 		super(value);
 	}
@@ -43,7 +43,7 @@ public class StorageKey extends Stringable
 	 *            the extension of the StorageKey
 	 */
 
-	public StorageKey(Kind kind, ObjectId object_id, StorageKeyExtension extension)
+	public ObjectIdStorageKey(Kind kind, ObjectId object_id, StorageKeyExtension extension)
 	{
 		this(createStringFromComponents(kind, object_id, extension));
 	}
@@ -60,7 +60,7 @@ public class StorageKey extends Stringable
 	 *            the extension of the StorageKey
 	 */
 
-	public StorageKey(Kind kind, String name, ObjectId object_id, StorageKeyExtension extension)
+	public ObjectIdStorageKey(Kind kind, String name, ObjectId object_id, StorageKeyExtension extension)
 	{
 		this(createStringFromComponents(kind, name, object_id, extension));
 	}
@@ -164,13 +164,13 @@ public class StorageKey extends Stringable
 		return extension;
 	}
 
-	static public class MyConverter extends Stringable.Converter<StorageKey>
+	static public class MyConverter extends Stringable.Converter<ObjectIdStorageKey>
 	{
-		public StorageKey fromString(String str, StorageKey default_value)
+		public ObjectIdStorageKey fromString(String str, ObjectIdStorageKey default_value)
 		{
 			try
 			{
-				return new StorageKey(str);
+				return new ObjectIdStorageKey(str);
 			} catch (Exception e)
 			{
 				return default_value;

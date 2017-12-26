@@ -7,31 +7,31 @@ public class StubStorage implements IStorage
 {
 
 	@Override
-	public boolean exists(StorageKey key, boolean default_value)
+	public boolean exists(ObjectIdStorageKey key, boolean default_value)
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
 	@Override
-	public boolean upsert(StorageKey key, byte[] bytes, boolean hint_content_likely_to_be_compressible)
+	public boolean upsert(ObjectIdStorageKey key, byte[] bytes, boolean hint_content_likely_to_be_compressible)
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
 	@Override
-	public byte[] getCurrentVersion(StorageKey key, byte[] default_value)
+	public byte[] getCurrentVersion(ObjectIdStorageKey key, byte[] default_value)
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
 	@Override
-	public boolean delete(StorageKey key)
+	public boolean delete(ObjectIdStorageKey key)
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
 	@Override
-	public Iterable<StorageKey> listComplex(Kind kind, Iterable<StorageKey> default_value)
+	public Iterable<ObjectIdStorageKey> listComplex(Kind kind, Iterable<ObjectIdStorageKey> default_value)
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}

@@ -49,7 +49,7 @@ public class StorageApp
 		JTextField textField = new JTextField();
 		textField.setEditable(false);
 
-		StorageKey test_file = new StorageKey(new Kind("test"), new ObjectId("123"), new StorageKeyExtension(".txt"));
+		ObjectIdStorageKey test_file = new ObjectIdStorageKey(new Kind("test"), new ObjectId("123"), new StorageKeyExtension(".txt"));
 
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));

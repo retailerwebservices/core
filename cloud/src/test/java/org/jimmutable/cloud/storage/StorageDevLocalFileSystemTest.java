@@ -14,7 +14,7 @@ import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.IntegrationTest;
 import org.jimmutable.cloud.storage.StorageDevLocalFileSystem;
-import org.jimmutable.cloud.storage.StorageKey;
+import org.jimmutable.cloud.storage.ObjectIdStorageKey;
 import org.jimmutable.core.objects.common.Kind;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -41,7 +41,7 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 	public void testUpsert()
 	{
 		// test insert
-		assertTrue(sdlfs.upsert(new StorageKey("alpha/0000-0000-0000-0123.txt"), "Hello from the other side".getBytes(), false));
+		assertTrue(sdlfs.upsert(new ObjectIdStorageKey("alpha/0000-0000-0000-0123.txt"), "Hello from the other side".getBytes(), false));
 		File f = new File(System.getProperty("user.home") + "/jimmutable_dev/" + applicationId + "/alpha/0000-0000-0000-0123.txt");// application
 		// id
 		// needs
@@ -53,7 +53,7 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 		assertEquals("Hello from the other side", result);
 
 		// test update
-		assertTrue(sdlfs.upsert(new StorageKey("alpha/0000-0000-0000-0123.txt"), "I wish I called a thousand times".getBytes(), false));
+		assertTrue(sdlfs.upsert(new ObjectIdStorageKey("alpha/0000-0000-0000-0123.txt"), "I wish I called a thousand times".getBytes(), false));
 		result = readFile(f);
 		assertEquals("I wish I called a thousand times", result);
 
@@ -108,10 +108,10 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 	@Test
 	public void testExists()
 	{
-		StorageKey key = new StorageKey("epsilon/0000-0000-0000-0123.txt");
+		ObjectIdStorageKey key = new ObjectIdStorageKey("epsilon/0000-0000-0000-0123.txt");
 		sdlfs.upsert(key, "Hello from the other side".getBytes(), false);
 		assertTrue(sdlfs.exists(key, false));// true positive
-		key = new StorageKey("epsilon/0000-0000-0000-0456.txt");
+		key = new ObjectIdStorageKey("epsilon/0000-0000-0000-0456.txt");
 		assertTrue(sdlfs.exists(key, true));// false positive
 		assertFalse(sdlfs.exists(key, false));// true negative
 	}
@@ -120,13 +120,13 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 	public void testGetCurrentVersion()
 	{
 		// test that it will read from file
-		StorageKey key = new StorageKey("zeta/0000-0000-0000-0123.txt");
+		ObjectIdStorageKey key = new ObjectIdStorageKey("zeta/0000-0000-0000-0123.txt");
 		sdlfs.upsert(key, "Hello from the other side".getBytes(), false);
 		byte[] testvalue = sdlfs.getCurrentVersion(key, null);
 		assertEquals("Hello from the other side", new String(testvalue));
 
 		// test that it will return the default if no file is found.
-		key = new StorageKey("zeta/0000-0000-0000-0456.txt");
+		key = new ObjectIdStorageKey("zeta/0000-0000-0000-0456.txt");
 		testvalue = sdlfs.getCurrentVersion(key, "I wish I called a thousand times".getBytes());
 		assertEquals("I wish I called a thousand times", new String(testvalue));
 	}
@@ -135,7 +135,7 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 	public void testDelete()
 	{
 		// test deleting
-		StorageKey key = new StorageKey("beta/0000-0000-0000-0123.txt");
+		ObjectIdStorageKey key = new ObjectIdStorageKey("beta/0000-0000-0000-0123.txt");
 		assertTrue(sdlfs.upsert(key, "Hello from the other side".getBytes(), false));
 		assertTrue(sdlfs.delete(key));
 		File f = new File(System.getProperty("user.home") + "/jimmutable_dev/" + applicationId + "/beta/0000-0000-0000-0123.txt");// application
@@ -153,15 +153,15 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 	@Test
 	public void testList()
 	{
-		sdlfs.upsert(new StorageKey("gamma/1.txt"), "Hello from the other side".getBytes(), false);
-		sdlfs.upsert(new StorageKey("gamma/2.txt"), "Hello from the other side".getBytes(), false);
-		sdlfs.upsert(new StorageKey("gamma/3.txt"), "Hello from the other side".getBytes(), false);
-		sdlfs.upsert(new StorageKey("gamma/4.txt"), "Hello from the other side".getBytes(), false);
-		sdlfs.upsert(new StorageKey("gamma/5.txt"), "Hello from the other side".getBytes(), false);
-		sdlfs.upsert(new StorageKey("gamma/6.txt"), "Hello from the other side".getBytes(), false);
-		Iterable<StorageKey> l = sdlfs.listComplex(new Kind("gamma"), null);
+		sdlfs.upsert(new ObjectIdStorageKey("gamma/1.txt"), "Hello from the other side".getBytes(), false);
+		sdlfs.upsert(new ObjectIdStorageKey("gamma/2.txt"), "Hello from the other side".getBytes(), false);
+		sdlfs.upsert(new ObjectIdStorageKey("gamma/3.txt"), "Hello from the other side".getBytes(), false);
+		sdlfs.upsert(new ObjectIdStorageKey("gamma/4.txt"), "Hello from the other side".getBytes(), false);
+		sdlfs.upsert(new ObjectIdStorageKey("gamma/5.txt"), "Hello from the other side".getBytes(), false);
+		sdlfs.upsert(new ObjectIdStorageKey("gamma/6.txt"), "Hello from the other side".getBytes(), false);
+		Iterable<ObjectIdStorageKey> l = sdlfs.listComplex(new Kind("gamma"), null);
 		int count = 0;
-		for (StorageKey storageKey : l)
+		for (ObjectIdStorageKey storageKey : l)
 		{
 			count++;
 		}
@@ -173,7 +173,7 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 	{
 		StorageDevLocalFileSystem readonly = new StorageDevLocalFileSystem(true, applicationId);
 		// test that we cannot upsert
-		StorageKey key = new StorageKey("eta/0000-0000-0000-0123.txt");
+		ObjectIdStorageKey key = new ObjectIdStorageKey("eta/0000-0000-0000-0123.txt");
 		assertFalse(readonly.upsert(key, "Hello from the other side".getBytes(), false));
 
 		// ensure that file was not actually created

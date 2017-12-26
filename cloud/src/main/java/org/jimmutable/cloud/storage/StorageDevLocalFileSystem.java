@@ -35,7 +35,7 @@ public class StorageDevLocalFileSystem extends Storage
 	 * @return true if object is found, else Default_value
 	 */
 	@Override
-	public boolean exists(StorageKey key, boolean default_value)
+	public boolean exists(ObjectIdStorageKey key, boolean default_value)
 	{
 		File f = new File(root + "/" + key.getSimpleValue());
 		if (f.exists() && !f.isDirectory())
@@ -54,7 +54,7 @@ public class StorageDevLocalFileSystem extends Storage
 	 * @return true if the Object was updated/inserted, else false
 	 */
 	@Override
-	public boolean upsert(StorageKey key, byte[] bytes, boolean hint_content_likely_to_be_compressible)
+	public boolean upsert(ObjectIdStorageKey key, byte[] bytes, boolean hint_content_likely_to_be_compressible)
 	{
 		if (isReadOnly())
 		{
@@ -90,7 +90,7 @@ public class StorageDevLocalFileSystem extends Storage
 	 *         default_value
 	 */
 	@Override
-	public byte[] getCurrentVersion(StorageKey key, byte[] default_value)
+	public byte[] getCurrentVersion(ObjectIdStorageKey key, byte[] default_value)
 	{
 		Validator.notNull(key);
 		if (exists(key, false))
@@ -127,7 +127,7 @@ public class StorageDevLocalFileSystem extends Storage
 	 * @return true if Storage Object existed and was deleted, false otherwise
 	 */
 	@Override
-	public boolean delete(StorageKey key)
+	public boolean delete(ObjectIdStorageKey key)
 	{
 		if (isReadOnly())
 		{
@@ -153,18 +153,18 @@ public class StorageDevLocalFileSystem extends Storage
 	 *         returned, Otherwise the Default_value that was passed in.
 	 */
 	@Override
-	public Iterable<StorageKey> listComplex(Kind kind, Iterable<StorageKey> default_value)
+	public Iterable<ObjectIdStorageKey> listComplex(Kind kind, Iterable<ObjectIdStorageKey> default_value)
 	{
 		Validator.notNull(kind);
 		File folder = new File(root.getAbsolutePath() + "/" + kind.getSimpleValue());
 		File[] listOfFiles = folder.listFiles();
-		List<StorageKey> keys = new ArrayList<>();
+		List<ObjectIdStorageKey> keys = new ArrayList<>();
 		for (int i = 0; i < listOfFiles.length; i++)
 		{
 			if (listOfFiles[i].isFile())
 			{
 				String key = kind + "/" + listOfFiles[i].getName();
-				keys.add(new StorageKey(key));
+				keys.add(new ObjectIdStorageKey(key));
 			}
 		}
 		return keys;
