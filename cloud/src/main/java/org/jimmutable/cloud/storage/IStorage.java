@@ -16,7 +16,7 @@ public interface IStorage
 
 	public abstract Iterable<ObjectIdStorageKey> listComplex(Kind kind, Iterable<ObjectIdStorageKey> default_value);
 
-	public abstract Iterable<StorageKey> listComplex(StorageKey prefix, Iterable<StorageKey> default_value);
+	// public abstract Iterable<StorageKey> listComplex(StorageKey prefix, Iterable<StorageKey> default_value);
 	
 	public boolean upsert(Storable obj, Format format);
 
