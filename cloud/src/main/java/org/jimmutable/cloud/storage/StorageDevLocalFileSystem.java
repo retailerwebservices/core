@@ -169,6 +169,12 @@ public class StorageDevLocalFileSystem extends Storage
 		}
 		return keys;
 	}
+
+	@Override
+	public Iterable<StorageKey> listComplex(StorageKey prefix, Iterable<StorageKey> default_value) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 	// TODO continue here
 	/**
