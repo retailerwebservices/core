@@ -1,6 +1,5 @@
 package org.jimmutable.core.serialization;
 
-import org.jimmutable.core.examples.product_data.BrandCode;
 import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.Stringable;
 

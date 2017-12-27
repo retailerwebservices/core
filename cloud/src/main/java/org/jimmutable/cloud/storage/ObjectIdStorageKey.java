@@ -14,7 +14,7 @@ import org.jimmutable.core.utils.Validator;
  *
  */
 
-public class ObjectIdStorageKey extends Stringable
+public class ObjectIdStorageKey extends Stringable implements StorageKey
 {
 
 	static public final MyConverter CONVERTER = new MyConverter();
@@ -176,5 +176,12 @@ public class ObjectIdStorageKey extends Stringable
 				return default_value;
 			}
 		}
+	}
+
+	@Override
+	public StorageKeyName getSimpleName()
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -169,4 +169,34 @@ public class StorageDevLocalFileSystem extends Storage
 		}
 		return keys;
 	}
+	
+	// TODO continue here
+	/**
+	 * @param kind
+	 *            The kind of the storable object you are looking for
+	 * @param default_value
+	 *            the value you want returned if nothing is found.
+	 * @return If any StorageKeys were found, that Collection of objects will be
+	 *         returned, Otherwise the Default_value that was passed in.
+	 */
+	
+	/*
+	@Override
+	public Iterable<StorageKey> listComplex(StorageKey prefix, Iterable<StorageKey> default_value)
+	{
+		Validator.notNull(prefix);
+		File folder = new File(root.getAbsolutePath() + "/" + kind.getSimpleValue());
+		File[] listOfFiles = folder.listFiles();
+		List<ObjectIdStorageKey> keys = new ArrayList<>();
+		for (int i = 0; i < listOfFiles.length; i++)
+		{
+			if (listOfFiles[i].isFile())
+			{
+				String key = kind + "/" + listOfFiles[i].getName();
+				keys.add(new ObjectIdStorageKey(key));
+			}
+		}
+		return keys;
+	}
+	*/
 }

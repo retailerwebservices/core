@@ -19,6 +19,7 @@ import org.jimmutable.cloud.servlet_utils.search.SearchUIData;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.servlet_utils.upsert.UpsertResponseOK;
 import org.jimmutable.cloud.servlet_utils.upsert.UpsertResponseValidationError;
+import org.jimmutable.cloud.storage.StorageMetadata;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 
 /**
@@ -66,5 +67,6 @@ public class JimmutableCloudTypeNameRegister
 		ObjectParseTree.registerTypeName(IncludeFieldInView.class);
 		ObjectParseTree.registerTypeName(RequestExportCSV.class);
 		
+		ObjectParseTree.registerTypeName(StorageMetadata.class);
 	}
 }
