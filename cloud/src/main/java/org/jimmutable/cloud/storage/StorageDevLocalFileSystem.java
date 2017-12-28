@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jimmutable.cloud.ApplicationId;
+import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.utils.Validator;
 
@@ -199,4 +200,28 @@ public class StorageDevLocalFileSystem extends Storage
 		return keys;
 	}
 	*/
+	
+	/**
+	 * Retrieves the ObjectMetadata for this key param. For StorageDevLocalFileSystem, the last modified is checked from disk every time this method is called.
+	 * Further, the etag is simply the last modified timestamp on the file as well.
+	 * 
+	 * @Override
+	 */
+	public StorageMetadata getObjectMetadata(StorageKey key, StorageMetadata default_value)
+	{
+		File f = new File(root + "/" + key.toString());
+		if ( !f.exists() || f.isDirectory() )
+		{
+			return default_value;
+		}
+		
+		long last_modified = f.lastModified();
+		long size = f.length();
+
+		Builder builder = new Builder(StorageMetadata.TYPE_NAME);
+		builder.set(StorageMetadata.FIELD_LAST_MODIFIED, last_modified);
+		builder.set(StorageMetadata.FIELD_SIZE, size);
+
+		return builder.create(null);
+	}
 }

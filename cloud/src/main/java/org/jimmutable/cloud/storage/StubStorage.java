@@ -60,4 +60,15 @@ public class StubStorage implements IStorage
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
+	@Override
+	public StorageMetadata getObjectMetadata(StorageKey key, StorageMetadata default_value)
+	{
+		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
+	}
+
+	@Override
+	public StorageMetadata getObjectMetadata(Storable obj, StorageMetadata default_value)
+	{
+		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
+	}
 }

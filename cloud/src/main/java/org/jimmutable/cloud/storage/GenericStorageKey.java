@@ -33,6 +33,8 @@ public class GenericStorageKey extends Stringable implements StorageKey
 		kind = new Kind(super.getSimpleValue().substring(0, kind_delim_index));
 		name = new StorageKeyName(super.getSimpleValue().substring(kind_delim_index + 1, extension_delim_index));
 		extension = new StorageKeyExtension(super.getSimpleValue().substring(extension_delim_index));
+		
+		// TODO logic for isNameAnObjectId should be done here (attempt to create an object id). If failure, then set boolean to false
 	}
 
 	@Override

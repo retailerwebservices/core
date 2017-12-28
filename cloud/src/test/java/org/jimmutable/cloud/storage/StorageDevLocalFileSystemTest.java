@@ -16,9 +16,12 @@ import org.jimmutable.cloud.IntegrationTest;
 import org.jimmutable.cloud.storage.StorageDevLocalFileSystem;
 import org.jimmutable.cloud.storage.ObjectIdStorageKey;
 import org.jimmutable.core.objects.common.Kind;
+import org.jimmutable.core.objects.common.ObjectId;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.amazonaws.services.s3.model.ObjectMetadata;
 
 public class StorageDevLocalFileSystemTest extends IntegrationTest
 {
@@ -78,6 +81,20 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 		// assertTrue(sdlfs.upsert(new StorageKey("alpha/0000-0000-0000-0123.txt"),
 		// data.getData(), false));
 
+	}
+	
+	@Test
+	public void testGetMetadata()
+	{
+		ObjectIdStorageKey storage_key = new ObjectIdStorageKey("metadata-test/42fb-e16d-95ac-8274.txt");
+		String test_message = "This is a metadata test xD";
+		
+		sdlfs.upsert(storage_key, test_message.getBytes(), false);
+		StorageMetadata metadata = sdlfs.getObjectMetadata(storage_key, null);
+
+		// only check against the length of bytes, as the file will get wiped after the test		
+		assertTrue(metadata != null);
+		assertTrue(metadata.getSimpleSize() == test_message.length());
 	}
 
 	private static String readFile(File f)

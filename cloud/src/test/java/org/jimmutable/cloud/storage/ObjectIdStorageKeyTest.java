@@ -9,7 +9,7 @@ import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.utils.StringableTester;
 import org.junit.Test;
 
-public class StorageKeyTest extends StubTest
+public class ObjectIdStorageKeyTest extends StubTest
 {
 	private StringableTester<ObjectIdStorageKey> tester = new StringableTester<ObjectIdStorageKey>(new ObjectIdStorageKey.MyConverter());
 

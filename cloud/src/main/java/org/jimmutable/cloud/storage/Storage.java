@@ -74,9 +74,19 @@ public abstract class Storage implements IStorage
 	 * @return If any StorageKeys were found, that Collection of objects will be
 	 *         returned, Otherwise the Default_value that was passed in.
 	 */
-
 	public abstract Iterable<ObjectIdStorageKey> listComplex(Kind kind, Iterable<ObjectIdStorageKey> default_value);
 
+	/**
+	 * Retrieves the StorageMetadata associated to this Storable object,
+	 * returning the default_value if lookup fails. (Object doesn't exist, or internal error)
+	 */
+	public StorageMetadata getObjectMetadata(Storable obj, StorageMetadata default_value)
+	{
+		if (obj == null) return default_value;
+		
+		return getObjectMetadata(obj.createStorageKey(), default_value);
+	}
+	
 	public boolean upsert(Storable obj, Format format)
 	{
 		Validator.notNull(obj);
