@@ -6,6 +6,11 @@ import org.jimmutable.core.objects.Stringable;
 
 import junit.framework.TestCase;
 
+/**
+ * This class cannot be used across projects as it lives in the test folder of
+ * Jimmutable core. In order to test a Stringable using utilities from this project
+ * you should instead use StringableTestingUtils.
+ */
 abstract public class StringableTest extends TestCase
 {
 	abstract public Stringable fromString(String src);
