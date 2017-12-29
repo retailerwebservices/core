@@ -22,6 +22,11 @@ public class ObjectIdStorageKey extends Stringable implements StorageKey
 	private Kind kind;
 	private ObjectId id;
 	private StorageKeyExtension extension;
+	
+	/**
+	 * The StorageKeyName is simply a transient variable for convenience (only used when getSimpleName is called)
+	 */
+	transient private StorageKeyName name;
 
 	/**
 	 * @param value
@@ -127,6 +132,8 @@ public class ObjectIdStorageKey extends Stringable implements StorageKey
 
 		extension = new StorageKeyExtension(super.getSimpleValue().substring(extension_delim_index));
 
+		this.name = new StorageKeyName(id.getSimpleValue());
+		
 		super.setValue(createStringFromComponents(getSimpleKind(), getSimpleObjectId(), getSimpleExtension()));
 
 	}
@@ -164,6 +171,12 @@ public class ObjectIdStorageKey extends Stringable implements StorageKey
 		return extension;
 	}
 
+	@Override
+	public StorageKeyName getSimpleName()
+	{
+		return name;
+	}
+	
 	static public class MyConverter extends Stringable.Converter<ObjectIdStorageKey>
 	{
 		public ObjectIdStorageKey fromString(String str, ObjectIdStorageKey default_value)
@@ -176,12 +189,5 @@ public class ObjectIdStorageKey extends Stringable implements StorageKey
 				return default_value;
 			}
 		}
-	}
-
-	@Override
-	public StorageKeyName getSimpleName()
-	{
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

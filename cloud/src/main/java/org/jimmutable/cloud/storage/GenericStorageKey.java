@@ -1,8 +1,12 @@
 package org.jimmutable.cloud.storage;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.utils.Validator;
+import org.jimmutable.core.utils.Validator.ValidCharacters;
 
 /**
  * TODO get more info from Jim on this class. I believe it's simply genericizing the notion of an ObjectIdStorageKey, where a GenericStorageKey can contain a StorageKeyName with
@@ -33,8 +37,6 @@ public class GenericStorageKey extends Stringable implements StorageKey
 		kind = new Kind(super.getSimpleValue().substring(0, kind_delim_index));
 		name = new StorageKeyName(super.getSimpleValue().substring(kind_delim_index + 1, extension_delim_index));
 		extension = new StorageKeyExtension(super.getSimpleValue().substring(extension_delim_index));
-		
-		// TODO logic for isNameAnObjectId should be done here (attempt to create an object id). If failure, then set boolean to false
 	}
 
 	@Override
@@ -61,12 +63,6 @@ public class GenericStorageKey extends Stringable implements StorageKey
 	public StorageKeyExtension getSimpleExtension()
 	{
 		return extension;
-	}
-
-	public boolean isNameAnObjectId()
-	{
-		// TODO dunno what to do here
-		return false;
 	}
 
 	static public class MyConverter extends Stringable.Converter<GenericStorageKey>

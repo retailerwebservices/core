@@ -170,21 +170,90 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 	@Test
 	public void testList()
 	{
+		Kind gamma = new Kind("gamma");
+		
 		sdlfs.upsert(new ObjectIdStorageKey("gamma/1.txt"), "Hello from the other side".getBytes(), false);
 		sdlfs.upsert(new ObjectIdStorageKey("gamma/2.txt"), "Hello from the other side".getBytes(), false);
 		sdlfs.upsert(new ObjectIdStorageKey("gamma/3.txt"), "Hello from the other side".getBytes(), false);
 		sdlfs.upsert(new ObjectIdStorageKey("gamma/4.txt"), "Hello from the other side".getBytes(), false);
 		sdlfs.upsert(new ObjectIdStorageKey("gamma/5.txt"), "Hello from the other side".getBytes(), false);
 		sdlfs.upsert(new ObjectIdStorageKey("gamma/6.txt"), "Hello from the other side".getBytes(), false);
-		Iterable<ObjectIdStorageKey> l = sdlfs.listComplex(new Kind("gamma"), null);
+		
+		Iterable<StorageKey> l = sdlfs.listComplex(gamma, null);
 		int count = 0;
-		for (ObjectIdStorageKey storageKey : l)
+		for (StorageKey storageKey : l)
 		{
 			count++;
 		}
 		assertEquals(6, count);
+
+		sdlfs.upsert(new ObjectIdStorageKey("gamma/" + new ObjectId(Long.MAX_VALUE) + ".txt"), "Hello from the other side".getBytes(), false);
+		sdlfs.upsert(new ObjectIdStorageKey("gamma/" + new ObjectId(Long.MAX_VALUE-1) + ".txt"), "Hello from the other side".getBytes(), false);
+		sdlfs.upsert(new ObjectIdStorageKey("gamma/" + new ObjectId(Long.MAX_VALUE-16) + ".txt"), "Hello from the other side".getBytes(), false);
+		
+		Iterable<StorageKey> filtered = sdlfs.listComplex(gamma, new StorageKeyName("7fff"), null);
+		int filtered_count = 0;
+		for (StorageKey key : filtered)
+		{
+			filtered_count++;
+		}
+		assertEquals(filtered_count, 3);
+		
+		Iterable<ObjectIdStorageKey> object_ids = sdlfs.listAllObjectIdsComplex(gamma, null);
+		int object_id_count = 0;
+		for (ObjectIdStorageKey cur_storage_key : object_ids)
+		{
+			object_id_count++;
+		}
+		
+		assertEquals(object_id_count, 9);
 	}
 
+	@Test
+	public void testGenericList()
+	{
+		Kind delta = new Kind("delta");
+
+		sdlfs.upsert(new GenericStorageKey("delta/this-is_a_test.txt"), "Hello from the other side".getBytes(), false);
+		sdlfs.upsert(new GenericStorageKey("delta/this-is_not_a-pipe.txt"), "Hello from the other side".getBytes(), false);
+		sdlfs.upsert(new GenericStorageKey("delta/t4i5-is_no7_a-p1pe.txt"), "Hello from the other side".getBytes(), false);
+		sdlfs.upsert(new GenericStorageKey("delta/where-areyou_going-where-have_you_been.txt"), "Hello from the other side".getBytes(), false);
+		
+		Iterable<StorageKey> l = sdlfs.listComplex(delta, null);
+		int count = 0;
+		for (StorageKey storageKey : l)
+		{
+			count++;
+		}
+		assertEquals(4, count);
+
+		Iterable<ObjectIdStorageKey> object_ids = sdlfs.listAllObjectIdsComplex(delta, null);
+		int object_id_count = 0;
+		for (ObjectIdStorageKey cur_storage_key : object_ids)
+		{
+			object_id_count++;
+		}
+		
+		assertEquals(0, object_id_count);
+		
+		Iterable<StorageKey> prefix_search = sdlfs.listComplex(delta, new StorageKeyName("this"), null);
+		int prefix_count = 0;
+		for (StorageKey storageKey : prefix_search)
+		{
+			prefix_count++;
+		}
+		assertEquals(2, prefix_count);
+		
+		Iterable<StorageKey> full_name_search = sdlfs.listComplex(delta, new StorageKeyName("where-areyou_going-where-have_you_been"), null);
+		int full_name_count = 0;
+		for (StorageKey storageKey : full_name_search)
+		{
+			full_name_count++;
+		}
+		assertEquals(1, full_name_count);
+	}
+
+	
 	@Test
 	public void testCantWriteToReadOnly()
 	{
