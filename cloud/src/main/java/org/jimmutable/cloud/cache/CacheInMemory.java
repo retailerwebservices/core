@@ -3,27 +3,29 @@ package org.jimmutable.cloud.cache;
 import java.lang.ref.SoftReference;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.threading.LRUCache;
+import org.jimmutable.core.utils.Validator;
 
 public class CacheInMemory implements Cache
 {
-	private LRUCache<CacheKey,CacheValue> cache = new LRUCache(10_000);
+	private UnderlyingCache backing_cache;
 	
 	public CacheInMemory()
 	{
-		
+		backing_cache = new UnderlyingCache();
 	}
 	
 	public void put( CacheKey key, byte[] data, long max_ttl )
 	{
 		if ( key == null ) return;
-		if ( data == null ) delete(key);
+		if ( data == null ) { delete(key); return; }
 		
-		cache.put(key, new CacheValue(data,max_ttl));
+		backing_cache.put(key, data, max_ttl);
 	}
 
 
@@ -32,7 +34,7 @@ public class CacheInMemory implements Cache
 	public void put( CacheKey key, String data, long max_ttl )
 	{
 		if ( key == null ) return;
-		if ( data == null ) delete(key);
+		if ( data == null ) { delete(key); return; }
 		
 		put(key, data.getBytes(StandardCharsets.UTF_8), max_ttl);
 	}
@@ -43,47 +45,27 @@ public class CacheInMemory implements Cache
 	public void put( CacheKey key, StandardObject data, long max_ttl )
 	{
 		if ( key == null ) return;
-		if ( data == null ) delete(key);
+		if ( data == null ) { delete(key); return; }
 		
 		put(key, data.serialize(Format.JSON), max_ttl);
 	}
+	
 
 
 	public boolean exists( CacheKey key )
 	{
-		if ( key == null ) return false;
-		
-		CacheValue val = cache.get(key, null);
-		
-		if ( val == null ) return false;
-		return val.isValid();
+		return backing_cache.getBytes(key, null) != null;
 	}
 
 	public long getTTL( CacheKey key, long default_value )
 	{
-		if ( key == null ) return default_value;
-		
-		CacheValue val = cache.get(key, null);
-		
-		if ( val == null ) return default_value;
-		if ( !val.isValid() ) return default_value;
-		if ( !val.hasExpirationTime() ) return default_value;
-		
-		return val.getExpirationTime() - System.currentTimeMillis();
+		return backing_cache.getTTL(key, default_value);
 	}
 
 	public byte[] getBytes( CacheKey key, byte[] default_value )
 	{
-		if ( key == null ) return default_value;
-		
-		CacheValue val = cache.get(key, null);
-		
-		if ( val == null ) return default_value;
-		if ( !val.isValid() ) return default_value;
-		
-		return val.getData(default_value);
+		return backing_cache.getBytes(key, default_value);
 	}
-
 
 
 	@Override
@@ -110,7 +92,8 @@ public class CacheInMemory implements Cache
 	@Override
 	public void delete( CacheKey key )
 	{
-		cache.remove(key);
+		if ( key == null ) return;
+		backing_cache.remove(key);
 	}
 
 
@@ -118,10 +101,12 @@ public class CacheInMemory implements Cache
 	@Override
 	public void scan( CacheKey prefix, ScanOperation operation )
 	{
+		Validator.notNull(prefix, operation);
+		
 		String prefix_str = prefix.toString();
 		
 		List<CacheKey> tmp_keys = new ArrayList();
-		cache.copyKeysIntoCollection(tmp_keys);
+		backing_cache.copyKeysIntoCollection(tmp_keys);
 		
 		for ( CacheKey cur : tmp_keys )
 		{
@@ -131,7 +116,76 @@ public class CacheInMemory implements Cache
 				operation.performOperation(this, cur);
 		}
 	}
+	
+	
+	static private class UnderlyingCache
+	{
+		private LRUCache<CacheKey,CacheValue> cache = new LRUCache(10_000);
+		
+		private UnderlyingCache()
+		{
+			
+		}
+		
+		public byte[] getBytes(CacheKey key, byte default_value[])
+		{
+			if ( key == null ) return default_value;
+			
+			CacheValue value = cache.get(key, null);
+			if ( value == null ) return default_value;
+			
+			byte ret[] = value.getData(null);
+			
+			if ( ret == null )
+			{
+				cache.remove(key);
+				return default_value;
+			}
+			
+			return ret;
+		}
+		
+		public long getTTL(CacheKey key, long default_value)
+		{
+			if ( key == null ) return default_value;
+			
+			CacheValue value = cache.get(key, null);
+			if ( value == null ) return default_value;
+			
+			if ( value.isCurrentlyValidValue() )
+			{
+				if ( !value.hasExpirationTime() ) return default_value;
+				return value.getExpirationTime() - System.currentTimeMillis();
+			}
+			else
+			{
+				cache.remove(key);
+				return default_value;
+			}
+		}
+		
+		public void put(CacheKey key, byte data[], long max_ttl)
+		{
+			cache.put(key, new CacheValue(data,max_ttl));
+		}
+		
+		public void remove(CacheKey key)
+		{
+			cache.remove(key);
+		}
+		
+		public void copyKeysIntoCollection(Collection<CacheKey> c)
+		{
+			cache.copyKeysIntoCollection(c);
+		}
+	}
 
+	/**
+	 * Class that wraps one cache value entry
+	 * 
+	 * @author kanej
+	 *
+	 */
 	static private class CacheValue
 	{
 		private long expiration_time;
@@ -151,7 +205,7 @@ public class CacheInMemory implements Cache
 			}
 		}
 		
-		boolean isValid()
+		public boolean isCurrentlyValidValue()
 		{
 			if ( hasExpired() ) return false;
 			if ( data.get() == null ) return false;
@@ -169,9 +223,12 @@ public class CacheInMemory implements Cache
 		
 		public byte[] getData(byte default_value[])
 		{
+			if ( hasExpired() ) return default_value;
+			
 			byte ret[] = data.get();
-			if ( ret != null ) return ret;
-			return default_value;
+			if ( ret == null ) return default_value;
+			
+			return ret;
 		}
 		
 		public long getExpirationTime() { return expiration_time; }

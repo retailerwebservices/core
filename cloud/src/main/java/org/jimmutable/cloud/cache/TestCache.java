@@ -3,7 +3,23 @@ package org.jimmutable.cloud.cache;
 import java.util.Arrays;
 import java.util.Random;
 
-public class TestRedisCache
+/**
+ * NOTES: 
+ * To install redis on OS X
+ * 
+ * 
+ * xcode-select --install
+ * 
+ * Download latest version of redis
+ * Then run make test
+ * Then run make
+ * Inside of the src folder, there is a executable, redis-server
+ * 
+ * @author kanej
+ *
+ */
+
+public class TestCache
 {
 	static public void main(String args[])
 	{
@@ -26,9 +42,15 @@ public class TestRedisCache
 		System.out.println(cache.getString("bet/bar", null));
 		
 		writeBinaryData(cache,1024);
-		//testTTL(cache);
+		testTTL(cache);
 	}
 	
+	/**
+	 * Writes random 1mb blocks of data in an effort to over-fill the cache
+	 * 
+	 * @param cache The cache to use
+	 * @param n The number of blocks to write
+	 */
 	static private void writeBinaryData(Cache cache, int n)
 	{
 		for ( int i = 0; i < n; i++ )
@@ -48,16 +70,23 @@ public class TestRedisCache
 		
 		System.out.println("Before delete");
 		cache.scan(new CacheKey("gimel"), new PrintOperation());
+		System.out.println();
 		
 		cache.deleteAllSlow(new CacheKey("gimel"));
 		
 		System.out.println("After delete");
 		cache.scan(new CacheKey("gimel"), new PrintOperation());
+		System.out.println();
 	}
 	
+	/**
+	 * An experiment with items that have an expiration
+	 * 
+	 * @param cache The cache to use for testing
+	 */
 	static private void testTTL(Cache cache)
 	{
-		cache.put(new CacheKey("dalet/foo"),"bar",2_000);
+		cache.put(new CacheKey("dalet/foo"),"bar",3_000);
 		
 		System.out.println("expiration time: "+cache.getTTL(new CacheKey("dalet/foo"), -1));
 		

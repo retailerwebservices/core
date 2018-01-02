@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
+import org.jimmutable.core.utils.Validator;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -13,7 +14,6 @@ import redis.clients.jedis.ScanResult;
 
 public class CacheRedis implements Cache
 { 
-	
 	private JedisPool pool;
 	
 	public CacheRedis()
@@ -43,7 +43,7 @@ public class CacheRedis implements Cache
 	public void put( CacheKey key, byte[] data, long max_ttl )
 	{
 		if ( key == null ) return;
-		if ( data == null ) delete(key);
+		if ( data == null ) { delete(key); return; }
 		
 		try(Jedis jedis = pool.getResource();)
 		{
@@ -57,7 +57,7 @@ public class CacheRedis implements Cache
 	public void put( CacheKey key, String data, long max_ttl )
 	{
 		if ( key == null ) return;
-		if ( data == null ) delete(key);
+		if ( data == null ) { delete(key); return; }
 		
 		try(Jedis jedis = pool.getResource();)
 		{
@@ -70,7 +70,7 @@ public class CacheRedis implements Cache
 	public void put( CacheKey key, StandardObject data, long max_ttl )
 	{
 		if ( key == null ) return;
-		if ( data == null ) delete(key);
+		if ( data == null ) { delete(key); return; }
 		
 		put(key, data.serialize(Format.JSON), max_ttl);
 	}
@@ -158,6 +158,7 @@ public class CacheRedis implements Cache
 	@Override
 	public void scan( CacheKey prefix, ScanOperation operation )
 	{
+		Validator.notNull(prefix, operation);
 		try(Jedis jedis = pool.getResource();)
 		{
 			ScanParams params = new ScanParams();
