@@ -1,27 +1,26 @@
 package org.jimmutable.cloud.storage;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileVisitOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Comparator;
 
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.IntegrationTest;
-import org.jimmutable.cloud.storage.StorageDevLocalFileSystem;
-import org.jimmutable.cloud.storage.ObjectIdStorageKey;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import com.amazonaws.services.s3.model.ObjectMetadata;
 
 public class StorageDevLocalFileSystemTest extends IntegrationTest
 {

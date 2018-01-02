@@ -1,12 +1,8 @@
 package org.jimmutable.cloud.storage;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.utils.Validator;
-import org.jimmutable.core.utils.Validator.ValidCharacters;
 
 /**
  * TODO get more info from Jim on this class. I believe it's simply genericizing the notion of an ObjectIdStorageKey, where a GenericStorageKey can contain a StorageKeyName with
