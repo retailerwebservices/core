@@ -1,5 +1,6 @@
 package org.jimmutable.core.threading;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -135,5 +136,10 @@ public class LRUCache<K,V>
 		{
 			return size() > cache_size;
 		}
+	}
+	
+	public void copyKeysIntoCollection(Collection<K> dest)
+	{
+		dest.addAll(inner_map.keySet());
 	}
 }
