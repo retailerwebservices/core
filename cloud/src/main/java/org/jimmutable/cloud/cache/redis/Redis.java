@@ -1,22 +1,33 @@
 package org.jimmutable.cloud.cache.redis;
 
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutorService;
 
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.cache.Cache;
 import org.jimmutable.cloud.cache.CacheKey;
 import org.jimmutable.cloud.cache.ScanOperation;
+import org.jimmutable.cloud.messaging.MessageListener;
+import org.jimmutable.cloud.messaging.TopicId;
+import org.jimmutable.core.objects.StandardImmutableObject;
+import org.jimmutable.core.objects.StandardObject;
+import org.jimmutable.core.serialization.Format;
+import org.jimmutable.core.threading.DaemonThreadFactory;
 import org.jimmutable.core.utils.Validator;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 
 public class Redis
 {
 	private JedisPool pool;
+
+	private ExecutorService send_async_thread_pool = DaemonThreadFactory.createDaemonFixedThreadPool(1);
+	private ExecutorService recieve_message_thread_pool = DaemonThreadFactory.createDaemonFixedThreadPool(10);
 	
 	public Redis()
 	{
@@ -187,4 +198,118 @@ public class Redis
 			}
 		}
 	}
+	
+	public void signalSendAsync(ApplicationId app, TopicId topic, StandardObject message)
+	{
+		send_async_thread_pool.submit(new SignalSendRunnable(app,topic,message));
+	}
+	
+	private class SignalSendRunnable implements Runnable
+	{
+		ApplicationId app;
+		TopicId topic;
+		StandardObject message;
+		
+		private SignalSendRunnable(ApplicationId app, TopicId topic, StandardObject message)
+		{
+			Validator.notNull(app, topic, message);
+			
+			this.app = app;
+			this.topic = topic;
+			this.message = message;
+		}
+		public void run()
+		{
+			try(Jedis jedis = pool.getResource();)
+			{
+				jedis.publish(app+"/"+topic, message.serialize(Format.JSON));
+			}
+		}
+	}
+	
+	public void signalListen(ApplicationId app, TopicId topic, MessageListener listener)
+	{
+		Thread t = new Thread(new ListenRunnable(app,topic,listener));
+		t.start();
+	}
+	
+	private class ListenRunnable implements Runnable
+	{
+		private ApplicationId app;
+		private TopicId topic;
+		private MessageListener listener;
+		
+		private ListenRunnable(ApplicationId app, TopicId topic, MessageListener listener) 
+		{
+			Validator.notNull(app,topic,listener);
+			
+			this.app = app;
+			this.topic = topic;
+			this.listener = listener;
+		}
+		public void run()
+		{
+			while(true)
+			{
+				try
+				{
+					try(Jedis jedis = pool.getResource();)
+					{
+						jedis.subscribe(new ListenSubscriber(listener), app+"/"+topic);
+					}
+				}
+				catch(Exception e)
+				{
+					e.printStackTrace();
+				}
+				
+				try { Thread.currentThread().sleep(1000); } catch(Exception e) {}
+			}
+		}
+	}
+	
+	private class ListenSubscriber extends JedisPubSub
+	{
+		private MessageListener listener;
+		
+		public ListenSubscriber(MessageListener listener)
+		{
+			Validator.notNull(listener);
+			
+			this.listener = listener;
+		}
+	
+		public void onMessage( String channel, String message )
+		{
+			try
+			{
+				StandardObject obj = StandardObject.deserialize(message);
+				
+				recieve_message_thread_pool.submit(new OnMessageReceivedRunnable(listener, obj));
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private class OnMessageReceivedRunnable implements Runnable
+	{
+		private MessageListener listener;
+		private StandardObject message;
+		
+		public OnMessageReceivedRunnable(MessageListener listener, StandardObject message)
+		{
+			Validator.notNull(listener, message);
+			this.listener = listener;
+			this.message = message;
+		}
+		
+		public void run()
+		{
+			listener.onMessageReceived(message);
+		}
+	}
+	
 }

@@ -11,6 +11,12 @@ import java.util.Set;
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.StubTest;
 import org.jimmutable.cloud.cache.redis.Redis;
+import org.jimmutable.cloud.messaging.MessageListener;
+import org.jimmutable.cloud.messaging.StandardMessageOnUpsert;
+import org.jimmutable.cloud.messaging.TopicId;
+import org.jimmutable.core.objects.StandardObject;
+import org.jimmutable.core.objects.common.Kind;
+import org.jimmutable.core.objects.common.ObjectId;
 import org.junit.Test;
 
 public class RedisTest extends StubTest
@@ -28,9 +34,54 @@ public class RedisTest extends StubTest
 	}
 	
 	@Test
-	public void testRedis()
+	public void testSignal()
 	{ 
-		if ( !is_redis_live ) { System.out.println("Redis server not available, skipping redis unit test!"); return; }
+		if ( !is_redis_live ) { System.out.println("Redis server not available, skipping signal unit test!"); return; }
+		
+		TestListener listener = new TestListener();
+		TestListener listener2 = new TestListener();
+		
+		redis.signalListen(app, TopicId.application_private, listener);
+		redis.signalListen(app, TopicId.application_private, listener2);
+		
+		try { Thread.currentThread().sleep(250); } catch(Exception e) {}
+		
+		redis.signalSendAsync(app, TopicId.application_private, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(1)));
+		redis.signalSendAsync(app, TopicId.application_private, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(2)));
+		redis.signalSendAsync(app, TopicId.application_private, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(10)));
+		
+		try { Thread.currentThread().sleep(500); } catch(Exception e) {}
+		
+		assert(listener.ids.contains(new ObjectId(1)));
+		assert(listener.ids.contains(new ObjectId(2)));
+		assert(listener.ids.contains(new ObjectId(10)));
+		
+		assert(listener2.ids.contains(new ObjectId(1)));
+		assert(listener2.ids.contains(new ObjectId(2)));
+		assert(listener2.ids.contains(new ObjectId(10)));
+	}
+	
+	static private class TestListener implements MessageListener
+	{
+		private Set<ObjectId> ids = new HashSet();
+		
+		@Override
+		public void onMessageReceived( StandardObject message )
+		{
+			if ( !(message instanceof StandardMessageOnUpsert) ) return;
+			
+			StandardMessageOnUpsert upsert_message = (StandardMessageOnUpsert) message;
+			 
+			ids.add(upsert_message.getSimpleObjectId());
+		}
+		
+	}
+		
+	
+	@Test
+	public void testCache()
+	{ 
+		if ( true || !is_redis_live ) { System.out.println("Redis server not available, skipping cache unit test!"); return; }
 		
 
 		// Test exists
