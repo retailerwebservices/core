@@ -25,21 +25,21 @@ public class TestCache
 	{
 		Cache cache = new CacheInMemory();		
 	
-		cache.put("aleph/foo", "1");
-		cache.put("aleph/bar", "2");
-		cache.put("aleph/baz", "3");
+		cache.put("test://aleph/foo", "1");
+		cache.put("test://aleph/bar", "2");
+		cache.put("test://aleph/baz", "3");
 		
-		cache.put("bet/foo", "a");
-		cache.put("bet/bar", "b");
-		cache.put("bet/baz", "c");
+		cache.put("test://bet/foo", "a");
+		cache.put("test://bet/bar", "b");
+		cache.put("test://bet/baz", "c");
 		
-		System.out.println(cache.getString("aleph/bar", null));
-		System.out.println(cache.getString("bet/bar", null));
+		System.out.println(cache.getString("test://aleph/bar", null));
+		System.out.println(cache.getString("test://bet/bar", null));
 		
-		cache.deleteAllSlow("bet");
+		cache.deleteAllSlow("test://bet");
 		
-		System.out.println(cache.getString("aleph/bar", null));
-		System.out.println(cache.getString("bet/bar", null));
+		System.out.println(cache.getString("test://aleph/bar", null));
+		System.out.println(cache.getString("test://bet/bar", null));
 		
 		writeBinaryData(cache,1024);
 		testTTL(cache);
@@ -56,26 +56,26 @@ public class TestCache
 		for ( int i = 0; i < n; i++ )
 		{
 			byte data[] = createRandomBytes(1024*1024);
-			CacheKey key = new CacheKey("gimel/"+i);
+			CacheKey key = new CacheKey("test://gimel/"+i);
 			
 			cache.put(key, data);
 			
 			byte from_cache[] = cache.getBytes(key, null);
 			
-			boolean still_have_first_key = cache.exists(new CacheKey("gimel/0"));
+			boolean still_have_first_key = cache.exists(new CacheKey("test://gimel/0"));
 			boolean is_from_cache_ok = from_cache != null && Arrays.equals(from_cache, data);
 			
 			System.out.println("i: "+i+", still_have_first_key: "+still_have_first_key+", is_from_cache_ok: "+is_from_cache_ok);
 		} 
 		
 		System.out.println("Before delete");
-		cache.scan(new CacheKey("gimel"), new PrintOperation());
+		cache.scan(new CacheKey("test://gimel"), new PrintOperation());
 		System.out.println();
 		
-		cache.deleteAllSlow(new CacheKey("gimel"));
+		cache.deleteAllSlow(new CacheKey("test://gimel"));
 		
 		System.out.println("After delete");
-		cache.scan(new CacheKey("gimel"), new PrintOperation());
+		cache.scan(new CacheKey("test://gimel"), new PrintOperation());
 		System.out.println();
 	}
 	
@@ -86,9 +86,9 @@ public class TestCache
 	 */
 	static private void testTTL(Cache cache)
 	{
-		cache.put(new CacheKey("dalet/foo"),"bar",3_000);
+		cache.put(new CacheKey("test://dalet/foo"),"bar",3_000);
 		
-		System.out.println("expiration time: "+cache.getTTL(new CacheKey("dalet/foo"), -1));
+		System.out.println("expiration time: "+cache.getTTL(new CacheKey("test://dalet/foo"), -1));
 		
 		int i = 0;
 		
@@ -96,7 +96,7 @@ public class TestCache
 		{
 			try { Thread.currentThread().sleep(1000); } catch(Exception e) {}
 			
-			System.out.println("i: "+i+",exists: "+cache.exists(new CacheKey("dalet/foo")));
+			System.out.println("i: "+i+",exists: "+cache.exists(new CacheKey("test://dalet/foo")));
 		}
 		
 	}

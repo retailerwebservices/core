@@ -32,6 +32,19 @@ public class RedisTest extends StubTest
 	{ 
 		if ( !is_redis_live ) { System.out.println("Redis server not available, skipping redis unit test!"); return; }
 		
+
+		// Test exists
+		{
+			CacheKey key1 = new CacheKey("exist-test://one");
+			CacheKey key2 = new CacheKey("exist-test://two");
+
+
+			redis.cacheSet(app, key1, "Hello World", -1); 
+			
+			assert(redis.exists(app, key1) == true);
+			assert(redis.exists(app, key2) == false);
+		}
+		
 		// Test the acid string as a string value
 		{
 			CacheKey key = new CacheKey("acid-string-test://test-acid-string-value");
@@ -43,6 +56,7 @@ public class RedisTest extends StubTest
 			
 			assert(Objects.equals(acid_string, from_cache));
 		}
+		
 		
 		// Test the get on an empty string
 		{

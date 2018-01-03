@@ -69,6 +69,17 @@ public class Redis
 		}
 	}
 	
+	public boolean exists(ApplicationId app, CacheKey key)
+	{
+		byte cache_key_bytes[] = createCacheKeyBytes(app,key,null);
+		if ( cache_key_bytes == null ) return false;
+		
+		try(Jedis jedis = pool.getResource();)
+		{
+			return jedis.exists(cache_key_bytes);
+		}
+	}
+	
 	public void cacheSet(ApplicationId app, CacheKey key, String data, long max_ttl)
 	{
 		byte data_bytes[] = null;
