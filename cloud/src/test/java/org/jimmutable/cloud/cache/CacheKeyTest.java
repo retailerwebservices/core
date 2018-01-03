@@ -20,6 +20,8 @@ public class CacheKeyTest
 		
 		tester.assertValid("/foo/bar/baz://one", "foo/bar/baz://one");
 		tester.assertValid("FOO////BAR/////BAZ://one", "foo/bar/baz://one");
+		
+		tester.assertValid("foo:// https://www.google.com/index?p1=2 ", "foo://https://www.google.com/index?p1=2");
 	}
 
 	@Test

@@ -14,30 +14,17 @@ import redis.clients.jedis.ScanResult;
 
 public class CacheRedis implements Cache
 { 
-	private JedisPool pool;
+	private Redis redis;
 	
-	public CacheRedis()
+	public CacheRedis(Redis redis)
 	{
-		this("localhost", 6379);
-	}
-	
-	public CacheRedis(String host, int port)
-	{
-		JedisPoolConfig config = new JedisPoolConfig();
-		config.setMaxTotal(100);
-		config.setMaxIdle(1000 * 60);
-		config.setTestOnBorrow(false);
-		
-		
-		pool = new JedisPool(config, "localhost", 6379);
+		Validator.notNull(redis);
+		this.redis = redis;
 	}
 	
 	private void expire(Jedis jedis, CacheKey key, long max_ttl)
 	{
-		if ( jedis == null || key == null ) return;
 		
-		if ( max_ttl <= 0 ) return;
-		jedis.expire(key.toString(), (int)(max_ttl/1000l));
 	}
 	
 	public void put( CacheKey key, byte[] data, long max_ttl )
