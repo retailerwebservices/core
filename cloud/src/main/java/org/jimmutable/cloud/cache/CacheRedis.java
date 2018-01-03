@@ -26,13 +26,13 @@ public class CacheRedis implements Cache
 	
 	public void put( CacheKey key, byte[] data, long max_ttl )
 	{
-		redis.cacheSet(app, key, data, max_ttl);
+		redis.cache().set(app, key, data, max_ttl);
 	}
 
 	@Override
 	public void put( CacheKey key, String data, long max_ttl )
 	{
-		redis.cacheSet(app, key, data, max_ttl);
+		redis.cache().set(app, key, data, max_ttl);
 	}
 
 	@Override
@@ -41,25 +41,25 @@ public class CacheRedis implements Cache
 		if ( key == null ) return;
 		if ( data == null ) { delete(key); return; }
 		
-		redis.cacheSet(app, key, data.serialize(Format.JSON), max_ttl);
+		redis.cache().set(app, key, data.serialize(Format.JSON), max_ttl);
 	}
 
 	@Override
 	public long getTTL( CacheKey key, long default_value )
 	{
-		return redis.cacheTTL(app, key, default_value);
+		return redis.cache().getTTL(app, key, default_value);
 	}
 
 	@Override
 	public byte[] getBytes( CacheKey key, byte[] default_value )
 	{
-		return redis.cacheGetBytes(app, key, default_value);
+		return redis.cache().getBytes(app, key, default_value);
 	}
 
 	@Override
 	public String getString( CacheKey key, String default_value )
 	{
-		return redis.cacheGetString(app, key, default_value);
+		return redis.cache().getString(app, key, default_value);
 	}
 
 	@Override
@@ -81,20 +81,20 @@ public class CacheRedis implements Cache
 	@Override
 	public void delete( CacheKey key )
 	{
-		redis.cacheDelete(app, key);
+		redis.cache().delete(app, key);
 	}
 
 	@Override
 	public void scan( CacheKey prefix, ScanOperation operation )
 	{
 		Validator.notNull(prefix, operation);
-		redis.scan(app, this, prefix, operation);
+		redis.cache().scan(app, this, prefix, operation);
 	}
 
 	@Override
 	public boolean exists( CacheKey key )
 	{
-		return redis.exists(app, key);
+		return redis.cache().exists(app, key);
 	}
 	
 }

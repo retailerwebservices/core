@@ -41,14 +41,14 @@ public class RedisTest extends StubTest
 		TestListener listener = new TestListener();
 		TestListener listener2 = new TestListener();
 		
-		redis.signalListen(app, TopicId.application_private, listener);
-		redis.signalListen(app, TopicId.application_private, listener2);
+		redis.signal().startListening(app, TopicId.application_private, listener);
+		redis.signal().startListening(app, TopicId.application_private, listener2);
 		
 		try { Thread.currentThread().sleep(250); } catch(Exception e) {}
 		
-		redis.signalSendAsync(app, TopicId.application_private, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(1)));
-		redis.signalSendAsync(app, TopicId.application_private, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(2)));
-		redis.signalSendAsync(app, TopicId.application_private, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(10)));
+		redis.signal().sendAsync(app, TopicId.application_private, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(1)));
+		redis.signal().sendAsync(app, TopicId.application_private, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(2)));
+		redis.signal().sendAsync(app, TopicId.application_private, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(10)));
 		
 		try { Thread.currentThread().sleep(500); } catch(Exception e) {}
 		
@@ -90,10 +90,10 @@ public class RedisTest extends StubTest
 			CacheKey key2 = new CacheKey("exist-test://two");
 
 
-			redis.cacheSet(app, key1, "Hello World", -1); 
+			redis.cache().set(app, key1, "Hello World", -1); 
 			
-			assert(redis.exists(app, key1) == true);
-			assert(redis.exists(app, key2) == false);
+			assert(redis.cache().exists(app, key1) == true);
+			assert(redis.cache().exists(app, key2) == false);
 		}
 		
 		// Test the acid string as a string value
@@ -101,9 +101,9 @@ public class RedisTest extends StubTest
 			CacheKey key = new CacheKey("acid-string-test://test-acid-string-value");
 			
 			String acid_string = createAcidString();
-			redis.cacheSet(app, key, acid_string, -1); 
+			redis.cache().set(app, key, acid_string, -1); 
 			
-			String from_cache = redis.cacheGetString(app, key, null);
+			String from_cache = redis.cache().getString(app, key, null);
 			
 			assert(Objects.equals(acid_string, from_cache));
 		}
@@ -113,7 +113,7 @@ public class RedisTest extends StubTest
 		{
 			CacheKey key = new CacheKey("get-unset-test://a-key-that-is-not-set");
 			
-			String from_cache = redis.cacheGetString(app, key, null);
+			String from_cache = redis.cache().getString(app, key, null);
 			
 			assert(Objects.equals(from_cache, null)); 
 		}
@@ -124,8 +124,8 @@ public class RedisTest extends StubTest
 			
 			CacheKey key = new CacheKey("acid-string-test://"+acid_string);
 			
-			redis.cacheSet(app, key, acid_string, -1); 
-			String from_cache = redis.cacheGetString(app, key, null);
+			redis.cache().set(app, key, acid_string, -1); 
+			String from_cache = redis.cache().getString(app, key, null);
 			
 			assert(Objects.equals(acid_string, from_cache));
 		}
@@ -134,8 +134,8 @@ public class RedisTest extends StubTest
 		{
 			CacheKey key = new CacheKey("ttl-test://test-ttl");
 			
-			redis.cacheSet(app, key, "Hello World", 10_000);
-			long value = redis.cacheTTL(app, key, -1);
+			redis.cache().set(app, key, "Hello World", 10_000);
+			long value = redis.cache().getTTL(app, key, -1);
 			
 			assert(value > 8_500);
 		}
@@ -144,13 +144,13 @@ public class RedisTest extends StubTest
 		{
 			CacheKey key = new CacheKey("ttl-test://test-ttl-unset");
 			
-			redis.cacheSet(app, key, "Hello World", -1);
-			long value = redis.cacheTTL(app, key, -1);
+			redis.cache().set(app, key, "Hello World", -1);
+			long value = redis.cache().getTTL(app, key, -1);
 			
 			assert(value == -1);
 			
-			redis.cacheSet(app, key, "Hello World", 0);
-			value = redis.cacheTTL(app, key, -1);
+			redis.cache().set(app, key, "Hello World", 0);
+			value = redis.cache().getTTL(app, key, -1);
 			
 			assert(value == -1);
 		}
@@ -159,24 +159,24 @@ public class RedisTest extends StubTest
 		{
 			CacheKey key = new CacheKey("ttl-delete://test-delete");
 			
-			redis.cacheSet(app, key, "Hello World", -1);
+			redis.cache().set(app, key, "Hello World", -1);
 			
-			String from_cache = redis.cacheGetString(app, key, null);
+			String from_cache = redis.cache().getString(app, key, null);
 			assert(Objects.equals(from_cache, "Hello World"));
 			
-			redis.cacheDelete(app, key);
+			redis.cache().delete(app, key);
 			
-			from_cache = redis.cacheGetString(app, key, null);
+			from_cache = redis.cache().getString(app, key, null);
 			
 			assert(Objects.equals(from_cache, null));
 			
 			// test delete on null data
-			redis.cacheSet(app, key, "Hello World", -1);
-			from_cache = redis.cacheGetString(app, key, null);
+			redis.cache().set(app, key, "Hello World", -1);
+			from_cache = redis.cache().getString(app, key, null);
 			assert(Objects.equals(from_cache, "Hello World"));
 			
-			redis.cacheSet(app, key, (String)null, -1);
-			from_cache = redis.cacheGetString(app, key, null);
+			redis.cache().set(app, key, (String)null, -1);
+			from_cache = redis.cache().getString(app, key, null);
 			assert(Objects.equals(from_cache, null));
 		}
 		
@@ -185,9 +185,9 @@ public class RedisTest extends StubTest
 			CacheKey key = new CacheKey("binary-data://test-binary-data");
 			byte data[] = createRandomBytes(1024*1024);
 			
-			redis.cacheSet(app, key, data, -1);
+			redis.cache().set(app, key, data, -1);
 			
-			byte from_cache[]  =redis.cacheGetBytes(app, key, null);
+			byte from_cache[]  =redis.cache().getBytes(app, key, null);
 			
 			assert(from_cache != null);
 			assert(Arrays.equals(data, from_cache));
@@ -201,12 +201,12 @@ public class RedisTest extends StubTest
 			{
 				CacheKey key = new CacheKey("scan-test://"+i);
 				scan_test.add(key);
-				redis.cacheSet(app, key, ""+i, -1);
+				redis.cache().set(app, key, ""+i, -1);
 			}
 			
 			AccumulateKeyScanOp op = new AccumulateKeyScanOp();
 			
-			redis.scan(app, null, new CacheKey("scan-test://"), op);
+			redis.cache().scan(app, null, new CacheKey("scan-test://"), op);
 			
 			assert(op.keys.size() == scan_test.size());
 			
@@ -217,14 +217,14 @@ public class RedisTest extends StubTest
 		{
 			CacheKey key = new CacheKey("ttl-test://test-ttl-expiration");
 			
-			redis.cacheSet(app, key, "Hello World", 1_000);
+			redis.cache().set(app, key, "Hello World", 1_000);
 			
-			String from_cache = redis.cacheGetString(app, key, null);
+			String from_cache = redis.cache().getString(app, key, null);
 			assert(Objects.equals(from_cache, "Hello World"));
 			
 			try { Thread.currentThread().sleep(2000); } catch(Exception e) {}
 			
-			from_cache = redis.cacheGetString(app, key, null);
+			from_cache = redis.cache().getString(app, key, null);
 			
 			assert(Objects.equals(from_cache, null));
 		}
@@ -248,8 +248,8 @@ public class RedisTest extends StubTest
 		{
 			CacheKey key = new CacheKey("live-test://test-one-key");
 			
-			redis.cacheSet(app, key, "hello world", -1);
-			String get_result = redis.cacheGetString(app, key, null);
+			redis.cache().set(app, key, "hello world", -1);
+			String get_result = redis.cache().getString(app, key, null);
 			
 			return get_result.equalsIgnoreCase("hello world");
 		}
