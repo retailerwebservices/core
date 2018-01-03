@@ -5,9 +5,9 @@ import org.jimmutable.cloud.storage.StorageKeyExtension;
 import org.jimmutable.core.utils.StringableTester;
 import org.junit.Test;
 
-public class CacheKeyElementTest extends StubTest
+public class CachePathElementTest extends StubTest
 {
-	private StringableTester<CacheKeyElement> tester = new StringableTester(new CacheKeyElement.MyConverter());
+	private StringableTester<CachePathElement> tester = new StringableTester(new CachePathElement.MyConverter());
 
 	@Test
 	public void testValid()

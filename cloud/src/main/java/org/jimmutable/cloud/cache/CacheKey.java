@@ -1,21 +1,25 @@
 package org.jimmutable.cloud.cache;
 
-import java.util.Arrays;
 import java.util.List;
 
-import org.jimmutable.core.fields.FieldArrayList;
-import org.jimmutable.core.fields.FieldList;
+import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
 
 /**
- * $messaging/
- * application-id/cache-path://key
  * 
- * Stringable, format [CacheKeyElement]/[CachekeyElement]/... (no practical
- * limit in length)
+ * Stringable, the format is path://name
  * 
- * ChacheKeyElement is lower case, numbers and - only
+ * Cache path(s) are / separated elements. Elements are normalized to lower case
+ * and limited to letters, numbers and dashes. There is no practical length
+ * limit on cache keys.
+ * 
+ * Name(s) can contain any character. Name(s) are trimmed (whitespace at the begging
+ * and ending whitespace deleted).  Name(s) are case sensitive
+ * 
+ * Examples of valid cache keys include
+ * 
+ * foo/bar://quz foo/bar://https://www.google.com foo://11248
  * 
  * @author kanej
  *
@@ -24,53 +28,32 @@ public class CacheKey extends Stringable
 {
 	static public final MyConverter CONVERTER = new MyConverter();
 	
-	private FieldList<CacheKeyElement> elements;
+	private CachePath path;
+	private String name;
 	
 	public CacheKey(String str)
 	{
 		super(str);
 	}
-
 	
 	public void normalize() 
 	{
-		normalizeTrim();
-		normalizeLowerCase();
 	}
 
-	
 	public void validate() 
 	{
 		Validator.notNull(getSimpleValue());
 		Validator.min(getSimpleValue().length(), 1);
 		
-		String arr[] = getSimpleValue().split("/");
-		elements = new FieldArrayList();
+		int idx = getSimpleValue().indexOf("://");
 		
-		for ( String element : arr )
-		{
-			element = element.trim();
-			if ( element.length() == 0 ) continue;
-			
-			elements.add(new CacheKeyElement(element));
-		}
+		if ( idx == -1 ) 
+			throw new ValidationException("Cache keys must contain a \"://\" to separate the cache path and the value");
 		
-		Validator.min(elements.size(), 1);
-		elements.freeze(); // freeze the elements
+		path = new CachePath(getSimpleValue().substring(0, idx));
+		name = getSimpleValue().substring(idx+3, getSimpleValue().length()).trim();
 		
-		// Normalize the string...
-		{
-			StringBuilder ret = new StringBuilder();
-			
-			for ( CacheKeyElement element : elements )
-			{
-				if ( ret.length() != 0 ) ret.append("/");
-				
-				ret.append(element);
-			}
-			
-			setValue(ret.toString());
-		}
+		setValue(path+"://"+name);
 	}
 	
 	static public class MyConverter extends Stringable.Converter<CacheKey>
@@ -88,43 +71,8 @@ public class CacheKey extends Stringable
 		}
 	}
 	
-	/**
-	 * Get the list of elements that make up the cache key
-	 * 
-	 * @return The list of elements that make up the cache key
-	 */
-	public List<CacheKeyElement> getSimpleElements() { return elements; }
-	
-	/**
-	 * Create the parent (e.g. the parent of foo/bar/baz is foo/bar
-	 * @param default_value The value to return if the key does not have a parent
-	 * 
-	 * @return The parent of the cache key, or default value if the cache key does not have a parent
-	 */
-	public CacheKey createParent(CacheKey default_value)
-	{
-		if ( !hasParent() ) return default_value;
-		
-		StringBuilder ret = new StringBuilder();
-		
-		for ( int i = 0; i < elements.size()-1; i++ )
-		{
-			CacheKeyElement element = elements.get(i);
-			
-			if ( ret.length() != 0 ) ret.append("/");
-			ret.append(element.toString());
-		}
-		
-		return new CacheKey(ret.toString());
-	}
-	
-	/**
-	 * Test to see if the current cache key has a parent. foo/bar has a parent (foo)
-	 * but foo does not have a parent.
-	 * 
-	 * @return true if the cache key has a parent, false otherwise.
-	 */
-	public boolean hasParent() { return elements.size() > 1; }
+	public CachePath getSimplePath() { return path; }
+	public String getSimpleName() { return name; }
 }
 
 
