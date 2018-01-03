@@ -34,12 +34,74 @@ public class RedisTest extends StubTest
 	}
 	
 	@Test
+	public void testQueue()
+	{ 
+		if ( !is_redis_live ) { System.out.println("Redis server not available, skipping queue unit test!"); return; }
+		
+		// Test overflow protection
+		{
+			TopicId topic = new TopicId("overflow-test");
+			
+			redis.queue().clear(app, topic);
+			assert(redis.queue().getQueueLength(app, topic, 0) == 0);
+			
+			for ( int i = 0; i < 20_000; i++ )
+				redis.queue().submit(app, topic, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(i)));
+			
+			assert(redis.queue().getQueueLength(app, topic, 0) < 20_000);
+			assert(redis.queue().getQueueLength(app, topic, 0) > 9_000);
+		}
+		
+		// Test fan out
+		{
+			TopicId topic = new TopicId("fan-out-test");
+			
+			redis.queue().clear(app, topic);
+			assert(redis.queue().getQueueLength(app, topic, 0) == 0);
+			
+			for ( int i = 0; i < 1_000; i++ )
+				redis.queue().submit(app, topic, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(i)));
+			
+			assert(redis.queue().getQueueLength(app, topic, 0) == 1_000);
+			
+			TestListener one = new TestListener(10);
+			TestListener two = new TestListener(10);
+			TestListener three = new TestListener(10);
+			TestListener four = new TestListener(10);
+			
+			redis.queue().startListening(app, topic, one, 1);
+			redis.queue().startListening(app, topic, two, 1);
+			redis.queue().startListening(app, topic, three, 1);
+			redis.queue().startListening(app, topic, four, 2);
+			
+			System.out.println("Testing fan out");
+			for ( int i = 0; i < 16; i++ )
+			{
+				try { Thread.currentThread().sleep(250); } catch(Exception e) {}
+				
+				System.out.println( 
+							String.format("%d, %d, %d, %d", one.ids.size(), two.ids.size(), three.ids.size(), four.ids.size())
+						);
+			}
+			
+			System.out.println();
+			
+			assert(redis.queue().getQueueLength(app, topic, 0) == 0);
+			assert(one.ids.size()+two.ids.size()+three.ids.size()+four.ids.size() == 1_000);
+			
+			assert(four.ids.size() > one.ids.size());
+			assert(four.ids.size() > two.ids.size());
+			assert(four.ids.size() > three.ids.size());
+		}
+	}
+	
+	@Test
 	public void testSignal()
 	{ 
-		if ( !is_redis_live ) { System.out.println("Redis server not available, skipping signal unit test!"); return; }
+		if ( true || !is_redis_live ) { System.out.println("Redis server not available, skipping signal unit test!"); return; }
 		
-		TestListener listener = new TestListener();
-		TestListener listener2 = new TestListener();
+		TestListener listener = new TestListener(0);
+		TestListener listener2 = new TestListener(0);
 		
 		redis.signal().startListening(app, TopicId.application_private, listener);
 		redis.signal().startListening(app, TopicId.application_private, listener2);
@@ -65,6 +127,13 @@ public class RedisTest extends StubTest
 	{
 		private Set<ObjectId> ids = new HashSet();
 		
+		private long sleep_time;
+		
+		public TestListener(long sleep_time)
+		{
+			this.sleep_time = sleep_time;
+		}
+		
 		@Override
 		public void onMessageReceived( StandardObject message )
 		{
@@ -73,8 +142,10 @@ public class RedisTest extends StubTest
 			StandardMessageOnUpsert upsert_message = (StandardMessageOnUpsert) message;
 			 
 			ids.add(upsert_message.getSimpleObjectId());
+			
+			if ( sleep_time > 0 )
+				try { Thread.currentThread().sleep(sleep_time); } catch(Exception e) {}
 		}
-		
 	}
 		
 	

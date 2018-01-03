@@ -1,6 +1,7 @@
 package org.jimmutable.cloud.cache.redis;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 
 import org.jimmutable.cloud.ApplicationId;
@@ -9,7 +10,6 @@ import org.jimmutable.cloud.cache.CacheKey;
 import org.jimmutable.cloud.cache.ScanOperation;
 import org.jimmutable.cloud.messaging.MessageListener;
 import org.jimmutable.cloud.messaging.TopicId;
-import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.threading.DaemonThreadFactory;
@@ -26,6 +26,9 @@ public class Redis
 {
 	private JedisPool pool;
 	
+	private ExecutorService pool_send = DaemonThreadFactory.createDaemonFixedThreadPool(1);
+	private ExecutorService pool_receive = DaemonThreadFactory.createDaemonFixedThreadPool(10);
+	
 	private RedisCache cache;
 	private RedisSignal signal;
 	private RedisQueue queue;
@@ -38,13 +41,15 @@ public class Redis
 	public Redis(String host, int port)
 	{
 		JedisPoolConfig config = new JedisPoolConfig();
-		config.setMaxTotal(100);
+		config.setMaxTotal(250);
 		config.setMaxIdle(1000 * 60);
 		config.setTestOnBorrow(false);
 		
 		
 		pool = new JedisPool(config, "localhost", 6379);
 		cache = new RedisCache();
+		queue = new RedisQueue();
+		signal = new RedisSignal();
 	}
 	
 	public RedisCache cache() { return cache; }
@@ -210,9 +215,6 @@ public class Redis
 	
 	public class RedisSignal
 	{
-		private ExecutorService pool_send = DaemonThreadFactory.createDaemonFixedThreadPool(1);
-		private ExecutorService pool_receive = DaemonThreadFactory.createDaemonFixedThreadPool(10);
-		
 		public void sendAsync(ApplicationId app, TopicId topic, StandardObject message)
 		{
 			pool_send.submit(new SignalSendRunnable(app,topic,message));
@@ -331,6 +333,143 @@ public class Redis
 	
 	public class RedisQueue
 	{
+		Random r = new Random();
 		
+		private String getKey(ApplicationId app, TopicId topic)
+		{
+			return "$queue/"+app+"/"+topic;
+		}
+		
+		public int getQueueLength(ApplicationId app, TopicId topic, int default_value)
+		{
+			if ( app == null || topic == null ) return default_value;
+			
+			try(Jedis jedis = pool.getResource();)
+			{
+				Long ret = jedis.llen(getKey(app,topic));
+				
+				if ( ret == null ) return default_value;
+				if ( ret.longValue() < 0 ) return default_value;
+				
+				return ret.intValue();
+			}
+		}
+		
+		public void clear(ApplicationId app, TopicId topic)
+		{
+			Validator.notNull(app,topic);
+			
+			try(Jedis jedis = pool.getResource();)
+			{
+				jedis.del(getKey(app,topic));
+			}
+		}
+		
+		public void submitAsync(ApplicationId app, TopicId topic, StandardObject message)
+		{
+			Validator.notNull(app, topic, message);
+			
+			Runnable send_task = new Runnable()
+			{
+				public void run() 
+				{
+					try(Jedis jedis = pool.getResource();)
+					{
+						jedis.lpush(getKey(app,topic), message.serialize(Format.JSON));
+						
+						if ( r.nextInt(100) == 52 ) // about once per one hundred inserts, trim to 10_000 elements, for performance
+						{
+							jedis.ltrim(getKey(app,topic), 0, 10_000);
+						}
+					}
+				}
+			};
+			
+			pool_send.submit(send_task);
+		}
+		
+		public void submit(ApplicationId app, TopicId topic, StandardObject message)
+		{
+			Validator.notNull(app, topic, message);
+			
+			try(Jedis jedis = pool.getResource();)
+			{
+				jedis.lpush(getKey(app,topic), message.serialize(Format.JSON));
+				
+				if ( r.nextInt(100) == 52 ) // about once per one hundred inserts, trim to 10_000 elements, for performance
+				{
+					jedis.ltrim(getKey(app,topic), 0, 10_000);
+				}
+			}
+		}
+		
+		public void startListening(ApplicationId app, TopicId topic, MessageListener listener, int num_worker_threads)
+		{
+			Validator.notNull(app, topic, listener);
+			
+			for ( int i = 0; i < num_worker_threads; i++ )
+			{
+				Thread t = new Thread(new ListenRunnable(app, topic, listener));
+				t.start();
+			}
+		}
+		
+		private class ListenRunnable implements Runnable
+		{
+			private ApplicationId app;
+			private TopicId topic;
+			private MessageListener listener;
+			
+			private ListenRunnable(ApplicationId app, TopicId topic, MessageListener listener) 
+			{
+				Validator.notNull(app,topic,listener);
+				
+				this.app = app;
+				this.topic = topic;
+				this.listener = listener;
+			}
+			
+			public void run()
+			{
+				while(true)
+				{
+					try
+					{
+						StandardObject message = popOneObject(null);
+						
+						if ( message == null ) 
+						{
+							// If there is no message, sleep for 1/2 second before trying again
+							try { Thread.currentThread().sleep(500); } catch(Exception e) {}
+							continue;
+						}
+						else
+						{
+							listener.onMessageReceived(message);
+						}
+					}
+					catch(Exception e)
+					{
+						e.printStackTrace();
+					}
+				}
+			}
+			
+			private StandardObject popOneObject(StandardObject default_value)
+			{
+				try(Jedis jedis = pool.getResource();)
+				{
+					String obj_str = jedis.rpop(getKey(app,topic));
+					
+					if ( obj_str == null ) return default_value;
+					
+					return StandardObject.deserialize(obj_str); 
+				}
+				catch(Exception e)
+				{
+					return default_value;
+				}
+			}
+		}
 	}
 }
