@@ -9,6 +9,9 @@ import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
 
 /**
+ * $messaging/
+ * application-id/cache-path://key
+ * 
  * Stringable, format [CacheKeyElement]/[CachekeyElement]/... (no practical
  * limit in length)
  * 
