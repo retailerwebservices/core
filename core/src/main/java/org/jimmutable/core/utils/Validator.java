@@ -154,6 +154,12 @@ public class Validator
 			throw new ValidationException("Value ("+value+") is above the maximum allowed value ("+maximum_valid_value+")");
 	}
 	
+	static public void lengthEquals(long value, int valid_value_length)
+	{
+		if (value != valid_value_length)
+			throw new ValidationException("Value ("+value+") is not equal to the allowed value ("+valid_value_length+")");
+	}
+	
 	/**
 	 * Guarantee that a collection contains no nulls (i.e. throw a
 	 * ValidationException if the collection contains one or more null values)
