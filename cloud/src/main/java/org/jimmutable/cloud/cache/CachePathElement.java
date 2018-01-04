@@ -13,11 +13,11 @@ import org.jimmutable.core.utils.Validator;
  * @author kanej
  *
  */
-public class CacheKeyElement extends Stringable
+public class CachePathElement extends Stringable
 {
 	static public final MyConverter CONVERTER = new MyConverter();
 	
-	public CacheKeyElement(String str)
+	public CachePathElement(String str)
 	{
 		super(str);
 	}
@@ -38,13 +38,13 @@ public class CacheKeyElement extends Stringable
 		Validator.containsOnlyValidCharacters(getSimpleValue(), Validator.LOWERCASE_LETTERS, Validator.NUMBERS, Validator.DASH);
 	}
 	
-	static public class MyConverter extends Stringable.Converter<CacheKeyElement>
+	static public class MyConverter extends Stringable.Converter<CachePathElement>
 	{
-		public CacheKeyElement fromString(String str, CacheKeyElement default_value)
+		public CachePathElement fromString(String str, CachePathElement default_value)
 		{
 			try
 			{
-				return new CacheKeyElement(str);
+				return new CachePathElement(str);
 			}
 			catch(Exception e)
 			{

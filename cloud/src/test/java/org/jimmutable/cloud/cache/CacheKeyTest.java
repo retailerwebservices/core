@@ -1,27 +1,27 @@
 package org.jimmutable.cloud.cache;
 
-import org.jimmutable.cloud.StubTest;
 import org.jimmutable.core.utils.StringableTester;
 import org.junit.Test;
 
-public class CacheKeyTest extends StubTest
+public class CacheKeyTest
 {
 	private StringableTester<CacheKey> tester = new StringableTester(new CacheKey.MyConverter());
 
 	@Test
 	public void testValid()
 	{
-		tester.assertValid("foo", "foo");
-		tester.assertValid("FOO", "foo");
-
-		tester.assertValid("FOO-BAR-123", "foo-bar-123");
-		tester.assertValid("F", "f");
+		tester.assertValid("foo://bar", "foo://bar");
+		tester.assertValid("foo:// bar ", "foo://bar");
+		tester.assertValid("foo:// BaZ ", "foo://BaZ");
 		
-		tester.assertValid("/foo/bar", "foo/bar");
-		tester.assertValid("/FOO/BAR/", "foo/bar");
-		tester.assertValid("///FOO////BAR/////", "foo/bar");
+		tester.assertValid("/foo://bar", "foo://bar");
+		tester.assertValid("/foo//://bar", "foo://bar");
+		tester.assertValid("/FOO//://bar", "foo://bar");
 		
-		tester.assertValid("///foo-bar////baz-quz2/////", "foo-bar/baz-quz2");
+		tester.assertValid("/foo/bar/baz://one", "foo/bar/baz://one");
+		tester.assertValid("FOO////BAR/////BAZ://one", "foo/bar/baz://one");
+		
+		tester.assertValid("foo:// https://www.google.com/index?p1=2 ", "foo://https://www.google.com/index?p1=2");
 	}
 
 	@Test
@@ -29,7 +29,12 @@ public class CacheKeyTest extends StubTest
 	{
 		tester.assertInvalid(null);
 		tester.assertInvalid("");
+		tester.assertInvalid("/foo");
+		tester.assertInvalid("foo/");
 		tester.assertInvalid("foo.bar");
-		tester.assertInvalid("/");
+		
+		tester.assertInvalid("://foo");
+		tester.assertInvalid("bar:baz://foo");
+		tester.assertInvalid("$messaging/foo/bar://foo");
 	}
 }

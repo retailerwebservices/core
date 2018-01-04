@@ -2,68 +2,37 @@ package org.jimmutable.cloud.cache;
 
 import java.nio.charset.StandardCharsets;
 
+import org.jimmutable.cloud.ApplicationId;
+import org.jimmutable.cloud.cache.redis.Redis;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.utils.Validator;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 
 public class CacheRedis implements Cache
 { 
-	private JedisPool pool;
+	private Redis redis;
+	private ApplicationId app;
 	
-	public CacheRedis()
+	public CacheRedis(ApplicationId app, Redis redis)
 	{
-		this("localhost", 6379);
-	}
-	
-	public CacheRedis(String host, int port)
-	{
-		JedisPoolConfig config = new JedisPoolConfig();
-		config.setMaxTotal(100);
-		config.setMaxIdle(1000 * 60);
-		config.setTestOnBorrow(false);
-		
-		
-		pool = new JedisPool(config, "localhost", 6379);
-	}
-	
-	private void expire(Jedis jedis, CacheKey key, long max_ttl)
-	{
-		if ( jedis == null || key == null ) return;
-		
-		if ( max_ttl <= 0 ) return;
-		jedis.expire(key.toString(), (int)(max_ttl/1000l));
+		Validator.notNull(redis);
+		this.redis = redis;
+		this.app = app;
 	}
 	
 	public void put( CacheKey key, byte[] data, long max_ttl )
 	{
-		if ( key == null ) return;
-		if ( data == null ) { delete(key); return; }
-		
-		try(Jedis jedis = pool.getResource();)
-		{
-			jedis.set(key.toString().getBytes(StandardCharsets.UTF_8), data);
-			expire(jedis,key,max_ttl);
-		}
-		
+		redis.cache().set(app, key, data, max_ttl);
 	}
 
 	@Override
 	public void put( CacheKey key, String data, long max_ttl )
 	{
-		if ( key == null ) return;
-		if ( data == null ) { delete(key); return; }
-		
-		try(Jedis jedis = pool.getResource();)
-		{
-			jedis.set(key.toString(), data);
-			expire(jedis,key,max_ttl);
-		}
+		redis.cache().set(app, key, data, max_ttl);
 	}
 
 	@Override
@@ -72,60 +41,25 @@ public class CacheRedis implements Cache
 		if ( key == null ) return;
 		if ( data == null ) { delete(key); return; }
 		
-		put(key, data.serialize(Format.JSON), max_ttl);
-	}
-
-	@Override
-	public boolean exists( CacheKey key )
-	{
-		if ( key == null ) return false;
-		
-		try(Jedis jedis = pool.getResource();)
-		{
-			return jedis.exists(key.toString());
-		}
+		redis.cache().set(app, key, data.serialize(Format.JSON), max_ttl);
 	}
 
 	@Override
 	public long getTTL( CacheKey key, long default_value )
 	{
-		if ( key == null ) return default_value;
-		
-		try(Jedis jedis = pool.getResource();)
-		{
-			long ret = jedis.ttl(key.toString());
-			if ( ret <= 0 ) return default_value;
-			
-			return ret*1000;
-		}
+		return redis.cache().getTTL(app, key, default_value);
 	}
 
 	@Override
 	public byte[] getBytes( CacheKey key, byte[] default_value )
 	{
-		if ( key == null ) return default_value;
-		
-		try(Jedis jedis = pool.getResource();)
-		{
-			byte ret[] = jedis.get(key.toString().getBytes(StandardCharsets.UTF_8));
-			
-			if ( ret == null ) return default_value;
-			return ret;
-		}
+		return redis.cache().getBytes(app, key, default_value);
 	}
 
 	@Override
 	public String getString( CacheKey key, String default_value )
 	{
-		if ( key == null ) return default_value;
-		
-		try(Jedis jedis = pool.getResource();)
-		{
-			String ret = jedis.get(key.toString());
-			if ( ret == null ) return default_value;
-			
-			return ret;
-		}
+		return redis.cache().getString(app, key, default_value);
 	}
 
 	@Override
@@ -147,51 +81,20 @@ public class CacheRedis implements Cache
 	@Override
 	public void delete( CacheKey key )
 	{
-		if ( key == null ) return;
-		
-		try(Jedis jedis = pool.getResource();)
-		{
-			jedis.del(key.toString());
-		}
+		redis.cache().delete(app, key);
 	}
 
 	@Override
 	public void scan( CacheKey prefix, ScanOperation operation )
 	{
 		Validator.notNull(prefix, operation);
-		try(Jedis jedis = pool.getResource();)
-		{
-			ScanParams params = new ScanParams();
-			
-			if ( prefix != null )
-				params = params.match(prefix+"*");
-			
-			params.count(100);
-			
-			String cursor = "0";
-			
-			while(true)
-			{
-				ScanResult<String> result = jedis.scan(cursor, params);
-				
-				for ( String key : result.getResult() )
-				{
-					try
-					{
-						operation.performOperation(this, new CacheKey(key));
-					}
-					catch(Exception e)
-					{
-						
-					}
-				}
-				
-				cursor = result.getStringCursor();
-				if ( cursor.equals("0") ) break;
-			}
-		}
-		
+		redis.cache().scan(app, this, prefix, operation);
 	}
-	
+
+	@Override
+	public boolean exists( CacheKey key )
+	{
+		return redis.cache().exists(app, key);
+	}
 	
 }
