@@ -14,6 +14,7 @@ abstract public class StringableTest extends TestCase
 		super( testName );
 	}
 	
+	
 	public void assertNotValid(String src_code)
 	{
 		try 
