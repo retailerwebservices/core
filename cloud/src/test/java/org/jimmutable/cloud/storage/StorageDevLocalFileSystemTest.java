@@ -3,6 +3,7 @@ package org.jimmutable.cloud.storage;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -92,8 +93,8 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 		StorageMetadata metadata = sdlfs.getObjectMetadata(storage_key, null);
 
 		// only check against the length of bytes, as the file will get wiped after the test		
-		assertTrue(metadata != null);
-		assertTrue(metadata.getSimpleSize() == test_message.length());
+		assertNotNull(metadata);
+		assertEquals(metadata.getSimpleSize(), test_message.length());
 	}
 
 	private static String readFile(File f)
