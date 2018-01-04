@@ -10,6 +10,8 @@ import org.jimmutable.cloud.cache.CacheKey;
 import org.jimmutable.cloud.cache.ScanOperation;
 import org.jimmutable.cloud.messaging.MessageListener;
 import org.jimmutable.cloud.messaging.TopicId;
+import org.jimmutable.cloud.new_messaging.signal.SignalListener;
+import org.jimmutable.cloud.new_messaging.signal.SignalTopicId;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.threading.DaemonThreadFactory;
@@ -215,12 +217,17 @@ public class Redis
 	
 	public class RedisSignal
 	{
-		public void sendAsync(ApplicationId app, TopicId topic, StandardObject message)
+		public void sendAsync(ApplicationId app, SignalTopicId topic, StandardObject message)
 		{
 			pool_send.submit(new SignalSendRunnable(app,topic,message));
 		}
 		
-		public void startListening(ApplicationId app, TopicId topic, MessageListener listener)
+		public void send(ApplicationId app, SignalTopicId topic, StandardObject message)
+		{
+			new SignalSendRunnable(app,topic,message).run();
+		}
+		
+		public void startListening(ApplicationId app, SignalTopicId topic, SignalListener listener)
 		{
 			Thread t = new Thread(new ListenRunnable(app,topic,listener));
 			t.start();
@@ -229,10 +236,10 @@ public class Redis
 		private class SignalSendRunnable implements Runnable
 		{
 			ApplicationId app;
-			TopicId topic;
+			SignalTopicId topic;
 			StandardObject message;
 			
-			private SignalSendRunnable(ApplicationId app, TopicId topic, StandardObject message)
+			private SignalSendRunnable(ApplicationId app, SignalTopicId topic, StandardObject message)
 			{
 				Validator.notNull(app, topic, message);
 				
@@ -254,10 +261,10 @@ public class Redis
 		private class ListenRunnable implements Runnable
 		{
 			private ApplicationId app;
-			private TopicId topic;
-			private MessageListener listener;
+			private SignalTopicId topic;
+			private SignalListener listener;
 			
-			private ListenRunnable(ApplicationId app, TopicId topic, MessageListener listener) 
+			private ListenRunnable(ApplicationId app, SignalTopicId topic, SignalListener listener) 
 			{
 				Validator.notNull(app,topic,listener);
 				
@@ -288,9 +295,9 @@ public class Redis
 		
 		private class ListenSubscriber extends JedisPubSub
 		{
-			private MessageListener listener;
+			private SignalListener listener;
 			
-			public ListenSubscriber(MessageListener listener)
+			public ListenSubscriber(SignalListener listener)
 			{
 				Validator.notNull(listener);
 				
@@ -314,10 +321,10 @@ public class Redis
 		
 		private class OnMessageReceivedRunnable implements Runnable
 		{
-			private MessageListener listener;
+			private SignalListener listener;
 			private StandardObject message;
 			
-			public OnMessageReceivedRunnable(MessageListener listener, StandardObject message)
+			public OnMessageReceivedRunnable(SignalListener listener, StandardObject message)
 			{
 				Validator.notNull(listener, message);
 				this.listener = listener;

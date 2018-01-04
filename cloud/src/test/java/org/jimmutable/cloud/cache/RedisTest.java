@@ -14,6 +14,8 @@ import org.jimmutable.cloud.cache.redis.Redis;
 import org.jimmutable.cloud.messaging.MessageListener;
 import org.jimmutable.cloud.messaging.StandardMessageOnUpsert;
 import org.jimmutable.cloud.messaging.TopicId;
+import org.jimmutable.cloud.new_messaging.signal.SignalListener;
+import org.jimmutable.cloud.new_messaging.signal.SignalTopicId;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
@@ -98,19 +100,21 @@ public class RedisTest extends StubTest
 	@Test
 	public void testSignal()
 	{ 
-		if ( true || !is_redis_live ) { System.out.println("Redis server not available, skipping signal unit test!"); return; }
+		if ( !is_redis_live ) { System.out.println("Redis server not available, skipping signal unit test!"); return; }
 		
 		TestListener listener = new TestListener(0);
 		TestListener listener2 = new TestListener(0);
 		
-		redis.signal().startListening(app, TopicId.application_private, listener);
-		redis.signal().startListening(app, TopicId.application_private, listener2);
+		SignalTopicId topic = new SignalTopicId("test");
+		
+		redis.signal().startListening(app, topic, listener);
+		redis.signal().startListening(app, topic, listener2);
 		
 		try { Thread.currentThread().sleep(250); } catch(Exception e) {}
 		
-		redis.signal().sendAsync(app, TopicId.application_private, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(1)));
-		redis.signal().sendAsync(app, TopicId.application_private, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(2)));
-		redis.signal().sendAsync(app, TopicId.application_private, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(10)));
+		redis.signal().sendAsync(app, topic, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(1)));
+		redis.signal().sendAsync(app, topic, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(2)));
+		redis.signal().sendAsync(app, topic, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(10)));
 		
 		try { Thread.currentThread().sleep(500); } catch(Exception e) {}
 		
@@ -123,7 +127,7 @@ public class RedisTest extends StubTest
 		assert(listener2.ids.contains(new ObjectId(10)));
 	}
 	
-	static private class TestListener implements MessageListener
+	static private class TestListener implements SignalListener, MessageListener
 	{
 		private Set<ObjectId> ids = new HashSet();
 		
@@ -152,7 +156,7 @@ public class RedisTest extends StubTest
 	@Test
 	public void testCache()
 	{ 
-		if ( true || !is_redis_live ) { System.out.println("Redis server not available, skipping cache unit test!"); return; }
+		if ( !is_redis_live ) { System.out.println("Redis server not available, skipping cache unit test!"); return; }
 		
 
 		// Test exists
