@@ -31,23 +31,29 @@ public class StubStorage implements IStorage
 		throw new RuntimeException(ERROR_MESSAGE);
 	}
 
-	@Override
-	public Iterable<StorageKey> listComplex(Kind kind, Iterable<StorageKey> default_value)
-	{
-		throw new RuntimeException(ERROR_MESSAGE);
-	}
-
-	@Override
-	public Iterable<StorageKey> listComplex(Kind kind, StorageKeyName prefix, Iterable<StorageKey> default_value)
-	{
-		throw new RuntimeException(ERROR_MESSAGE);
-	}
-	
-	@Override
-	public Iterable<ObjectIdStorageKey> listAllObjectIdsComplex(Kind kind, Iterable<ObjectIdStorageKey> default_value)
-	{
-		throw new RuntimeException(ERROR_MESSAGE);
-	}
+    @Override
+    public void scan(Kind kind, StorageKeyHandler handler, int num_handler_threads)
+    {
+        throw new RuntimeException(ERROR_MESSAGE);
+    }
+    
+    @Override
+    public void scan(Kind kind, StorageKeyName prefix, StorageKeyHandler handler, int num_handler_threads)
+    {
+        throw new RuntimeException(ERROR_MESSAGE);
+    }
+    
+    @Override
+    public void scanForObjectIds(Kind kind, ObjectIdStorageKeyHandler handler, int num_handler_threads)
+    {
+        throw new RuntimeException(ERROR_MESSAGE);
+    }
+    
+    @Override
+    public void scanForObjectIds(Kind kind, StorageKeyName prefix, ObjectIdStorageKeyHandler handler, int num_handler_threads)
+    {
+        throw new RuntimeException(ERROR_MESSAGE);
+    }
 	
 	@Override
 	public boolean upsert(Storable obj, Format format)

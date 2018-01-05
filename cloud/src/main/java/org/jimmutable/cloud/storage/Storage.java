@@ -1,12 +1,10 @@
 package org.jimmutable.cloud.storage;
 
-import org.jimmutable.core.utils.Validator;
 import org.apache.logging.log4j.LogManager;
-import org.jimmutable.cloud.ApplicationId;
-import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
+import org.jimmutable.core.utils.Validator;
 
 /**
  *
@@ -67,6 +65,16 @@ public abstract class Storage implements IStorage
 		return delete(obj.createStorageKey());
 	}
 
+    public void scan(Kind kind, StorageKeyHandler handler, int num_handler_threads)
+    {
+        scan(kind, null, handler, num_handler_threads);
+    }
+    
+    public void scanForObjectIds(Kind kind, ObjectIdStorageKeyHandler handler, int num_handler_threads)
+    {
+        scanForObjectIds(kind, null, handler, num_handler_threads);
+    }
+	
 	public boolean isReadOnly()
 	{
 		return is_readonly;

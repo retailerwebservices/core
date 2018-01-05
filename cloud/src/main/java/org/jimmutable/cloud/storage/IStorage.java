@@ -4,7 +4,7 @@ import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.serialization.Format;
 
 /**
- * An interface representation of Storage. Abstracts notions of things like exists, upsert, deletions, etc.
+ * An interface representation of Storage. s notions of things like exists, upsert, deletions, etc.
  * @author salvador.salazar
  *
  */
@@ -38,7 +38,7 @@ public interface IStorage
 	 * @return Byte array of Stored object if Object was found, otherwise
 	 *         default_value
 	 */
-	public abstract byte[] getCurrentVersion(StorageKey key, byte[] default_value);
+	public byte[] getCurrentVersion(StorageKey key, byte[] default_value);
 
 	/**
 	 * @param key
@@ -48,6 +48,23 @@ public interface IStorage
 	public boolean delete(StorageKey key);
 
 	/**
+	 * All scanning is done in a separate thread from the caller.
+	 * Returns immediately.
+	 * New handler thread pool spun up for each invocation.
+	 * All threads end automatically when scanning is complete.
+	 * There is no way to cancel this operation.
+	 * 
+	 * @param kind
+	 * @param handler
+	 * @param num_handler_threads
+	 */
+    public void scan(Kind kind, StorageKeyHandler handler, int num_handler_threads);
+	public void scan(Kind kind, StorageKeyName prefix, StorageKeyHandler handler, int num_handler_threads);
+    
+    public void scanForObjectIds(Kind kind, ObjectIdStorageKeyHandler handler, int num_handler_threads);
+	public void scanForObjectIds(Kind kind, StorageKeyName prefix, ObjectIdStorageKeyHandler handler, int num_handler_threads);
+	
+	/**
 	 * @param kind
 	 *            The kind of the storable object you are looking for
 	 * @param default_value
@@ -55,7 +72,6 @@ public interface IStorage
 	 * @return If any StorageKeys were found, that Collection of objects will be
 	 *         returned, Otherwise the Default_value that was passed in.
 	 */
-	public abstract Iterable<StorageKey> listComplex(Kind kind, Iterable<StorageKey> default_value);
 
 	/**
 	 * @param kind
@@ -67,9 +83,26 @@ public interface IStorage
 	 * @return If any StorageKeys were found, that Collection of objects will be
 	 *         returned, Otherwise the Default_value that was passed in.
 	 */
-	public Iterable<StorageKey> listComplex(Kind kind, StorageKeyName prefix, Iterable<StorageKey> default_value);
 	
-	public Iterable<ObjectIdStorageKey> listAllObjectIdsComplex(Kind kind, Iterable<ObjectIdStorageKey> default_value);
+    /**
+     * @param kind
+     *            The kind of the storable object you are looking for
+     * @param default_value
+     *            the value you want returned if nothing is found.
+     * @return If any StorageKeys were found, that Collection of objects will be
+     *         returned, Otherwise the Default_value that was passed in.
+     */
+
+    /**
+     * @param kind
+     *            The kind of the storable object you are looking for
+     * @param prefix
+     *          The prefix to filter against
+     * @param default_value
+     *            the value you want returned if nothing is found.
+     * @return If any StorageKeys were found, that Collection of objects will be
+     *         returned, Otherwise the Default_value that was passed in.
+     */
 
 	public StorageMetadata getObjectMetadata(StorageKey key, StorageMetadata default_value);
 

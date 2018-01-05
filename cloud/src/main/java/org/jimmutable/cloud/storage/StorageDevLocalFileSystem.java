@@ -4,13 +4,21 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.nio.file.FileVisitOption;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
-import java.util.List;
+import java.util.EnumSet;
+import java.util.function.Consumer;
 
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.common.Kind;
+import org.jimmutable.core.threading.OperationPool;
+import org.jimmutable.core.threading.OperationRunnable;
 import org.jimmutable.core.utils.Validator;
 
 public class StorageDevLocalFileSystem extends Storage
@@ -145,126 +153,171 @@ public class StorageDevLocalFileSystem extends Storage
 		}
 	}
 
-	/**
-	 * @param kind
-	 *            The kind of the storable object you are looking for
-	 * @param default_value
-	 *            the value you want returned if nothing is found.
-	 * @return If any StorageKeys were found, that Collection of objects will be
-	 *         returned, Otherwise the Default_value that was passed in.
-	 */
-	@Override
-	public Iterable<StorageKey> listComplex(Kind kind, Iterable<StorageKey> default_value)
+    /**
+     * Retrieves the ObjectMetadata for this key param. For StorageDevLocalFileSystem, the last modified is checked from disk every time this method is called.
+     * Further, the etag is simply the last modified timestamp on the file as well.
+     * 
+     * @Override
+     */
+    public StorageMetadata getObjectMetadata(StorageKey key, StorageMetadata default_value)
+    {
+        File f = new File(root + "/" + key.toString());
+        if ( !f.exists() || f.isDirectory() )
+        {
+            return default_value;
+        }
+        
+        long last_modified = f.lastModified();
+        long size = f.length();
+
+        Builder builder = new Builder(StorageMetadata.TYPE_NAME);
+        builder.set(StorageMetadata.FIELD_LAST_MODIFIED, last_modified);
+        builder.set(StorageMetadata.FIELD_SIZE, size);
+
+        return (StorageMetadata) builder.create(null);
+    }
+
+    @Override
+	public void scan(final Kind kind, final StorageKeyName prefix, final StorageKeyHandler handler, final int num_handler_threads)
 	{
-		return (Iterable<StorageKey>) listComplexIter(kind, null, default_value, false);
+	    scanImpl(kind, prefix, handler, num_handler_threads, false);
 	}
 	
-	/**
-	 * @param kind
-	 *            The kind of the storable object you are looking for
-	 * @param prefix
-	 * 			The prefix to filter against
-	 * @param default_value
-	 *            the value you want returned if nothing is found.
-	 * @return If any StorageKeys were found, that Collection of objects will be
-	 *         returned, Otherwise the Default_value that was passed in.
-	 * @Override
-	 */
-	public Iterable<StorageKey> listComplex(Kind kind, StorageKeyName prefix, Iterable<StorageKey> default_value)
+    @Override
+    public void scanForObjectIds(final Kind kind, final StorageKeyName prefix, final ObjectIdStorageKeyHandler handler, final int num_handler_threads)
+    {
+        scanImpl(kind, prefix, handler, num_handler_threads, true);
+    }
+    
+    private void scanImpl(final Kind kind, final StorageKeyName prefix, final StorageKeyHandler handler, final int num_handler_threads, final boolean only_object_ids)
+    {
+        Scanner scanner = new Scanner(kind, prefix, false);
+        OperationPool pool = new OperationPool(scanner, num_handler_threads);
+        
+        scanner.setSink((StorageKey key) ->
+        {
+            pool.submitOperation(new StorageKeyHandlerWorker(handler, key));
+        });
+        
+        new Thread(pool).start();
+        // return immediately
+    }
+    
+    static private class StorageKeyHandlerWorker extends OperationRunnable
+    {
+        private final StorageKeyHandler handler;
+        private final StorageKey key;
+        
+        public StorageKeyHandlerWorker(final StorageKeyHandler handler, final StorageKey key)
+        {
+            this.handler = handler;
+            this.key = key;
+        }
+        
+        @Override
+        protected Result performOperation() throws Exception
+        {
+            if (null == handler) return Result.SUCCESS;
+            
+            handler.handle(key);
+            
+            return Result.SUCCESS;
+        }
+    }
+
+    /**
+     * This class does the main listing operation for scan*.
+     * It runs in it's own thread and throws each StorageKey it
+     * finds into another OperationRunnable running in a common
+     * pool.
+     *
+     * @author Jeff Dezso
+     */
+	private class Scanner extends OperationRunnable
 	{
-		return (Iterable<StorageKey>) listComplexIter(kind, prefix, default_value, false);
-	}
-	
-	/**
-	 * @param StorageKey
-	 *            The prefix of the storable object you are looking for
-	 * @param default_value
-	 *            the value you want returned if nothing is found.
-	 * @return If any StorageKeys were found, that Collection of objects will be
-	 *         returned, Otherwise the Default_value that was passed in.
-	 */
-	@Override
-	public Iterable<ObjectIdStorageKey> listAllObjectIdsComplex(Kind kind, Iterable<ObjectIdStorageKey> default_value)
-	{
-		return (Iterable<ObjectIdStorageKey>) listComplexIter(kind, null, default_value, true);
-	}
+	    private final Kind kind;
+	    private final StorageKeyName prefix;
+	    private final boolean only_object_ids;
+        
+	    private Consumer<StorageKey> sink;
+	    
+	    public Scanner(final Kind kind, final StorageKeyName prefix, final boolean only_object_ids)
+	    {
+	        Validator.notNull(kind);
+	        
+	        this.kind = kind;
+	        this.prefix = prefix;
+	        this.only_object_ids = only_object_ids;
+	    }
+	    
+        @Override
+        protected Result performOperation() throws Exception
+        {
+            Validator.notNull(sink);
+            
+            final File folder = new File(root.getAbsolutePath() + "/" + kind.getSimpleValue());
+            
+            Files.walkFileTree(folder.toPath(), EnumSet.noneOf(FileVisitOption.class), 1, new Walker());
+            
+            return shouldStop() ? Result.STOPPED : Result.SUCCESS;
+        }
+        
+        /**
+         * The sink has to be set after construction to avoid a race condition
+         * between construction of the OperationPool and construction the seed
+         * OperationRunnable
+         * 
+         * @param handler
+         */
+        public void setSink(Consumer<StorageKey> sink)
+        {
+            this.sink = sink;
+        }
+        
+	    private class Walker extends SimpleFileVisitor<Path>
+	    {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
+            {
+                if (shouldStop()) return FileVisitResult.TERMINATE;
+                
+                Validator.notNull(file); 
+                Validator.notNull(attrs);
+                
+                String[] file_name_and_ext = file.getFileName().toString().split("\\.");
 
-	/**
-	 * Private method that lists all files from the local env
-	 * @param kind
-	 * @param prefix
-	 * @param default_value
-	 * @param only_object_ids
-	 * @return
-	 */
-	private Iterable<? extends StorageKey> listComplexIter(Kind kind, StorageKeyName prefix, Iterable<? extends StorageKey> default_value, boolean only_object_ids)
-	{
-		Validator.notNull(kind);
-		File folder = new File(root.getAbsolutePath() + "/" + kind.getSimpleValue());
-		File[] list_of_files = folder.listFiles();
-		List<StorageKey> keys = new ArrayList<>();
-		for (int i = 0; i < list_of_files.length; i++)
-		{
-			if (list_of_files[i].isFile())
-			{
-				String[] file_name_and_ext = list_of_files[i].getName().split("\\."); 
+                if (file_name_and_ext.length < 2)
+                {
+                    System.err.println("Scanner error with file: " + file);
+                    return FileVisitResult.CONTINUE;
+                }
 
-				if (file_name_and_ext.length < 2)
-				{
-					System.err.println("listComplex error with file: " + list_of_files[i]);
-					continue;
-				}
+                StorageKeyName name = new StorageKeyName(file_name_and_ext[0]);
 
-				StorageKeyName name = new StorageKeyName(file_name_and_ext[0]);
+                if (prefix != null)
+                {
+                    if (! name.getSimpleValue().startsWith(prefix.getSimpleValue()) )
+                    {
+                        return FileVisitResult.CONTINUE;
+                    }
+                }
 
-				if (prefix != null)
-				{
-					if ( !name.getSimpleValue().startsWith(prefix.getSimpleValue()) )
-					{
-						continue;
-					}
-				}
+                String key = kind + "/" + file.getFileName();
 
-				String key = kind + "/" + list_of_files[i].getName();
-
-				if (name.isObjectId())
-				{
-					keys.add(new ObjectIdStorageKey(key));
-				}
-				else
-				{
-					if (!only_object_ids)
-					{
-						keys.add(new GenericStorageKey(key));
-					}
-				}
-			}
-		}
-		
-		return keys;
-	}
-
-	/**
-	 * Retrieves the ObjectMetadata for this key param. For StorageDevLocalFileSystem, the last modified is checked from disk every time this method is called.
-	 * Further, the etag is simply the last modified timestamp on the file as well.
-	 * 
-	 * @Override
-	 */
-	public StorageMetadata getObjectMetadata(StorageKey key, StorageMetadata default_value)
-	{
-		File f = new File(root + "/" + key.toString());
-		if ( !f.exists() || f.isDirectory() )
-		{
-			return default_value;
-		}
-		
-		long last_modified = f.lastModified();
-		long size = f.length();
-
-		Builder builder = new Builder(StorageMetadata.TYPE_NAME);
-		builder.set(StorageMetadata.FIELD_LAST_MODIFIED, last_modified);
-		builder.set(StorageMetadata.FIELD_SIZE, size);
-
-		return (StorageMetadata) builder.create(null);
+                if (name.isObjectId())
+                {
+                    sink.accept(new ObjectIdStorageKey(key));
+                }
+                else
+                {
+                    if (! only_object_ids)
+                    {
+                        sink.accept(new GenericStorageKey(key));
+                    }
+                }
+                
+                return FileVisitResult.CONTINUE;
+            }
+	    }
 	}
 }
