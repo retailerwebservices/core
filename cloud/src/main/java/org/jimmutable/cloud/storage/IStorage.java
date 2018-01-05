@@ -48,63 +48,99 @@ public interface IStorage
 	public boolean delete(StorageKey key);
 
 	/**
-	 * All scanning is done in a separate thread from the caller.
-	 * Returns immediately.
-	 * New handler thread pool spun up for each invocation.
-	 * All threads end automatically when scanning is complete.
-	 * There is no way to cancel this operation.
+	 * Scan the {@code IStorage} system for all keys of {@link Kind} {@code kind}.
+	 * Processing of the found keys is done in a managed thread pool. The thread pool is
+	 * entirely managed by the {@code scan} implementation, and the call to {@code scan}
+	 * blocks until all scanning <b>and</b> processing is completed.
 	 * 
-	 * @param kind
-	 * @param handler
-	 * @param num_handler_threads
-	 * @return true if completed normally, false otherwise (e.g. error)
-	 */
-    public boolean scan(Kind kind, StorageKeyHandler handler, int num_handler_threads);
-	public boolean scan(Kind kind, StorageKeyName prefix, StorageKeyHandler handler, int num_handler_threads);
-    
-    public boolean scanForObjectIds(Kind kind, StorageKeyHandler handler, int num_handler_threads);
-	public boolean scanForObjectIds(Kind kind, StorageKeyName prefix, StorageKeyHandler handler, int num_handler_threads);
-	
-	/**
-	 * @param kind
-	 *            The kind of the storable object you are looking for
-	 * @param default_value
-	 *            the value you want returned if nothing is found.
-	 * @return If any StorageKeys were found, that Collection of objects will be
-	 *         returned, Otherwise the Default_value that was passed in.
-	 */
-
-	/**
-	 * @param kind
-	 *            The kind of the storable object you are looking for
-	 * @param prefix
-	 * 			The prefix to filter against
-	 * @param default_value
-	 *            the value you want returned if nothing is found.
-	 * @return If any StorageKeys were found, that Collection of objects will be
-	 *         returned, Otherwise the Default_value that was passed in.
-	 */
-	
-    /**
      * @param kind
      *            The kind of the storable object you are looking for
-     * @param default_value
-     *            the value you want returned if nothing is found.
-     * @return If any StorageKeys were found, that Collection of objects will be
-     *         returned, Otherwise the Default_value that was passed in.
-     */
-
+     * @param handler
+     *            A callback that will be called for each found storage key.
+     *            It is okay to do heavyweight processing in this handler, since
+     *            it will run in a thread pool managed by the {@code IStorage}
+     *            implementation.
+     * @param num_handler_threads
+     *            The number of worker threads that will be used to process found storage keys
+     * 
+     * @return {@code true} if the scan operation completed normally.
+     *         {@code false} otherwise (e.g. encountered an error).
+	 */
+    public boolean scan(Kind kind, StorageKeyHandler handler, int num_handler_threads);
+    
     /**
+     * Scan the {@code IStorage} system for all keys of {@link Kind} {@code kind}.
+     * Processing of the found keys is done in a managed thread pool. The thread pool is
+     * entirely managed by the {@code scan} implementation, and the call to {@code scan}
+     * blocks until all scanning <b>and</b> processing is completed.
+     * 
      * @param kind
      *            The kind of the storable object you are looking for
      * @param prefix
-     *          The prefix to filter against
-     * @param default_value
-     *            the value you want returned if nothing is found.
-     * @return If any StorageKeys were found, that Collection of objects will be
-     *         returned, Otherwise the Default_value that was passed in.
+     *            Only keys that start with {@code prefix} will be processed
+     * @param handler
+     *            A callback that will be called for each found storage key.
+     *            It is okay to do heavyweight processing in this handler, since
+     *            it will run in a thread pool managed by the {@code IStorage}
+     *            implementation.
+     * @param num_handler_threads
+     *            The number of worker threads that will be used to process found storage keys
+     * 
+     * @return {@code true} if the scan operation completed normally.
+     *         {@code false} otherwise (e.g. encountered an error).
      */
-
+	public boolean scan(Kind kind, StorageKeyName prefix, StorageKeyHandler handler, int num_handler_threads);
+    
+    /**
+     * Scan the {@code IStorage} system for all keys of {@link Kind} {@code kind}.
+     * Processing of the found keys is done in a managed thread pool. The thread pool is
+     * entirely managed by the {@code scan} implementation, and the call to {@code scan}
+     * blocks until all scanning <b>and</b> processing is completed.
+     * </p>
+     * This version of {@code scan} will return <em>only</em> {@link ObjectId ObjectId's}.
+     * This is useful in applications where object storage is mixed.
+     * 
+     * @param kind
+     *            The kind of the storable object you are looking for
+     * @param handler
+     *            A callback that will be called for each found storage key.
+     *            It is okay to do heavyweight processing in this handler, since
+     *            it will run in a thread pool managed by the {@code IStorage}
+     *            implementation.
+     * @param num_handler_threads
+     *            The number of worker threads that will be used to process found storage keys
+     * 
+     * @return {@code true} if the scan operation completed normally.
+     *         {@code false} otherwise (e.g. encountered an error).
+     */
+    public boolean scanForObjectIds(Kind kind, StorageKeyHandler handler, int num_handler_threads);
+    
+    /**
+     * Scan the {@code IStorage} system for all keys of {@link Kind} {@code kind}.
+     * Processing of the found keys is done in a managed thread pool. The thread pool is
+     * entirely managed by the {@code scan} implementation, and the call to {@code scan}
+     * blocks until all scanning <b>and</b> processing is completed.
+     * </p>
+     * This version of {@code scan} will return <em>only</em> {@link ObjectId ObjectId's}.
+     * This is useful in applications where object storage is mixed.
+     * 
+     * @param kind
+     *            The kind of the storable object you are looking for
+     * @param prefix
+     *            Only keys that start with {@code prefix} will be processed
+     * @param handler
+     *            A callback that will be called for each found storage key.
+     *            It is okay to do heavyweight processing in this handler, since
+     *            it will run in a thread pool managed by the {@code IStorage}
+     *            implementation.
+     * @param num_handler_threads
+     *            The number of worker threads that will be used to process found storage keys
+     * 
+     * @return {@code true} if the scan operation completed normally.
+     *         {@code false} otherwise (e.g. encountered an error).
+     */
+    public boolean scanForObjectIds(Kind kind, StorageKeyName prefix, StorageKeyHandler handler, int num_handler_threads);
+	
 	public StorageMetadata getObjectMetadata(StorageKey key, StorageMetadata default_value);
 
 	public StorageMetadata getObjectMetadata(Storable obj, StorageMetadata default_value);
