@@ -77,9 +77,10 @@ public class StorageDevLocalFileSystem extends Storage
 			String path = root.getAbsolutePath() + "/" + key.toString();
 			File file = new File(path);
 			file.createNewFile();
-			FileOutputStream fos = new FileOutputStream(path);
-			fos.write(bytes);
-			fos.close();
+			try (FileOutputStream fos = new FileOutputStream(path))
+			{
+	            fos.write(bytes);
+			}
 			return Arrays.equals(bytes, getCurrentVersion(key, null));
 		} catch (Exception e)
 		{
@@ -106,23 +107,12 @@ public class StorageDevLocalFileSystem extends Storage
 		{
 			File file = new File(root.getAbsolutePath() + "/" + key.toString());
 			byte[] bytesArray = new byte[(int) file.length()];
-			FileInputStream fis = null;
-			try
+			try (FileInputStream fis = new FileInputStream(file))
 			{
-				fis = new FileInputStream(file);
 				fis.read(bytesArray); // this method modifies bytesArray to contain the information from the file
 			} catch (Exception e)
 			{
 				return default_value;
-			} finally
-			{
-				try
-				{
-					fis.close();
-				} catch (IOException e)
-				{
-					return default_value;
-				}
 			}
 
 			return bytesArray;
@@ -178,20 +168,20 @@ public class StorageDevLocalFileSystem extends Storage
     }
 
     @Override
-	public void scan(final Kind kind, final StorageKeyName prefix, final StorageKeyHandler handler, final int num_handler_threads)
+	public boolean scan(final Kind kind, final StorageKeyName prefix, final StorageKeyHandler handler, final int num_handler_threads)
 	{
-	    scanImpl(kind, prefix, handler, num_handler_threads, false);
+	    return scanImpl(kind, prefix, handler, num_handler_threads, false);
 	}
 	
     @Override
-    public void scanForObjectIds(final Kind kind, final StorageKeyName prefix, final ObjectIdStorageKeyHandler handler, final int num_handler_threads)
+    public boolean scanForObjectIds(final Kind kind, final StorageKeyName prefix, final StorageKeyHandler handler, final int num_handler_threads)
     {
-        scanImpl(kind, prefix, handler, num_handler_threads, true);
+        return scanImpl(kind, prefix, handler, num_handler_threads, true);
     }
     
-    private void scanImpl(final Kind kind, final StorageKeyName prefix, final StorageKeyHandler handler, final int num_handler_threads, final boolean only_object_ids)
+    private boolean scanImpl(final Kind kind, final StorageKeyName prefix, final StorageKeyHandler handler, final int num_handler_threads, final boolean only_object_ids)
     {
-        Scanner scanner = new Scanner(kind, prefix, false);
+        Scanner scanner = new Scanner(kind, prefix, only_object_ids);
         OperationPool pool = new OperationPool(scanner, num_handler_threads);
         
         scanner.setSink((StorageKey key) ->
@@ -199,8 +189,8 @@ public class StorageDevLocalFileSystem extends Storage
             pool.submitOperation(new StorageKeyHandlerWorker(handler, key));
         });
         
-        new Thread(pool).start();
-        // return immediately
+        OperationRunnable.Result result = OperationRunnable.execute(pool, OperationRunnable.Result.ERROR);
+        return OperationRunnable.Result.SUCCESS == result;
     }
     
     static private class StorageKeyHandlerWorker extends OperationRunnable

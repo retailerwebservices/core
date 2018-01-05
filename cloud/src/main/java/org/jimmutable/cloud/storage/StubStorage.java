@@ -32,25 +32,25 @@ public class StubStorage implements IStorage
 	}
 
     @Override
-    public void scan(Kind kind, StorageKeyHandler handler, int num_handler_threads)
+    public boolean scan(Kind kind, StorageKeyHandler handler, int num_handler_threads)
     {
         throw new RuntimeException(ERROR_MESSAGE);
     }
     
     @Override
-    public void scan(Kind kind, StorageKeyName prefix, StorageKeyHandler handler, int num_handler_threads)
+    public boolean scan(Kind kind, StorageKeyName prefix, StorageKeyHandler handler, int num_handler_threads)
     {
         throw new RuntimeException(ERROR_MESSAGE);
     }
     
     @Override
-    public void scanForObjectIds(Kind kind, ObjectIdStorageKeyHandler handler, int num_handler_threads)
+    public boolean scanForObjectIds(Kind kind, StorageKeyHandler handler, int num_handler_threads)
     {
         throw new RuntimeException(ERROR_MESSAGE);
     }
     
     @Override
-    public void scanForObjectIds(Kind kind, StorageKeyName prefix, ObjectIdStorageKeyHandler handler, int num_handler_threads)
+    public boolean scanForObjectIds(Kind kind, StorageKeyName prefix, StorageKeyHandler handler, int num_handler_threads)
     {
         throw new RuntimeException(ERROR_MESSAGE);
     }

@@ -57,12 +57,13 @@ public interface IStorage
 	 * @param kind
 	 * @param handler
 	 * @param num_handler_threads
+	 * @return true if completed normally, false otherwise (e.g. error)
 	 */
-    public void scan(Kind kind, StorageKeyHandler handler, int num_handler_threads);
-	public void scan(Kind kind, StorageKeyName prefix, StorageKeyHandler handler, int num_handler_threads);
+    public boolean scan(Kind kind, StorageKeyHandler handler, int num_handler_threads);
+	public boolean scan(Kind kind, StorageKeyName prefix, StorageKeyHandler handler, int num_handler_threads);
     
-    public void scanForObjectIds(Kind kind, ObjectIdStorageKeyHandler handler, int num_handler_threads);
-	public void scanForObjectIds(Kind kind, StorageKeyName prefix, ObjectIdStorageKeyHandler handler, int num_handler_threads);
+    public boolean scanForObjectIds(Kind kind, StorageKeyHandler handler, int num_handler_threads);
+	public boolean scanForObjectIds(Kind kind, StorageKeyName prefix, StorageKeyHandler handler, int num_handler_threads);
 	
 	/**
 	 * @param kind

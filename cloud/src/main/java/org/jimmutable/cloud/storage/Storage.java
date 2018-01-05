@@ -65,14 +65,14 @@ public abstract class Storage implements IStorage
 		return delete(obj.createStorageKey());
 	}
 
-    public void scan(Kind kind, StorageKeyHandler handler, int num_handler_threads)
+    public boolean scan(Kind kind, StorageKeyHandler handler, int num_handler_threads)
     {
-        scan(kind, null, handler, num_handler_threads);
+        return scan(kind, null, handler, num_handler_threads);
     }
     
-    public void scanForObjectIds(Kind kind, ObjectIdStorageKeyHandler handler, int num_handler_threads)
+    public boolean scanForObjectIds(Kind kind, StorageKeyHandler handler, int num_handler_threads)
     {
-        scanForObjectIds(kind, null, handler, num_handler_threads);
+        return scanForObjectIds(kind, null, handler, num_handler_threads);
     }
 	
 	public boolean isReadOnly()
