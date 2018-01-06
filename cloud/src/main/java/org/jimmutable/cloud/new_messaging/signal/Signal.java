@@ -7,6 +7,12 @@ import org.jimmutable.core.objects.StandardObject;
  * best effort is made to get all messages to all listeners, but delivery,
  * order, etc. are not guaranteed.
  * 
+ * In signaling, when a message is sent to a topic, a copy of the message is
+ * delivered to *each* listener. As a result, signaling tends to be used to
+ * lightweight "heads up" type messaging between application instances. The most
+ * common of these are cache control messages (e.g. hey everyone, object ID 1234
+ * has been updated, clear any local cache you may have of it)
+ * 
  * @author kanej
  *
  */
@@ -38,8 +44,6 @@ public interface Signal
 	 *            The topic to start listening to
 	 * @param listener
 	 *            The listener that will process messages
-	 * @param number_of_worker_threads
-	 *            The number of worker threads to process messages with
 	 */
-	public void startListening(SignalTopicId topic, SignalListener listener, int number_of_worker_threads);
+	public void startListening(SignalTopicId topic, SignalListener listener);
 }
