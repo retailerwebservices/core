@@ -97,4 +97,48 @@ public class DayTest extends TestCase
 			assert(true);
 		}
 	}
+	
+	public void testDifference()
+	{
+		Day first_feb = new Day("2/1/2018");
+		Day second_feb = new Day("2/2/2018");
+		Day fifth_feb = new Day("2/5/2018");
+		
+		assertEquals(first_feb.getSimpleDaysBetween(first_feb), 0);
+		assertEquals(first_feb.getSimpleDaysBetween(second_feb), 1);
+		
+		assertEquals(second_feb.getSimpleDaysBetween(fifth_feb), 3);
+		assertEquals(first_feb.getSimpleDaysBetween(fifth_feb), 4);
+	}
+	
+	public void testBeforeAndAfter()
+	{
+		Day first_feb = new Day("2/1/2018");
+		Day second_feb = new Day("2/2/2018");
+		Day fifth_feb = new Day("2/5/2018");
+		
+		assertEquals(first_feb.isBefore(first_feb), false);
+		assertEquals(first_feb.isBefore(second_feb), true);
+		assertEquals(first_feb.isBefore(fifth_feb), true);
+		
+		assertEquals(second_feb.isBefore(first_feb), false);
+		assertEquals(second_feb.isBefore(second_feb), false);
+		assertEquals(second_feb.isBefore(fifth_feb), true);
+		
+		assertEquals(fifth_feb.isBefore(first_feb), false);
+		assertEquals(fifth_feb.isBefore(second_feb), false);
+		assertEquals(fifth_feb.isBefore(fifth_feb), false);
+		
+		assertEquals(first_feb.isAfter(first_feb), false);
+		assertEquals(first_feb.isAfter(second_feb), false);
+		assertEquals(first_feb.isAfter(fifth_feb), false);
+		
+		assertEquals(second_feb.isAfter(first_feb), true);
+		assertEquals(second_feb.isAfter(second_feb), false);
+		assertEquals(second_feb.isAfter(fifth_feb), false);
+		
+		assertEquals(fifth_feb.isAfter(first_feb), true);
+		assertEquals(fifth_feb.isAfter(second_feb), true);
+		assertEquals(fifth_feb.isAfter(fifth_feb), false);
+	}
 }
