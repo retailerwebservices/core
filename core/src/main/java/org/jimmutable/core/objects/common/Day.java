@@ -10,6 +10,7 @@ import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.Days;
 import org.joda.time.DurationFieldType;
 
 
@@ -209,6 +210,32 @@ public class Day extends Stringable
 				return default_value;
 			}
 		}
+	}
+	
+	/**
+	 * Returns the number of days that seperate two days. This is always positive.
+	 * The same day will return zero. Tomorrow will return 1
+	 * 
+	 * @param other_day
+	 *            The other day
+	 * @return The number of days between two days
+	 */
+	public int getSimpleDaysBetween(Day other_day)
+	{
+		Validator.notNull(other_day);
+		return Math.abs(Days.daysBetween(mid_day_est, other_day.mid_day_est).getDays());
+	}
+	
+	public boolean isBefore(Day other_day)
+	{
+		Validator.notNull(other_day);
+		return compareTo(other_day) < 0;
+	}
+	
+	public boolean isAfter(Day other_day)
+	{
+		Validator.notNull(other_day);
+		return compareTo(other_day) > 0;
 	}
 }
 
