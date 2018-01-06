@@ -1,7 +1,7 @@
 package org.jimmutable.cloud.cache;
 
 import org.jimmutable.cloud.ApplicationId;
-import org.jimmutable.cloud.cache.redis.Redis;
+import org.jimmutable.cloud.cache.redis.LowLevelRedisDriver;
 import org.jimmutable.cloud.cache.redis.RedisScanOperation;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
@@ -9,10 +9,10 @@ import org.jimmutable.core.utils.Validator;
 
 public class CacheRedis implements Cache
 { 
-	private Redis redis;
+	private LowLevelRedisDriver redis;
 	private ApplicationId app;
 	
-	public CacheRedis(ApplicationId app, Redis redis)
+	public CacheRedis(ApplicationId app, LowLevelRedisDriver redis)
 	{
 		Validator.notNull(redis);
 		this.redis = redis;
@@ -86,7 +86,7 @@ public class CacheRedis implements Cache
 		
 		RedisScanOperation low_level_op = new RedisScanOperation()
 		{
-			public void performOperation(Redis redis, CacheKey key)
+			public void performOperation(LowLevelRedisDriver redis, CacheKey key)
 			{
 				operation.performOperation(CacheRedis.this, key);
 			}

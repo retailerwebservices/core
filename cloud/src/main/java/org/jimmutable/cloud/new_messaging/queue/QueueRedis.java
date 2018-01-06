@@ -1,7 +1,7 @@
 package org.jimmutable.cloud.new_messaging.queue;
 
 import org.jimmutable.cloud.ApplicationId;
-import org.jimmutable.cloud.cache.redis.Redis;
+import org.jimmutable.cloud.cache.redis.LowLevelRedisDriver;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.utils.Validator;
 
@@ -17,10 +17,10 @@ import org.jimmutable.core.utils.Validator;
  */
 public class QueueRedis implements Queue
 {
-	private Redis redis;
+	private LowLevelRedisDriver redis;
 	private ApplicationId app;
 	
-	public QueueRedis(ApplicationId app, Redis redis)
+	public QueueRedis(ApplicationId app, LowLevelRedisDriver redis)
 	{ 
 		Validator.notNull(app,redis);
 		this.app = app;

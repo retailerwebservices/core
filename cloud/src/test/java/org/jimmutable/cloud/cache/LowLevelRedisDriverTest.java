@@ -10,7 +10,7 @@ import java.util.Set;
 
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.StubTest;
-import org.jimmutable.cloud.cache.redis.Redis;
+import org.jimmutable.cloud.cache.redis.LowLevelRedisDriver;
 import org.jimmutable.cloud.cache.redis.RedisScanOperation;
 import org.jimmutable.cloud.messaging.StandardMessageOnUpsert;
 import org.jimmutable.cloud.new_messaging.queue.QueueId;
@@ -22,16 +22,16 @@ import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 import org.junit.Test;
 
-public class RedisTest extends StubTest
+public class LowLevelRedisDriverTest extends StubTest
 {
-	private Redis redis;
+	private LowLevelRedisDriver redis;
 	private ApplicationId app;
 	private boolean is_redis_live = false;
 
-	public RedisTest()
+	public LowLevelRedisDriverTest()
 	{	
 		app = new ApplicationId("stub");
-		redis = new Redis();
+		redis = new LowLevelRedisDriver();
 		
 		is_redis_live = isRedisLive();
 	}
@@ -312,7 +312,7 @@ public class RedisTest extends StubTest
 		private Set<CacheKey> keys = new HashSet();
 		
 		@Override
-		public void performOperation( Redis cache, CacheKey key )
+		public void performOperation( LowLevelRedisDriver cache, CacheKey key )
 		{
 			keys.add(key);
 		}

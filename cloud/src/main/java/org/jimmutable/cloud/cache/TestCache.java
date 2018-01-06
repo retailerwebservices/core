@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 import org.jimmutable.cloud.ApplicationId;
-import org.jimmutable.cloud.cache.redis.Redis;
+import org.jimmutable.cloud.cache.redis.LowLevelRedisDriver;
 
 /**
  * NOTES: 
@@ -26,7 +26,7 @@ public class TestCache
 {
 	static public void main(String args[])
 	{
-		Cache cache = new CacheRedis(new ApplicationId("cache-test"), new Redis());		
+		Cache cache = new CacheRedis(new ApplicationId("cache-test"), new LowLevelRedisDriver());		
 	
 		cache.put("test://aleph/foo", "1");
 		cache.put("test://aleph/bar", "2");

@@ -33,7 +33,7 @@ import redis.clients.jedis.ScanResult;
  * @author kanej
  *
  */
-public class Redis
+public class LowLevelRedisDriver
 {
 	private JedisPool pool;
 	
@@ -44,12 +44,12 @@ public class Redis
 	private RedisSignal signal;
 	private RedisQueue queue;
 	
-	public Redis()
+	public LowLevelRedisDriver()
 	{
 		this("localhost", 6379);
 	}
 	
-	public Redis(String host, int port)
+	public LowLevelRedisDriver(String host, int port)
 	{
 		JedisPoolConfig config = new JedisPoolConfig();
 		config.setMaxTotal(250);
@@ -322,7 +322,7 @@ public class Redis
 						{
 							key = key.substring(app_str.length()+1);
 							
-							operation.performOperation(Redis.this, new CacheKey(key));
+							operation.performOperation(LowLevelRedisDriver.this, new CacheKey(key));
 						}
 						catch(Exception e)
 						{

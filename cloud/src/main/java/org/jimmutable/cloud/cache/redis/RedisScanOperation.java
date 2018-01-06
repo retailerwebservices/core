@@ -20,5 +20,5 @@ public interface RedisScanOperation
 	 * @param key
 	 *            The key
 	 */
-	public void performOperation(Redis redis, CacheKey key);
+	public void performOperation(LowLevelRedisDriver redis, CacheKey key);
 }
