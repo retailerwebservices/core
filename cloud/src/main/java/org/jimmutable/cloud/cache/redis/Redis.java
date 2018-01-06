@@ -7,7 +7,6 @@ import java.util.concurrent.ExecutorService;
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.cache.Cache;
 import org.jimmutable.cloud.cache.CacheKey;
-import org.jimmutable.cloud.cache.ScanOperation;
 import org.jimmutable.cloud.new_messaging.queue.QueueId;
 import org.jimmutable.cloud.new_messaging.queue.QueueListener;
 import org.jimmutable.cloud.new_messaging.signal.SignalListener;
@@ -27,7 +26,10 @@ import redis.clients.jedis.ScanResult;
 /**
  * Low leve driver class for Redis.
  * 
- * DO NOT MODIFY 
+ * DO NOT MODIFY UNLESS YOU REALLY UNDERSTAND REDIS, THREADING *AND* WHAT YOU ARE DOING 
+ * 
+ * All methods are *fully* thread safe
+ * 
  * @author kanej
  *
  */
@@ -61,8 +63,25 @@ public class Redis
 		signal = new RedisSignal();
 	}
 	
+	/**
+	 * Access the cache functionality of the Redis driver
+	 * 
+	 * @return
+	 */
 	public RedisCache cache() { return cache; }
+	
+	/**
+	 * Access the siganl functionality of the Redis driver
+	 * 
+	 * @return
+	 */
 	public RedisSignal signal() { return signal; }
+	
+	/**
+	 * Access the queue functionality of the Redis driver
+	 * 
+	 * @return
+	 */
 	public RedisQueue queue() { return queue; }
 	
 	public class RedisCache
@@ -79,6 +98,21 @@ public class Redis
 			return builder.toString().getBytes(StandardCharsets.UTF_8);
 		}
 		
+		/**
+		 * Set the value of a key in the cache (optionally with a maximum time to live).
+		 * Setting with null data has the effect of deleting the key from the cache.
+		 * Null keys and app ids result in the function doing nothing
+		 * 
+		 * @param app
+		 *            The application id
+		 * @param key
+		 *            The key to set
+		 * @param data
+		 *            The data to write
+		 * @param max_ttl
+		 *            The maximum length of time that the data will remain in the cache
+		 *            (in ms). Zero or negative values have the meaning of "infinite"
+		 */
 		public void set(ApplicationId app, CacheKey key, byte data[], long max_ttl)
 		{
 			if ( data == null )
@@ -102,6 +136,17 @@ public class Redis
 			}
 		}
 		
+		/**
+		 * Test for the existence of a key. Null app or key results in a false return
+		 * value
+		 * 
+		 * @param app
+		 *            The application id
+		 * @param key
+		 *            The cache key
+		 * 
+		 * @return
+		 */
 		public boolean exists(ApplicationId app, CacheKey key)
 		{
 			byte cache_key_bytes[] = createKeyBytes(app,key,null);
@@ -113,6 +158,22 @@ public class Redis
 			}
 		}
 		
+		/**
+		 * Set a string value.
+		 *
+		 * Setting with null data has the effect of deleting the key from the cache.
+		 * Null keys and app ids result in the function doing nothing
+		 * 
+		 * @param app
+		 *            The application id
+		 * @param key
+		 *            The key to set
+		 * @param data
+		 *            The data to write
+		 * @param max_ttl
+		 *            The maximum length of time that the data will remain in the cache
+		 *            (in ms). Zero or negative values have the meaning of "infinite"
+		 */
 		public void set(ApplicationId app, CacheKey key, String data, long max_ttl)
 		{
 			byte data_bytes[] = null;
@@ -123,6 +184,14 @@ public class Redis
 			set(app,key,data_bytes, max_ttl);
 		}
 		
+		/**
+		 * Delete a key (and its value) from the cache.
+		 * 
+		 * Does nothing if app or key is null.  Does nothing if the key does not exist
+		 * 
+		 * @param app The application id
+		 * @param key The key to delete
+		 */
 		public void delete(ApplicationId app, CacheKey key)
 		{
 			byte cache_key_bytes[] = createKeyBytes(app,key,null);
@@ -134,6 +203,20 @@ public class Redis
 			}
 		}
 		
+		/**
+		 * Get the remaining time to live (TTL) for a key. If the key does not have a
+		 * TTL default value is returned. If the key does not exist, then default_value
+		 * is returned
+		 * 
+		 * @param app
+		 *            The application id
+		 * @param key
+		 *            The key
+		 * @param default_value
+		 *            The value to return in the event the key does not have a TTL or an
+		 *            error occurs
+		 * @return
+		 */
 		public long getTTL(ApplicationId app, CacheKey key, long default_value)
 		{
 			byte cache_key_bytes[] = createKeyBytes(app,key,null);
@@ -154,6 +237,18 @@ public class Redis
 			}
 		}
 		
+		/**
+		 * Get a value from the cache as a byte array
+		 * 
+		 * @param app
+		 *            The application id
+		 * @param key
+		 *            The key
+		 * @param default_value
+		 *            The value to return in the event of an error
+		 * 
+		 * @return The value of key or default_value if any error occurs
+		 */
 		public byte[] getBytes(ApplicationId app, CacheKey key, byte default_value[])
 		{
 			byte cache_key_bytes[] = createKeyBytes(app,key,null);
@@ -172,6 +267,19 @@ public class Redis
 			}
 		}
 		
+		/**
+		 * Get a value from the cache as a String
+		 * 
+		 * @param app
+		 *            The application id
+		 * @param key
+		 *            The key
+		 * @param default_value
+		 *            The value to return in the event of an error
+		 * 
+		 * @return The value of key or default_value if any error occurs
+		 */
+		
 		public String getString(ApplicationId app, CacheKey key, String default_value)
 		{
 			byte ret_bytes[] = getBytes(app,key,null);
@@ -180,7 +288,14 @@ public class Redis
 			return new String(ret_bytes,StandardCharsets.UTF_8);
 		}
 		
-		public void scan(ApplicationId app, Cache cache, CacheKey prefix, ScanOperation operation)
+		/**
+		 * Scan (call operation.performOperation on all keys with the specified prefix) 
+		 * 
+		 * @param app The application id
+		 * @param prefix The ScanOperation
+		 * @param operation
+		 */
+		public void scan(ApplicationId app, CacheKey prefix, RedisScanOperation operation)
 		{
 			String app_str = app.getSimpleValue();
 			
@@ -207,7 +322,7 @@ public class Redis
 						{
 							key = key.substring(app_str.length()+1);
 							
-							operation.performOperation(cache, new CacheKey(key));
+							operation.performOperation(Redis.this, new CacheKey(key));
 						}
 						catch(Exception e)
 						{
@@ -224,18 +339,54 @@ public class Redis
 	
 	public class RedisSignal
 	{
+		/**
+		 * Asynchronously send a message to a signal
+		 * 
+		 * @param app
+		 *            The application id
+		 * @param topic
+		 *            The topic
+		 * @param message
+		 *            The message to send
+		 */
 		public void sendAsync(ApplicationId app, SignalTopicId topic, StandardObject message)
 		{
+			if ( app == null || topic == null || message == null ) return;
+			
 			pool_send.submit(new SignalSendRunnable(app,topic,message));
 		}
 		
+		/**
+		 * Send a message to a signal
+		 * 
+		 * @param app
+		 *            The application id
+		 * @param topic
+		 *            The topic
+		 * @param message
+		 *            The message to send
+		 */
 		public void send(ApplicationId app, SignalTopicId topic, StandardObject message)
 		{
+			if ( app == null || topic == null || message == null ) return;
+			
 			new SignalSendRunnable(app,topic,message).run();
 		}
 		
+		/**
+		 * Begin listening for messages on a given topic
+		 * 
+		 * @param app
+		 *            The application id
+		 * @param topic
+		 *            The topic
+		 * @param listener
+		 *            The listener
+		 */
 		public void startListening(ApplicationId app, SignalTopicId topic, SignalListener listener)
 		{
+			Validator.notNull(app, topic, listener);
+			
 			Thread t = new Thread(new ListenRunnable(app,topic,listener));
 			t.start();
 		}
@@ -354,6 +505,14 @@ public class Redis
 			return "$queue/"+app+"/"+queue;
 		}
 		
+		/**
+		 * Get the current queue length
+		 * 
+		 * @param app
+		 * @param queue
+		 * @param default_value
+		 * @return
+		 */
 		public int getQueueLength(ApplicationId app, QueueId queue, int default_value)
 		{
 			if ( app == null || queue == null ) return default_value;
@@ -369,6 +528,12 @@ public class Redis
 			}
 		}
 		
+		/**
+		 * Clear a queue
+		 * 
+		 * @param app
+		 * @param queue
+		 */
 		public void clear(ApplicationId app, QueueId queue)
 		{
 			Validator.notNull(app,queue);
@@ -379,9 +544,15 @@ public class Redis
 			}
 		}
 		
+		/**
+		 * Submit a message to a queue (asynchronously) 
+		 * @param app
+		 * @param queue
+		 * @param message
+		 */
 		public void submitAsync(ApplicationId app, QueueId queue, StandardObject message)
 		{
-			Validator.notNull(app, queue, message);
+			if ( app == null || queue == null || message == null ) return;
 			
 			Runnable send_task = new Runnable()
 			{
@@ -402,9 +573,16 @@ public class Redis
 			pool_send.submit(send_task);
 		}
 		
+		/**
+		 * Submit a message to a queue (synchronously) 
+		 * 
+		 * @param app
+		 * @param queue
+		 * @param message
+		 */
 		public void submit(ApplicationId app, QueueId queue, StandardObject message)
 		{
-			Validator.notNull(app, queue, message);
+			if ( app == null || queue == null || message == null ) return;
 			
 			try(Jedis jedis = pool.getResource();)
 			{
@@ -417,9 +595,18 @@ public class Redis
 			}
 		}
 		
+		/**
+		 * Begin processing messages from a queue with the specified number of worker threads
+		 * 
+		 * @param app
+		 * @param queue
+		 * @param listener
+		 * @param num_worker_threads
+		 */
 		public void startListening(ApplicationId app, QueueId queue, QueueListener listener, int num_worker_threads)
 		{
 			Validator.notNull(app, queue, listener);
+			Validator.min(num_worker_threads, 1);
 			
 			for ( int i = 0; i < num_worker_threads; i++ )
 			{

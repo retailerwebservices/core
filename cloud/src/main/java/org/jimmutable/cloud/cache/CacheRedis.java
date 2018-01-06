@@ -1,16 +1,11 @@
 package org.jimmutable.cloud.cache;
 
-import java.nio.charset.StandardCharsets;
-
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.cache.redis.Redis;
+import org.jimmutable.cloud.cache.redis.RedisScanOperation;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.utils.Validator;
-
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
 
 public class CacheRedis implements Cache
 { 
@@ -88,7 +83,16 @@ public class CacheRedis implements Cache
 	public void scan( CacheKey prefix, ScanOperation operation )
 	{
 		Validator.notNull(prefix, operation);
-		redis.cache().scan(app, this, prefix, operation);
+		
+		RedisScanOperation low_level_op = new RedisScanOperation()
+		{
+			public void performOperation(Redis redis, CacheKey key)
+			{
+				operation.performOperation(CacheRedis.this, key);
+			}
+		};
+		
+		redis.cache().scan(app, prefix, low_level_op);
 	}
 
 	@Override

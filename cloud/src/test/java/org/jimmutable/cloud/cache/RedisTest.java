@@ -11,6 +11,7 @@ import java.util.Set;
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.StubTest;
 import org.jimmutable.cloud.cache.redis.Redis;
+import org.jimmutable.cloud.cache.redis.RedisScanOperation;
 import org.jimmutable.cloud.messaging.StandardMessageOnUpsert;
 import org.jimmutable.cloud.new_messaging.queue.QueueId;
 import org.jimmutable.cloud.new_messaging.queue.QueueListener;
@@ -281,7 +282,7 @@ public class RedisTest extends StubTest
 			
 			AccumulateKeyScanOp op = new AccumulateKeyScanOp();
 			
-			redis.cache().scan(app, null, new CacheKey("scan-test://"), op);
+			redis.cache().scan(app, new CacheKey("scan-test://"), op);
 			
 			assert(op.keys.size() == scan_test.size());
 			
@@ -306,12 +307,12 @@ public class RedisTest extends StubTest
 		
 	}
 	
-	static private class AccumulateKeyScanOp implements ScanOperation
+	static private class AccumulateKeyScanOp implements RedisScanOperation
 	{
 		private Set<CacheKey> keys = new HashSet();
 		
 		@Override
-		public void performOperation( Cache cache, CacheKey key )
+		public void performOperation( Redis cache, CacheKey key )
 		{
 			keys.add(key);
 		}
