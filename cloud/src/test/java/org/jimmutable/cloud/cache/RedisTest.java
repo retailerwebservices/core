@@ -11,9 +11,9 @@ import java.util.Set;
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.StubTest;
 import org.jimmutable.cloud.cache.redis.Redis;
-import org.jimmutable.cloud.messaging.MessageListener;
 import org.jimmutable.cloud.messaging.StandardMessageOnUpsert;
-import org.jimmutable.cloud.messaging.TopicId;
+import org.jimmutable.cloud.new_messaging.queue.QueueId;
+import org.jimmutable.cloud.new_messaging.queue.QueueListener;
 import org.jimmutable.cloud.new_messaging.signal.SignalListener;
 import org.jimmutable.cloud.new_messaging.signal.SignalTopicId;
 import org.jimmutable.core.objects.StandardObject;
@@ -42,39 +42,39 @@ public class RedisTest extends StubTest
 		
 		// Test overflow protection
 		{
-			TopicId topic = new TopicId("overflow-test");
+			QueueId queue_id = new QueueId("overflow-test");
 			
-			redis.queue().clear(app, topic);
-			assert(redis.queue().getQueueLength(app, topic, 0) == 0);
+			redis.queue().clear(app, queue_id);
+			assert(redis.queue().getQueueLength(app, queue_id, 0) == 0);
 			
 			for ( int i = 0; i < 20_000; i++ )
-				redis.queue().submit(app, topic, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(i)));
+				redis.queue().submit(app, queue_id, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(i)));
 			
-			assert(redis.queue().getQueueLength(app, topic, 0) < 20_000);
-			assert(redis.queue().getQueueLength(app, topic, 0) > 9_000);
+			assert(redis.queue().getQueueLength(app, queue_id, 0) < 20_000);
+			assert(redis.queue().getQueueLength(app, queue_id, 0) > 9_000);
 		}
 		
 		// Test fan out
 		{
-			TopicId topic = new TopicId("fan-out-test");
+			QueueId queue_id = new QueueId("fan-out-test");
 			
-			redis.queue().clear(app, topic);
-			assert(redis.queue().getQueueLength(app, topic, 0) == 0);
+			redis.queue().clear(app, queue_id);
+			assert(redis.queue().getQueueLength(app, queue_id, 0) == 0);
 			
 			for ( int i = 0; i < 1_000; i++ )
-				redis.queue().submit(app, topic, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(i)));
+				redis.queue().submit(app, queue_id, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(i)));
 			
-			assert(redis.queue().getQueueLength(app, topic, 0) == 1_000);
+			assert(redis.queue().getQueueLength(app, queue_id, 0) == 1_000);
 			
 			TestListener one = new TestListener(10);
 			TestListener two = new TestListener(10);
 			TestListener three = new TestListener(10);
 			TestListener four = new TestListener(10);
 			
-			redis.queue().startListening(app, topic, one, 1);
-			redis.queue().startListening(app, topic, two, 1);
-			redis.queue().startListening(app, topic, three, 1);
-			redis.queue().startListening(app, topic, four, 2);
+			redis.queue().startListening(app, queue_id, one, 1);
+			redis.queue().startListening(app, queue_id, two, 1);
+			redis.queue().startListening(app, queue_id, three, 1);
+			redis.queue().startListening(app, queue_id, four, 2);
 			
 			System.out.println("Testing fan out");
 			for ( int i = 0; i < 16; i++ )
@@ -88,7 +88,7 @@ public class RedisTest extends StubTest
 			
 			System.out.println();
 			
-			assert(redis.queue().getQueueLength(app, topic, 0) == 0);
+			assert(redis.queue().getQueueLength(app, queue_id, 0) == 0);
 			assert(one.ids.size()+two.ids.size()+three.ids.size()+four.ids.size() == 1_000);
 			
 			assert(four.ids.size() > one.ids.size());
@@ -127,7 +127,7 @@ public class RedisTest extends StubTest
 		assert(listener2.ids.contains(new ObjectId(10)));
 	}
 	
-	static private class TestListener implements SignalListener, MessageListener
+	static private class TestListener implements SignalListener, QueueListener
 	{
 		private Set<ObjectId> ids = new HashSet();
 		

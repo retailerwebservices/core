@@ -8,6 +8,10 @@ import org.jimmutable.core.utils.Validator;
 /**
  * An implementation of signal backed by redis
  * 
+ * Please note that the the Redis driver (cache.redis.Redis) has an extensive
+ * unit test (Redis test) that serves as the unit test for this implementation
+ * of signaling
+ * 
  * @author kanej
  *
  */
@@ -38,10 +42,9 @@ public class SignalRedis implements Signal
 	}
 
 	@Override
-	public void startListening( SignalTopicId topic, SignalListener listener, int number_of_worker_threads )
+	public void startListening( SignalTopicId topic, SignalListener listener )
 	{
 		Validator.notNull(topic, listener);
-		if ( number_of_worker_threads <= 0 ) return;
 		
 		redis.signal().startListening(app, topic, listener);
 	}

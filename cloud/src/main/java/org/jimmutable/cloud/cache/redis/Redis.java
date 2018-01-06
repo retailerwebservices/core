@@ -8,8 +8,8 @@ import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.cache.Cache;
 import org.jimmutable.cloud.cache.CacheKey;
 import org.jimmutable.cloud.cache.ScanOperation;
-import org.jimmutable.cloud.messaging.MessageListener;
-import org.jimmutable.cloud.messaging.TopicId;
+import org.jimmutable.cloud.new_messaging.queue.QueueId;
+import org.jimmutable.cloud.new_messaging.queue.QueueListener;
 import org.jimmutable.cloud.new_messaging.signal.SignalListener;
 import org.jimmutable.cloud.new_messaging.signal.SignalTopicId;
 import org.jimmutable.core.objects.StandardObject;
@@ -342,18 +342,18 @@ public class Redis
 	{
 		Random r = new Random();
 		
-		private String getKey(ApplicationId app, TopicId topic)
+		private String getKey(ApplicationId app, QueueId queue)
 		{
-			return "$queue/"+app+"/"+topic;
+			return "$queue/"+app+"/"+queue;
 		}
 		
-		public int getQueueLength(ApplicationId app, TopicId topic, int default_value)
+		public int getQueueLength(ApplicationId app, QueueId queue, int default_value)
 		{
-			if ( app == null || topic == null ) return default_value;
+			if ( app == null || queue == null ) return default_value;
 			
 			try(Jedis jedis = pool.getResource();)
 			{
-				Long ret = jedis.llen(getKey(app,topic));
+				Long ret = jedis.llen(getKey(app,queue));
 				
 				if ( ret == null ) return default_value;
 				if ( ret.longValue() < 0 ) return default_value;
@@ -362,19 +362,19 @@ public class Redis
 			}
 		}
 		
-		public void clear(ApplicationId app, TopicId topic)
+		public void clear(ApplicationId app, QueueId queue)
 		{
-			Validator.notNull(app,topic);
+			Validator.notNull(app,queue);
 			
 			try(Jedis jedis = pool.getResource();)
 			{
-				jedis.del(getKey(app,topic));
+				jedis.del(getKey(app,queue));
 			}
 		}
 		
-		public void submitAsync(ApplicationId app, TopicId topic, StandardObject message)
+		public void submitAsync(ApplicationId app, QueueId queue, StandardObject message)
 		{
-			Validator.notNull(app, topic, message);
+			Validator.notNull(app, queue, message);
 			
 			Runnable send_task = new Runnable()
 			{
@@ -382,11 +382,11 @@ public class Redis
 				{
 					try(Jedis jedis = pool.getResource();)
 					{
-						jedis.lpush(getKey(app,topic), message.serialize(Format.JSON));
+						jedis.lpush(getKey(app,queue), message.serialize(Format.JSON));
 						
 						if ( r.nextInt(100) == 52 ) // about once per one hundred inserts, trim to 10_000 elements, for performance
 						{
-							jedis.ltrim(getKey(app,topic), 0, 10_000);
+							jedis.ltrim(getKey(app,queue), 0, 10_000);
 						}
 					}
 				}
@@ -395,28 +395,28 @@ public class Redis
 			pool_send.submit(send_task);
 		}
 		
-		public void submit(ApplicationId app, TopicId topic, StandardObject message)
+		public void submit(ApplicationId app, QueueId queue, StandardObject message)
 		{
-			Validator.notNull(app, topic, message);
+			Validator.notNull(app, queue, message);
 			
 			try(Jedis jedis = pool.getResource();)
 			{
-				jedis.lpush(getKey(app,topic), message.serialize(Format.JSON));
+				jedis.lpush(getKey(app,queue), message.serialize(Format.JSON));
 				
 				if ( r.nextInt(100) == 52 ) // about once per one hundred inserts, trim to 10_000 elements, for performance
 				{
-					jedis.ltrim(getKey(app,topic), 0, 10_000);
+					jedis.ltrim(getKey(app,queue), 0, 10_000);
 				}
 			}
 		}
 		
-		public void startListening(ApplicationId app, TopicId topic, MessageListener listener, int num_worker_threads)
+		public void startListening(ApplicationId app, QueueId queue, QueueListener listener, int num_worker_threads)
 		{
-			Validator.notNull(app, topic, listener);
+			Validator.notNull(app, queue, listener);
 			
 			for ( int i = 0; i < num_worker_threads; i++ )
 			{
-				Thread t = new Thread(new ListenRunnable(app, topic, listener));
+				Thread t = new Thread(new ListenRunnable(app, queue, listener));
 				t.start();
 			}
 		}
@@ -424,15 +424,15 @@ public class Redis
 		private class ListenRunnable implements Runnable
 		{
 			private ApplicationId app;
-			private TopicId topic;
-			private MessageListener listener;
+			private QueueId queue;
+			private QueueListener listener;
 			
-			private ListenRunnable(ApplicationId app, TopicId topic, MessageListener listener) 
+			private ListenRunnable(ApplicationId app, QueueId queue, QueueListener listener) 
 			{
-				Validator.notNull(app,topic,listener);
+				Validator.notNull(app,queue,listener);
 				
 				this.app = app;
-				this.topic = topic;
+				this.queue = queue;
 				this.listener = listener;
 			}
 			
@@ -466,7 +466,7 @@ public class Redis
 			{
 				try(Jedis jedis = pool.getResource();)
 				{
-					String obj_str = jedis.rpop(getKey(app,topic));
+					String obj_str = jedis.rpop(getKey(app,queue));
 					
 					if ( obj_str == null ) return default_value;
 					
