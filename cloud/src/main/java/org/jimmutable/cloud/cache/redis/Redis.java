@@ -24,6 +24,13 @@ import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 
+/**
+ * Low leve driver class for Redis.
+ * 
+ * DO NOT MODIFY 
+ * @author kanej
+ *
+ */
 public class Redis
 {
 	private JedisPool pool;
