@@ -17,6 +17,8 @@ import org.jimmutable.core.utils.Validator;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.util.DefaultIndenter;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 import com.fasterxml.jackson.dataformat.xml.XmlFactory;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
@@ -68,11 +70,16 @@ public class LowLevelWriter
 		{
 			if ( format == Format.JSON || format == Format.JSON_PRETTY_PRINT )
 			{
-				JsonFactory jfactory = new JsonFactory();
+                JsonFactory jfactory = new JsonFactory();
 				gen = jfactory.createGenerator(writer);
 				
 				if ( format == Format.JSON_PRETTY_PRINT )
+				{
 					gen.useDefaultPrettyPrinter();
+					
+					//Fix Mac vs PC line separator issues
+					((DefaultPrettyPrinter)gen.getPrettyPrinter()).indentObjectsWith(new DefaultIndenter("  ", "\n"));
+				}
 			}
 			else
 			{
@@ -93,14 +100,13 @@ public class LowLevelWriter
 			throw new SerializeException("Error creating low level writer", e);
 		}
 	}
-	
+
 	/**
 	 * Construct a LowLevelWriter that writes to a TokenBuffer
 	 * 
 	 * @param buffer
 	 *            The token buffer to write to
 	 */
-	
 	public LowLevelWriter(TokenBuffer buffer) 
 	{
 		this.format = Format.TOKEN_BUFFER;

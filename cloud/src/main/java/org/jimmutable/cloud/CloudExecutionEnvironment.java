@@ -8,7 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.jimmutable.cloud.elasticsearch.ElasticSearch;
 import org.jimmutable.cloud.elasticsearch.ElasticSearchEndpoint;
@@ -65,8 +65,7 @@ public class CloudExecutionEnvironment
 		this.search = search;
 		this.storage = storage;
 		this.messaging = messaging;
-		
-				
+
 	}
 
 	public EnvironmentType getSimpleEnvironmentType()
@@ -78,7 +77,7 @@ public class CloudExecutionEnvironment
 	{
 		return APPLICATION_ID;
 	}
-	
+
 	/**
 	 * Search instance used for document upsert and searching of indices
 	 *
@@ -134,13 +133,10 @@ public class CloudExecutionEnvironment
 
 		// register objects
 
-
 		ENV_TYPE = env_type;
 		APPLICATION_ID = application_id;
 
 		logger.info(String.format("ApplicationID=%s Environment=%s", APPLICATION_ID, ENV_TYPE));
-
-		
 
 		switch (env_type)
 		{
@@ -151,7 +147,7 @@ public class CloudExecutionEnvironment
 			TransportClient client = null;
 			try
 			{
-				client = new PreBuiltTransportClient(Settings.EMPTY).addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(ElasticSearchEndpoint.CURRENT.getSimpleHost()), ElasticSearchEndpoint.CURRENT.getSimplePort()));
+				client = new PreBuiltTransportClient(Settings.EMPTY).addTransportAddress(new TransportAddress(InetAddress.getByName(ElasticSearchEndpoint.CURRENT.getSimpleHost()), ElasticSearchEndpoint.CURRENT.getSimplePort()));
 			} catch (UnknownHostException e)
 			{
 				logger.log(Level.FATAL, "Failed to instantiate the elasticsearch client!", e);
@@ -176,11 +172,10 @@ public class CloudExecutionEnvironment
 			throw new RuntimeException(String.format("Unhandled EnvironmentType: %s! Add the environment to startup to handle it correctly.", env_type));
 
 		}
-		
+
 		JimmutableTypeNameRegister.registerAllTypes();
 		JimmutableCloudTypeNameRegister.registerAllTypes();
 	}
-	
 
 	/**
 	 * Use this for running unit tests. Search, Storage, and Messaging are just stub
@@ -252,10 +247,12 @@ public class CloudExecutionEnvironment
 			logger.fatal("Failed to detect operating system!");
 		}
 	}
-	
-	public StandardImmutableObjectCache getSimpleCache() {
-		if(STANDARD_IMMUTABLE_OBJECT_CACHE==null) {
-			STANDARD_IMMUTABLE_OBJECT_CACHE= new StandardImmutableObjectCache();
+
+	public StandardImmutableObjectCache getSimpleCache()
+	{
+		if (STANDARD_IMMUTABLE_OBJECT_CACHE == null)
+		{
+			STANDARD_IMMUTABLE_OBJECT_CACHE = new StandardImmutableObjectCache();
 		}
 		return STANDARD_IMMUTABLE_OBJECT_CACHE;
 	}
