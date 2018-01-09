@@ -1,16 +1,19 @@
 package org.jimmutable.cloud.storage;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.function.Consumer;
 
@@ -19,6 +22,7 @@ import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.threading.OperationPool;
 import org.jimmutable.core.threading.OperationRunnable;
+import org.jimmutable.core.utils.IOUtils;
 import org.jimmutable.core.utils.Validator;
 
 public class StorageDevLocalFileSystem extends Storage
@@ -54,70 +58,44 @@ public class StorageDevLocalFileSystem extends Storage
 		return default_value;
 	}
 
-	/**
-	 * @param key
-	 *            of the Storable Object to Update/Insert
-	 * @param bytes
-	 *            the contents of the Storable Object
-	 * @param hint_content_likely_to_be_compressible
-	 * @return true if the Object was updated/inserted, else false
-	 */
 	@Override
-	public boolean upsert(StorageKey key, byte[] bytes, boolean hint_content_likely_to_be_compressible)
+	public boolean upsert(final StorageKey key, final InputStream source, final boolean hint_content_likely_to_be_compressible)
 	{
-		if (isReadOnly())
-		{
-			return false;
-		}
-		Validator.notNull(key, bytes, hint_content_likely_to_be_compressible);
-		try
-		{
-			File pfile = new File(root.getAbsolutePath() + "/" + key.getSimpleKind());
-			pfile.mkdirs();
-			String path = root.getAbsolutePath() + "/" + key.toString();
-			File file = new File(path);
-			file.createNewFile();
-			try (FileOutputStream fos = new FileOutputStream(path))
-			{
-	            fos.write(bytes);
-			}
-			return Arrays.equals(bytes, getCurrentVersion(key, null));
-		} catch (Exception e)
-		{
-			File f = new File(root.getAbsolutePath() + "/" + key.toString());
-			f.delete();
-			return false;
-		}
+        Validator.notNull(key, source);
+        
+	    if (isReadOnly()) return false;
+	    
+        final File dest_file = new File(root.getAbsolutePath() + "/" + key.toString());
+        dest_file.getParentFile().mkdirs(); // Make sure the directories exist
+        
+        try (OutputStream fout = new BufferedOutputStream(new FileOutputStream(dest_file)))
+        {
+            IOUtils.transferAllBytes(source, fout);
+            return true;
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
 	}
 
-	/**
-	 * @param key
-	 *            key associated with Stored Object you want to retrieve the current
-	 *            version of.
-	 * @param default_value
-	 *            If the object is not found, what would you like returned.
-	 * @return Byte array of Stored object if Object was found, otherwise
-	 *         default_value
-	 */
 	@Override
-	public byte[] getCurrentVersion(StorageKey key, byte[] default_value)
+	public boolean getCurrentVersion(final StorageKey key, final OutputStream sink)
 	{
-		Validator.notNull(key);
-		if (exists(key, false))
-		{
-			File file = new File(root.getAbsolutePath() + "/" + key.toString());
-			byte[] bytesArray = new byte[(int) file.length()];
-			try (FileInputStream fis = new FileInputStream(file))
-			{
-				fis.read(bytesArray); // this method modifies bytesArray to contain the information from the file
-			} catch (Exception e)
-			{
-				return default_value;
-			}
-
-			return bytesArray;
-		}
-		return default_value;
+        Validator.notNull(key);
+        
+        final File source_file = new File(root.getAbsolutePath() + "/" + key.toString());
+        if (! source_file.exists()) return false;
+        
+        try (InputStream fin = new BufferedInputStream(new FileInputStream(source_file)))
+        {
+            IOUtils.transferAllBytes(fin, sink);
+            return true;
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
 	}
 
 	/**

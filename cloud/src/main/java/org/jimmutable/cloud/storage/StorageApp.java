@@ -90,7 +90,7 @@ public class StorageApp
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				textField.setText(new String(storage_system.getCurrentVersion(test_file, null)));
+				textField.setText(new String(storage_system.getCurrentVersion(test_file, (byte[]) null)));
 			}
 		});
 

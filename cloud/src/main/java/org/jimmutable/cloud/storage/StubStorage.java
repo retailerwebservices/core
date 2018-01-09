@@ -1,5 +1,8 @@
 package org.jimmutable.cloud.storage;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.serialization.Format;
 
@@ -19,11 +22,23 @@ public class StubStorage implements IStorage
 		throw new RuntimeException(ERROR_MESSAGE);
 	}
 
+    @Override
+    public boolean upsert(StorageKey key, InputStream source, boolean hint_content_likely_to_be_compressible)
+    {
+        throw new RuntimeException(ERROR_MESSAGE);
+    }
+
 	@Override
 	public byte[] getCurrentVersion(StorageKey key, byte[] default_value)
 	{
 		throw new RuntimeException(ERROR_MESSAGE);
 	}
+
+    @Override
+    public boolean getCurrentVersion(StorageKey key, OutputStream sink)
+    {
+        throw new RuntimeException(ERROR_MESSAGE);
+    }
 
 	@Override
 	public boolean delete(StorageKey key)
@@ -90,5 +105,4 @@ public class StubStorage implements IStorage
 	{
 		throw new RuntimeException(ERROR_MESSAGE);
 	}
-
 }

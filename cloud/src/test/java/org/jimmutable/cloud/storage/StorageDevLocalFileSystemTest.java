@@ -131,7 +131,7 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 		// test that it will read from file
 		ObjectIdStorageKey key = new ObjectIdStorageKey("zeta/0000-0000-0000-0123.txt");
 		sdlfs.upsert(key, "Hello from the other side".getBytes(), false);
-		byte[] testvalue = sdlfs.getCurrentVersion(key, null);
+		byte[] testvalue = sdlfs.getCurrentVersion(key, (byte[]) null);
 		assertEquals("Hello from the other side", new String(testvalue));
 
 		// test that it will return the default if no file is found.

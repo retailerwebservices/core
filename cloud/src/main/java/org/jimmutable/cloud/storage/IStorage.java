@@ -1,5 +1,8 @@
 package org.jimmutable.cloud.storage;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.serialization.Format;
 
@@ -23,13 +26,32 @@ public interface IStorage
 	 * @param key
 	 *            of the Storable Object to Update/Insert
 	 * @param bytes
-	 *            the contents of the Storable Object
+	 *            The bytes to put in storage. Must not be larger than {@value Storage#MAX_TRANSFER_BYTES_IN_MB} MB.
 	 * @param hint_content_likely_to_be_compressible
+	 * 
 	 * @return true if the Object was updated/inserted, else false
 	 */
 	public boolean upsert(StorageKey key, byte bytes[], boolean hint_content_likely_to_be_compressible);
 
 	/**
+     * Upsert all bytes that can be read from {@code source}. There is no limit on
+     * the size of the stream that can be upserted. {@code source} will <em>not</em>
+     * be {@link InputStream#close() closed}.
+     * 
+     * @param key
+     *            of the Storable Object to Update/Insert
+     * @param source
+     *            a stream that, when read, returns the bytes to be stored
+     * @param hint_content_likely_to_be_compressible
+     * 
+     * @return true if the Object was updated/inserted, else false
+	 */
+	public boolean upsert(final StorageKey key, final InputStream source, final boolean hint_content_likely_to_be_compressible);
+	
+	/**
+	 * This method will not read objects larger than {@value Storage#MAX_TRANSFER_BYTES_IN_MB} MB.
+	 * If you need to retrieve large objects, use {@link #getCurrentVersion(StorageKey, OutputStream)}.
+	 * 
 	 * @param key
 	 *            key associated with Stored Object you want to retrieve the current
 	 *            version of.
@@ -40,6 +62,21 @@ public interface IStorage
 	 */
 	public byte[] getCurrentVersion(StorageKey key, byte[] default_value);
 
+    /**
+     * Get the current version of {@code key}. There is no limit on the size of
+     * the object to be retrieved. {@code sink} will be {@link OutputStream#flush() flushed}
+     * but not {@link OutputStream#close() closed}.
+     * 
+     * @param key
+     *            key associated with Stored Object you want to retrieve the current
+     *            version of.
+     * @param sink
+     *            The {@link OutputStream} where the bytes of the object will be written
+     * @return Byte array of Stored object if Object was found, otherwise
+     *         default_value
+     */
+	public boolean getCurrentVersion(final StorageKey key, final OutputStream sink);
+	
 	/**
 	 * @param key
 	 *            StorageKey associated with StorageObject

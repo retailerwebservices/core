@@ -1,9 +1,14 @@
 package org.jimmutable.cloud.storage;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+
 import org.apache.logging.log4j.LogManager;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
+import org.jimmutable.core.utils.IOUtils;
 import org.jimmutable.core.utils.Validator;
 
 /**
@@ -15,6 +20,14 @@ import org.jimmutable.core.utils.Validator;
 
 public abstract class Storage implements IStorage
 {
+    /**
+     * The largest {@code byte[]} that can be {@link #upsert(StorageKey, byte[], boolean) upserted}
+     * or {@link #getCurrentVersion(StorageKey, byte[]) retrieved}.
+     */
+    static public final int MAX_TRANSFER_BYTES_IN_MB = 25;
+    static public final int MAX_TRANSFER_BYTES_IN_BYTES = MAX_TRANSFER_BYTES_IN_MB * 1024 * 1024;
+    
+    
 	// Storage instance = null;
 	private boolean is_readonly = false;
 
@@ -36,9 +49,41 @@ public abstract class Storage implements IStorage
 	
 	public boolean upsert(Storable obj, Format format)
 	{
-		Validator.notNull(obj);
+        Validator.notNull(obj);
+        
+        if (isReadOnly()) return false;
+
 		return upsert(obj.createStorageKey(), ObjectWriter.serialize(format, obj).getBytes(), true);
 	}
+
+    @Override
+    public boolean upsert(final StorageKey key, final byte[] bytes, final boolean hint_content_likely_to_be_compressible)
+    {
+        Validator.max(bytes.length, MAX_TRANSFER_BYTES_IN_BYTES);
+        
+        if (isReadOnly()) return false;
+
+        return upsert(key, new ByteArrayInputStream(bytes), hint_content_likely_to_be_compressible);
+    }
+
+    @Override
+    @SuppressWarnings("resource")
+    public byte[] getCurrentVersion(final StorageKey key, final byte[] default_value)
+    {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        OutputStream out = new IOUtils.LimitBytesOutputStream(bytes, MAX_TRANSFER_BYTES_IN_BYTES);
+        
+        final boolean result = getCurrentVersion(key, out);
+        
+        if (result)
+        {
+            return bytes.toByteArray();
+        }
+        else
+        {
+            return default_value;
+        }
+    }
 
 	public boolean exists(Storable obj, boolean default_value)
 	{
@@ -79,5 +124,4 @@ public abstract class Storage implements IStorage
 	{
 		return is_readonly;
 	}
-
 }

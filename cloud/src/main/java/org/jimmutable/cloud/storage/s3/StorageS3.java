@@ -2,8 +2,6 @@ package org.jimmutable.cloud.storage.s3;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -24,6 +22,7 @@ import org.jimmutable.cloud.storage.StorageMetadata;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.threading.OperationPool;
 import org.jimmutable.core.threading.OperationRunnable;
+import org.jimmutable.core.utils.IOUtils;
 import org.jimmutable.core.utils.Validator;
 
 import com.amazonaws.services.s3.AmazonS3Client;
@@ -38,11 +37,15 @@ import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
 
+
 public class StorageS3 extends Storage
 {
     static private final Logger LOGGER = LogManager.getLogger(StorageS3.class);
     
     static private final String BUCKET_NAME_PREFIX = "jimmutable-app-";
+    
+    static private final long TRANSFER_MANAGER_POLLING_INTERVAL_MS = 500L;
+    
     
     final private AmazonS3Client client;
     final private String bucket_name;
@@ -76,18 +79,11 @@ public class StorageS3 extends Storage
         }
     }
     
-    @Override
-    public boolean upsert(final StorageKey key, final byte[] bytes, final boolean hint_content_likely_to_be_compressible)
-    {
-        // TODO If bytes.length > 25 MB, log a warning. No need to throw error since the damage is done at that point.
-        return upsert(key, new ByteArrayInputStream(bytes), hint_content_likely_to_be_compressible);
-    }
-    
-    // TODO Elevate into IStorage
-    // TODO Javadoc
     public boolean upsert(final StorageKey key, final InputStream source, final boolean hint_content_likely_to_be_compressible)
     {
         Validator.notNull(key, source);
+        
+        if (isReadOnly()) return false;
 
         final String log_prefix = "[upsert(" + key + ")] ";
         
@@ -96,18 +92,9 @@ public class StorageS3 extends Storage
             final File temp = File.createTempFile("storage_s3_", null);
             
             LOGGER.trace(log_prefix + "Writing source to temp file");
-            // TODO This should be a lib method somewhere
             try (OutputStream fout = new BufferedOutputStream(new FileOutputStream(temp)))
             {
-                byte[] buf = new byte[1024 * 1024];
-                int bytes_read = 0;
-                
-                do
-                {
-                    bytes_read = source.read(buf);
-                    fout.write(buf, 0, bytes_read);
-                }
-                while (bytes_read > 0);
+                IOUtils.transferAllBytes(source, fout);
             }
             
             final String s3_key = key.toString();
@@ -125,7 +112,7 @@ public class StorageS3 extends Storage
                 while (! upload.isDone())
                 {
                     LOGGER.trace(log_prefix + "Progress: " + upload.getProgress().getPercentTransferred());
-                    try { Thread.sleep(500); } catch (Exception e) { e.printStackTrace(); } // give progress updates every .5 sec
+                    try { Thread.sleep(TRANSFER_MANAGER_POLLING_INTERVAL_MS); } catch (Exception e) { e.printStackTrace(); } // give progress updates every .5 sec
                 }
                 
                 LOGGER.trace(log_prefix + "Progress: " + upload.getProgress().getPercentTransferred()); // give the 100 percent before exiting
@@ -149,27 +136,6 @@ public class StorageS3 extends Storage
         return false;
     }
     
-    @Override
-    public byte[] getCurrentVersion(final StorageKey key, final byte[] default_value)
-    {
-        // TODO Limit the size of the output stream to 25MB. Log error and return default_value.
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        final boolean result = getCurrentVersion(key, bytes);
-        
-        if (result)
-        {
-            // TODO Not in love with copying the array, but may not be a better choice
-            return bytes.toByteArray();
-        }
-        else
-        {
-            return default_value;
-        }
-    }
-    
-    // TODO Elevate into IStorage
-    // sink is flushed but not closed
-    // return false on error, true otherwise (like delete)
     public boolean getCurrentVersion(final StorageKey key, final OutputStream sink)
     {
         Validator.notNull(key, sink);
@@ -194,7 +160,7 @@ public class StorageS3 extends Storage
                 while (! download.isDone())
                 {
                     LOGGER.trace(log_prefix + "Progress: " + download.getProgress().getPercentTransferred());
-                    try { Thread.sleep(500); } catch (Exception e) { e.printStackTrace(); } // give progress updates every .5 sec
+                    try { Thread.sleep(TRANSFER_MANAGER_POLLING_INTERVAL_MS); } catch (Exception e) { e.printStackTrace(); } // give progress updates every .5 sec
                 }
                 
                 LOGGER.trace(log_prefix + "Progress: " + download.getProgress().getPercentTransferred()); // give the 100 percent before exiting
@@ -210,22 +176,9 @@ public class StorageS3 extends Storage
             }
             
             LOGGER.trace(log_prefix + "Writing temp file to sink");
-            // TODO This should be a lib method somewhere
             try (InputStream fin = new BufferedInputStream(new FileInputStream(temp)))
             {
-                byte[] buf = new byte[1024 * 1024];
-                int bytes_read = 0;
-                
-                do
-                {
-                    bytes_read = fin.read(buf);
-                    sink.write(buf, 0, bytes_read);
-                }
-                while (bytes_read > 0);
-            }
-            finally
-            {
-                sink.flush();
+                IOUtils.transferAllBytes(fin, sink);
             }
             
             return true;
@@ -241,6 +194,8 @@ public class StorageS3 extends Storage
     @Override
     public boolean delete(final StorageKey key)
     {
+        if (isReadOnly()) return false;
+
         try
         {
             client.deleteObject(new DeleteObjectRequest(bucket_name, key.toString()));
