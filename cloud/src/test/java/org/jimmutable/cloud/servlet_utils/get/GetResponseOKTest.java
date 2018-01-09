@@ -1,6 +1,8 @@
 package org.jimmutable.cloud.servlet_utils.get;
 
 
+import static org.junit.Assert.assertTrue;
+
 import org.jimmutable.cloud.StubTest;
 import org.jimmutable.cloud.servlet_utils.get.GetResponseOK;
 import org.jimmutable.core.examples.book.BindingType;
@@ -24,15 +26,15 @@ public class GetResponseOKTest extends StubTest
 			System.out.println(result.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 		} catch ( Exception e )
 		{
-			assert (false);
+			assertTrue (false);
 		}
 
-		assert (result.getSimpleHTTPResponseCode() == GetResponseOK.HTTP_STATUS_CODE_OK);
-		assert (result.getSimpleObject() != null);
+		assertTrue (result.getSimpleHTTPResponseCode() == GetResponseOK.HTTP_STATUS_CODE_OK);
+		assertTrue (result.getSimpleObject() != null);
 
 		StandardImmutableObject<Book> data_object = new Book("test title", 50, "100", BindingType.HARD_COVER, "test author");
 		result = new GetResponseOK(data_object);
-		assert (result.getSimpleObject() == data_object);
+		assertTrue (result.getSimpleObject() == data_object);
 	}
 
 	@Test
@@ -55,6 +57,6 @@ public class GetResponseOKTest extends StubTest
 		GetResponseOK obj = (GetResponseOK)StandardObject.deserialize(obj_string);
 
 		Book requiredObject = (Book) obj.getSimpleObject();
-		assert (requiredObject.getSimpleTitle().equals("TEST TITLE"));
+		assertTrue (requiredObject.getSimpleTitle().equals("TEST TITLE"));
 	}
 }

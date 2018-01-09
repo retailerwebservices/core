@@ -1,7 +1,8 @@
 package org.jimmutable.cloud.servlet_utils.get;
 
+import static org.junit.Assert.assertTrue;
+
 import org.jimmutable.cloud.StubTest;
-import org.jimmutable.cloud.servlet_utils.get.GetResponseError;
 import org.jimmutable.core.objects.StandardObject;
 import org.junit.Test;
 
@@ -17,15 +18,15 @@ public class GetResponseErrorTest extends StubTest
 			result = new GetResponseError();
 		} catch ( Exception e )
 		{
-			assert (false);
+			assertTrue (false);
 		}
 
-		assert (result.getSimpleHTTPResponseCode() == GetResponseError.HTTP_STATUS_CODE_ERROR);
-		assert (result.getOptionalMessage(null) == null);
+		assertTrue (result.getSimpleHTTPResponseCode() == GetResponseError.HTTP_STATUS_CODE_ERROR);
+		assertTrue (result.getOptionalMessage(null) == null);
 
 		result = new GetResponseError("Test Message");
-		assert (result.getOptionalMessage(null).equals("Test Message"));
-		assert (result.getOptionalMessage("default").equals("Test Message"));
+		assertTrue (result.getOptionalMessage(null).equals("Test Message"));
+		assertTrue (result.getOptionalMessage("default").equals("Test Message"));
 	}
 
 	@Test
@@ -38,6 +39,6 @@ public class GetResponseErrorTest extends StubTest
 				, "}");
 
 		GetResponseError obj = (GetResponseError) StandardObject.deserialize(obj_string);
-		assert (obj.getOptionalMessage(null).equals("Test Deserialization"));
+		assertTrue (obj.getOptionalMessage(null).equals("Test Deserialization"));
 	}
 }

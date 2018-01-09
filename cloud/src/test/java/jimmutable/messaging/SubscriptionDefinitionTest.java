@@ -1,33 +1,36 @@
 package jimmutable.messaging;
 
+import static org.junit.Assert.assertTrue;
+
 import org.jimmutable.cloud.messaging.SubscriptionDefinition;
-import org.jimmutable.core.utils.StringableTester;
+import org.jimmutable.core.utils.StringableTestingUtils;
+import org.junit.Test;
 
-import junit.framework.TestCase;
-
-public class SubscriptionDefinitionTest extends TestCase
+public class SubscriptionDefinitionTest
 {
-	private StringableTester<SubscriptionDefinition> tester = new StringableTester(new SubscriptionDefinition.MyConverter());
+	private StringableTestingUtils<SubscriptionDefinition> tester = new StringableTestingUtils(new SubscriptionDefinition.MyConverter());
 	
+	@Test
 	public void testValid()
 	{
-		tester.assertValid("topic/topics/queue/queues", "topic/topics/queue/queues");
-		tester.assertValid("topic/topics/queue/queues1234", "topic/topics/queue/queues1234");
-		tester.assertValid("TOPIC/topics/queue/queues", "topic/topics/queue/queues");
-		tester.assertValid(" TOPIC/topics/queue/queues ", "topic/topics/queue/queues");
+		assertTrue(tester.assertValid("topic/topics/queue/queues", "topic/topics/queue/queues"));
+		assertTrue(tester.assertValid("topic/topics/queue/queues1234", "topic/topics/queue/queues1234"));
+		assertTrue(tester.assertValid("TOPIC/topics/queue/queues", "topic/topics/queue/queues"));
+		assertTrue(tester.assertValid(" TOPIC/topics/queue/queues ", "topic/topics/queue/queues"));
 	}
 
+	@Test
 	public void testInvalid()
 	{
-		tester.assertInvalid(null);
-		tester.assertInvalid("");
-		tester.assertInvalid(" ");
-		tester.assertInvalid("1");
-		tester.assertInvalid("foo_bar");
-		tester.assertInvalid(".foo");
-		tester.assertInvalid("foo.");
-		tester.assertInvalid("foo..bar");
-		tester.assertInvalid("some_id");
-		tester.assertInvalid("topic/topics/queue/");
+		assertTrue(tester.assertInvalid(null));
+		assertTrue(tester.assertInvalid(""));
+		assertTrue(tester.assertInvalid(" "));
+		assertTrue(tester.assertInvalid("1"));
+		assertTrue(tester.assertInvalid("foo_bar"));
+		assertTrue(tester.assertInvalid(".foo"));
+		assertTrue(tester.assertInvalid("foo."));
+		assertTrue(tester.assertInvalid("foo..bar"));
+		assertTrue(tester.assertInvalid("some_id"));
+		assertTrue(tester.assertInvalid("topic/topics/queue/"));
 	}
 }

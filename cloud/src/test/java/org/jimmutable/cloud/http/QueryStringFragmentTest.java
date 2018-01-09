@@ -1,24 +1,24 @@
 package org.jimmutable.cloud.http;
 
-import org.jimmutable.cloud.http.QueryStringFragment;
-import org.jimmutable.cloud.http.QueryStringKey;
-import org.jimmutable.core.utils.StringableTester;
+import static org.junit.Assert.assertTrue;
+
+import org.jimmutable.core.utils.StringableTestingUtils;
 import org.jimmutable.core.utils.TestingUtils;
 import org.junit.Test;
 
 public class QueryStringFragmentTest 
 {
-	StringableTester<QueryStringFragment> tester = new StringableTester(new QueryStringFragment.MyConverter());
+	StringableTestingUtils<QueryStringFragment> tester = new StringableTestingUtils(new QueryStringFragment.MyConverter());
 	
 	@Test
 	public void testEncodingAndDecoding()
 	{
-		assert(QueryStringFragment.URLDecode("hello%20world").equals("hello world"));
-		assert(QueryStringFragment.URLDecode("hello%20world%3Dhello%2Bworld").equals("hello world=hello+world"));
+		assertTrue(QueryStringFragment.URLDecode("hello%20world").equals("hello world"));
+		assertTrue(QueryStringFragment.URLDecode("hello%20world%3Dhello%2Bworld").equals("hello world=hello+world"));
 		
 		
-		assert(QueryStringFragment.URLEncode("hello world").equals("hello+world"));
-		assert(QueryStringFragment.URLEncode("a&b=c+d").equals("a%26b%3Dc%2Bd"));
+		assertTrue(QueryStringFragment.URLEncode("hello world").equals("hello+world"));
+		assertTrue(QueryStringFragment.URLEncode("a&b=c+d").equals("a%26b%3Dc%2Bd"));
 		
 		testOneStringEncodeDecode("a&b=c+d");
 		testOneStringEncodeDecode("+=");
@@ -34,43 +34,47 @@ public class QueryStringFragmentTest
 		QueryStringFragment fragment;
 		
 		{
-			fragment = tester.assertValid("foo=bar");
-			
+			fragment = tester.create("foo=bar", null);
+			assertTrue(fragment != null);
+
 			assert(fragment.getSimpleKey().equals(new QueryStringKey("foo")));
 			assert(fragment.getSimpleFragmentDecodedValue().equals("bar"));
 		}
 		
 		{
-			fragment = tester.assertValid("FOO=BaR");
-			
-			assert(fragment.getSimpleKey().equals(new QueryStringKey("foo")));
-			assert(fragment.getSimpleFragmentDecodedValue().equals("BaR"));
+			fragment = tester.create("FOO=BaR", null);
+			assertTrue(fragment != null);
+
+			assertTrue(fragment.getSimpleKey().equals(new QueryStringKey("foo")));
+			assertTrue(fragment.getSimpleFragmentDecodedValue().equals("BaR"));
 		}
 		
 		{
-			fragment = tester.assertValid(" FOO!! =BaR");
-			
-			assert(fragment.getSimpleKey().equals(new QueryStringKey("foo")));
-			assert(fragment.getSimpleFragmentDecodedValue().equals("BaR"));
+			fragment = tester.create(" FOO!! =BaR", null);
+			assertTrue(fragment != null);
+
+			assertTrue(fragment.getSimpleKey().equals(new QueryStringKey("foo")));
+			assertTrue(fragment.getSimpleFragmentDecodedValue().equals("BaR"));
 		}
 		
 		{
-			fragment = tester.assertValid("foo=bar baz");
+			fragment = tester.create("foo=bar baz", null);
 			
-			assert(fragment.getSimpleKey().equals(new QueryStringKey("foo")));
-			assert(fragment.getSimpleFragmentDecodedValue().equals("bar baz"));
+			assertTrue(fragment != null);
+			
+			assertTrue(fragment.getSimpleKey().equals(new QueryStringKey("foo")));
+			assertTrue(fragment.getSimpleFragmentDecodedValue().equals("bar baz"));
 		}
 		
 		testOneFragmentFromPieces(new QueryStringKey("foo"),"bar");
 	}
 	
-	
-	private void testOneStringEncodeDecode(String value)
+	public void testOneStringEncodeDecode(String value)
 	{
 		String tmp = QueryStringFragment.URLEncode(value);
 		tmp = QueryStringFragment.URLDecode(tmp);
 		
-		assert(tmp.equals(value));
+		assertTrue(tmp.equals(value));
 	}
 	
 	public void testOneFragmentFromPieces(QueryStringKey key, String value)
@@ -78,10 +82,8 @@ public class QueryStringFragmentTest
 		QueryStringFragment fragment = new QueryStringFragment(key,value);
 		
 		QueryStringFragment from_string = new QueryStringFragment(fragment.getSimpleValue());
-		
-		
-		
-		assert(from_string.getSimpleKey().equals(key));
+
+		assertTrue(from_string.getSimpleKey().equals(key));
 		///assert(from_string.getSimpleFragmentDecodedValue());
 	}
 }

@@ -1,106 +1,113 @@
 package org.jimmutable.cloud.http;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.Objects;
 
 import org.jimmutable.cloud.http.QueryString;
 import org.jimmutable.cloud.http.QueryStringFragment;
 import org.jimmutable.cloud.http.QueryStringKey;
 import org.jimmutable.core.utils.StringableTester;
+import org.jimmutable.core.utils.StringableTestingUtils;
 import org.junit.Test;
 
 public class QueryStringTest
 {
-	StringableTester<QueryString> tester = new StringableTester(new QueryString.MyConverter());
+	StringableTestingUtils<QueryString> tester = new StringableTestingUtils(new QueryString.MyConverter());
 	
 	@Test
 	public void testSimple()
 	{
-		QueryString qs = tester.assertValid("foo=bar&baz=quz");
+		QueryString qs = tester.create("foo=bar&baz=quz", null);
+		assertTrue(qs != null);
 		
-		assert(qs.containsKey("foo"));
-		assert(qs.containsKey("baz"));
-		assert(qs.containsKey("FOO"));
-		assert(qs.containsKey("BAZ"));
+		assertTrue(qs.containsKey("foo"));
+		assertTrue(qs.containsKey("baz"));
+		assertTrue(qs.containsKey("FOO"));
+		assertTrue(qs.containsKey("BAZ"));
 		
 		
-		assert(!qs.containsKey((QueryStringKey)null));
-		assert(!qs.containsKey((String)null));
-		assert(!qs.containsKey("bar"));
-		assert(!qs.containsKey("quz"));
+		assertTrue(!qs.containsKey((QueryStringKey)null));
+		assertTrue(!qs.containsKey((String)null));
+		assertTrue(!qs.containsKey("bar"));
+		assertTrue(!qs.containsKey("quz"));
 		
 	
-		assert(Objects.equals(qs.getOptionalValue("foo", null),"bar"));
-		assert(Objects.equals(qs.getOptionalValue("baz", null),"quz"));
+		assertTrue(Objects.equals(qs.getOptionalValue("foo", null),"bar"));
+		assertTrue(Objects.equals(qs.getOptionalValue("baz", null),"quz"));
 		
-		assert(Objects.equals(qs.getOptionalValue("FOO", null),"bar"));
-		assert(Objects.equals(qs.getOptionalValue("BAZ", null),"quz"));
+		assertTrue(Objects.equals(qs.getOptionalValue("FOO", null),"bar"));
+		assertTrue(Objects.equals(qs.getOptionalValue("BAZ", null),"quz"));
 		
-		assert(Objects.equals(qs.getOptionalValue("zztop", null),null));
-		assert(Objects.equals(qs.getOptionalValue("zztop", "foo"),"foo"));
+		assertTrue(Objects.equals(qs.getOptionalValue("zztop", null),null));
+		assertTrue(Objects.equals(qs.getOptionalValue("zztop", "foo"),"foo"));
 		
-		assert(Objects.equals(qs.getOptionalValue(new QueryStringKey("foo"), 1,null),null));
+		assertTrue(Objects.equals(qs.getOptionalValue(new QueryStringKey("foo"), 1,null),null));
 	}
 	
 	@Test
 	public void testMultipleValues()
 	{
-		QueryString qs = tester.assertValid("foo=bar&foo=baz&foo=quz");
+		QueryString qs = tester.create("foo=bar&foo=baz&foo=quz", null);
+		assertTrue(qs != null);
+
+		assertTrue(qs.containsKey("foo"));
 		
-		assert(qs.containsKey("foo"));
 		
-		
-		assert(!qs.containsKey((QueryStringKey)null));
-		assert(!qs.containsKey((String)null));
-		assert(!qs.containsKey("baz"));
-		assert(!qs.containsKey("quz"));
+		assertTrue(!qs.containsKey((QueryStringKey)null));
+		assertTrue(!qs.containsKey((String)null));
+		assertTrue(!qs.containsKey("baz"));
+		assertTrue(!qs.containsKey("quz"));
 		
 	
-		assert(Objects.equals(qs.getOptionalValue(new QueryStringKey("foo"), 0,null),"bar"));
-		assert(Objects.equals(qs.getOptionalValue(new QueryStringKey("foo"), 1,null),"baz")); 
-		assert(Objects.equals(qs.getOptionalValue(new QueryStringKey("foo"), 2,null),"quz"));
+		assertTrue(Objects.equals(qs.getOptionalValue(new QueryStringKey("foo"), 0,null),"bar"));
+		assertTrue(Objects.equals(qs.getOptionalValue(new QueryStringKey("foo"), 1,null),"baz")); 
+		assertTrue(Objects.equals(qs.getOptionalValue(new QueryStringKey("foo"), 2,null),"quz"));
 	}
 	
 	
 	@Test
 	public void testCaseSensativity()
 	{
-		QueryString qs = tester.assertValid("FOO=BAR&BAZ=QUZ");
+		QueryString qs = tester.create("FOO=BAR&BAZ=QUZ", null);
+		assertTrue(qs != null);
+
+		assertTrue(qs.containsKey("foo"));
+		assertTrue(qs.containsKey("baz"));
+		assertTrue(qs.containsKey("FOO"));
+		assertTrue(qs.containsKey("BAZ"));
 		
-		assert(qs.containsKey("foo"));
-		assert(qs.containsKey("baz"));
-		assert(qs.containsKey("FOO"));
-		assert(qs.containsKey("BAZ"));
 		
-		
-		assert(!qs.containsKey((QueryStringKey)null));
-		assert(!qs.containsKey((String)null));
-		assert(!qs.containsKey("bar"));
-		assert(!qs.containsKey("quz"));
+		assertTrue(!qs.containsKey((QueryStringKey)null));
+		assertTrue(!qs.containsKey((String)null));
+		assertTrue(!qs.containsKey("bar"));
+		assertTrue(!qs.containsKey("quz"));
 		
 	
-		assert(Objects.equals(qs.getOptionalValue("foo", null),"BAR"));
-		assert(Objects.equals(qs.getOptionalValue("baz", null),"QUZ"));
+		assertTrue(Objects.equals(qs.getOptionalValue("foo", null),"BAR"));
+		assertTrue(Objects.equals(qs.getOptionalValue("baz", null),"QUZ"));
 		
-		assert(Objects.equals(qs.getOptionalValue("FOO", null),"BAR"));
-		assert(Objects.equals(qs.getOptionalValue("BAZ", null),"QUZ"));
+		assertTrue(Objects.equals(qs.getOptionalValue("FOO", null),"BAR"));
+		assertTrue(Objects.equals(qs.getOptionalValue("BAZ", null),"QUZ"));
 		
-		assert(Objects.equals(qs.getOptionalValue("zztop", null),null));
-		assert(Objects.equals(qs.getOptionalValue("zztop", "foo"),"foo"));
+		assertTrue(Objects.equals(qs.getOptionalValue("zztop", null),null));
+		assertTrue(Objects.equals(qs.getOptionalValue("zztop", "foo"),"foo"));
 		
-		assert(Objects.equals(qs.getOptionalValue(new QueryStringKey("foo"), 1,null),null));
+		assertTrue(Objects.equals(qs.getOptionalValue(new QueryStringKey("foo"), 1,null),null));
 	}
 	
 	@Test
 	public void testInvalid()
 	{
-		tester.assertInvalid(null);
+		assertTrue(tester.assertInvalid(null));
 	}
 	
 	@Test
 	public void testEmptyString()
 	{
-		QueryString qs = tester.assertValid("");
-		
+		QueryString qs = tester.create("", null);
+		assertTrue(qs != null);
+
 		int count = 0;
 		
 		for ( QueryStringFragment f : qs.getSimpleQueryStringFragments() )
@@ -108,7 +115,7 @@ public class QueryStringTest
 			count++;
 		}
 		
-		assert(count == 0);
+		assertTrue(count == 0);
 	}
 	
 }

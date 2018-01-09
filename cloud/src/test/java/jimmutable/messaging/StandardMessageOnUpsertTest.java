@@ -1,6 +1,7 @@
 package jimmutable.messaging;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.jimmutable.cloud.StubTest;
 import org.jimmutable.cloud.messaging.StandardMessageOnUpsert;
@@ -30,8 +31,8 @@ public class StandardMessageOnUpsertTest extends StubTest
 		StandardMessageOnUpsert not_equal_1 = new StandardMessageOnUpsert(new Kind("bar"),new ObjectId(1));
 		StandardMessageOnUpsert not_equal_2 = new StandardMessageOnUpsert(new Kind("foo"),new ObjectId(2));
 		
-		assert(!obj.equals(not_equal_1));
-		assert(!obj.equals(not_equal_2));
+		assertTrue(!obj.equals(not_equal_1));
+		assertTrue(!obj.equals(not_equal_2));
 		
 		System.out.println(obj.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 	}

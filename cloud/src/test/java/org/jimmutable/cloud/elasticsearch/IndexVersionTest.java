@@ -1,32 +1,27 @@
 package org.jimmutable.cloud.elasticsearch;
 
-import org.jimmutable.core.objects.Stringable;
-import org.jimmutable.util.StringableTest;
+import static org.junit.Assert.assertTrue;
+
+import org.jimmutable.core.utils.StringableTestingUtils;
 import org.junit.Test;
 
-public class IndexVersionTest extends StringableTest
+public class IndexVersionTest
 {
-
-	@Override
-	public Stringable fromString(String src)
-	{
-		return new IndexVersion(src);
-	}
+	private StringableTestingUtils<IndexVersion> tester = new StringableTestingUtils(new IndexVersion.MyConverter());
 
 	@Test
 	public void valid()
 	{
-		super.assertValid("v0192837465", "v0192837465");
-		super.assertValid(" V2 ", "v2");
+		assertTrue(tester.assertValid("v0192837465", "v0192837465"));
+		assertTrue(tester.assertValid(" V2 ", "v2"));
 	}
 
 	@Test
 	public void inValid()
 	{
-		super.assertNotValid("");
-		super.assertNotValid("v");
-		super.assertNotValid("vv");
-		super.assertNotValid("v 2");
+		assertTrue(tester.assertInvalid(""));
+		assertTrue(tester.assertInvalid("v"));
+		assertTrue(tester.assertInvalid("vv"));
+		assertTrue(tester.assertInvalid("v 2"));
 	}
-
 }

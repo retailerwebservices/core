@@ -1,5 +1,7 @@
 package jimmutable.messaging.dev_local;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -92,29 +94,27 @@ public class FileSystemTest
 		Set<SubscriptionDefinition> all_subs = fs.listAllSubscriptions();
 		
 		
-		assert(all_subs.contains(new SubscriptionDefinition("app-one","public", "app-two", "thumbnail-creator")));
-		assert(all_subs.contains(new SubscriptionDefinition("app-one","public", "app-two", "user-emailer")));
-		assert(all_subs.contains(new SubscriptionDefinition("app-one","public", "app-one", "public-counter")));
+		assertTrue(all_subs.contains(new SubscriptionDefinition("app-one","public", "app-two", "thumbnail-creator")));
+		assertTrue(all_subs.contains(new SubscriptionDefinition("app-one","public", "app-two", "user-emailer")));
+		assertTrue(all_subs.contains(new SubscriptionDefinition("app-one","public", "app-one", "public-counter")));
 		
-		assert(all_subs.contains(new SubscriptionDefinition("app-one","private", "app-one", "search-updater")));
+		assertTrue(all_subs.contains(new SubscriptionDefinition("app-one","private", "app-one", "search-updater")));
 		
-		assert(all_subs.contains(new SubscriptionDefinition("app-two","public", "app-one", "thumb-analytics")));
+		assertTrue(all_subs.contains(new SubscriptionDefinition("app-two","public", "app-one", "thumb-analytics")));
 		
-		assert(all_subs.size() == 5);
+		assertTrue(all_subs.size() == 5);
 	}
+	
 	@Test
 	public void testListAllTopics()
 	{
 		Set<TopicDefinition> topics = fs.listAllTopics();
 		
-		assert(topics.size() == 3);
+		assertTrue(topics.size() == 3);
 		
-		assert(topics.contains(new TopicDefinition("app-one","public")));
-		assert(topics.contains(new TopicDefinition("app-one","private")));
-		assert(topics.contains(new TopicDefinition("app-two","public")));
+		assertTrue(topics.contains(new TopicDefinition("app-one","public")));
+		assertTrue(topics.contains(new TopicDefinition("app-one","private")));
+		assertTrue(topics.contains(new TopicDefinition("app-two","public")));
 	}
-	
-	
-	
 }
 

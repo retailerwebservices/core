@@ -1,19 +1,21 @@
 package org.jimmutable.cloud.elasticsearch;
 
-import org.jimmutable.core.objects.Stringable;
-import org.jimmutable.util.StringableTest;
+import static org.junit.Assert.assertTrue;
+
+import org.jimmutable.core.utils.StringableTestingUtils;
 import org.junit.Test;
 
-public class IndexDefinitionTest extends StringableTest
+public class IndexDefinitionTest
 {
-
+	private StringableTestingUtils<IndexDefinition> tester = new StringableTestingUtils(new IndexDefinition.MyConverter());
+	
 	@Test
 	public void inValid()
 	{
-		assertNotValid(null);
-		assertNotValid("");
-		assertNotValid("foo!bar:v");
-		assertNotValid("foo/bar");
+		assertTrue(tester.assertInvalid(null));
+		assertTrue(tester.assertInvalid(""));
+		assertTrue(tester.assertInvalid("foo!bar:v"));
+		assertTrue(tester.assertInvalid("foo!bar"));
 
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < 65; i++)
@@ -21,28 +23,20 @@ public class IndexDefinitionTest extends StringableTest
 			sb.append('a');
 		}
 
-		assertNotValid(sb.append("/").append("theindexId").toString());
+		assertTrue(tester.assertInvalid(sb.append("/").append("theindexId").toString()));
 
-		assertNotValid("12");
-
-		assertNotValid("foo:bar");
-		assertNotValid("foo:bar:");
-		assertNotValid("foo:bar:v");
-		assertNotValid("foo:bar:2");
-
+		assertTrue(tester.assertInvalid("12"));
+		
+		assertTrue(tester.assertInvalid("foo:bar"));
+		assertTrue(tester.assertInvalid("foo:bar:"));
+		assertTrue(tester.assertInvalid("foo:bar:v"));
+		assertTrue(tester.assertInvalid("foo:bar:2"));
 	}
 
 	@Test
 	public void valid()
 	{
-		assertValid("foo:bar:v2", "foo:bar:v2");
-		assertValid("FOO:BAR:V2", "foo:bar:v2");
+		assertTrue(tester.assertValid("foo:bar:v2", "foo:bar:v2"));
+		assertTrue(tester.assertValid("FOO:BAR:V2", "foo:bar:v2"));
 	}
-
-	@Override
-	public Stringable fromString(String src)
-	{
-		return new IndexDefinition(src);
-	}
-
 }

@@ -1,15 +1,15 @@
 package org.jimmutable.cloud.servlet_utils.search;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
-import org.jimmutable.core.objects.Stringable;
-import org.jimmutable.util.StringableTest;
+import org.jimmutable.core.utils.StringableTestingUtils;
 import org.junit.Test;
 
-public class SearchFieldIdTest extends StringableTest
+public class SearchFieldIdTest
 {
-	
+	private StringableTestingUtils<SearchFieldId> tester = new StringableTestingUtils(new SearchFieldId.MyConverter());
+
 	@Test
 	public void testConverter()
 	{
@@ -20,24 +20,15 @@ public class SearchFieldIdTest extends StringableTest
 	@Test
 	public void inValid()
 	{
-		assertNotValid(null);
-//		assertNotValid("foo/bar");
-//		assertNotValid("foo:bar");
-//		assertNotValid("foo!");
+		assertTrue(tester.assertInvalid(null));
 	}
 
 	@Test
 	public void valid()
 	{
-		assertValid("abb_1924 ", "abb_1924");
-		assertValid("abb-1924", "abb-1924");
-		assertValid("abB1924", "abb1924");
-		assertValid("abb1924", "abb1924");
+		assertTrue(tester.assertValid("abb_1924 ", "abb_1924"));
+		assertTrue(tester.assertValid("abb-1924", "abb-1924"));
+		assertTrue(tester.assertValid("abB1924", "abb1924"));
+		assertTrue(tester.assertValid("abb1924", "abb1924"));
 	}
-
-	public Stringable fromString( String src )
-	{
-		return new SearchFieldId(src);
-	}
-	
 }

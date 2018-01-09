@@ -1,33 +1,39 @@
 package jimmutable.messaging;
 
 
+import static org.junit.Assert.assertTrue;
+
 import org.jimmutable.cloud.messaging.QueueId;
 import org.jimmutable.core.utils.StringableTester;
+import org.jimmutable.core.utils.StringableTestingUtils;
+import org.junit.Test;
 
 import junit.framework.TestCase;
 
-public class QueueIdTest extends TestCase
+public class QueueIdTest
 {
-	private StringableTester<QueueId> tester = new StringableTester(new QueueId.MyConverter());
+	private StringableTestingUtils<QueueId> tester = new StringableTestingUtils(new QueueId.MyConverter());
 
+	@Test
 	public void testValid()
 	{
-		tester.assertValid("some-id", "some-id");
-		tester.assertValid("someid1234", "someid1234");
-		tester.assertValid("SOME-id", "some-id");
-		tester.assertValid(" SOME-id ", "some-id");
+		assertTrue(tester.assertValid("some-id", "some-id"));
+		assertTrue(tester.assertValid("someid1234", "someid1234"));
+		assertTrue(tester.assertValid("SOME-id", "some-id"));
+		assertTrue(tester.assertValid(" SOME-id ", "some-id"));
 	}
 
+	@Test
 	public void testInvalid()
 	{
-		tester.assertInvalid(null);
-		tester.assertInvalid("");
-		tester.assertInvalid(" ");
-		tester.assertInvalid("1");
-		tester.assertInvalid("foo_bar");
-		tester.assertInvalid(".foo");
-		tester.assertInvalid("foo.");
-		tester.assertInvalid("foo..bar");
-		tester.assertInvalid("some_id");
+		assertTrue(tester.assertInvalid(null));
+		assertTrue(tester.assertInvalid(""));
+		assertTrue(tester.assertInvalid(" "));
+		assertTrue(tester.assertInvalid("1"));
+		assertTrue(tester.assertInvalid("foo_bar"));
+		assertTrue(tester.assertInvalid(".foo"));
+		assertTrue(tester.assertInvalid("foo."));
+		assertTrue(tester.assertInvalid("foo..bar"));
+		assertTrue(tester.assertInvalid("some_id"));
 	}
 }
