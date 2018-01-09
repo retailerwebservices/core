@@ -1,6 +1,5 @@
 package org.jimmutable.core.serialization;
 
-import org.jimmutable.core.examples.product_data.BrandCode;
 import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.Stringable;
 
@@ -8,8 +7,9 @@ import junit.framework.TestCase;
 
 /**
  * This class cannot be used across projects as it lives in the test folder of
- * Jimmutable core. In order to test a Stringable using utilities from this project
- * you should instead use StringableTestingUtils.
+ * Jimmutable core. The test folder is local to just core. In order to test a
+ * Stringable using utilities from jimmutable you should instead use
+ * StringableTestingUtils from jimmutable core.
  */
 abstract public class StringableTest extends TestCase
 {
@@ -26,7 +26,7 @@ abstract public class StringableTest extends TestCase
 		try 
 		{
 			Stringable test = fromString(src_code);
-			assert(false); // failure, should have not been valid
+			fail(); // failure, should have not been valid
 		}
 		catch(ValidationException e)
 		{
@@ -44,7 +44,7 @@ abstract public class StringableTest extends TestCase
 		catch(Exception e)
 		{
 			e.printStackTrace();
-			assert(false);
+			fail();
 		}
 	}
 }

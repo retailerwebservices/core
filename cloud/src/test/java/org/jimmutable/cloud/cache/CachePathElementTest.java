@@ -1,31 +1,32 @@
 package org.jimmutable.cloud.cache;
 
+import static org.junit.Assert.assertTrue;
+
 import org.jimmutable.cloud.StubTest;
-import org.jimmutable.cloud.storage.StorageKeyExtension;
-import org.jimmutable.core.utils.StringableTester;
+import org.jimmutable.core.utils.StringableTestingUtils;
 import org.junit.Test;
 
 public class CachePathElementTest extends StubTest
 {
-	private StringableTester<CachePathElement> tester = new StringableTester(new CachePathElement.MyConverter());
+	private StringableTestingUtils<CachePathElement> tester = new StringableTestingUtils(new CachePathElement.MyConverter());
 
 	@Test
 	public void testValid()
 	{
-		tester.assertValid("foo", "foo");
-		tester.assertValid("FOO", "foo");
+		assertTrue(tester.isValid("foo", "foo"));
+		assertTrue(tester.isValid("FOO", "foo"));
 
-		tester.assertValid("FOO-BAR-123", "foo-bar-123");
-		tester.assertValid("F", "f");
+		assertTrue(tester.isValid("FOO-BAR-123", "foo-bar-123"));
+		assertTrue(tester.isValid("F", "f"));
 	}
 
 	@Test
 	public void testInvalid()
 	{
-		tester.assertInvalid(null);
-		tester.assertInvalid("");
-		tester.assertInvalid("/foo");
-		tester.assertInvalid("foo/");
-		tester.assertInvalid("foo.bar");
+		assertTrue(tester.isInvalid(null));
+		assertTrue(tester.isInvalid(""));
+		assertTrue(tester.isInvalid("/foo"));
+		assertTrue(tester.isInvalid("foo/"));
+		assertTrue(tester.isInvalid("foo.bar"));
 	}
 }

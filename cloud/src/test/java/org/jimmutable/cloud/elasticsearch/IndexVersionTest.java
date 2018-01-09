@@ -12,16 +12,16 @@ public class IndexVersionTest
 	@Test
 	public void valid()
 	{
-		assertTrue(tester.assertValid("v0192837465", "v0192837465"));
-		assertTrue(tester.assertValid(" V2 ", "v2"));
+		assertTrue(tester.isValid("v0192837465", "v0192837465"));
+		assertTrue(tester.isValid(" V2 ", "v2"));
 	}
 
 	@Test
 	public void inValid()
 	{
-		assertTrue(tester.assertInvalid(""));
-		assertTrue(tester.assertInvalid("v"));
-		assertTrue(tester.assertInvalid("vv"));
-		assertTrue(tester.assertInvalid("v 2"));
+		assertTrue(tester.isInvalid(""));
+		assertTrue(tester.isInvalid("v"));
+		assertTrue(tester.isInvalid("vv"));
+		assertTrue(tester.isInvalid("v 2"));
 	}
 }

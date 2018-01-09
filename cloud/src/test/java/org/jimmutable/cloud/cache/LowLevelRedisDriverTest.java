@@ -1,5 +1,7 @@
 package org.jimmutable.cloud.cache;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -46,13 +48,13 @@ public class LowLevelRedisDriverTest extends StubTest
 			QueueId queue_id = new QueueId("overflow-test");
 			
 			redis.queue().clear(app, queue_id);
-			assert(redis.queue().getQueueLength(app, queue_id, 0) == 0);
+			assertTrue(redis.queue().getQueueLength(app, queue_id, 0) == 0);
 			
 			for ( int i = 0; i < 20_000; i++ )
 				redis.queue().submit(app, queue_id, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(i)));
 			
-			assert(redis.queue().getQueueLength(app, queue_id, 0) < 20_000);
-			assert(redis.queue().getQueueLength(app, queue_id, 0) > 9_000);
+			assertTrue(redis.queue().getQueueLength(app, queue_id, 0) < 20_000);
+			assertTrue(redis.queue().getQueueLength(app, queue_id, 0) > 9_000);
 		}
 		
 		// Test fan out
@@ -60,12 +62,12 @@ public class LowLevelRedisDriverTest extends StubTest
 			QueueId queue_id = new QueueId("fan-out-test");
 			
 			redis.queue().clear(app, queue_id);
-			assert(redis.queue().getQueueLength(app, queue_id, 0) == 0);
+			assertTrue(redis.queue().getQueueLength(app, queue_id, 0) == 0);
 			
 			for ( int i = 0; i < 1_000; i++ )
 				redis.queue().submit(app, queue_id, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(i)));
 			
-			assert(redis.queue().getQueueLength(app, queue_id, 0) == 1_000);
+			assertTrue(redis.queue().getQueueLength(app, queue_id, 0) == 1_000);
 			
 			TestListener one = new TestListener(10);
 			TestListener two = new TestListener(10);
@@ -89,12 +91,12 @@ public class LowLevelRedisDriverTest extends StubTest
 			
 			System.out.println();
 			
-			assert(redis.queue().getQueueLength(app, queue_id, 0) == 0);
-			assert(one.ids.size()+two.ids.size()+three.ids.size()+four.ids.size() == 1_000);
+			assertTrue(redis.queue().getQueueLength(app, queue_id, 0) == 0);
+			assertTrue(one.ids.size()+two.ids.size()+three.ids.size()+four.ids.size() == 1_000);
 			
-			assert(four.ids.size() > one.ids.size());
-			assert(four.ids.size() > two.ids.size());
-			assert(four.ids.size() > three.ids.size());
+			assertTrue(four.ids.size() > one.ids.size());
+			assertTrue(four.ids.size() > two.ids.size());
+			assertTrue(four.ids.size() > three.ids.size());
 		}
 	}
 	
@@ -119,13 +121,13 @@ public class LowLevelRedisDriverTest extends StubTest
 		
 		try { Thread.currentThread().sleep(500); } catch(Exception e) {}
 		
-		assert(listener.ids.contains(new ObjectId(1)));
-		assert(listener.ids.contains(new ObjectId(2)));
-		assert(listener.ids.contains(new ObjectId(10)));
+		assertTrue(listener.ids.contains(new ObjectId(1)));
+		assertTrue(listener.ids.contains(new ObjectId(2)));
+		assertTrue(listener.ids.contains(new ObjectId(10)));
 		
-		assert(listener2.ids.contains(new ObjectId(1)));
-		assert(listener2.ids.contains(new ObjectId(2)));
-		assert(listener2.ids.contains(new ObjectId(10)));
+		assertTrue(listener2.ids.contains(new ObjectId(1)));
+		assertTrue(listener2.ids.contains(new ObjectId(2)));
+		assertTrue(listener2.ids.contains(new ObjectId(10)));
 	}
 	
 	static private class TestListener implements SignalListener, QueueListener
@@ -168,8 +170,8 @@ public class LowLevelRedisDriverTest extends StubTest
 
 			redis.cache().set(app, key1, "Hello World", -1); 
 			
-			assert(redis.cache().exists(app, key1) == true);
-			assert(redis.cache().exists(app, key2) == false);
+			assertTrue(redis.cache().exists(app, key1) == true);
+			assertTrue(redis.cache().exists(app, key2) == false);
 		}
 		
 		// Test the acid string as a string value
@@ -181,7 +183,7 @@ public class LowLevelRedisDriverTest extends StubTest
 			
 			String from_cache = redis.cache().getString(app, key, null);
 			
-			assert(Objects.equals(acid_string, from_cache));
+			assertTrue(Objects.equals(acid_string, from_cache));
 		}
 		
 		
@@ -191,7 +193,7 @@ public class LowLevelRedisDriverTest extends StubTest
 			
 			String from_cache = redis.cache().getString(app, key, null);
 			
-			assert(Objects.equals(from_cache, null)); 
+			assertTrue(Objects.equals(from_cache, null)); 
 		}
 		
 		// Test the acid string as a key and a value!
@@ -203,7 +205,7 @@ public class LowLevelRedisDriverTest extends StubTest
 			redis.cache().set(app, key, acid_string, -1); 
 			String from_cache = redis.cache().getString(app, key, null);
 			
-			assert(Objects.equals(acid_string, from_cache));
+			assertTrue(Objects.equals(acid_string, from_cache));
 		}
 		
 		// Test TTL
@@ -213,7 +215,7 @@ public class LowLevelRedisDriverTest extends StubTest
 			redis.cache().set(app, key, "Hello World", 10_000);
 			long value = redis.cache().getTTL(app, key, -1);
 			
-			assert(value > 8_500);
+			assertTrue(value > 8_500);
 		}
 		
 		// Test TTL (unset)
@@ -223,12 +225,12 @@ public class LowLevelRedisDriverTest extends StubTest
 			redis.cache().set(app, key, "Hello World", -1);
 			long value = redis.cache().getTTL(app, key, -1);
 			
-			assert(value == -1);
+			assertTrue(value == -1);
 			
 			redis.cache().set(app, key, "Hello World", 0);
 			value = redis.cache().getTTL(app, key, -1);
 			
-			assert(value == -1);
+			assertTrue(value == -1);
 		}
 		
 		// Test delete
@@ -238,22 +240,22 @@ public class LowLevelRedisDriverTest extends StubTest
 			redis.cache().set(app, key, "Hello World", -1);
 			
 			String from_cache = redis.cache().getString(app, key, null);
-			assert(Objects.equals(from_cache, "Hello World"));
+			assertTrue(Objects.equals(from_cache, "Hello World"));
 			
 			redis.cache().delete(app, key);
 			
 			from_cache = redis.cache().getString(app, key, null);
 			
-			assert(Objects.equals(from_cache, null));
+			assertTrue(Objects.equals(from_cache, null));
 			
 			// test delete on null data
 			redis.cache().set(app, key, "Hello World", -1);
 			from_cache = redis.cache().getString(app, key, null);
-			assert(Objects.equals(from_cache, "Hello World"));
+			assertTrue(Objects.equals(from_cache, "Hello World"));
 			
 			redis.cache().set(app, key, (String)null, -1);
 			from_cache = redis.cache().getString(app, key, null);
-			assert(Objects.equals(from_cache, null));
+			assertTrue(Objects.equals(from_cache, null));
 		}
 		
 		// Test binary data
@@ -265,8 +267,8 @@ public class LowLevelRedisDriverTest extends StubTest
 			
 			byte from_cache[]  =redis.cache().getBytes(app, key, null);
 			
-			assert(from_cache != null);
-			assert(Arrays.equals(data, from_cache));
+			assertTrue(from_cache != null);
+			assertTrue(Arrays.equals(data, from_cache));
 		}
 		
 		// Test scan
@@ -284,9 +286,9 @@ public class LowLevelRedisDriverTest extends StubTest
 			
 			redis.cache().scan(app, new CacheKey("scan-test://"), op);
 			
-			assert(op.keys.size() == scan_test.size());
+			assertTrue(op.keys.size() == scan_test.size());
 			
-			assert(op.keys.containsAll(scan_test));
+			assertTrue(op.keys.containsAll(scan_test));
 		}
 		
 		// Test that a key actually expires
@@ -296,13 +298,13 @@ public class LowLevelRedisDriverTest extends StubTest
 			redis.cache().set(app, key, "Hello World", 1_000);
 			
 			String from_cache = redis.cache().getString(app, key, null);
-			assert(Objects.equals(from_cache, "Hello World"));
+			assertTrue(Objects.equals(from_cache, "Hello World"));
 			
 			try { Thread.currentThread().sleep(2000); } catch(Exception e) {}
 			
 			from_cache = redis.cache().getString(app, key, null);
 			
-			assert(Objects.equals(from_cache, null));
+			assertTrue(Objects.equals(from_cache, null));
 		}
 		
 	}

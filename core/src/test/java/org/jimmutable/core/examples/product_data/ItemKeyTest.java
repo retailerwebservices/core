@@ -42,15 +42,15 @@ public class ItemKeyTest extends TestCase
         assertEquals(one.toString(),"FOO:BAR");
         
         assertEquals(one,two);
-        assert(!one.equals(three));
+        assertTrue(!one.equals(three));
         
-        assert(one.isComplete());
-        assert(one.getSimpleBrand().isComplete());
-        assert(one.getSimplePN().isComplete());
+        assertTrue(one.isComplete());
+        assertTrue(one.getSimpleBrand().isComplete());
+        assertTrue(one.getSimplePN().isComplete());
         
-        assert(two.isComplete());
-        assert(two.getSimpleBrand().isComplete());
-        assert(two.getSimplePN().isComplete());
+        assertTrue(two.isComplete());
+        assertTrue(two.getSimpleBrand().isComplete());
+        assertTrue(two.getSimplePN().isComplete());
         
         System.out.println(one.toJavaCode(Format.XML_PRETTY_PRINT, "obj"));
     }

@@ -82,7 +82,7 @@ public class FieldCollectionTest extends TestCase
 			catch(Exception e)
 			{
 				e.printStackTrace();
-				assert(false);
+				fail();
 			}
 			
 			collection = t.getCollection(FIELD_COLLECTION, createEmtpyCollection(), ReadAs.STRING, ObjectParseTree.OnError.SKIP);
@@ -103,7 +103,7 @@ public class FieldCollectionTest extends TestCase
 			catch(Exception e)
 			{
 				e.printStackTrace();
-				assert(false);
+				fail();
 				return null;
 			}
 		}
@@ -162,7 +162,7 @@ public class FieldCollectionTest extends TestCase
 				collection.addAll(quz_values);
 				collection.retainAll(quz_values);
 
-				assert(collection.containsAll(quz_values));
+				assertTrue(collection.containsAll(quz_values));
 				assertEquals(collection.size(), quz_values.size());
 
 				collection.remove("something_not_in_the_set");
@@ -219,7 +219,7 @@ public class FieldCollectionTest extends TestCase
 			catch(Exception e)
 			{
 				e.printStackTrace();
-				assert(false);
+				fail();
 			}
 		}
 
@@ -227,22 +227,22 @@ public class FieldCollectionTest extends TestCase
 
 		public void verifyImmutable()
 		{
-			assert(!collection.isEmpty()); // these tests require list contains at least one element...
+			assertTrue(!collection.isEmpty()); // these tests require list contains at least one element...
 
-			try { collection.add("foo"); assert(false); } catch(ImmutableException e) { }
-			try { collection.remove("foo"); assert(false); } catch(ImmutableException e) { }
+			try { collection.add("foo"); fail(); } catch(ImmutableException e) { }
+			try { collection.remove("foo"); fail(); } catch(ImmutableException e) { }
 
 			Set<String> quz_values = new HashSet();
 			quz_values.add("quz");
 			quz_values.add("quuz");
 
 
-			try { collection.addAll(quz_values); assert(false); } catch(ImmutableException e) { }
-			try { collection.removeAll(quz_values); assert(false); } catch(ImmutableException e) { }
-			try { collection.retainAll(quz_values); assert(false); } catch(ImmutableException e) { }
+			try { collection.addAll(quz_values); fail(); } catch(ImmutableException e) { }
+			try { collection.removeAll(quz_values); fail(); } catch(ImmutableException e) { }
+			try { collection.retainAll(quz_values); fail(); } catch(ImmutableException e) { }
 
 			
-			try { collection.remove(1); assert(false); } catch(ImmutableException e) { }
+			try { collection.remove(1); fail(); } catch(ImmutableException e) { }
 			
 			try
 			{
@@ -250,20 +250,20 @@ public class FieldCollectionTest extends TestCase
 				itr.next();
 
 				itr.remove(); // Verify that items can be removed using an iterator...
-				assert(false);
+				fail();
 			}
 			catch(ImmutableException e) {}
 
-			try { collection.clear(); assert(false); } catch(ImmutableException e) { }
+			try { collection.clear(); fail(); } catch(ImmutableException e) { }
 			
 			
 			if ( collection instanceof List )
 			{
 				List<String> as_list = (List)collection;
 				
-				try { as_list.add(0,"foo"); assert(false); } catch(ImmutableException e) { }
-				try { as_list.remove(0); assert(false); } catch(ImmutableException e) { }
-				try { as_list.set(0, "quz"); assert(false); } catch(ImmutableException e) { }
+				try { as_list.add(0,"foo"); fail(); } catch(ImmutableException e) { }
+				try { as_list.remove(0); fail(); } catch(ImmutableException e) { }
+				try { as_list.set(0, "quz"); fail(); } catch(ImmutableException e) { }
 				
 				
 				
@@ -272,17 +272,17 @@ public class FieldCollectionTest extends TestCase
 				tmp.add("one");
 				tmp.add("two");
 				
-				try { as_list.addAll(0, tmp); assert(false); } catch(ImmutableException e) { }
+				try { as_list.addAll(0, tmp); fail(); } catch(ImmutableException e) { }
 			}
 		}
 		
 		public void verifyOldIteratorImmutable()
 		{
-			try { old_iterator.remove(); assert(false); } catch(ImmutableException e) { }
+			try { old_iterator.remove(); fail(); } catch(ImmutableException e) { }
 			
 			if ( old_list_iterator != null )
 			{
-				try { old_list_iterator.remove(); assert(false); } catch(ImmutableException e) { }
+				try { old_list_iterator.remove(); fail(); } catch(ImmutableException e) { }
 			}
 		}
 		
@@ -357,9 +357,9 @@ public class FieldCollectionTest extends TestCase
     		System.out.println(obj.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
     	}
     	
-    	assert(obj.collection.contains("foo"));
-    	assert(obj.collection.contains("bar"));
-    	assert(obj.collection.contains("jimmutable"));
+    	assertTrue(obj.collection.contains("foo"));
+    	assertTrue(obj.collection.contains("bar"));
+    	assertTrue(obj.collection.contains("jimmutable"));
     	assertEquals(obj.collection.size(),3);
     	assertEquals(obj.field_class.getName(),c.getName());
     }

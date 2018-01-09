@@ -58,11 +58,11 @@ public class ValidatorTest extends TestCase
     	{
     		Validator.containsOnlyValidCharacters(str, allowed_characters);
     		
-    		if ( !should_be_valid ) assert(false);
+    		if ( !should_be_valid ) fail();
     	}
     	catch(Exception e)
     	{
-    		if ( should_be_valid ) assert(false);
+    		if ( should_be_valid ) fail();
     	}
     }
     

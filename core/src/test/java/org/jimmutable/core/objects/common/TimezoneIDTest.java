@@ -1,8 +1,5 @@
 package org.jimmutable.core.objects.common;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.jimmutable.core.exceptions.ValidationException;
 
 import junit.framework.Test;
@@ -49,8 +46,8 @@ public class TimezoneIDTest extends TestCase
     	assertValid("US/East-Indiana");
     	assertValid("US/Eastern");
     	
-    	assert(TimezoneID.getSimpleAllCommonTimeZoneIDs().size() > 3);
-    	assert(TimezoneID.getSimeAllTimezoneIDs().size() > 50);
+    	assertTrue(TimezoneID.getSimpleAllCommonTimeZoneIDs().size() > 3);
+    	assertTrue(TimezoneID.getSimeAllTimezoneIDs().size() > 50);
     }
     
     private void assertFailure(String value)
@@ -58,11 +55,11 @@ public class TimezoneIDTest extends TestCase
     	try
     	{
     		new TimezoneID(value);
-    		assert(false);
+    		fail();
     	}
     	catch(ValidationException e)
     	{
-    		assert(true);
+    		
     	}
     }
     
@@ -71,11 +68,10 @@ public class TimezoneIDTest extends TestCase
     	try
     	{
     		new TimezoneID(value);
-    		assert(true);
     	}
     	catch(ValidationException e)
     	{
-    		assert(false);
+    		fail();
     	}
     }
 }

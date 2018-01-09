@@ -16,25 +16,25 @@ public class TopicIdTest
 	@Test
 	public void testValid()
 	{
-		assertTrue(tester.assertValid("some-id", "some-id"));
-		assertTrue(tester.assertValid("someid1234", "someid1234"));
-		assertTrue(tester.assertValid("SOME-id", "some-id"));
-		assertTrue(tester.assertValid(" SOME-id ", "some-id"));
+		assertTrue(tester.isValid("some-id", "some-id"));
+		assertTrue(tester.isValid("someid1234", "someid1234"));
+		assertTrue(tester.isValid("SOME-id", "some-id"));
+		assertTrue(tester.isValid(" SOME-id ", "some-id"));
 	}
 
 	@Test
 	public void testInvalid()
 	{
-		assertTrue(tester.assertInvalid(null));
-		assertTrue(tester.assertInvalid(""));
-		assertTrue(tester.assertInvalid(" "));
-		assertTrue(tester.assertInvalid("1"));
-		assertTrue(tester.assertInvalid("foo_bar"));
-		assertTrue(tester.assertInvalid(".foo"));
-		assertTrue(tester.assertInvalid("foo."));
-		assertTrue(tester.assertInvalid("foo..bar"));
-		assertTrue(tester.assertInvalid("foo/bar"));
-		assertTrue(tester.assertInvalid("some_id"));
+		assertTrue(tester.isInvalid(null));
+		assertTrue(tester.isInvalid(""));
+		assertTrue(tester.isInvalid(" "));
+		assertTrue(tester.isInvalid("1"));
+		assertTrue(tester.isInvalid("foo_bar"));
+		assertTrue(tester.isInvalid(".foo"));
+		assertTrue(tester.isInvalid("foo."));
+		assertTrue(tester.isInvalid("foo..bar"));
+		assertTrue(tester.isInvalid("foo/bar"));
+		assertTrue(tester.isInvalid("some_id"));
 	}
 }
 

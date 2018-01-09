@@ -125,7 +125,7 @@ public class ObjectFieldReadWriteTest extends TestCase
     private void testObject(Format format, Object obj, Format print_diagnostics_in_format)
     {
     	String serialized_data = ObjectWriter.serialize(format, obj);
-    	assert(serialized_data != null);
+    	assertTrue(serialized_data != null);
     	
     	if ( format == print_diagnostics_in_format )
     	{

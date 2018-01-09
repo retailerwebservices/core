@@ -55,8 +55,8 @@ public class DeckHashSetTest extends TestCase
 		
 		assertEquals(first_library.getSimpleContents().size(),2);
 		
-		assert(first_library.getSimpleContents().contains(test_books.get(0)));
-		assert(first_library.getSimpleContents().contains(test_books.get(1)));
+		assertTrue(first_library.getSimpleContents().contains(test_books.get(0)));
+		assertTrue(first_library.getSimpleContents().contains(test_books.get(1)));
 		
 		// now test an "append" builder...
 		
@@ -70,7 +70,7 @@ public class DeckHashSetTest extends TestCase
 		// Confirm that first library has not changed...
 		assertEquals(second_library.getSimpleContents().size(),3); // because book 2 and 3 are duplicates...
 		
-		assert(second_library.getSimpleContents().containsAll(test_books));
+		assertTrue(second_library.getSimpleContents().containsAll(test_books));
 		
 		
 		System.out.println(second_library.toJavaCode(Format.XML_PRETTY_PRINT,"obj"));

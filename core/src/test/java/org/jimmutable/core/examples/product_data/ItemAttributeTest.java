@@ -1,50 +1,25 @@
 package org.jimmutable.core.examples.product_data;
 
-import org.jimmutable.core.examples.product_data.ItemAttribute;
-import org.jimmutable.core.exceptions.ValidationException;
-import org.jimmutable.core.objects.Stringable;
-import org.jimmutable.core.serialization.StringableTest;
+import static org.junit.Assert.assertTrue;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.jimmutable.core.utils.StringableTestingUtils;
+import org.junit.Test;
 
-public class ItemAttributeTest extends StringableTest
+public class ItemAttributeTest
 {
-	/**
-	 * Create the test case
-	 *
-	 * @param testName name of the test case
-	 */
-	public ItemAttributeTest( String testName )
-	{
-		super( testName );
-	}
+	private StringableTestingUtils<ItemAttribute> tester = new StringableTestingUtils(new ItemAttribute.MyConverter());
 
-	/**
-	 * @return the suite of tests being tested
-	 */
-	public static Test suite()
-	{
-		return new TestSuite( ItemAttributeTest.class );
-	}
-
-
-	public Stringable fromString(String src) 
-	{
-		return new ItemAttribute(src);
-	}
-
+	@Test
 	public void testAttribute()
 	{
-		assertNotValid(null);
-		assertNotValid("foo-bar");
-		assertNotValid("foo:bar");
-		assertNotValid("");
-		assertNotValid("foo!");
+		assertTrue(tester.isInvalid(null));
+		assertTrue(tester.isInvalid("foo-bar"));
+		assertTrue(tester.isInvalid("foo:bar"));
+		assertTrue(tester.isInvalid(""));
+		assertTrue(tester.isInvalid("foo!"));
 
-		assertValid("IMG_SRC_URL0","IMG_SRC_URL0");
-		assertValid("NEW_LONG_DESCRIPTION","NEW_LONG_DESCRIPTION");
-		assertValid("New_LONG_DeSCRIPTION","NEW_LONG_DESCRIPTION");
+		assertTrue(tester.isValid("IMG_SRC_URL0","IMG_SRC_URL0"));
+		assertTrue(tester.isValid("NEW_LONG_DESCRIPTION","NEW_LONG_DESCRIPTION"));
+		assertTrue(tester.isValid("New_LONG_DeSCRIPTION","NEW_LONG_DESCRIPTION"));
 	}
 }

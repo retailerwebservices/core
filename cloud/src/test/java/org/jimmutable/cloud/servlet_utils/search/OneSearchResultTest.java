@@ -1,6 +1,8 @@
 package org.jimmutable.cloud.servlet_utils.search;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Map;
 
@@ -32,10 +34,10 @@ public class OneSearchResultTest extends StubTest
 			System.out.println(result.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 		} catch ( Exception e )
 		{
-			assert (false);
+			fail();
 		}
 
-		assert (result.getSimpleContents().size() == 2);
+		assertTrue(result.getSimpleContents().size() == 2);
 
 		// Test with no Map passed in. Should allow it.
 		try
@@ -43,7 +45,7 @@ public class OneSearchResultTest extends StubTest
 			result = new OneSearchResult();
 		} catch ( Exception e )
 		{
-			assert (false);
+			fail();
 		}
 	}
 
@@ -74,10 +76,10 @@ public class OneSearchResultTest extends StubTest
 		OneSearchResult obj = (OneSearchResult) StandardObject.deserialize(obj_string);
 
 		assertEquals(obj.getSimpleContents().size(), 2);
-		assert (obj.getSimpleContents().containsValue("Test Value2"));
-		assert (obj.getSimpleContents().containsValue("Test Value"));
-		assert (obj.getSimpleContents().containsKey(new FieldName("test_key")));
-		assert (obj.getSimpleContents().containsKey(new FieldName("test_key2")));
+		assertTrue (obj.getSimpleContents().containsValue("Test Value2"));
+		assertTrue (obj.getSimpleContents().containsValue("Test Value"));
+		assertTrue (obj.getSimpleContents().containsKey(new FieldName("test_key")));
+		assertTrue (obj.getSimpleContents().containsKey(new FieldName("test_key2")));
 
 	}
 }

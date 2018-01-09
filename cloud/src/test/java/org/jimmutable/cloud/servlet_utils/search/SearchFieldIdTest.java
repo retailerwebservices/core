@@ -20,15 +20,15 @@ public class SearchFieldIdTest
 	@Test
 	public void inValid()
 	{
-		assertTrue(tester.assertInvalid(null));
+		assertTrue(tester.isInvalid(null));
 	}
 
 	@Test
 	public void valid()
 	{
-		assertTrue(tester.assertValid("abb_1924 ", "abb_1924"));
-		assertTrue(tester.assertValid("abb-1924", "abb-1924"));
-		assertTrue(tester.assertValid("abB1924", "abb1924"));
-		assertTrue(tester.assertValid("abb1924", "abb1924"));
+		assertTrue(tester.isValid("abb_1924 ", "abb_1924"));
+		assertTrue(tester.isValid("abb-1924", "abb-1924"));
+		assertTrue(tester.isValid("abB1924", "abb1924"));
+		assertTrue(tester.isValid("abb1924", "abb1924"));
 	}
 }

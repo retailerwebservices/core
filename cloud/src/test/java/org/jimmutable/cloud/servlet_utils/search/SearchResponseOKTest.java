@@ -1,5 +1,8 @@
 package org.jimmutable.cloud.servlet_utils.search;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,18 +45,18 @@ public class SearchResponseOKTest extends StubTest
 			System.out.println(result.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 		} catch ( Exception e )
 		{
-			assert (false);
+			fail();
 		}
 		
-		assert (Objects.equals(result.getSimpleSearchRequest(), search_request));
-		assert (result.getSimpleFirstResultIdx() == 1);
-		assert (result.getSimpleHasMoreResults() == true);
-		assert (result.getSimpleHasPreviousResults() == true);
-		assert (result.getSimpleStartOfNextPageOfResults() == 20);
-		assert (result.getSimpleStartOfPreviousPageOfResults() == 1);
-		assert (result.getSimpleHTTPResponseCode() == SearchResponseOK.HTTP_STATUS_CODE_OK);
-		assert (result.getSimpleResults().size() == 1);
-		assert (Objects.equals(search_result_list, result.getSimpleResults()));
+		assertTrue(Objects.equals(result.getSimpleSearchRequest(), search_request));
+		assertTrue(result.getSimpleFirstResultIdx() == 1);
+		assertTrue(result.getSimpleHasMoreResults() == true);
+		assertTrue(result.getSimpleHasPreviousResults() == true);
+		assertTrue(result.getSimpleStartOfNextPageOfResults() == 20);
+		assertTrue(result.getSimpleStartOfPreviousPageOfResults() == 1);
+		assertTrue(result.getSimpleHTTPResponseCode() == SearchResponseOK.HTTP_STATUS_CODE_OK);
+		assertTrue(result.getSimpleResults().size() == 1);
+		assertTrue(Objects.equals(search_result_list, result.getSimpleResults()));
 		
 		
 		// Test with empty object parameters passed to constructor
@@ -62,17 +65,17 @@ public class SearchResponseOKTest extends StubTest
 			result = new SearchResponseOK(new StandardSearchRequest(""), new ArrayList<OneSearchResult>(), 0, false, false, 0, 0);
 		} catch (Exception e)
 		{
-			assert(false);
+			fail();
 		}
 		
-		assert (result.getSimpleSearchRequest() != null);
-		assert (result.getSimpleSearchRequest().getSimpleQueryString() == "");
-		assert (result.getSimpleResults().size() == 0);
-		assert (result.getSimpleFirstResultIdx() == 0);
-		assert (result.getSimpleHasMoreResults() == false);
-		assert (result.getSimpleHasPreviousResults() == false);
-		assert (result.getSimpleStartOfNextPageOfResults() == -1);
-		assert (result.getSimpleStartOfPreviousPageOfResults() == -1);
+		assertTrue(result.getSimpleSearchRequest() != null);
+		assertTrue(result.getSimpleSearchRequest().getSimpleQueryString() == "");
+		assertTrue(result.getSimpleResults().size() == 0);
+		assertTrue(result.getSimpleFirstResultIdx() == 0);
+		assertTrue(result.getSimpleHasMoreResults() == false);
+		assertTrue(result.getSimpleHasPreviousResults() == false);
+		assertTrue(result.getSimpleStartOfNextPageOfResults() == -1);
+		assertTrue(result.getSimpleStartOfPreviousPageOfResults() == -1);
 
 	}
 	
@@ -115,13 +118,13 @@ public class SearchResponseOKTest extends StubTest
 			);
 		
 		SearchResponseOK obj = (SearchResponseOK) StandardObject.deserialize(obj_string);
-		assert (obj.getSimpleSearchRequest().getSimpleQueryString().equals("TestSearchRequest"));
-		assert (obj.getSimpleFirstResultIdx() == 1);
-		assert (obj.getSimpleHasMoreResults() == true);
-		assert (obj.getSimpleHasPreviousResults() == true);
-		assert (obj.getSimpleStartOfNextPageOfResults() == 20);
-		assert (obj.getSimpleStartOfPreviousPageOfResults() == 1);
-		assert (obj.getSimpleHTTPResponseCode() == SearchResponseOK.HTTP_STATUS_CODE_OK);
-		assert (obj.getSimpleResults().size() == 1);
+		assertTrue(obj.getSimpleSearchRequest().getSimpleQueryString().equals("TestSearchRequest"));
+		assertTrue(obj.getSimpleFirstResultIdx() == 1);
+		assertTrue(obj.getSimpleHasMoreResults() == true);
+		assertTrue(obj.getSimpleHasPreviousResults() == true);
+		assertTrue(obj.getSimpleStartOfNextPageOfResults() == 20);
+		assertTrue(obj.getSimpleStartOfPreviousPageOfResults() == 1);
+		assertTrue(obj.getSimpleHTTPResponseCode() == SearchResponseOK.HTTP_STATUS_CODE_OK);
+		assertTrue(obj.getSimpleResults().size() == 1);
 	}
 }

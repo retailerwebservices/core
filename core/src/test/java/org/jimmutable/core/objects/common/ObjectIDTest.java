@@ -80,11 +80,11 @@ public class ObjectIDTest extends TestCase
     	try
     	{
     		new ObjectId(value);
-    		assert(false);
+    		fail();
     	}
     	catch(ValidationException e)
     	{
-    		assert(true);
+    		
     	}
     }
     
@@ -100,7 +100,7 @@ public class ObjectIDTest extends TestCase
     	catch(Exception e)
     	{
     		e.printStackTrace();
-    		assert(false);
+    		fail();
     	}
     }
 }

@@ -15,23 +15,23 @@ public class QueueDefinitionTest
 	@Test
 	public void testValid()
 	{
-		assertTrue(tester.assertValid("some/ids", "some/ids"));
-		assertTrue(tester.assertValid("some/id1234", "some/id1234"));
-		assertTrue(tester.assertValid("SOME/ids", "some/ids"));
-		assertTrue(tester.assertValid(" SOME/ids ", "some/ids"));
+		assertTrue(tester.isValid("some/ids", "some/ids"));
+		assertTrue(tester.isValid("some/id1234", "some/id1234"));
+		assertTrue(tester.isValid("SOME/ids", "some/ids"));
+		assertTrue(tester.isValid(" SOME/ids ", "some/ids"));
 	}
 	
 	@Test
 	public void testInvalid()
 	{
-		assertTrue(tester.assertInvalid(null));
-		assertTrue(tester.assertInvalid(""));
-		assertTrue(tester.assertInvalid(" "));
-		assertTrue(tester.assertInvalid("1"));
-		assertTrue(tester.assertInvalid("foo_bar"));
-		assertTrue(tester.assertInvalid(".foo"));
-		assertTrue(tester.assertInvalid("foo."));
-		assertTrue(tester.assertInvalid("foo..bar"));
-		assertTrue(tester.assertInvalid("some_id"));
+		assertTrue(tester.isInvalid(null));
+		assertTrue(tester.isInvalid(""));
+		assertTrue(tester.isInvalid(" "));
+		assertTrue(tester.isInvalid("1"));
+		assertTrue(tester.isInvalid("foo_bar"));
+		assertTrue(tester.isInvalid(".foo"));
+		assertTrue(tester.isInvalid("foo."));
+		assertTrue(tester.isInvalid("foo..bar"));
+		assertTrue(tester.isInvalid("some_id"));
 	}
 }

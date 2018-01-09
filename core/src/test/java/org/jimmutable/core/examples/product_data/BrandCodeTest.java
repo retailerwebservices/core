@@ -1,49 +1,26 @@
 package org.jimmutable.core.examples.product_data;
 
-import org.jimmutable.core.examples.product_data.BrandCode;
-import org.jimmutable.core.objects.Stringable;
-import org.jimmutable.core.serialization.StringableTest;
+import static org.junit.Assert.assertTrue;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.jimmutable.core.utils.StringableTestingUtils;
+import org.junit.Test;
 
-public class BrandCodeTest extends StringableTest
+public class BrandCodeTest
 {
-	 /**
-     * Create the test case
-     *
-     * @param testName name of the test case
-     */
-    public BrandCodeTest( String testName )
-    {
-        super( testName );
-    }
+	private StringableTestingUtils<BrandCode> tester = new StringableTestingUtils(new BrandCode.MyConverter());
 
-    /**
-     * @return the suite of tests being tested
-     */
-    public static Test suite()
-    {
-        return new TestSuite( BrandCodeTest.class );
-    }
-
- 
-	public Stringable fromString(String src) 
-	{
-		return new BrandCode(src);
-	}
-
+	@Test
 	public void testBrandCode()
-    {
-    	assertNotValid(null);
-    	assertNotValid("foo-bar");
-    	assertNotValid("foo:bar");
-    	assertNotValid("");
-    	
-    	assertValid("AMN","AMN");
-    	assertValid("amn","AMN");
-    	assertValid("gE","GE");
-    	
-    	assertValid("ca_sny","CA_SNY");
-    }
+	{
+		assertTrue(tester.isInvalid(null));
+		assertTrue(tester.isInvalid("foo-bar"));
+		assertTrue(tester.isInvalid("foo:bar"));
+		assertTrue(tester.isInvalid(""));
+
+		assertTrue(tester.isValid("AMN", "AMN"));
+		assertTrue(tester.isValid("amn", "AMN"));
+		assertTrue(tester.isValid("gE", "GE"));
+
+		assertTrue(tester.isValid("ca_sny", "CA_SNY"));
+	}
 }

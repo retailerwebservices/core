@@ -90,11 +90,11 @@ public class DayTest extends TestCase
 		try
 		{
 			new Day(str);
-			assert(false); 
+			fail();
 		}
 		catch(ValidationException e)
 		{
-			assert(true);
+			assertTrue(true);
 		}
 	}
 	

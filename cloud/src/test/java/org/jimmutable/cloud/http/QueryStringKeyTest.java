@@ -15,23 +15,23 @@ public class QueryStringKeyTest extends StubTest
 	@Test
 	public void testValid()
 	{
-		assertTrue(tester.assertValid("foo", "foo"));
-		assertTrue(tester.assertValid("FOO", "foo"));
+		assertTrue(tester.isValid("foo", "foo"));
+		assertTrue(tester.isValid("FOO", "foo"));
 
 		
-		assertTrue(tester.assertValid("abcdefghijklmnopqrstuvwxyz0123456789-", "abcdefghijklmnopqrstuvwxyz0123456789-"));
+		assertTrue(tester.isValid("abcdefghijklmnopqrstuvwxyz0123456789-", "abcdefghijklmnopqrstuvwxyz0123456789-"));
 
-		assertTrue(tester.assertValid("FoO-BAR", "foo-bar"));
-		assertTrue(tester.assertValid(" fo o", "foo"));
-		assertTrue(tester.assertValid("foo_bar", "foo-bar"));
-		assertTrue(tester.assertValid("FOO_BAR", "foo-bar"));
+		assertTrue(tester.isValid("FoO-BAR", "foo-bar"));
+		assertTrue(tester.isValid(" fo o", "foo"));
+		assertTrue(tester.isValid("foo_bar", "foo-bar"));
+		assertTrue(tester.isValid("FOO_BAR", "foo-bar"));
 	}
 
 	@Test
 	public void testInvalid()
 	{
-		assertTrue(tester.assertInvalid(null));
-		assertTrue(tester.assertInvalid(""));
-		assertTrue(tester.assertInvalid("&&!(#$"));
+		assertTrue(tester.isInvalid(null));
+		assertTrue(tester.isInvalid(""));
+		assertTrue(tester.isInvalid("&&!(#$"));
 	}
 }

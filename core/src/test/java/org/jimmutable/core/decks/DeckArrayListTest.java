@@ -48,7 +48,7 @@ public class DeckArrayListTest extends TestCase
 		
 		BookDeckList first_library = (BookDeckList)builder.create(null);
 		
-		assert(first_library != null);
+		assertTrue(first_library != null);
 		
 		assertEquals(first_library.getSimpleContents().size(),2);
 		
@@ -67,7 +67,7 @@ public class DeckArrayListTest extends TestCase
 		
 		BookDeckList second_library = (BookDeckList)builder.create(null);
 		
-		assert(second_library != null);
+		assertTrue(second_library != null);
 		
 		// Confirm that first library has not changed...
 		assertEquals(first_library.getSimpleContents().size(),2);

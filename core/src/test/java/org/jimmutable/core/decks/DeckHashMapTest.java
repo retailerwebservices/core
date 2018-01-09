@@ -52,12 +52,12 @@ public class DeckHashMapTest extends TestCase
 
 		BookDeckMap first_library = (BookDeckMap)builder.create(null);
 		
-		assert(first_library != null);
+		assertTrue(first_library != null);
 		
 		assertEquals(first_library.getSimpleContents().size(),2);
 		
-		assert(first_library.getSimpleContents().containsKey("jim_first_book"));
-		assert(first_library.getSimpleContents().containsKey("jim_second_book"));
+		assertTrue(first_library.getSimpleContents().containsKey("jim_first_book"));
+		assertTrue(first_library.getSimpleContents().containsKey("jim_second_book"));
 		
 		// now test an "append" builder...
 		
@@ -68,7 +68,7 @@ public class DeckHashMapTest extends TestCase
 		
 		BookDeckMap second_library = (BookDeckMap)builder.create(null);
 		
-		assert(second_library != null);
+		assertTrue(second_library != null);
 		
 		// Confirm that first library has not changed...
 		assertEquals(second_library.getSimpleContents().size(),3); 
@@ -125,9 +125,9 @@ public class DeckHashMapTest extends TestCase
     		BookDeckMap obj = (BookDeckMap)StandardObject.deserialize(obj_string);
     	
     	assertEquals(obj.getSimpleContents().size(),3); 
-    	assert(obj.getSimpleContents().containsKey("jim_first_book"));
-    	assert(obj.getSimpleContents().containsKey("jim_second_book"));
-    	assert(obj.getSimpleContents().containsKey("jim_third_book"));
+    	assertTrue(obj.getSimpleContents().containsKey("jim_first_book"));
+    	assertTrue(obj.getSimpleContents().containsKey("jim_second_book"));
+    	assertTrue(obj.getSimpleContents().containsKey("jim_third_book"));
     	
     	List<Book> test_books = new ArrayList();
     	
@@ -192,9 +192,9 @@ public class DeckHashMapTest extends TestCase
     		BookDeckMap obj = (BookDeckMap)StandardObject.deserialize(obj_string);
     	
     	assertEquals(obj.getSimpleContents().size(),3); 
-    	assert(obj.getSimpleContents().containsKey("jim_first_book"));
-    	assert(obj.getSimpleContents().containsKey("jim_second_book"));
-    	assert(obj.getSimpleContents().containsKey("jim_third_book"));
+    	assertTrue(obj.getSimpleContents().containsKey("jim_first_book"));
+    	assertTrue(obj.getSimpleContents().containsKey("jim_second_book"));
+    	assertTrue(obj.getSimpleContents().containsKey("jim_third_book"));
     	
     	List<Book> test_books = new ArrayList();
     	

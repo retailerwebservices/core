@@ -20,11 +20,11 @@ public class IndexIdTest
 	@Test
 	public void inValid()
 	{
-		assertTrue(tester.assertInvalid(null));
-		assertTrue(tester.assertInvalid("foo/bar"));
-		assertTrue(tester.assertInvalid("foo:bar"));
-		assertTrue(tester.assertInvalid(""));
-		assertTrue(tester.assertInvalid("foo!"));
+		assertTrue(tester.isInvalid(null));
+		assertTrue(tester.isInvalid("foo/bar"));
+		assertTrue(tester.isInvalid("foo:bar"));
+		assertTrue(tester.isInvalid(""));
+		assertTrue(tester.isInvalid("foo!"));
 
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < 65; i++)
@@ -32,17 +32,17 @@ public class IndexIdTest
 			sb.append('a');
 		}
 
-		assertTrue(tester.assertInvalid(sb.toString()));
+		assertTrue(tester.isInvalid(sb.toString()));
 
-		assertTrue(tester.assertInvalid("12"));
+		assertTrue(tester.isInvalid("12"));
 
 	}
 
 	@Test
 	public void valid()
 	{
-		assertTrue(tester.assertValid("ABB1924", "abb1924"));
-		assertTrue(tester.assertValid("abb1924", "abb1924"));
-		assertTrue(tester.assertValid("aBb1924", "abb1924"));
+		assertTrue(tester.isValid("ABB1924", "abb1924"));
+		assertTrue(tester.isValid("abb1924", "abb1924"));
+		assertTrue(tester.isValid("aBb1924", "abb1924"));
 	}
 }

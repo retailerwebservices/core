@@ -1,26 +1,15 @@
 package org.jimmutable.core.fields;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
 import org.jimmutable.core.exceptions.ImmutableException;
-import org.jimmutable.core.fields.FieldConcurrentHashMap;
-import org.jimmutable.core.fields.FieldHashMap;
-import org.jimmutable.core.fields.FieldMap;
-import org.jimmutable.core.fields.FieldCollectionTest.TestObject;
-import org.jimmutable.core.fields.FieldCollectionTest.TestObject.Builder;
 import org.jimmutable.core.objects.StandardImmutableObject;
-import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.Format;
-import org.jimmutable.core.serialization.JavaCodeUtils;
 import org.jimmutable.core.serialization.TypeName;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.core.serialization.reader.ReadAs;
@@ -79,7 +68,7 @@ public class FieldMapTest extends TestCase
 			catch(Exception e)
 			{
 				e.printStackTrace();
-				assert(false);
+				fail();
 			}
 			
 			map = t.getMap(FIELD_MAP, createEmptyMap(), ReadAs.STRING, ReadAs.INTEGER, ObjectParseTree.OnError.SKIP);
@@ -100,7 +89,7 @@ public class FieldMapTest extends TestCase
 			catch(Exception e)
 			{
 				e.printStackTrace();
-				assert(false);
+				fail();
 				return null;
 			}
 		}
@@ -139,14 +128,14 @@ public class FieldMapTest extends TestCase
 				
 				assertEquals(map.size(),3);
 				
-				assert(map.get("foo") == 1);
-				assert(map.get("bar") == 2);
-				assert(map.get("baz") == 4);
-				assert(map.get("quz") == null);
+				assertTrue(map.get("foo") == 1);
+				assertTrue(map.get("bar") == 2);
+				assertTrue(map.get("baz") == 4);
+				assertTrue(map.get("quz") == null);
 				
 				map.remove("baz");
 				
-				assert(map.get("baz") == null);
+				assertTrue(map.get("baz") == null);
 				
 				Map<String,Integer> test_map = new HashMap();
 				test_map.put("quz",100);
@@ -154,21 +143,21 @@ public class FieldMapTest extends TestCase
 				
 				map.putAll(test_map);
 				
-				assert(map.get("quz") == 100);
-				assert(map.get("quuz") == 101);
+				assertTrue(map.get("quz") == 100);
+				assertTrue(map.get("quuz") == 101);
 				
 				Set<String> key_set = map.keySet();
 				
 				assertEquals(key_set.size(),4);
-				assert(key_set.contains("quz"));
+				assertTrue(key_set.contains("quz"));
 				
 				Collection<Integer> values = map.values();
 				
 				assertEquals(values.size(),4);
-				assert(values.contains(1));
-				assert(values.contains(2));
-				assert(values.contains(100));
-				assert(values.contains(101)); 
+				assertTrue(values.contains(1));
+				assertTrue(values.contains(2));
+				assertTrue(values.contains(100));
+				assertTrue(values.contains(101)); 
 				
 				Set<Map.Entry<String, Integer>> entry_set = map.entrySet();
 				
@@ -187,21 +176,21 @@ public class FieldMapTest extends TestCase
 			catch(Exception e)
 			{
 				e.printStackTrace();
-				assert(false);
+				fail();
 			}
 		}
 
 
 		public void verifyImmutable()
 		{
-			try { map.put("foo", 1); assert(false); } catch(ImmutableException e) {}
-			try { map.remove("foo"); assert(false); } catch(ImmutableException e) {}
-			try { map.clear(); assert(false); } catch(ImmutableException e) {}
+			try { map.put("foo", 1); fail(); } catch(ImmutableException e) {}
+			try { map.remove("foo"); fail(); } catch(ImmutableException e) {}
+			try { map.clear(); fail(); } catch(ImmutableException e) {}
 			
 			
 			Set<Map.Entry<String, Integer>> entry_set = map.entrySet();
 			
-			assert(entry_set.size() != 0);
+			assertTrue(entry_set.size() != 0);
 			
 			try  
 			{
@@ -209,7 +198,7 @@ public class FieldMapTest extends TestCase
 				itr.next();
 				itr.remove();
 				
-				assert(false);
+				fail();
 			}
 			catch(ImmutableException e) {}
 		}
@@ -283,9 +272,9 @@ public class FieldMapTest extends TestCase
     		System.out.println(obj.serialize(Format.JSON_PRETTY_PRINT));
     	}
     	
-    	assert(obj.map.containsKey("foo"));
-    	assert(obj.map.containsKey("bar"));
-    	assert(obj.map.containsKey("jimmutable"));
+    	assertTrue(obj.map.containsKey("foo"));
+    	assertTrue(obj.map.containsKey("bar"));
+    	assertTrue(obj.map.containsKey("jimmutable"));
 
     	assertEquals(obj.map.size(),3);
     	

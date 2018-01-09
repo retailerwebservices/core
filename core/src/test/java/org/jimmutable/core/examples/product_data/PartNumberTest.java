@@ -1,49 +1,26 @@
 package org.jimmutable.core.examples.product_data;
 
-import org.jimmutable.core.examples.product_data.PartNumber;
-import org.jimmutable.core.objects.Stringable;
-import org.jimmutable.core.serialization.StringableTest;
+import static org.junit.Assert.assertTrue;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.jimmutable.core.utils.StringableTestingUtils;
+import org.junit.Test;
 
-public class PartNumberTest extends StringableTest
+public class PartNumberTest
 {
-	 /**
-    * Create the test case
-    *
-    * @param testName name of the test case
-    */
-   public PartNumberTest( String testName )
-   {
-       super( testName );
-   }
+	private StringableTestingUtils<PartNumber> tester = new StringableTestingUtils(new PartNumber.MyConverter());
 
-   /**
-    * @return the suite of tests being tested
-    */
-   public static Test suite()
-   {
-       return new TestSuite( PartNumberTest.class );
-   }
-
- 
-   public Stringable fromString(String src) 
-	{
-		return new PartNumber(src);
-	}
-   
+   @Test
    public void testBrandCode()
    {
-   	assertNotValid(null);
-   	assertNotValid("foo-bar");
-   	assertNotValid("foo:bar");
-   	assertNotValid("");
-   	assertNotValid("foo!");
+	   assertTrue(tester.isInvalid(null));
+	   assertTrue(tester.isInvalid("foo-bar"));
+	   assertTrue(tester.isInvalid("foo:bar"));
+	   assertTrue(tester.isInvalid(""));
+	   assertTrue(tester.isInvalid("foo!"));
    	
-   	assertValid("ABB1924","ABB1924");
-   	assertValid("abb1924","ABB1924");
-   	assertValid("aBb1924","ABB1924");
+	   assertTrue(tester.isValid("ABB1924","ABB1924"));
+	   assertTrue(tester.isValid("abb1924","ABB1924"));
+	   assertTrue(tester.isValid("aBb1924","ABB1924"));
    }
 }
 

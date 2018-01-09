@@ -34,9 +34,9 @@ public class LRUCacheTest extends TestCase
     	cache.put(2, "bar");
     	cache.put(3, "baz");
     	
-    	assert(cache.containsKey(1));
-    	assert(cache.containsKey(2));
-    	assert(cache.containsKey(3));
+    	assertTrue(cache.containsKey(1));
+    	assertTrue(cache.containsKey(2));
+    	assertTrue(cache.containsKey(3));
     	
     	assertEquals(cache.get(1,null),"foo");
     	assertEquals(cache.get(2,null),"bar");
@@ -44,16 +44,16 @@ public class LRUCacheTest extends TestCase
     	
     	cache.put(4, "qux");
     	
-    	assert(cache.containsKey(2));
-    	assert(cache.containsKey(3));
-    	assert(cache.containsKey(4));
+    	assertTrue(cache.containsKey(2));
+    	assertTrue(cache.containsKey(3));
+    	assertTrue(cache.containsKey(4));
     	
     	cache.get(2,null); // access 2 with an eye to preserve it from the next addition...
     	
     	cache.put(5, "quux");
     	
-    	assert(cache.containsKey(2));
-    	assert(cache.containsKey(4));
-    	assert(cache.containsKey(5));
+    	assertTrue(cache.containsKey(2));
+    	assertTrue(cache.containsKey(4));
+    	assertTrue(cache.containsKey(5));
     }
 }

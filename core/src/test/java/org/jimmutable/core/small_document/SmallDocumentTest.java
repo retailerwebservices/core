@@ -105,7 +105,7 @@ public class SmallDocumentTest  extends TestCase
     	catch(IOException e)
     	{
     		e.printStackTrace();
-    		assert(false);
+    		fail();
     		return null;
     	}
     }

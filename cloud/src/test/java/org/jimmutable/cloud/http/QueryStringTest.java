@@ -99,7 +99,7 @@ public class QueryStringTest
 	@Test
 	public void testInvalid()
 	{
-		assertTrue(tester.assertInvalid(null));
+		assertTrue(tester.isInvalid(null));
 	}
 	
 	@Test

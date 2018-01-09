@@ -12,10 +12,10 @@ public class IndexDefinitionTest
 	@Test
 	public void inValid()
 	{
-		assertTrue(tester.assertInvalid(null));
-		assertTrue(tester.assertInvalid(""));
-		assertTrue(tester.assertInvalid("foo!bar:v"));
-		assertTrue(tester.assertInvalid("foo!bar"));
+		assertTrue(tester.isInvalid(null));
+		assertTrue(tester.isInvalid(""));
+		assertTrue(tester.isInvalid("foo!bar:v"));
+		assertTrue(tester.isInvalid("foo!bar"));
 
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < 65; i++)
@@ -23,20 +23,20 @@ public class IndexDefinitionTest
 			sb.append('a');
 		}
 
-		assertTrue(tester.assertInvalid(sb.append("/").append("theindexId").toString()));
+		assertTrue(tester.isInvalid(sb.append("/").append("theindexId").toString()));
 
-		assertTrue(tester.assertInvalid("12"));
+		assertTrue(tester.isInvalid("12"));
 		
-		assertTrue(tester.assertInvalid("foo:bar"));
-		assertTrue(tester.assertInvalid("foo:bar:"));
-		assertTrue(tester.assertInvalid("foo:bar:v"));
-		assertTrue(tester.assertInvalid("foo:bar:2"));
+		assertTrue(tester.isInvalid("foo:bar"));
+		assertTrue(tester.isInvalid("foo:bar:"));
+		assertTrue(tester.isInvalid("foo:bar:v"));
+		assertTrue(tester.isInvalid("foo:bar:2"));
 	}
 
 	@Test
 	public void valid()
 	{
-		assertTrue(tester.assertValid("foo:bar:v2", "foo:bar:v2"));
-		assertTrue(tester.assertValid("FOO:BAR:V2", "foo:bar:v2"));
+		assertTrue(tester.isValid("foo:bar:v2", "foo:bar:v2"));
+		assertTrue(tester.isValid("FOO:BAR:V2", "foo:bar:v2"));
 	}
 }

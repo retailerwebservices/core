@@ -39,4 +39,21 @@ public class PartNumber extends Stringable
 			throw new ValidationException(String.format("Illegal character \'%c\' in part number %s.  Only upper case letters and numbers are allowed", ch, getSimpleValue()));
 		}
 	}
+	
+	/**
+	 * Convert a string to an PartNumber
+	 */
+	static public class MyConverter extends Stringable.Converter<PartNumber>
+	{
+		public PartNumber fromString(String str, PartNumber default_value)
+		{
+			try
+			{
+				return new PartNumber(str);
+			} catch (Exception e)
+			{
+				return default_value;
+			}
+		}
+	}
 }

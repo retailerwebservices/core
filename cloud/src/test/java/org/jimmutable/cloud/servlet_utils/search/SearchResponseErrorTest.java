@@ -1,10 +1,11 @@
 package org.jimmutable.cloud.servlet_utils.search;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.Objects;
 
 import org.jimmutable.cloud.StubTest;
-import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
-import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
 import org.junit.Test;
@@ -24,22 +25,22 @@ public class SearchResponseErrorTest extends StubTest
 			System.out.println(result.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 		} catch ( Exception e )
 		{
-			assert (false);
+			fail();
 		}
 
-		assert (result.getSimpleHTTPResponseCode() == SearchResponseError.HTTP_STATUS_CODE_ERROR);
-		assert (Objects.equals(result.getSimpleSearchRequest(), search_request));
-		assert (result.getOptionalMessage(null).equals("Test Message"));
+		assertTrue (result.getSimpleHTTPResponseCode() == SearchResponseError.HTTP_STATUS_CODE_ERROR);
+		assertTrue (Objects.equals(result.getSimpleSearchRequest(), search_request));
+		assertTrue (result.getOptionalMessage(null).equals("Test Message"));
 
 		try
 		{
 			result = new SearchResponseError(search_request);
 		} catch ( Exception e )
 		{
-			assert (false);
+			fail();
 		}
 		
-		assert (result.getOptionalMessage("default").equals("default"));
+		assertTrue(result.getOptionalMessage("default").equals("default"));
 	}
 	
 	@Test
@@ -59,8 +60,8 @@ public class SearchResponseErrorTest extends StubTest
 		);
 
 		SearchResponseError obj = (SearchResponseError)StandardObject.deserialize(obj_string);
-		assert (obj.getSimpleSearchRequest().getSimpleQueryString().equals("TestSearchRequest"));
-		assert (obj.getOptionalMessage(null).equals("Test Message"));
-		assert (obj.getSimpleHTTPResponseCode() == SearchResponseError.HTTP_STATUS_CODE_ERROR);
+		assertTrue (obj.getSimpleSearchRequest().getSimpleQueryString().equals("TestSearchRequest"));
+		assertTrue (obj.getOptionalMessage(null).equals("Test Message"));
+		assertTrue (obj.getSimpleHTTPResponseCode() == SearchResponseError.HTTP_STATUS_CODE_ERROR);
 	}
 }

@@ -54,11 +54,11 @@ public class KindTest extends TestCase
 	   {
 		   Kind result = new Kind(str);
 		   System.out.println("Should be invalid (but was not) "+str);
-		   assert(false);
+		   fail();
 	   }
 	   catch(Exception e)
 	   {
-		   assert(true);
+		   
 	   }
   }
 }

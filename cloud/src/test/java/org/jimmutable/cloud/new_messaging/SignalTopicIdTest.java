@@ -1,36 +1,37 @@
 package org.jimmutable.cloud.new_messaging;
 
+import static org.junit.Assert.assertTrue;
+
 import org.jimmutable.cloud.new_messaging.signal.SignalTopicId;
-import org.jimmutable.core.utils.StringableTester;
+import org.jimmutable.core.utils.StringableTestingUtils;
 import org.junit.Test;
 
 public class SignalTopicIdTest
 {
-
-	private StringableTester<SignalTopicId> tester = new StringableTester(new SignalTopicId.MyConverter());
+	private StringableTestingUtils<SignalTopicId> tester = new StringableTestingUtils(new SignalTopicId.MyConverter());
 
 	@Test
 	public void testValid()
 	{
-		tester.assertValid("some-id", "some-id");
-		tester.assertValid("someid1234", "someid1234");
-		tester.assertValid("SOME-id", "some-id");
-		tester.assertValid(" SOME-id ", "some-id");
+		assertTrue(tester.isValid("some-id", "some-id"));
+		assertTrue(tester.isValid("someid1234", "someid1234"));
+		assertTrue(tester.isValid("SOME-id", "some-id"));
+		assertTrue(tester.isValid(" SOME-id ", "some-id"));
 	}
 
 	@Test
 	public void testInvalid()
 	{
-		tester.assertInvalid(null);
-		tester.assertInvalid("");
-		tester.assertInvalid(" ");
-		tester.assertInvalid("1");
-		tester.assertInvalid("foo_bar");
-		tester.assertInvalid(".foo");
-		tester.assertInvalid("foo.");
-		tester.assertInvalid("foo..bar");
-		tester.assertInvalid("foo/bar");
-		tester.assertInvalid("some_id");
-		tester.assertInvalid("01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789");
+		assertTrue(tester.isInvalid(null));
+		assertTrue(tester.isInvalid(""));
+		assertTrue(tester.isInvalid(" "));
+		assertTrue(tester.isInvalid("1"));
+		assertTrue(tester.isInvalid("foo_bar"));
+		assertTrue(tester.isInvalid(".foo"));
+		assertTrue(tester.isInvalid("foo."));
+		assertTrue(tester.isInvalid("foo..bar"));
+		assertTrue(tester.isInvalid("foo/bar"));
+		assertTrue(tester.isInvalid("some_id"));
+		assertTrue(tester.isInvalid("01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"));
 	}
 }

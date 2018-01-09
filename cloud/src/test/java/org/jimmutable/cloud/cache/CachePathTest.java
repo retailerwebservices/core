@@ -1,35 +1,38 @@
 package org.jimmutable.cloud.cache;
 
+import static org.junit.Assert.assertTrue;
+
 import org.jimmutable.cloud.StubTest;
 import org.jimmutable.core.utils.StringableTester;
+import org.jimmutable.core.utils.StringableTestingUtils;
 import org.junit.Test;
 
 public class CachePathTest extends StubTest
 {
-	private StringableTester<CachePath> tester = new StringableTester(new CachePath.MyConverter());
+	private StringableTestingUtils<CachePath> tester = new StringableTestingUtils(new CachePath.MyConverter());
 
 	@Test
 	public void testValid()
 	{
-		tester.assertValid("foo", "foo");
-		tester.assertValid("FOO", "foo");
+		assertTrue(tester.isValid("foo", "foo"));
+		assertTrue(tester.isValid("FOO", "foo"));
 
-		tester.assertValid("FOO-BAR-123", "foo-bar-123");
-		tester.assertValid("F", "f");
+		assertTrue(tester.isValid("FOO-BAR-123", "foo-bar-123"));
+		assertTrue(tester.isValid("F", "f"));
 		
-		tester.assertValid("/foo/bar", "foo/bar");
-		tester.assertValid("/FOO/BAR/", "foo/bar");
-		tester.assertValid("///FOO////BAR/////", "foo/bar");
+		assertTrue(tester.isValid("/foo/bar", "foo/bar"));
+		assertTrue(tester.isValid("/FOO/BAR/", "foo/bar"));
+		assertTrue(tester.isValid("///FOO////BAR/////", "foo/bar"));
 		
-		tester.assertValid("///foo-bar////baz-quz2/////", "foo-bar/baz-quz2");
+		assertTrue(tester.isValid("///foo-bar////baz-quz2/////", "foo-bar/baz-quz2"));
 	}
 
 	@Test
 	public void testInvalid()
 	{
-		tester.assertInvalid(null);
-		tester.assertInvalid("");
-		tester.assertInvalid("foo.bar");
-		tester.assertInvalid("/");
+		assertTrue(tester.isInvalid(null));
+		assertTrue(tester.isInvalid(""));
+		assertTrue(tester.isInvalid("foo.bar"));
+		assertTrue(tester.isInvalid("/"));
 	}
 }

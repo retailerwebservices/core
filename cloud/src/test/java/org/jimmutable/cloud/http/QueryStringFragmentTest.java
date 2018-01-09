@@ -37,8 +37,8 @@ public class QueryStringFragmentTest
 			fragment = tester.create("foo=bar", null);
 			assertTrue(fragment != null);
 
-			assert(fragment.getSimpleKey().equals(new QueryStringKey("foo")));
-			assert(fragment.getSimpleFragmentDecodedValue().equals("bar"));
+			assertTrue(fragment.getSimpleKey().equals(new QueryStringKey("foo")));
+			assertTrue(fragment.getSimpleFragmentDecodedValue().equals("bar"));
 		}
 		
 		{
@@ -84,7 +84,7 @@ public class QueryStringFragmentTest
 		QueryStringFragment from_string = new QueryStringFragment(fragment.getSimpleValue());
 
 		assertTrue(from_string.getSimpleKey().equals(key));
-		///assert(from_string.getSimpleFragmentDecodedValue());
+		///assertTrue(from_string.getSimpleFragmentDecodedValue());
 	}
 }
 

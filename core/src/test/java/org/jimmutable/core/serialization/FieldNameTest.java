@@ -38,7 +38,7 @@ public class FieldNameTest extends TestCase
 		catch(Exception e)
 		{
 			//e.printStackTrace();
-			assert(false);
+			fail();
 		}
 	}
 	
@@ -47,12 +47,11 @@ public class FieldNameTest extends TestCase
 		try
 		{
 			FieldName field_name = new FieldName(field_name_str);
-			assert(false);
+			fail();
 		}
 		catch(Exception e)
 		{
 			//e.printStackTrace();
-			assert(true);
 		}
 	}
 

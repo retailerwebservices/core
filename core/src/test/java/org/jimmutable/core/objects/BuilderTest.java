@@ -11,7 +11,6 @@ import org.jimmutable.core.fields.FieldList;
 import org.jimmutable.core.fields.FieldMap;
 import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
-import org.jimmutable.core.serialization.PrimativeReadWriteTest;
 import org.jimmutable.core.serialization.TypeName;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.core.serialization.reader.ObjectParseTree.OnError;
@@ -183,7 +182,7 @@ public class BuilderTest extends TestCase
     		builder = new Builder(TestObject.TYPE_NAME);
     		obj = (TestObject)builder.create(null);
     		
-    		assert(obj != null);
+    		assertTrue(obj != null);
     		assertEquals(obj.my_list_of_strings.size(),0);
     	}
     	
@@ -194,7 +193,7 @@ public class BuilderTest extends TestCase
     		
     		obj = (TestObject)builder.create(null);
     		
-    		assert(obj != null);
+    		assertTrue(obj != null);
     		assertEquals(obj.my_list_of_strings.size(),1);
     		assertEquals(obj.my_list_of_strings.get(0),"foo");
     	}
@@ -208,7 +207,7 @@ public class BuilderTest extends TestCase
     		
     		obj = (TestObject)builder.create(null);
     		
-    		assert(obj != null);
+    		assertTrue(obj != null);
     		assertEquals(obj.my_list_of_strings.size(),3);
     		assertEquals(obj.my_list_of_strings.get(0),"foo");
     		assertEquals(obj.my_list_of_strings.get(1),"foo");
@@ -224,7 +223,7 @@ public class BuilderTest extends TestCase
     		
     		obj = (TestObject)builder.create(null);
     		
-    		assert(obj != null);
+    		assertTrue(obj != null);
     		assertEquals(obj.my_list_of_strings.size(),2);
     		assertEquals(obj.my_list_of_strings.get(0),"foo");
     		assertEquals(obj.my_list_of_strings.get(1),"bar");
@@ -243,14 +242,14 @@ public class BuilderTest extends TestCase
     	
     	TestObject first = (TestObject)builder.create(null);
     	
-    	assert(first != null);
+    	assertTrue(first != null);
     	assertEquals(first.my_float,3.14159f);
     	
     	builder = new Builder(first);
     	builder.set(TestObject.FIELD_MY_STRING, "foo");
     	
     	TestObject second = (TestObject)builder.create(null); 
-    	assert(second != null);
+    	assertTrue(second != null);
     	
     	assertEquals(second.my_float,3.14159f);
     	assertEquals(second.my_string,"foo");
@@ -371,7 +370,7 @@ public class BuilderTest extends TestCase
     		
     		Book book = (Book)builder.create(null);
     		
-    		assert(book != null);
+    		assertTrue(book != null);
     		
     		testOneBook(book);
     	}
@@ -389,12 +388,12 @@ public class BuilderTest extends TestCase
     	
     	TestObject obj = (TestObject)builder.create(null);
     	
-    	assert(obj != null);
+    	assertTrue(obj != null);
     	
     	assertEquals(obj.my_string_int_map.size(),2);
     	
-    	assert(obj.my_string_int_map.containsKey("foo"));
-    	assert(obj.my_string_int_map.containsKey("bar"));
+    	assertTrue(obj.my_string_int_map.containsKey("foo"));
+    	assertTrue(obj.my_string_int_map.containsKey("bar"));
     	
     	assertEquals(obj.my_string_int_map.get("foo"),(Integer)3);
     	assertEquals(obj.my_string_int_map.get("bar"),(Integer)17);
@@ -416,7 +415,7 @@ public class BuilderTest extends TestCase
     		
     		of_mice_and_men = (Book)builder.create(null);
     		
-    		assert(of_mice_and_men != null);
+    		assertTrue(of_mice_and_men != null);
     	}
     	
     	{
@@ -429,7 +428,7 @@ public class BuilderTest extends TestCase
     		
     		the_great_divorce = (Book)builder.create(null);
     		
-    		assert(the_great_divorce != null);
+    		assertTrue(the_great_divorce != null);
     	}
     	
     	{
@@ -442,7 +441,7 @@ public class BuilderTest extends TestCase
     		
     		the_screwtape_letters = (Book)builder.create(null);
     		
-    		assert(the_screwtape_letters != null);
+    		assertTrue(the_screwtape_letters != null);
     	}
     	
     	
@@ -460,12 +459,12 @@ public class BuilderTest extends TestCase
     	
     	TestObject obj = (TestObject)builder.create(null);
     	
-    	assert(obj != null);
+    	assertTrue(obj != null);
     	
     	assertEquals(obj.my_int_book_map.size(),2);
     	
-    	assert(obj.my_int_book_map.containsKey(17));
-    	assert(obj.my_int_book_map.containsKey(32));
+    	assertTrue(obj.my_int_book_map.containsKey(17));
+    	assertTrue(obj.my_int_book_map.containsKey(32));
     	
     	assertEquals(obj.my_int_book_map.get(17),of_mice_and_men);
     	assertEquals(obj.my_int_book_map.get(32),the_screwtape_letters);
@@ -478,7 +477,7 @@ public class BuilderTest extends TestCase
     	
     	TestObject obj = (TestObject)builder.create(null);
     	
-    	assert(obj != null);
+    	assertTrue(obj != null);
     	assertEquals(obj.my_string, value);
     }
     
@@ -489,7 +488,7 @@ public class BuilderTest extends TestCase
     	
     	TestObject obj = (TestObject)builder.create(null);
     	
-    	assert(obj != null);
+    	assertTrue(obj != null);
     	assertEquals(obj.my_enum, value);
     }
     
@@ -500,7 +499,7 @@ public class BuilderTest extends TestCase
     	
     	TestObject obj = (TestObject)builder.create(null);
     	
-    	assert(obj != null);
+    	assertTrue(obj != null);
     	assertEquals(obj.my_stringable, value);
     }
     
@@ -511,7 +510,7 @@ public class BuilderTest extends TestCase
     	
     	TestObject obj = (TestObject)builder.create(null);
     	
-    	assert(obj != null);
+    	assertTrue(obj != null);
     	assertEquals(obj.my_double, value);
     }
     
@@ -522,7 +521,7 @@ public class BuilderTest extends TestCase
     	
     	TestObject obj = (TestObject)builder.create(null);
     	
-    	assert(obj != null);
+    	assertTrue(obj != null);
     	assertEquals(obj.my_float, value);
     }
     
@@ -533,7 +532,7 @@ public class BuilderTest extends TestCase
     	
     	TestObject obj = (TestObject)builder.create(null);
     	
-    	assert(obj != null);
+    	assertTrue(obj != null);
     	assertEquals(obj.my_long, value);
     }
     
@@ -544,7 +543,7 @@ public class BuilderTest extends TestCase
     	
     	TestObject obj = (TestObject)builder.create(null);
     	
-    	assert(obj != null);
+    	assertTrue(obj != null);
     	assertEquals(obj.my_int, value);
     }
     
@@ -555,7 +554,7 @@ public class BuilderTest extends TestCase
     	
     	TestObject obj = (TestObject)builder.create(null);
     	
-    	assert(obj != null);
+    	assertTrue(obj != null);
     	assertEquals(obj.my_short, value);
     }
     
@@ -566,7 +565,7 @@ public class BuilderTest extends TestCase
     	
     	TestObject obj = (TestObject)builder.create(null);
     	
-    	assert(obj != null);
+    	assertTrue(obj != null);
     	assertEquals(obj.my_byte, value);
     }
     
@@ -577,7 +576,7 @@ public class BuilderTest extends TestCase
     	
     	TestObject obj = (TestObject)builder.create(null);
     	
-    	assert(obj != null);
+    	assertTrue(obj != null);
     	assertEquals(obj.my_char, value);
     }
     
@@ -588,7 +587,7 @@ public class BuilderTest extends TestCase
     	
     	TestObject obj = (TestObject)builder.create(null);
     	
-    	assert(obj != null);
+    	assertTrue(obj != null);
     	assertEquals(obj.my_boolean, value);
     } 
     
@@ -599,7 +598,7 @@ public class BuilderTest extends TestCase
     	
     	TestObject obj = (TestObject)builder.create(null);
     	
-    	assert(obj != null);
+    	assertTrue(obj != null);
     	assertEquals(obj.my_book, value);
     }
 }

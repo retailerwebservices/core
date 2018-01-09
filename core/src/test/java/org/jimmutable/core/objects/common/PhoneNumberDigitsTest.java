@@ -1,8 +1,5 @@
 package org.jimmutable.core.objects.common;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.jimmutable.core.exceptions.ValidationException;
 
 import junit.framework.Test;
@@ -52,11 +49,11 @@ public class PhoneNumberDigitsTest extends TestCase
     	try
     	{
     		new PhoneNumberDigits(value);
-    		assert(false);
+    		fail();
     	}
     	catch(ValidationException e)
     	{
-    		assert(true);
+    		
     	}
     }
     
@@ -75,7 +72,7 @@ public class PhoneNumberDigitsTest extends TestCase
     	catch(Exception e)
     	{
     		e.printStackTrace();
-    		assert(false);
+    		fail();
     	}
     }
 }

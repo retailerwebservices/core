@@ -122,7 +122,7 @@ public class PrimativeReadWriteTest extends TestCase
     private void testObject(Format format, Object obj)
     {
     	String serialized_data = ObjectWriter.serialize(format, obj);
-    	assert(serialized_data != null);
+    	assertTrue(serialized_data != null);
     	
     	Object from_reader = ObjectParseTree.deserialize(serialized_data);
     	

@@ -56,11 +56,11 @@ public class PostalCodeTest extends TestCase {
 	   try
 	   {
 		   PostalCode result = new PostalCode(str);
-		   assert(false);
+		   fail();
 	   }
 	   catch(Exception e)
 	   {
-		   assert(true);
+		   
 	   }
  }	
 	

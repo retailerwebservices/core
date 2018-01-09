@@ -32,7 +32,7 @@ public class StringableTestingUtils<S extends Stringable>
 	 * @return the boolean value of whether or not the value is equal to the
 	 *         normalized_value after conversion
 	 */
-	public boolean assertValid(String value, String normalized_value)
+	public boolean isValid(String value, String normalized_value)
 	{
 		S ret = converter.fromString(value, null);
 		
@@ -58,7 +58,7 @@ public class StringableTestingUtils<S extends Stringable>
 	 * 
 	 * @return the boolean value of whether or not the value is normalizable.
 	 */
-	public boolean assertValid(String value)
+	public boolean isValid(String value)
 	{
 		S ret = converter.fromString(value, null);
 		
@@ -74,7 +74,7 @@ public class StringableTestingUtils<S extends Stringable>
 	 * @return the boolean value of whether or not the value is NOT
 	 *         normalizable.
 	 */
-	public boolean assertInvalid(String value)
+	public boolean isInvalid(String value)
 	{
 		return null == converter.fromString(value, null);
 	}

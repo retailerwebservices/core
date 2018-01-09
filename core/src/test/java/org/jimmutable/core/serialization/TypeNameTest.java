@@ -38,7 +38,7 @@ public class TypeNameTest extends TestCase
 		catch(Exception e)
 		{
 			e.printStackTrace();
-			assert(false);
+			fail();
 		}
 	}
 	
@@ -47,12 +47,11 @@ public class TypeNameTest extends TestCase
 		try
 		{
 			TypeName type_name = new TypeName(type_name_str);
-			assert(false);
+			fail();
 		}
 		catch(Exception e)
 		{
 			//e.printStackTrace();
-			assert(true);
 		}
 	}
 
@@ -74,6 +73,5 @@ public class TypeNameTest extends TestCase
 		assertInvalid("jim-bob");
 		assertInvalid("f&p");
 		assertInvalid("!f");
-		
 	}
 }

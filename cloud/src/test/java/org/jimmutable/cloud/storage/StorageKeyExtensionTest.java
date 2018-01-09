@@ -13,21 +13,21 @@ public class StorageKeyExtensionTest extends StubTest
 	@Test
 	public void testValid()
 	{
-		assertTrue(tester.assertValid("foo", "foo"));
-		assertTrue(tester.assertValid("FOO", "foo"));
+		assertTrue(tester.isValid("foo", "foo"));
+		assertTrue(tester.isValid("FOO", "foo"));
 
-		assertTrue(tester.assertValid("0123456789", "0123456789"));
+		assertTrue(tester.isValid("0123456789", "0123456789"));
 
-		assertTrue(tester.assertValid(".txt", "txt"));
+		assertTrue(tester.isValid(".txt", "txt"));
 	}
 
 	@Test
 	public void testInvalid()
 	{
-		assertTrue(tester.assertInvalid(null));
-		assertTrue(tester.assertInvalid(""));
-		assertTrue(tester.assertInvalid("&&!(#$"));
-		assertTrue(tester.assertInvalid("foo-bar"));
-		assertTrue(tester.assertInvalid("foo bar"));
+		assertTrue(tester.isInvalid(null));
+		assertTrue(tester.isInvalid(""));
+		assertTrue(tester.isInvalid("&&!(#$"));
+		assertTrue(tester.isInvalid("foo-bar"));
+		assertTrue(tester.isInvalid("foo bar"));
 	}
 }

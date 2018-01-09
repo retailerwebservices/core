@@ -37,7 +37,7 @@ public class ItemSpecificationsTest extends TestCase
 		try
 		{
 			builder.create(null);
-			assert(false); // error, creation worked without a key set
+			fail(); // error, creation worked without a key set
 		}
 		catch(Exception e)
 		{
@@ -48,15 +48,15 @@ public class ItemSpecificationsTest extends TestCase
 		
 		ItemSpecifications no_specs = (ItemSpecifications)builder.create(null);
 		
-		assert(no_specs != null);
+		assertTrue(no_specs != null);
 		
 		assertEquals(no_specs.getSimpleItemKey(),new ItemKey("FOO","BAR"));
 		
-		assert(no_specs.isComplete());
-		assert(no_specs.getSimpleItemKey().isComplete());
-		assert(no_specs.getSimpleAttributes().isFrozen());
+		assertTrue(no_specs.isComplete());
+		assertTrue(no_specs.getSimpleItemKey().isComplete());
+		assertTrue(no_specs.getSimpleAttributes().isFrozen());
 		
-		assert(no_specs.getSimpleAttributes().isEmpty());
+		assertTrue(no_specs.getSimpleAttributes().isEmpty());
 		
 		builder = new Builder(no_specs);
 		 
@@ -67,7 +67,7 @@ public class ItemSpecificationsTest extends TestCase
 		
 		ItemSpecifications some_specs = (ItemSpecifications)builder.create(null);
 		
-		assert(some_specs != null);
+		assertTrue(some_specs != null);
 		
 		assertEquals(some_specs.getSimpleItemKey(),new ItemKey("FOO","BAR"));
 		
@@ -77,7 +77,7 @@ public class ItemSpecificationsTest extends TestCase
 		assertEquals(some_specs.getSimpleAttributes().get(new ItemAttribute("DOC_SRC_FILE0")),"FRBJHKQALSYB.PDF");
 		
 		assertEquals(some_specs,some_specs);
-		assert(!some_specs.equals(no_specs));
+		assertTrue(!some_specs.equals(no_specs));
 		
 		System.out.println(some_specs.toJavaCode(Format.XML_PRETTY_PRINT, "obj"));
 	}

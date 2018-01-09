@@ -48,11 +48,10 @@ public class EmailAddressTest extends TestCase
  	   try
  	   {
  		  EmailAddress result = new EmailAddress(str);
- 		   assert(false);
+ 		  fail();
  	   }
  	   catch(Exception e)
  	   {
- 		   assert(true);
  	   }
     }
 }

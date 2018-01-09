@@ -13,24 +13,24 @@ public class SubscriptionDefinitionTest
 	@Test
 	public void testValid()
 	{
-		assertTrue(tester.assertValid("topic/topics/queue/queues", "topic/topics/queue/queues"));
-		assertTrue(tester.assertValid("topic/topics/queue/queues1234", "topic/topics/queue/queues1234"));
-		assertTrue(tester.assertValid("TOPIC/topics/queue/queues", "topic/topics/queue/queues"));
-		assertTrue(tester.assertValid(" TOPIC/topics/queue/queues ", "topic/topics/queue/queues"));
+		assertTrue(tester.isValid("topic/topics/queue/queues", "topic/topics/queue/queues"));
+		assertTrue(tester.isValid("topic/topics/queue/queues1234", "topic/topics/queue/queues1234"));
+		assertTrue(tester.isValid("TOPIC/topics/queue/queues", "topic/topics/queue/queues"));
+		assertTrue(tester.isValid(" TOPIC/topics/queue/queues ", "topic/topics/queue/queues"));
 	}
 
 	@Test
 	public void testInvalid()
 	{
-		assertTrue(tester.assertInvalid(null));
-		assertTrue(tester.assertInvalid(""));
-		assertTrue(tester.assertInvalid(" "));
-		assertTrue(tester.assertInvalid("1"));
-		assertTrue(tester.assertInvalid("foo_bar"));
-		assertTrue(tester.assertInvalid(".foo"));
-		assertTrue(tester.assertInvalid("foo."));
-		assertTrue(tester.assertInvalid("foo..bar"));
-		assertTrue(tester.assertInvalid("some_id"));
-		assertTrue(tester.assertInvalid("topic/topics/queue/"));
+		assertTrue(tester.isInvalid(null));
+		assertTrue(tester.isInvalid(""));
+		assertTrue(tester.isInvalid(" "));
+		assertTrue(tester.isInvalid("1"));
+		assertTrue(tester.isInvalid("foo_bar"));
+		assertTrue(tester.isInvalid(".foo"));
+		assertTrue(tester.isInvalid("foo."));
+		assertTrue(tester.isInvalid("foo..bar"));
+		assertTrue(tester.isInvalid("some_id"));
+		assertTrue(tester.isInvalid("topic/topics/queue/"));
 	}
 }

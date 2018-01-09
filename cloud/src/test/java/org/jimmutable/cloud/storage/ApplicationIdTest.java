@@ -14,21 +14,21 @@ public class ApplicationIdTest extends StubTest
 	@Test
 	public void testValid()
 	{
-		assertTrue(tester.assertValid("foo", "foo"));
-		assertTrue(tester.assertValid("FOO", "foo"));
+		assertTrue(tester.isValid("foo", "foo"));
+		assertTrue(tester.isValid("FOO", "foo"));
 
-		assertTrue(tester.assertValid("abcdefghijklmnopqrstuvwxyz0123456789-", "abcdefghijklmnopqrstuvwxyz0123456789-"));
+		assertTrue(tester.isValid("abcdefghijklmnopqrstuvwxyz0123456789-", "abcdefghijklmnopqrstuvwxyz0123456789-"));
 
-		assertTrue(tester.assertValid("FoO-BAR", "foo-bar"));
+		assertTrue(tester.isValid("FoO-BAR", "foo-bar"));
 	}
 
 	@Test
 	public void testInvalid()
 	{
-		assertTrue(tester.assertInvalid(null));
-		assertTrue(tester.assertInvalid(""));
-		assertTrue(tester.assertInvalid("&&!(#$"));
-		assertTrue(tester.assertInvalid("foo_bar"));
-		assertTrue(tester.assertInvalid("foo bar"));
+		assertTrue(tester.isInvalid(null));
+		assertTrue(tester.isInvalid(""));
+		assertTrue(tester.isInvalid("&&!(#$"));
+		assertTrue(tester.isInvalid("foo_bar"));
+		assertTrue(tester.isInvalid("foo bar"));
 	}
 }

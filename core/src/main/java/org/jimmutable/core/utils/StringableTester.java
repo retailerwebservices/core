@@ -13,8 +13,8 @@ import org.jimmutable.core.objects.Stringable;
  * The solution we came to in order to avoid the headache of having to remember
  * turning on a vm flag every time we want to utilize this class was to instead
  * make StringableTestingUtils. The new class acts the same but only returns
- * boolean values for failing and passing. This avoids using Java asserts as
- * well as avoids creating a dependency of JUnit on our core classes.
+ * boolean values for failing and passing. Which allows us to avoid using Java
+ * asserts as well as avoids creating a dependency of JUnit on our core classes.
  */
 @Deprecated
 public class StringableTester<S extends Stringable> 
