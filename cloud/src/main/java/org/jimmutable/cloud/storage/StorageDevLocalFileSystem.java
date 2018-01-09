@@ -15,19 +15,15 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.EnumSet;
-import java.util.function.Consumer;
 
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.common.Kind;
-import org.jimmutable.core.threading.OperationPool;
-import org.jimmutable.core.threading.OperationRunnable;
 import org.jimmutable.core.utils.IOUtils;
 import org.jimmutable.core.utils.Validator;
 
 public class StorageDevLocalFileSystem extends Storage
 {
-
 	/**
 	 * This is our local implementation of our Storage so we can mock up our storage
 	 * on our local machine.
@@ -145,54 +141,6 @@ public class StorageDevLocalFileSystem extends Storage
         return (StorageMetadata) builder.create(null);
     }
 
-    @Override
-	public boolean scan(final Kind kind, final StorageKeyName prefix, final StorageKeyHandler handler, final int num_handler_threads)
-	{
-	    return scanImpl(kind, prefix, handler, num_handler_threads, false);
-	}
-	
-    @Override
-    public boolean scanForObjectIds(final Kind kind, final StorageKeyName prefix, final StorageKeyHandler handler, final int num_handler_threads)
-    {
-        return scanImpl(kind, prefix, handler, num_handler_threads, true);
-    }
-    
-    private boolean scanImpl(final Kind kind, final StorageKeyName prefix, final StorageKeyHandler handler, final int num_handler_threads, final boolean only_object_ids)
-    {
-        Scanner scanner = new Scanner(kind, prefix, only_object_ids);
-        OperationPool pool = new OperationPool(scanner, num_handler_threads);
-        
-        scanner.setSink((StorageKey key) ->
-        {
-            pool.submitOperation(new StorageKeyHandlerWorker(handler, key));
-        });
-        
-        OperationRunnable.Result result = OperationRunnable.execute(pool, OperationRunnable.Result.ERROR);
-        return OperationRunnable.Result.SUCCESS == result;
-    }
-    
-    static private class StorageKeyHandlerWorker extends OperationRunnable
-    {
-        private final StorageKeyHandler handler;
-        private final StorageKey key;
-        
-        public StorageKeyHandlerWorker(final StorageKeyHandler handler, final StorageKey key)
-        {
-            this.handler = handler;
-            this.key = key;
-        }
-        
-        @Override
-        protected Result performOperation() throws Exception
-        {
-            if (null == handler) return Result.SUCCESS;
-            
-            handler.handle(key);
-            
-            return Result.SUCCESS;
-        }
-    }
-
     /**
      * This class does the main listing operation for scan*.
      * It runs in it's own thread and throws each StorageKey it
@@ -201,45 +149,21 @@ public class StorageDevLocalFileSystem extends Storage
      *
      * @author Jeff Dezso
      */
-	private class Scanner extends OperationRunnable
+	private class Scanner extends Storage.Scanner
 	{
-	    private final Kind kind;
-	    private final StorageKeyName prefix;
-	    private final boolean only_object_ids;
-        
-	    private Consumer<StorageKey> sink;
-	    
 	    public Scanner(final Kind kind, final StorageKeyName prefix, final boolean only_object_ids)
 	    {
-	        Validator.notNull(kind);
-	        
-	        this.kind = kind;
-	        this.prefix = prefix;
-	        this.only_object_ids = only_object_ids;
+	        super(kind, prefix, only_object_ids);
 	    }
 	    
         @Override
         protected Result performOperation() throws Exception
         {
-            Validator.notNull(sink);
-            
-            final File folder = new File(root.getAbsolutePath() + "/" + kind.getSimpleValue());
+            final File folder = new File(root.getAbsolutePath() + "/" + getSimpleKind().getSimpleValue());
             
             Files.walkFileTree(folder.toPath(), EnumSet.noneOf(FileVisitOption.class), 1, new Walker());
             
             return shouldStop() ? Result.STOPPED : Result.SUCCESS;
-        }
-        
-        /**
-         * The sink has to be set after construction to avoid a race condition
-         * between construction of the OperationPool and construction the seed
-         * OperationRunnable
-         * 
-         * @param handler
-         */
-        public void setSink(Consumer<StorageKey> sink)
-        {
-            this.sink = sink;
         }
         
 	    private class Walker extends SimpleFileVisitor<Path>
@@ -262,25 +186,25 @@ public class StorageDevLocalFileSystem extends Storage
 
                 StorageKeyName name = new StorageKeyName(file_name_and_ext[0]);
 
-                if (prefix != null)
+                if (hasPrefix())
                 {
-                    if (! name.getSimpleValue().startsWith(prefix.getSimpleValue()) )
+                    if (! name.getSimpleValue().startsWith(getOptionalPrefix(null).getSimpleValue()) )
                     {
                         return FileVisitResult.CONTINUE;
                     }
                 }
 
-                String key = kind + "/" + file.getFileName();
+                String key = getSimpleKind() + "/" + file.getFileName();
 
                 if (name.isObjectId())
                 {
-                    sink.accept(new ObjectIdStorageKey(key));
+                    emit(new ObjectIdStorageKey(key));
                 }
                 else
                 {
-                    if (! only_object_ids)
+                    if (! onlyObjectIds())
                     {
-                        sink.accept(new GenericStorageKey(key));
+                        emit(new GenericStorageKey(key));
                     }
                 }
                 
@@ -288,4 +212,10 @@ public class StorageDevLocalFileSystem extends Storage
             }
 	    }
 	}
+
+    @Override
+    protected Storage.Scanner createScanner(Kind kind, StorageKeyName prefix, boolean only_object_ids)
+    {
+        return new Scanner(kind, prefix, only_object_ids);
+    }
 }
