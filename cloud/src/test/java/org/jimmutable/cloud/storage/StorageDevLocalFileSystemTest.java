@@ -7,7 +7,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,6 +23,7 @@ import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.IntegrationTest;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
+import org.jimmutable.core.utils.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -42,7 +46,7 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 	}
 
 	@Test
-	public void testUpsert()
+	public void testUpsert() throws IOException
 	{
 		// test insert
 		assertTrue(sdlfs.upsert(new ObjectIdStorageKey("alpha/0000-0000-0000-0123.txt"), "Hello from the other side".getBytes(), false));
@@ -60,6 +64,19 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 		assertTrue(sdlfs.upsert(new ObjectIdStorageKey("alpha/0000-0000-0000-0123.txt"), "I wish I called a thousand times".getBytes(), false));
 		result = readFile(f);
 		assertEquals("I wish I called a thousand times", result);
+		
+        // test streaming upload
+		File temp = File.createTempFile("sdlfs_", ".txt");
+		temp.deleteOnExit();
+		FileUtils.writeFile(temp, "Over the river and through the woods, to Grandmother's house we go!");
+		
+		try (InputStream fin = new FileInputStream(temp))
+		{
+	        assertTrue(sdlfs.upsert(new ObjectIdStorageKey("alpha/0000-0000-0000-0123.txt"), fin, false));
+		}
+		
+        result = readFile(f);
+        assertEquals("Over the river and through the woods, to Grandmother's house we go!", result);
 
 		// load testing, we are commenting this out so we do not have put in our source
 		// control
@@ -126,7 +143,7 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 	}
 
 	@Test
-	public void testGetCurrentVersion()
+	public void testGetCurrentVersion() throws IOException
 	{
 		// test that it will read from file
 		ObjectIdStorageKey key = new ObjectIdStorageKey("zeta/0000-0000-0000-0123.txt");
@@ -138,6 +155,18 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 		key = new ObjectIdStorageKey("zeta/0000-0000-0000-0456.txt");
 		testvalue = sdlfs.getCurrentVersion(key, "I wish I called a thousand times".getBytes());
 		assertEquals("I wish I called a thousand times", new String(testvalue));
+		
+		// test streaming read
+        key = new ObjectIdStorageKey("zeta/0000-0000-0000-0123.txt"); // Same as above. This is important!
+        File temp = File.createTempFile("sdlfs_", ".txt");
+        temp.deleteOnExit();
+        
+        try (OutputStream fout = new FileOutputStream(temp))
+        {
+            sdlfs.getCurrentVersion(key, fout);
+            String file_contents = readFile(temp);
+            assertEquals(file_contents, "Hello from the other side");
+        }
 	}
 
 	@Test

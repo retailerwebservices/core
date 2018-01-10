@@ -77,10 +77,10 @@ public class FileUtils
 	{
 		Validator.notNull(dest, value);
 
-
-		FileWriter w = new FileWriter(dest);
-		w.write(value);
-		w.close();
+		try (FileWriter w = new FileWriter(dest))
+		{
+	        w.write(value);
+		}
 	}
 	
 	/**

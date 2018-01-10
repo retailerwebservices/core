@@ -54,6 +54,7 @@ public class StorageDevLocalFileSystem extends Storage
 		return default_value;
 	}
 
+    // TODO Use hint_content_likely_to_be_compressible to auto-gzip contents. Must be able to detect dynamically on read.
 	@Override
 	public boolean upsert(final StorageKey key, final InputStream source, final boolean hint_content_likely_to_be_compressible)
 	{
