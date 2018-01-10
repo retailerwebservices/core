@@ -10,7 +10,7 @@ import java.io.OutputStream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jimmutable.cloud.CloudExecutionEnvironment;
+import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.storage.GenericStorageKey;
 import org.jimmutable.cloud.storage.ObjectIdStorageKey;
 import org.jimmutable.cloud.storage.Storage;
@@ -46,14 +46,15 @@ public class StorageS3 extends Storage
     final private AmazonS3Client client;
     final private String bucket_name;
     
-    public StorageS3(final AmazonS3ClientFactory client_factory, final boolean is_read_only)
+    // Since this will be init'd in CEE.startup, we can't rely on the singleton for access to the ApplicationId
+    public StorageS3(final AmazonS3ClientFactory client_factory, final ApplicationId application_id, final boolean is_read_only)
     {
         super(is_read_only);
         
         Validator.notNull(client_factory);
         client = client_factory.create();
         
-        bucket_name = BUCKET_NAME_PREFIX + CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId();
+        bucket_name = BUCKET_NAME_PREFIX + application_id;
     }
     
     public String getSimpleBucketName()
@@ -70,7 +71,7 @@ public class StorageS3 extends Storage
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            LOGGER.catching(e);
             return default_value;
         }
     }
@@ -110,7 +111,7 @@ public class StorageS3 extends Storage
                 while (! upload.isDone())
                 {
                     LOGGER.trace(log_prefix + "Progress: " + upload.getProgress().getPercentTransferred());
-                    try { Thread.sleep(TRANSFER_MANAGER_POLLING_INTERVAL_MS); } catch (Exception e) { e.printStackTrace(); } // give progress updates every .5 sec
+                    try { Thread.sleep(TRANSFER_MANAGER_POLLING_INTERVAL_MS); } catch (Exception e) {} // give progress updates every .5 sec
                 }
                 
                 LOGGER.trace(log_prefix + "Progress: " + upload.getProgress().getPercentTransferred()); // give the 100 percent before exiting
@@ -122,7 +123,7 @@ public class StorageS3 extends Storage
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                LOGGER.catching(e);
                 upload.abort();
             }
         }
@@ -159,7 +160,7 @@ public class StorageS3 extends Storage
                 while (! download.isDone())
                 {
                     LOGGER.trace(log_prefix + "Progress: " + download.getProgress().getPercentTransferred());
-                    try { Thread.sleep(TRANSFER_MANAGER_POLLING_INTERVAL_MS); } catch (Exception e) { e.printStackTrace(); } // give progress updates every .5 sec
+                    try { Thread.sleep(TRANSFER_MANAGER_POLLING_INTERVAL_MS); } catch (Exception e) {} // give progress updates every .5 sec
                 }
                 
                 LOGGER.trace(log_prefix + "Progress: " + download.getProgress().getPercentTransferred()); // give the 100 percent before exiting
@@ -169,7 +170,7 @@ public class StorageS3 extends Storage
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                LOGGER.catching(e);
                 download.abort();
                 return false;
             }
@@ -202,7 +203,7 @@ public class StorageS3 extends Storage
         }
         catch(Exception e)
         {
-            e.printStackTrace();
+            LOGGER.catching(e);
             return false;
         }
     }
@@ -234,7 +235,7 @@ public class StorageS3 extends Storage
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            LOGGER.catching(e);
             return default_value;
         }
     }
