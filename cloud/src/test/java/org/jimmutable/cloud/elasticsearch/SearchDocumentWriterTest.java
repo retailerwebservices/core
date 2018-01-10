@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jimmutable.core.fields.FieldArrayList;
+import org.jimmutable.core.fields.FieldList;
 import org.jimmutable.core.objects.common.Day;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
@@ -38,6 +40,14 @@ public class SearchDocumentWriterTest
 
 		SearchIndexFieldDefinition theTimestamp = new SearchIndexFieldDefinition(new FieldName("timestamp"), SearchIndexFieldType.DAY);
 
+		SearchIndexFieldDefinition theTextArray = new SearchIndexFieldDefinition(new FieldName("text_array"), SearchIndexFieldType.TEXT);
+		SearchIndexFieldDefinition theAtomArray = new SearchIndexFieldDefinition(new FieldName("atom_array"), SearchIndexFieldType.ATOM);
+
+		SearchIndexFieldDefinition theLongArray = new SearchIndexFieldDefinition(new FieldName("long_array"), SearchIndexFieldType.LONG);
+		SearchIndexFieldDefinition theFloatArray = new SearchIndexFieldDefinition(new FieldName("float_array"), SearchIndexFieldType.FLOAT);
+		SearchIndexFieldDefinition theBooleanArray = new SearchIndexFieldDefinition(new FieldName("boolean_array"), SearchIndexFieldType.BOOLEAN);
+		SearchIndexFieldDefinition theTimestampArray = new SearchIndexFieldDefinition(new FieldName("timestamp_array"), SearchIndexFieldType.DAY);
+
 		SearchDocumentWriter writer = new SearchDocumentWriter();
 		writer.writeBoolean(theBoolean.getSimpleFieldName(), true);
 		writer.writeText(theText1.getSimpleFieldName(), "abc");
@@ -48,6 +58,28 @@ public class SearchDocumentWriterTest
 		writer.writeFloat(theFloat.getSimpleFieldName(), 0.1f);
 		writer.writeLong(theLong.getSimpleFieldName(), 100L);
 		writer.writeTimestamp(theTimestamp, 1420070400001L);
+
+		FieldList<String> list = new FieldArrayList<String>();
+		list.add("a");
+		list.add("b");
+		writer.writeTextArray(theTextArray, list);
+		writer.writeAtomArray(theAtomArray, list);
+
+		FieldList<Long> longs = new FieldArrayList<Long>();
+		longs.add(0L);
+		longs.add(1L);
+		writer.writeLongArray(theLongArray, longs);
+		writer.writeTimestampArray(theTimestampArray, longs);
+
+		FieldList<Float> floats = new FieldArrayList<Float>();
+		floats.add(0.0f);
+		floats.add(0.1f);
+		writer.writeFloatArray(theFloatArray, floats);
+
+		FieldList<Boolean> booleans = new FieldArrayList<Boolean>();
+		booleans.add(true);
+		booleans.add(false);
+		writer.writeBooleanArray(theBooleanArray, booleans);
 
 		Map<String, Object> expected = new HashMap<String, Object>();
 
@@ -60,6 +92,14 @@ public class SearchDocumentWriterTest
 		expected.put("float", 0.1f);
 		expected.put("long", 100L);
 		expected.put("timestamp", 1420070400001L);
+
+		expected.put("text_array", list);
+		expected.put("atom_array", list);
+
+		expected.put("long_array", longs);
+		expected.put("float_array", floats);
+		expected.put("boolean_array", booleans);
+		expected.put("timestamp_array", longs);
 
 		assertEquals(expected, writer.getSimpleFieldsMap());
 

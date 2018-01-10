@@ -1,10 +1,12 @@
 package org.jimmutable.cloud.elasticsearch;
 
+import org.jimmutable.core.fields.FieldCollection;
 import org.jimmutable.core.objects.common.Day;
 import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.utils.Validator;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,6 +25,180 @@ public class SearchDocumentWriter
 	public SearchDocumentWriter()
 	{
 		fields = new HashMap<String, Object>();
+	}
+
+	/**
+	 * Add a String array to a text field within the document. These fields are
+	 * analyzed, that is they are passed through an analyzer to convert the strings
+	 * into a list of individual terms before being indexed.
+	 * 
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
+	 * @param elements
+	 *            The text of the field. Must not contain any null elements. Blanks
+	 *            are ignored.
+	 */
+	public void writeTextArray(SearchIndexFieldDefinition search_index_definition, FieldCollection<String> elements)
+	{
+
+		Validator.notNull(search_index_definition);
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.TEXT))
+		{
+			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.TEXT, search_index_definition.getSimpleFieldName()));
+		}
+		Validator.notNull(elements);
+		Validator.containsNoNulls(elements);
+
+		if (elements == null)
+			return;
+		if (elements.size() == 0)
+			return;
+		for (String s : elements)
+		{
+			s = s.trim();
+		}
+		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements);
+	}
+
+	/**
+	 * Add a String array to a text field within the document. These fields are not
+	 * analyzed, that is they are not passed through an analyzer to convert the
+	 * strings into a list of individual terms before being indexed.
+	 * 
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
+	 * @param elements
+	 *            The text of the field. Must not contain any null elements. Blanks
+	 *            are ignored.
+	 */
+	public void writeAtomArray(SearchIndexFieldDefinition search_index_definition, FieldCollection<String> elements)
+	{
+
+		Validator.notNull(search_index_definition);
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.ATOM))
+		{
+			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.ATOM, search_index_definition.getSimpleFieldName()));
+		}
+		Validator.notNull(elements);
+		Validator.containsNoNulls(elements);
+
+		if (elements == null)
+			return;
+		if (elements.size() == 0)
+			return;
+		for (String s : elements)
+		{
+			s = s.trim();
+		}
+		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements);
+	}
+
+	/**
+	 * Add an array of Longs to a LONG field within the document.
+	 * 
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
+	 * @param elements
+	 *            The Long elements. Must not contain any null elements.
+	 */
+	public void writeLongArray(SearchIndexFieldDefinition search_index_definition, FieldCollection<Long> elements)
+	{
+
+		Validator.notNull(search_index_definition);
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.LONG))
+		{
+			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.LONG, search_index_definition.getSimpleFieldName()));
+		}
+		Validator.notNull(elements);
+		Validator.containsNoNulls(elements);
+
+		if (elements == null)
+			return;
+		if (elements.size() == 0)
+			return;
+
+		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements);
+	}
+
+	/**
+	 * Add an array of Longs to a DAY field within the document.
+	 * 
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
+	 * @param elements
+	 *            The Long elements. Must not contain any null elements.
+	 */
+	public void writeTimestampArray(SearchIndexFieldDefinition search_index_definition, FieldCollection<Long> elements)
+	{
+
+		Validator.notNull(search_index_definition);
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.DAY))
+		{
+			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.DAY, search_index_definition.getSimpleFieldName()));
+		}
+		Validator.notNull(elements);
+		Validator.containsNoNulls(elements);
+
+		if (elements == null)
+			return;
+		if (elements.size() == 0)
+			return;
+
+		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements);
+	}
+
+	/**
+	 * Add an array of Floats to a FLOAT field within the document.
+	 * 
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
+	 * @param elements
+	 *            The Float elements. Must not contain any null elements.
+	 */
+	public void writeFloatArray(SearchIndexFieldDefinition search_index_definition, FieldCollection<Float> elements)
+	{
+
+		Validator.notNull(search_index_definition);
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.FLOAT))
+		{
+			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.FLOAT, search_index_definition.getSimpleFieldName()));
+		}
+		Validator.notNull(elements);
+		Validator.containsNoNulls(elements);
+
+		if (elements == null)
+			return;
+		if (elements.size() == 0)
+			return;
+
+		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements);
+	}
+
+	/**
+	 * Add an array of Boolean to a BOOLEAN field within the document.
+	 * 
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
+	 * @param elements
+	 *            The Boolean elements. Must not contain any null elements.
+	 */
+	public void writeBooleanArray(SearchIndexFieldDefinition search_index_definition, FieldCollection<Boolean> elements)
+	{
+
+		Validator.notNull(search_index_definition);
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.BOOLEAN))
+		{
+			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.BOOLEAN, search_index_definition.getSimpleFieldName()));
+		}
+		Validator.notNull(elements);
+		Validator.containsNoNulls(elements);
+
+		if (elements == null)
+			return;
+		if (elements.size() == 0)
+			return;
+
+		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements);
 	}
 
 	/**
