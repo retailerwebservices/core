@@ -5,6 +5,7 @@ import org.jimmutable.core.utils.Validator;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.Region;
 
 
 /**
@@ -12,18 +13,18 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
  * {@link com.amazonaws.auth.DefaultAWSCredentialsProviderChain default AWS credentials provider}
  * but allows clients to specify which region to use.
  * </p>
- * The default region for jimmutable is {@link Regions#US_WEST_2 us-west-2}.
+ * The default region for jimmutable is {@link Region#US_West_2 us-west-2}.
  *
  * @author Jeff Dezso
  */
 public class RegionSpecificAmazonS3ClientFactory implements AmazonS3ClientFactory
 {
-    static public final Regions DEFAULT_REGION = Regions.US_WEST_2;
+    static public final Region DEFAULT_REGION = Region.US_West_2;
     
     
-    private final Regions region;
+    private final Region region;
     
-    public RegionSpecificAmazonS3ClientFactory(final Regions region)
+    public RegionSpecificAmazonS3ClientFactory(final Region region)
     {
         Validator.notNull(region);
         
@@ -33,7 +34,7 @@ public class RegionSpecificAmazonS3ClientFactory implements AmazonS3ClientFactor
     @Override
     public AmazonS3Client create()
     {
-        return (AmazonS3Client) AmazonS3ClientBuilder.standard().withRegion(region).build();
+        return (AmazonS3Client) AmazonS3ClientBuilder.standard().withRegion(Regions.fromName(region.getFirstRegionId())).build();
     }
     
     static public AmazonS3ClientFactory defaultFactory()

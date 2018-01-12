@@ -32,6 +32,7 @@ import com.amazonaws.services.s3.transfer.Download;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
+import com.amazonaws.services.s3.transfer.Transfer.TransferState;
 
 
 public class StorageS3 extends Storage
@@ -43,18 +44,20 @@ public class StorageS3 extends Storage
     static private final long TRANSFER_MANAGER_POLLING_INTERVAL_MS = 500L;
     
     
-    final private AmazonS3Client client;
     final private String bucket_name;
+    final private AmazonS3Client client;
+    final private TransferManager transfer_manager;
     
     // Since this will be init'd in CEE.startup, we can't rely on the singleton for access to the ApplicationId
     public StorageS3(final AmazonS3ClientFactory client_factory, final ApplicationId application_id, final boolean is_read_only)
     {
         super(is_read_only);
         
+        bucket_name = BUCKET_NAME_PREFIX + application_id;
+        
         Validator.notNull(client_factory);
         client = client_factory.create();
-        
-        bucket_name = BUCKET_NAME_PREFIX + application_id;
+        transfer_manager = TransferManagerBuilder.standard().withS3Client(client).build();
     }
     
     public String getSimpleBucketName()
@@ -76,6 +79,13 @@ public class StorageS3 extends Storage
         }
     }
     
+    @Override
+    public boolean upsert(StorageKey key, byte[] bytes, boolean hint_content_likely_to_be_compressible)
+    {
+        // TODO Do a straight put to S3 (caching a temp file for a small byte[] is dumb)
+        return super.upsert(key, bytes, hint_content_likely_to_be_compressible);
+    }
+
     // TODO Use hint_content_likely_to_be_compressible to auto-gzip contents. Must be able to detect dynamically on read.
     @Override
     public boolean upsert(final StorageKey key, final InputStream source, final boolean hint_content_likely_to_be_compressible)
@@ -102,8 +112,6 @@ public class StorageS3 extends Storage
             
             try
             {
-                TransferManager transfer_manager = TransferManagerBuilder.standard().withS3Client(client).build();
-                
                 upload = transfer_manager.upload(bucket_name, s3_key, temp);
                 
                 LOGGER.info(log_prefix + "Upload: " + upload.getDescription());
@@ -115,11 +123,8 @@ public class StorageS3 extends Storage
                 }
                 
                 LOGGER.trace(log_prefix + "Progress: " + upload.getProgress().getPercentTransferred()); // give the 100 percent before exiting
-                
-                // After the upload is complete, call shutdownNow to release the resources.
-                transfer_manager.shutdownNow();
 
-                return true;
+                return TransferState.Completed == upload.getState();
             }
             catch (Exception e)
             {
@@ -133,6 +138,13 @@ public class StorageS3 extends Storage
         }
         
         return false;
+    }
+
+    @Override
+    public byte[] getCurrentVersion(StorageKey key, byte[] default_value)
+    {
+        // TODO Do a straight get from S3 (caching a temp file for a small byte[] is dumb)
+        return super.getCurrentVersion(key, default_value);
     }
     
     @Override
@@ -151,8 +163,6 @@ public class StorageS3 extends Storage
             
             try
             {
-                TransferManager transfer_manager = TransferManagerBuilder.standard().withS3Client(client).build();
-                
                 download = transfer_manager.download(bucket_name, s3_key, temp);
                 
                 LOGGER.info(log_prefix + "Download: " + download.getDescription());
@@ -164,9 +174,6 @@ public class StorageS3 extends Storage
                 }
                 
                 LOGGER.trace(log_prefix + "Progress: " + download.getProgress().getPercentTransferred()); // give the 100 percent before exiting
-                
-                // After the download is complete, call shutdownNow to release the resources.
-                transfer_manager.shutdownNow();
             }
             catch (Exception e)
             {
@@ -181,7 +188,7 @@ public class StorageS3 extends Storage
                 IOUtils.transferAllBytes(fin, sink);
             }
             
-            return true;
+            return TransferState.Completed == download.getState();
         }
         catch (Exception e)
         {

@@ -1,27 +1,66 @@
 package org.jimmutable.cloud.storage;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Arrays;
 
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.IntegrationTest;
 import org.jimmutable.cloud.storage.s3.RegionSpecificAmazonS3ClientFactory;
 import org.jimmutable.cloud.storage.s3.StorageS3;
+import org.jimmutable.core.exceptions.ValidationException;
+import org.jimmutable.core.utils.FileUtils;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.CreateBucketRequest;
+import com.amazonaws.services.s3.model.ListVersionsRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.S3VersionSummary;
+import com.amazonaws.services.s3.model.VersionListing;
 
 
 public class StorageS3IT extends IntegrationTest
 {
-    static private StorageS3 client;
+    // We need a flag to prevent deleteBucket() from running when an exception is thrown from setUp()
+    static private boolean bucket_created = false;
+    
+    static private StorageS3 storage;
+    
+    
+    /**********************
+     *   Setup/Teardown   *
+     *********************/
     
     @BeforeClass
-    public static void setUpTest()
+    static public void setup()
     {
         setupEnvironment();
         
+        checkCredentials();
+        
+        // Okay, we're good. Proceed.
+        storage = new StorageS3(RegionSpecificAmazonS3ClientFactory.defaultFactory(), CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), false);
+        
+        createBucket();
+    }
+    
+    static private void checkCredentials()
+    {
         try
         {
             DefaultAWSCredentialsProviderChain.getInstance().getCredentials();
@@ -35,11 +74,164 @@ public class StorageS3IT extends IntegrationTest
             
             throw e;
         }
+    }
+    
+    static private void createBucket()
+    {
+        AmazonS3Client client = RegionSpecificAmazonS3ClientFactory.defaultFactory().create();
+        if (client.doesBucketExist(storage.getSimpleBucketName()))
+        {
+            String message = "The unit test bucket - " + storage.getSimpleBucketName() + " - must NOT already exist.\n"
+                           + "This is to provide a clean environment for the integration test.\n"
+                           + "It might also be an indication that this test is running on another instance somewhere.\n"
+                           + "Please ensure that the test bucket is deleted and try running this test again.";
+
+            System.err.println(message);
+            throw new ValidationException();
+        }
         
-        client = new StorageS3(RegionSpecificAmazonS3ClientFactory.defaultFactory(), CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), false);
+        CreateBucketRequest request = new CreateBucketRequest(storage.getSimpleBucketName(), RegionSpecificAmazonS3ClientFactory.DEFAULT_REGION);
+        client.createBucket(request);
+        bucket_created = true;
+    }
+    
+    @AfterClass
+    static public void tearDown()
+    {
+        if (bucket_created)
+        {
+            deleteBucket();
+        }
+    }
+    
+    static private void deleteAllObjects()
+    {
+        AmazonS3Client client = RegionSpecificAmazonS3ClientFactory.defaultFactory().create();
         
-        // TODO Check that bucket exists
-        // TODO Tear down bucket / contents after test
+        ObjectListing listing = client.listObjects(storage.getSimpleBucketName());
+        for (S3ObjectSummary object : listing.getObjectSummaries())
+        {
+            try
+            {
+                client.deleteObject(object.getBucketName(), object.getKey());
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    static private void deleteAllObjectVersions()
+    {
+        AmazonS3Client client = RegionSpecificAmazonS3ClientFactory.defaultFactory().create();
+        
+        VersionListing versions = client.listVersions(new ListVersionsRequest().withBucketName(storage.getSimpleBucketName()));
+        for (S3VersionSummary version : versions.getVersionSummaries())
+        {
+            try
+            {
+                client.deleteVersion(version.getBucketName(), version.getKey(), version.getVersionId());
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    static private void deleteBucket()
+    {
+        // First, delete all objects
+        deleteAllObjects();
+        
+        // Second, delete all object versions
+        deleteAllObjectVersions();
+        
+        // Finally, delete the bucket itself
+        AmazonS3Client client = RegionSpecificAmazonS3ClientFactory.defaultFactory().create();
+        client.deleteBucket(storage.getSimpleBucketName());
+    }
+    
+    
+    /*************
+     *   Tests   
+     ************/
+    
+    @Test
+    public void testUpsertAndGet() throws IOException
+    {
+        // Basic put
+        {
+            StorageKey test_key = new GenericStorageKey("s3-test-upsert/put.txt");
+            
+            // Put
+            assertTrue(storage.upsert(test_key, "arstarstarst".getBytes(), false));
+            
+            byte[] test_value = storage.getCurrentVersion(test_key, new byte[0]);
+            assertTrue(Arrays.equals(test_value, "arstarstarst".getBytes()));
+            
+            // Update
+            assertTrue(storage.upsert(test_key, "oineoienoienoien".getBytes(), false));
+            
+            test_value = storage.getCurrentVersion(test_key, new byte[0]);
+            assertTrue(Arrays.equals(test_value, "oineoienoienoien".getBytes()));
+        }
+        
+        // Fail if byte[] > 25 MB
+        {
+            byte[] large_value = new byte[StorageS3.MAX_TRANSFER_BYTES_IN_BYTES + 1];
+            Arrays.fill(large_value, (byte) 3);
+            
+            try
+            {
+                storage.upsert(new GenericStorageKey("s3-test-upsert/too_big.txt"), large_value, false);
+                fail("Expected ValidationException");
+            }
+            catch (ValidationException e)
+            {
+                // Expected
+            }
+        }
+        
+        // Upsert w/ stream
+        {
+            File temp_source = File.createTempFile("s3_test_upsert_source_", ".txt");
+            File temp_dest = File.createTempFile("s3_test_upsert_dest_", ".txt");
+            
+            // Put
+            FileUtils.quietWriteFile(temp_source, "Over the river and through the woods");
+            
+            StorageKey stream_key = new GenericStorageKey("s3-test-upsert/stream.txt");
+            try (InputStream fin = new FileInputStream(temp_source))
+            {
+                assertTrue(storage.upsert(stream_key, fin, false));
+            }
+            
+            try (OutputStream fout = new FileOutputStream(temp_dest))
+            {
+                assertTrue(storage.getCurrentVersion(stream_key, fout));
+            }
+            
+            String test_value = FileUtils.getComplexFileContentsAsString(temp_dest, null);
+            assertEquals(test_value, "Over the river and through the woods");
+            
+            // Update
+            FileUtils.quietWriteFile(temp_source, "Victoria Falls is really, really high");
+            
+            try (InputStream fin = new FileInputStream(temp_source))
+            {
+                assertTrue(storage.upsert(stream_key, fin, false));
+            }
+            
+            try (OutputStream fout = new FileOutputStream(temp_dest))
+            {
+                assertTrue(storage.getCurrentVersion(stream_key, fout));
+            }
+            
+            test_value = FileUtils.getComplexFileContentsAsString(temp_dest, null);
+            assertEquals(test_value, "Victoria Falls is really, really high");
+        }
     }
     
     @Test
@@ -47,24 +239,50 @@ public class StorageS3IT extends IntegrationTest
     {
         // Generic keys
         {
-            StorageKey generic_exists = new GenericStorageKey("s3-test/exists.txt");
-            StorageKey generic_not_exist = new GenericStorageKey("s3-test/imaginary.txt");
+            StorageKey generic_not_exist = new GenericStorageKey("s3-test-exists/imaginary.txt");
+            assertFalse(storage.exists(generic_not_exist, false));
             
-            client.upsert(generic_exists, "I'm a real boy!".getBytes(), false);
-            
-            assertTrue(client.exists(generic_exists, false));
-            assertFalse(client.exists(generic_not_exist, false));
+            StorageKey generic_exists = new GenericStorageKey("s3-test-exists/exists.txt");
+            assertTrue(storage.upsert(generic_exists, "I'm a real boy!".getBytes(), false));
+            assertTrue(storage.exists(generic_exists, false));
         }
         
         // ObjectId's
         {
-            StorageKey object_id_exists = new GenericStorageKey("s3-test/1111-1111-1111-1111.txt");
-            StorageKey object_id_not_exist = new GenericStorageKey("s3-test/FFFF-FFFF-FFFF-FFFF.txt");
+            StorageKey object_id_not_exist = new ObjectIdStorageKey("s3-test-exists/0x7fff-ffff-ffff-ffff.txt");
+            assertFalse(storage.exists(object_id_not_exist, false));
             
-            client.upsert(object_id_exists, "I think I can... I think I can... I think I can...".getBytes(), false);
-            
-            assertTrue(client.exists(object_id_exists, false));
-            assertFalse(client.exists(object_id_not_exist, false));
+            StorageKey object_id_exists = new ObjectIdStorageKey("s3-test-exists/1111-1111-1111-1111.txt");
+            assertTrue(storage.upsert(object_id_exists, "I think I can... I think I can... I think I can...".getBytes(), false));
+            assertTrue(storage.exists(object_id_exists, false));
         }
+    }
+    
+    @Test
+    public void testDelete()
+    {
+        StorageKey test_key = new GenericStorageKey("s3-test-delete/delete_me.txt");
+        
+        assertFalse(storage.exists(test_key, false));
+        
+        assertTrue(storage.upsert(test_key, "qwfpqwfpqwfpqwpf".getBytes(), false));
+        assertTrue(storage.exists(test_key, false));
+        
+        assertTrue(storage.delete(test_key));
+        assertFalse(storage.exists(test_key, false));
+    }
+    
+    @Test
+    public void testGetMetadata()
+    {
+//        StorageKey test_key = new GenericStorageKey("s3-test-metadata/metadata.txt");
+//        
+//        assertTrue(storage.upsert(test_key, ".,mka.srntkoiylakrvoscyuanvo".getBytes(), false));
+//        
+//        StorageMetadata metadata = storage.getObjectMetadata(test_key, null);
+//        // TODO
+//        
+//        
+//        assertNull(storage.getObjectMetadata(new GenericStorageKey("s3-test-metadata/does_not_exist.txt"), null));
     }
 }
