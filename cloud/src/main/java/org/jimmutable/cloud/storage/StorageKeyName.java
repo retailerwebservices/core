@@ -9,6 +9,12 @@ import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.utils.Validator;
 import org.jimmutable.core.utils.Validator.ValidCharacters;
 
+/**
+ * This class contains the information required to uniquely identify a file in a path, while providing restrictions on a file name so that it can be used across file systems effortlessly,
+ * such as length and char restrictions for S3 (when used in production).
+ * 
+ * @author salvador.salazar
+ */
 public class StorageKeyName extends Stringable
 {
 	static public final MyConverter CONVERTER = new MyConverter();
@@ -62,7 +68,6 @@ public class StorageKeyName extends Stringable
 		}
 	}
 	
-	// TODO the following should be a regex check of the form XXXX-XXXX-XXXX-XXXX, where X is a letter or number
 	/**
 	 * The following is a convenience method to determine (quickly) if this is an ObjectId. It doesn't attempt
 	 * to actually parse out every section and ensure it's actually hex and all that. It simply checks the contents and length.

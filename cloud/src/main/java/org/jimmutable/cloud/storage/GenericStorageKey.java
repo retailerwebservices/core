@@ -5,8 +5,8 @@ import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.utils.Validator;
 
 /**
- * TODO get more info from Jim on this class. I believe it's simply genericizing the notion of an ObjectIdStorageKey, where a GenericStorageKey can contain a StorageKeyName with
- * an arbitrary amount of characters and such, but I'm not sure about this one.
+ * StorageKey implementation that doesn't require a valid ObjectId to store information. The name portion still contains the same constraints, such as length and char
+ * restrictions for S3.
  * @author salvador.salazar
  *
  */
