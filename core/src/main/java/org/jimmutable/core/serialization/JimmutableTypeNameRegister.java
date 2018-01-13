@@ -10,6 +10,7 @@ import org.jimmutable.core.objects.common.FacebookId;
 import org.jimmutable.core.objects.common.HostName;
 import org.jimmutable.core.objects.common.PhoneNumber;
 import org.jimmutable.core.objects.common.PhoneNumberDeck;
+import org.jimmutable.core.objects.common.USDMonetaryAmount;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 
 
@@ -48,5 +49,6 @@ public class JimmutableTypeNameRegister
 		
 		ObjectParseTree.registerTypeName(PhoneNumber.class);
 		ObjectParseTree.registerTypeName(PhoneNumberDeck.class);
+		
 	}
 }
