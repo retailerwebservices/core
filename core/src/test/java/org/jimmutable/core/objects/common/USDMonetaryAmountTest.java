@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.USDMonetaryAmount;
 import org.jimmutable.core.serialization.Format;
+import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -18,7 +19,7 @@ public class USDMonetaryAmountTest
 	@BeforeClass
 	public static void setUpBeforeClass() 
 	{
-		ObjectParseTree.registerTypeName(USDMonetaryAmount.class);
+		JimmutableTypeNameRegister.registerAllTypes();
 	}
 	
 	@Test

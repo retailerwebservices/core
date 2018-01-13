@@ -50,5 +50,7 @@ public class JimmutableTypeNameRegister
 		ObjectParseTree.registerTypeName(PhoneNumber.class);
 		ObjectParseTree.registerTypeName(PhoneNumberDeck.class);
 		
+		ObjectParseTree.registerTypeName(USDMonetaryAmount.class);
+		
 	}
 }
