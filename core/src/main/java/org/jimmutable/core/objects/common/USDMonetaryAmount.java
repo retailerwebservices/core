@@ -12,7 +12,7 @@ import org.jimmutable.core.utils.Validator;
 
 public class USDMonetaryAmount extends StandardImmutableObject<USDMonetaryAmount>
 {
-	static public final TypeName TYPE_NAME = new TypeName("com.digitalpanda.objects.facebookads.USDMonetaryAmount");
+	static public final TypeName TYPE_NAME = new TypeName("usd_monetary_amount");
 
 	static public final FieldDefinition.Long FIELD_AMOUNT_IN_CENTS = new FieldDefinition.Long("amount_in_cents", 0l);
 	static public final FieldDefinition.String FIELD_TEXT = new FieldDefinition.String("text", "");

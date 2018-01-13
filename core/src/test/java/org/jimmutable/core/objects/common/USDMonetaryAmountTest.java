@@ -28,9 +28,9 @@ public class USDMonetaryAmountTest
 		
 		USDMonetaryAmount test_business = new USDMonetaryAmount(20l);
 		String serialized_value = test_business.serialize(Format.JSON_PRETTY_PRINT);
-		assertEquals("{\n" + "  \"type_hint\" : \"com.digitalpanda.objects.facebookads.USDMonetaryAmount\",\n" + "  \"amount_in_cents\" : 20,\n" + "  \"text\" : \"$.20\"\n" + "}", serialized_value);
+		assertEquals("{\n" + "  \"type_hint\" : \"usd_monetary_amount\",\n" + "  \"amount_in_cents\" : 20,\n" + "  \"text\" : \"$.20\"\n" + "}", serialized_value);
 		System.out.println(test_business.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
-		String obj_string = String.format("%s\n%s\n%s\n%s\n%s", "{", "  \"type_hint\" : \"com.digitalpanda.objects.facebookads.USDMonetaryAmount\",", "  \"amount_in_cents\" : 20,", "  \"text\" : \"$.20\"", "}");
+		String obj_string = String.format("%s\n%s\n%s\n%s\n%s", "{", "  \"type_hint\" : \"usd_monetary_amount\",", "  \"amount_in_cents\" : 20,", "  \"text\" : \"$.20\"", "}");
 
 		USDMonetaryAmount obj = (USDMonetaryAmount) StandardObject.deserialize(obj_string);
 
@@ -42,31 +42,31 @@ public class USDMonetaryAmountTest
 	{
 		USDMonetaryAmount test_business = new USDMonetaryAmount("20");
 		String serialized_value = test_business.serialize(Format.JSON_PRETTY_PRINT);
-		assertEquals("{\n" + "  \"type_hint\" : \"com.digitalpanda.objects.facebookads.USDMonetaryAmount\",\n" + "  \"amount_in_cents\" : 2000,\n" + "  \"text\" : \"$20.00\"\n" + "}", serialized_value);
+		assertEquals("{\n" + "  \"type_hint\" : \"usd_monetary_amount\",\n" + "  \"amount_in_cents\" : 2000,\n" + "  \"text\" : \"$20.00\"\n" + "}", serialized_value);
 		
 		test_business = new USDMonetaryAmount("$20");
 		serialized_value = test_business.serialize(Format.JSON_PRETTY_PRINT);
-		assertEquals("{\n" + "  \"type_hint\" : \"com.digitalpanda.objects.facebookads.USDMonetaryAmount\",\n" + "  \"amount_in_cents\" : 2000,\n" + "  \"text\" : \"$20.00\"\n" + "}", serialized_value);
+		assertEquals("{\n" + "  \"type_hint\" : \"usd_monetary_amount\",\n" + "  \"amount_in_cents\" : 2000,\n" + "  \"text\" : \"$20.00\"\n" + "}", serialized_value);
 		
 		test_business = new USDMonetaryAmount(".20");
 		serialized_value = test_business.serialize(Format.JSON_PRETTY_PRINT);
-		assertEquals("{\n" + "  \"type_hint\" : \"com.digitalpanda.objects.facebookads.USDMonetaryAmount\",\n" + "  \"amount_in_cents\" : 20,\n" + "  \"text\" : \"$.20\"\n" + "}", serialized_value);
+		assertEquals("{\n" + "  \"type_hint\" : \"usd_monetary_amount\",\n" + "  \"amount_in_cents\" : 20,\n" + "  \"text\" : \"$.20\"\n" + "}", serialized_value);
 		
 		test_business = new USDMonetaryAmount(".2");
 		serialized_value = test_business.serialize(Format.JSON_PRETTY_PRINT);
-		assertEquals("{\n" + "  \"type_hint\" : \"com.digitalpanda.objects.facebookads.USDMonetaryAmount\",\n" + "  \"amount_in_cents\" : 20,\n" + "  \"text\" : \"$.20\"\n" + "}", serialized_value);
+		assertEquals("{\n" + "  \"type_hint\" : \"usd_monetary_amount\",\n" + "  \"amount_in_cents\" : 20,\n" + "  \"text\" : \"$.20\"\n" + "}", serialized_value);
 		
 		test_business = new USDMonetaryAmount(".002");
 		serialized_value = test_business.serialize(Format.JSON_PRETTY_PRINT);
-		assertEquals("{\n" + "  \"type_hint\" : \"com.digitalpanda.objects.facebookads.USDMonetaryAmount\",\n" + "  \"amount_in_cents\" : 0,\n" + "  \"text\" : \"$.00\"\n" + "}", serialized_value);
+		assertEquals("{\n" + "  \"type_hint\" : \"usd_monetary_amount\",\n" + "  \"amount_in_cents\" : 0,\n" + "  \"text\" : \"$.00\"\n" + "}", serialized_value);
 		
 		test_business = new USDMonetaryAmount(".012");
 		serialized_value = test_business.serialize(Format.JSON_PRETTY_PRINT);
-		assertEquals("{\n" + "  \"type_hint\" : \"com.digitalpanda.objects.facebookads.USDMonetaryAmount\",\n" + "  \"amount_in_cents\" : 1,\n" + "  \"text\" : \"$.01\"\n" + "}", serialized_value);
+		assertEquals("{\n" + "  \"type_hint\" : \"usd_monetary_amount\",\n" + "  \"amount_in_cents\" : 1,\n" + "  \"text\" : \"$.01\"\n" + "}", serialized_value);
 		
 		test_business = new USDMonetaryAmount("$1,000,000,000,000.00");
 		serialized_value = test_business.serialize(Format.JSON_PRETTY_PRINT);
-		assertEquals("{\n" + "  \"type_hint\" : \"com.digitalpanda.objects.facebookads.USDMonetaryAmount\",\n" + "  \"amount_in_cents\" : 100000000000000,\n" + "  \"text\" : \"$1,000,000,000,000.00\"\n" + "}", serialized_value);
+		assertEquals("{\n" + "  \"type_hint\" : \"usd_monetary_amount\",\n" + "  \"amount_in_cents\" : 100000000000000,\n" + "  \"text\" : \"$1,000,000,000,000.00\"\n" + "}", serialized_value);
 		
 		boolean correct = false;
 		try {
@@ -83,7 +83,7 @@ public class USDMonetaryAmountTest
 		USDMonetaryAmount test_business = new USDMonetaryAmount(-1l);
 		assertEquals(-1l, test_business.getSimpleAmountInCents());
 		String serialized_value = test_business.serialize(Format.JSON_PRETTY_PRINT);
-		assertEquals("{\n" + "  \"type_hint\" : \"com.digitalpanda.objects.facebookads.USDMonetaryAmount\",\n" + "  \"amount_in_cents\" : -1,\n" + "  \"text\" : \"-$.01\"\n" + "}", serialized_value);
+		assertEquals("{\n" + "  \"type_hint\" : \"usd_monetary_amount\",\n" + "  \"amount_in_cents\" : -1,\n" + "  \"text\" : \"-$.01\"\n" + "}", serialized_value);
 	
 	}
 
