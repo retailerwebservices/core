@@ -31,9 +31,15 @@ public class StorageMetadataTest extends TestCase
 	 */
 	public static Test suite()
 	{
-		CloudExecutionEnvironment.startupStubTest(new ApplicationId("storage-metadata-test"));
+		try
+		{
+			CloudExecutionEnvironment.startupStubTest(new ApplicationId("storage-metadata-test"));
+		} catch (Exception e)
+		{
+
+		}
 		JimmutableCloudTypeNameRegister.registerAllTypes();
-		
+
 		return new TestSuite(StorageMetadataTest.class);
 	}
 
