@@ -2,6 +2,8 @@ package org.jimmutable.cloud.storage.s3;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -27,12 +29,13 @@ import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.transfer.Download;
+import com.amazonaws.services.s3.transfer.Transfer.TransferState;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
-import com.amazonaws.services.s3.transfer.Transfer.TransferState;
 
 
 public class StorageS3 extends Storage
@@ -79,11 +82,29 @@ public class StorageS3 extends Storage
         }
     }
     
+    // TODO Use hint_content_likely_to_be_compressible to auto-gzip contents. Must be able to detect dynamically on read.
     @Override
     public boolean upsert(StorageKey key, byte[] bytes, boolean hint_content_likely_to_be_compressible)
     {
-        // TODO Do a straight put to S3 (caching a temp file for a small byte[] is dumb)
-        return super.upsert(key, bytes, hint_content_likely_to_be_compressible);
+        Validator.max(bytes.length, MAX_TRANSFER_BYTES_IN_BYTES);
+        
+        if (isReadOnly()) return false;
+
+        try
+        {
+            InputStream bin = new ByteArrayInputStream(bytes);
+            
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(bytes.length);
+            
+            client.putObject(bucket_name, key.toString(), bin, metadata);
+            return true;
+        }
+        catch (Exception e)
+        {
+            LOGGER.catching(e);
+            return false;
+        }
     }
 
     // TODO Use hint_content_likely_to_be_compressible to auto-gzip contents. Must be able to detect dynamically on read.
@@ -143,8 +164,24 @@ public class StorageS3 extends Storage
     @Override
     public byte[] getCurrentVersion(StorageKey key, byte[] default_value)
     {
-        // TODO Do a straight get from S3 (caching a temp file for a small byte[] is dumb)
-        return super.getCurrentVersion(key, default_value);
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (OutputStream bout = new IOUtils.LimitBytesOutputStream(bytes, MAX_TRANSFER_BYTES_IN_BYTES))
+        {
+            try (S3Object s3_obj = client.getObject(bucket_name, key.toString()))
+            {
+                try (InputStream s3in = s3_obj.getObjectContent())
+                {
+                    IOUtils.transferAllBytes(s3in, bout);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            LOGGER.catching(e);
+            return default_value;
+        }
+        
+        return bytes.toByteArray();
     }
     
     @Override
