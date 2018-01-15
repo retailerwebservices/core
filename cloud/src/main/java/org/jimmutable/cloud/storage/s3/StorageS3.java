@@ -100,7 +100,7 @@ public class StorageS3 extends Storage
         {
             final File temp = File.createTempFile("storage_s3_", null);
             
-            LOGGER.trace(log_prefix + "Writing source to temp file");
+            LOGGER.debug(log_prefix + "Writing source to temp file");
             try (OutputStream fout = new BufferedOutputStream(new FileOutputStream(temp)))
             {
                 IOUtils.transferAllBytes(source, fout);
@@ -118,11 +118,11 @@ public class StorageS3 extends Storage
                 
                 while (! upload.isDone())
                 {
-                    LOGGER.trace(log_prefix + "Progress: " + upload.getProgress().getPercentTransferred());
+                    LOGGER.debug(log_prefix + "Progress: " + upload.getProgress().getPercentTransferred());
                     try { Thread.sleep(TRANSFER_MANAGER_POLLING_INTERVAL_MS); } catch (Exception e) {} // give progress updates every .5 sec
                 }
                 
-                LOGGER.trace(log_prefix + "Progress: " + upload.getProgress().getPercentTransferred()); // give the 100 percent before exiting
+                LOGGER.debug(log_prefix + "Progress: " + upload.getProgress().getPercentTransferred()); // give the 100 percent before exiting
 
                 return TransferState.Completed == upload.getState();
             }
@@ -169,11 +169,11 @@ public class StorageS3 extends Storage
                 
                 while (! download.isDone())
                 {
-                    LOGGER.trace(log_prefix + "Progress: " + download.getProgress().getPercentTransferred());
+                    LOGGER.debug(log_prefix + "Progress: " + download.getProgress().getPercentTransferred());
                     try { Thread.sleep(TRANSFER_MANAGER_POLLING_INTERVAL_MS); } catch (Exception e) {} // give progress updates every .5 sec
                 }
                 
-                LOGGER.trace(log_prefix + "Progress: " + download.getProgress().getPercentTransferred()); // give the 100 percent before exiting
+                LOGGER.debug(log_prefix + "Progress: " + download.getProgress().getPercentTransferred()); // give the 100 percent before exiting
             }
             catch (Exception e)
             {
@@ -182,7 +182,7 @@ public class StorageS3 extends Storage
                 return false;
             }
             
-            LOGGER.trace(log_prefix + "Writing temp file to sink");
+            LOGGER.debug(log_prefix + "Writing temp file to sink");
             try (InputStream fin = new BufferedInputStream(new FileInputStream(temp)))
             {
                 IOUtils.transferAllBytes(fin, sink);
