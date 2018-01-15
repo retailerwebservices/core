@@ -1,11 +1,12 @@
 package org.jimmutable.core.objects.common.time;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.StandardObject;
-import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -20,6 +21,38 @@ public class TimeOfDayTest
 	}
 
 	@Test
+	public void fromInt()
+	{
+		int i = 1001;
+		assertEquals("00:00:01.001", new TimeOfDay(i).toPrettyPrint());
+	}
+
+	@Test
+	public void am()
+	{
+		assertTrue(new TimeOfDay(TimeOfDay.toMillis(0, 25, 0, 0)).getSimple12hrClockAm());
+		assertFalse(new TimeOfDay(TimeOfDay.toMillis(15, 25, 0, 0)).getSimple12hrClockAm());
+	}
+
+	@Test
+	public void pm()
+	{
+		assertTrue(new TimeOfDay(TimeOfDay.toMillis(15, 25, 0, 0)).getSimple12hrClockPm());
+		assertFalse(new TimeOfDay(TimeOfDay.toMillis(0, 25, 0, 0)).getSimple12hrClockPm());
+	}
+
+	@Test
+	public void fromTimestampString()
+	{
+		assertEquals(null, TimeOfDay.createFrom24hrTimestampString("", null));
+		assertEquals(null, TimeOfDay.createFrom24hrTimestampString("23:59:59.9", null));
+		assertEquals(new TimeOfDay(TimeOfDay.toMillis(23, 59, 59, 999)), TimeOfDay.createFrom24hrTimestampString("23:59:59.999", null));
+		assertEquals(new TimeOfDay(TimeOfDay.toMillis(0, 0, 0, 0)), TimeOfDay.createFrom24hrTimestampString("00:00:00.000", null));
+
+		assertEquals(new TimeOfDay(TimeOfDay.toMillis(6, 6, 6, 666)), TimeOfDay.createFrom24hrTimestampString("06:06:06.666", null));
+	}
+
+	@Test
 	public void toWrappedMillis()
 	{
 		assertEquals(TimeOfDay.toMillis(14, 0, 0, 0), TimeOfDay.toWrappedDayMillis(-1 * TimeOfDay.toMillis(10, 0, 0, 0)));
@@ -29,10 +62,40 @@ public class TimeOfDayTest
 	}
 
 	@Test
+	public void getSecondsFromMidnight()
+	{
+		assertEquals(0, new TimeOfDay(TimeOfDay.toMillis(0, 0, 0, 0)).getSimpleSecondsFromMidnight());
+		assertEquals(46800, new TimeOfDay(TimeOfDay.toMillis(13, 0, 0, 0)).getSimpleSecondsFromMidnight());
+	}
+
+	@Test
+	public void getMinutesFromMidnight()
+	{
+		assertEquals(780, new TimeOfDay(TimeOfDay.toMillis(13, 0, 0, 0)).getSimpleMinutesFromMidnight());
+	}
+
+	@Test
+	public void test24HourMillis()
+	{
+		assertEquals(1, new TimeOfDay(TimeOfDay.toMillis(13, 0, 0, 1)).getSimple24hrClockMilliseconds());
+		assertEquals(999, new TimeOfDay(TimeOfDay.toMillis(23, 0, 0, 999)).getSimple24hrClockMilliseconds());
+		assertEquals(0, new TimeOfDay(TimeOfDay.toMillis(13, 0, 0, 0)).getSimple24hrClockMilliseconds());
+	}
+
+	@Test
+	public void test12HourMillis()
+	{
+		assertEquals(1, new TimeOfDay(TimeOfDay.toMillis(13, 0, 0, 1)).getSimple12hrClockMilliseconds());
+		assertEquals(999, new TimeOfDay(TimeOfDay.toMillis(23, 0, 0, 999)).getSimple12hrClockMilliseconds());
+		assertEquals(0, new TimeOfDay(TimeOfDay.toMillis(13, 0, 0, 0)).getSimple12hrClockMilliseconds());
+	}
+
+	@Test
 	public void test24Hour()
 	{
 		assertEquals(14, new TimeOfDay(TimeOfDay.toMillis(14, 30, 0, 986)).getSimple24hrClockHours());
 		assertEquals(23, new TimeOfDay(TimeOfDay.toMillis(23, 59, 59, 999)).getSimple24hrClockHours());
+		assertEquals(0, new TimeOfDay(TimeOfDay.toMillis(0, 59, 59, 999)).getSimple24hrClockHours());
 	}
 
 	@Test
@@ -90,25 +153,47 @@ public class TimeOfDayTest
 	@Test
 	public void createFrom12hrClockStringTest()
 	{
-		assertEquals("12:10 AM", TimeOfDay.createFrom12hrClockString("0:10 am", null).getSimple12hrClockPrettyPrint());
-		assertEquals("12:10 AM", TimeOfDay.createFrom12hrClockString("0:10", null).getSimple12hrClockPrettyPrint());
-		assertEquals("1:10 AM", TimeOfDay.createFrom12hrClockString("1:10", null).getSimple12hrClockPrettyPrint());
+
 		assertEquals("12:10 AM", TimeOfDay.createFrom12hrClockString("00:10 am", null).getSimple12hrClockPrettyPrint());
 
-		assertEquals("1:10 AM", TimeOfDay.createFrom12hrClockString("1:10 am", null).getSimple12hrClockPrettyPrint());
+		assertEquals("1:10 AM", TimeOfDay.createFrom12hrClockString("01:10 am", null).getSimple12hrClockPrettyPrint());
 		assertEquals("12:00 AM", TimeOfDay.createFrom12hrClockString("12:00 am", null).getSimple12hrClockPrettyPrint());
 		assertEquals("12:01 AM", TimeOfDay.createFrom12hrClockString("12:01 am", null).getSimple12hrClockPrettyPrint());
 		assertEquals("1:01 PM", TimeOfDay.createFrom12hrClockString("01:01 pm", null).getSimple12hrClockPrettyPrint());
-		assertEquals("1:01 PM", TimeOfDay.createFrom12hrClockString("1:01 pm", null).getSimple12hrClockPrettyPrint());
+		assertEquals("1:01 PM", TimeOfDay.createFrom12hrClockString("01:01 pm", null).getSimple12hrClockPrettyPrint());
 		assertEquals("12:02 PM", TimeOfDay.createFrom12hrClockString("12:02 pm", null).getSimple12hrClockPrettyPrint());
 		assertEquals("2:00 PM", TimeOfDay.createFrom12hrClockString("02:00 pm", null).getSimple12hrClockPrettyPrint());
 
 		assertEquals("14:00:30.000", TimeOfDay.createFrom12hrClockString("02:00:30 pm", null).toPrettyPrint());
 		assertEquals("02:01:30.000", TimeOfDay.createFrom12hrClockString("02:01:30 am", null).toPrettyPrint());
 
-		assertNull(TimeOfDay.createFrom12hrClockString("02:00 p", null));
+		assertEquals("02:01:59.000", TimeOfDay.createFrom12hrClockString("02:01:59 am", null).toPrettyPrint());
+
+		assertNull(TimeOfDay.createFrom12hrClockString("       11      :   59    :  59           ", null));
+
+		assertNull(TimeOfDay.createFrom12hrClockString("       01      :   59    :  59           ", null));
+
+		assertNull(TimeOfDay.createFrom12hrClockString("1 : 1   :1", null));
+
+		assertEquals(new TimeOfDay(TimeOfDay.toMillis(2, 0, 0, 0)), TimeOfDay.createFrom12hrClockString("02:00", null));
+
+		assertNull(TimeOfDay.createFrom12hrClockString("02:00 a", null));
+
+		assertNull(TimeOfDay.createFrom12hrClockString("", null));
+
+		assertNull(TimeOfDay.createFrom12hrClockString(null, null));
+
+		assertNull(TimeOfDay.createFrom12hrClockString("11:99:59", null));
+
 		assertNull(TimeOfDay.createFrom12hrClockString("13:00 am", null));
+
 		assertNull(TimeOfDay.createFrom12hrClockString("12:60 am", null));
+
+		assertNull(TimeOfDay.createFrom12hrClockString("12: am", null));
+
+		assertNull(TimeOfDay.createFrom12hrClockString("12:", null));
+		assertNull(TimeOfDay.createFrom12hrClockString("1:10", null));
+
 	}
 
 	@Test
@@ -122,8 +207,12 @@ public class TimeOfDayTest
 
 		assertEquals("23:01:59.000", TimeOfDay.createFrom24hrClockString("23:01:59", null).toPrettyPrint());
 
+		assertNull(TimeOfDay.createFrom24hrClockString("23:0:00", null));
+
+		assertNull(TimeOfDay.createFrom24hrClockString("23  :00:00", null));
+
 		assertNull(TimeOfDay.createFrom24hrClockString("02:60", null));
-		assertNull(TimeOfDay.createFrom24hrClockString("2:00", null));
+
 	}
 
 	@Test
@@ -133,17 +222,12 @@ public class TimeOfDayTest
 		b.set(TimeOfDay.FIELD_MS_FROM_MIDNIGHT, 82860000);
 		TimeOfDay tod = (TimeOfDay) b.create(null);
 
-		//System.out.println(tod.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
+		// System.out.println(tod.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 
-		String obj_string = String.format("%s\n%s\n%s\n%s"
-			     , "{"
-			     , "  \"type_hint\" : \"time_of_day\","
-			     , "  \"ms_from_midnight\" : 82860000"
-			     , "}"
-			);
+		String obj_string = String.format("%s\n%s\n%s\n%s", "{", "  \"type_hint\" : \"time_of_day\",", "  \"ms_from_midnight\" : 82860000", "}");
 
 		TimeOfDay obj = (TimeOfDay) StandardObject.deserialize(obj_string);
 		assertEquals(tod, obj);
 	}
-	
+
 }

@@ -97,7 +97,7 @@ public class TimeOfDay extends StandardImmutableObject<TimeOfDay>
 	/**
 	 * return values are in the range 0 - 59
 	 * 
-	 * @return
+	 * @return Minutes on the hour
 	 */
 	public long getSimple12hrClockMinutes()
 	{
@@ -107,11 +107,21 @@ public class TimeOfDay extends StandardImmutableObject<TimeOfDay>
 	/**
 	 * return values are in the range 0 -59
 	 * 
-	 * @return
+	 * @return Seconds on the minute
 	 */
 	public long getSimple12hrClockSeconds()
 	{
 		return getSimple24hrClockSeconds();
+	}
+
+	/**
+	 * return values are in the range 0 - 999
+	 * 
+	 * @return Milliseconds on the second
+	 */
+	public long getSimple12hrClockMilliseconds()
+	{
+		return getSimple24hrClockMilliseconds();
 	}
 
 	/**
@@ -172,6 +182,20 @@ public class TimeOfDay extends StandardImmutableObject<TimeOfDay>
 	}
 
 	/**
+	 * return values are in the range 0 - 999
+	 * 
+	 * @return Milliseconds on the second
+	 */
+	public long getSimple24hrClockMilliseconds()
+	{
+		long hour_millis = getSimple24hrClockHours() * MS_IN_HOUR;
+		long minute_millis = getSimple24hrClockMinutes() * MS_IN_MINUTE;
+		long second_millis = getSimple24hrClockSeconds() * MS_IN_SECOND;
+
+		return getSimpleMillisecondsFromMidnight() - hour_millis - minute_millis - second_millis;
+	}
+
+	/**
 	 * 
 	 * @return Pretty print as 00:23, 01:47, 23:32
 	 */
@@ -198,22 +222,23 @@ public class TimeOfDay extends StandardImmutableObject<TimeOfDay>
 	}
 
 	/**
-	 * If AM/PM is missing, assume AM
+	 * If AM/PM is missing, assume AM</br>
 	 * 
-	 * Interpret 00:23 am as 12:23
+	 * Interpret 00:23 am as 12:23</br>
 	 * 
-	 * Error on out of range values
+	 * Error on out of range values</br>
 	 * 
-	 * Support hh:mm [am/pm] hh:mm:ss [am/pm] h:mm [am/pm] h:mm:ss [am/pm]
+	 * Supports hh:mm [am/pm] hh:mm:ss [am/pm]</br>
 	 * 
 	 * @param str
-	 *            time string
+	 *            time string as hh:mm [am/pm] or hh:mm:ss [am/pm]
 	 * @param default_value
 	 *            default TimeOfDay
 	 * @return TimeOfDay
 	 */
 	static public TimeOfDay createFrom12hrClockString(String str, TimeOfDay default_value)
 	{
+
 		if (str == null)
 		{
 			return default_value;
@@ -221,57 +246,56 @@ public class TimeOfDay extends StandardImmutableObject<TimeOfDay>
 
 		str = str.trim().toLowerCase();
 
-		if (str.indexOf(":") == 1)
+		try
 		{
-			str = "0" + str;
-		}
+			long hours = Long.parseLong(str.substring(0, 2));
 
-		if (str.indexOf(" ") < 0)
-		{
-			str = str + " am";
-		}
+			Validator.max(hours, 12);
+			Validator.min(hours, 0);
 
-		if (str.matches("[01][0-12]:[0-5][0-9] am"))
-		{
-			long hours = Long.parseLong(str.substring(0, 2));
-			hours = (hours == 12) ? 0 : hours;
+			if (hours == 12)
+			{
+				hours = 0;
+			}
+
+			if (str.endsWith(" pm"))
+			{
+				hours += 12;
+				str = str.substring(0, str.indexOf(" pm"));
+
+			}
+			if (str.endsWith(" am"))
+			{
+				str = str.substring(0, str.indexOf(" am"));
+			}
+
 			long minutes = Long.parseLong(str.substring(3, 5));
-			return new TimeOfDay(toMillis(hours, minutes, 0, 0));
-		} else if (str.matches("[01][0-12]:[0-5][0-9] pm"))
-		{
-			long hours = Long.parseLong(str.substring(0, 2));
-			hours = (hours == 12) ? 0 : hours;
-			hours += 12;
-			long minutes = Long.parseLong(str.substring(3, 5));
-			return new TimeOfDay(toMillis(hours, minutes, 0, 0));
-		} else if (str.matches("[01][0-12]:[0-5][0-9]:[0-5][0-9] am"))
-		{
-			long hours = Long.parseLong(str.substring(0, 2));
-			hours = (hours == 12) ? 0 : hours;
-			long minutes = Long.parseLong(str.substring(3, 5));
-			long seconds = Long.parseLong(str.substring(6, 8));
+
+			Validator.max(minutes, 59);
+			Validator.min(minutes, 0);
+
+			long seconds = 0;
+			if (str.length() > 5)
+			{
+				seconds = Long.parseLong(str.substring(6, 8));
+				Validator.max(seconds, 59);
+				Validator.min(seconds, 0);
+			}
+
 			return new TimeOfDay(toMillis(hours, minutes, seconds, 0));
-		} else if (str.matches("[01][0-12]:[0-5][0-9]:[0-5][0-9] pm"))
-		{
-			long hours = Long.parseLong(str.substring(0, 2));
-			hours = (hours == 12) ? 0 : hours;
-			hours += 12;
-			long minutes = Long.parseLong(str.substring(3, 5));
-			long seconds = Long.parseLong(str.substring(6, 8));
-			return new TimeOfDay(toMillis(hours, minutes, seconds, 0));
-		} else
+		} catch (Exception e)
 		{
 			return default_value;
 		}
 	}
 
 	/**
-	 * Support hh:mm and hh:mm:ss formats
+	 * Supports HH:mm and HH:mm:ss formats</br>
 	 * 
-	 * Midnight is 00:23, whereas 12:23 is the afternoon
+	 * Midnight is 00:23, whereas 12:23 is the afternoon</br>
 	 * 
 	 * @param str
-	 *            time string
+	 *            time string in the format HH:mm or HH:mm:ss
 	 * @param default_value
 	 *            default TimeOfDay
 	 * @return TimeOfDay
@@ -284,20 +308,78 @@ public class TimeOfDay extends StandardImmutableObject<TimeOfDay>
 			return default_value;
 		}
 
-		str = str.trim();
+		str = str.trim().toLowerCase();
 
-		if (str.matches("[0-2][0-3]:[0-5][0-9]"))
+		try
 		{
 			long hours = Long.parseLong(str.substring(0, 2));
+
+			Validator.max(hours, 23);
+			Validator.min(hours, 0);
+
 			long minutes = Long.parseLong(str.substring(3, 5));
-			return new TimeOfDay(toMillis(hours, minutes, 0, 0));
-		} else if (str.matches("[0-2][0-3]:[0-5][0-9]:[0-5][0-9]"))
-		{
-			long hours = Long.parseLong(str.substring(0, 2));
-			long minutes = Long.parseLong(str.substring(3, 5));
-			long seconds = Long.parseLong(str.substring(6, 8));
+
+			Validator.max(minutes, 59);
+			Validator.min(minutes, 0);
+
+			long seconds = 0;
+			if (str.length() > 5)
+			{
+				seconds = Long.parseLong(str.substring(6, 8));
+				Validator.max(seconds, 59);
+				Validator.min(seconds, 0);
+			}
+
 			return new TimeOfDay(toMillis(hours, minutes, seconds, 0));
-		} else
+		} catch (Exception e)
+		{
+			return default_value;
+		}
+
+	}
+
+	/**
+	 * Supports HH:mm:ss.SSS
+	 * 
+	 * @param str
+	 *            time string in the format HH:mm:ss.SSS
+	 * @param default_value
+	 *            default TimeOfDay
+	 * @return TimeOfDay
+	 */
+	static public TimeOfDay createFrom24hrTimestampString(String str, TimeOfDay default_value)
+	{
+
+		if (str == null)
+		{
+			return default_value;
+		}
+
+		str = str.trim().toLowerCase();
+
+		try
+		{
+			long hours = Long.parseLong(str.substring(0, 2));
+
+			Validator.max(hours, 23);
+			Validator.min(hours, 0);
+
+			long minutes = Long.parseLong(str.substring(3, 5));
+
+			Validator.max(minutes, 59);
+			Validator.min(minutes, 0);
+
+			long seconds = Long.parseLong(str.substring(6, 8));
+			Validator.max(seconds, 59);
+			Validator.min(seconds, 0);
+
+			long milliseconds = Long.parseLong(str.substring(9, 12));
+
+			Validator.max(milliseconds, 999);
+			Validator.min(milliseconds, 0);
+
+			return new TimeOfDay(toMillis(hours, minutes, seconds, milliseconds));
+		} catch (Exception e)
 		{
 			return default_value;
 		}
@@ -366,7 +448,7 @@ public class TimeOfDay extends StandardImmutableObject<TimeOfDay>
 	{
 		Validator.notNull(ms_from_midnight);
 		Validator.min(ms_from_midnight, 0);
-		Validator.max(ms_from_midnight, 86399999);
+		Validator.max(ms_from_midnight, MS_IN_DAY - 1);
 	}
 
 	@Override
@@ -395,11 +477,7 @@ public class TimeOfDay extends StandardImmutableObject<TimeOfDay>
 	 */
 	public String toPrettyPrint()
 	{
-		long hours_ms = getSimple24hrClockHours() * MS_IN_HOUR;
-		long minutes_ms = getSimple24hrClockMinutes() * MS_IN_MINUTE;
-		long seconds_ms = getSimple24hrClockSeconds() * MS_IN_SECOND;
-		long ms = getSimpleMillisecondsFromMidnight() - (hours_ms + minutes_ms + seconds_ms);
-		return String.format("%02d:%02d:%02d.%03d", getSimple24hrClockHours(), getSimple24hrClockMinutes(), getSimple24hrClockSeconds(), ms);
+		return String.format("%02d:%02d:%02d.%03d", getSimple24hrClockHours(), getSimple24hrClockMinutes(), getSimple24hrClockSeconds(), getSimple24hrClockMilliseconds());
 	}
 
 }
