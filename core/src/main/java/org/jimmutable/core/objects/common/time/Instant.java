@@ -124,7 +124,7 @@ public class Instant extends StandardImmutableObject<Instant>
 		}
 
 		Instant other = (Instant) obj;
-
+		//CODEREVIEW Style thing only: Why did you not use Objects.equals() to do the comparison?
 		return getSimpleMillisecondsFromEpoch() == other.getSimpleMillisecondsFromEpoch();
 	}
 
