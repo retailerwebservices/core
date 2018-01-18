@@ -63,6 +63,8 @@ public class InstantDetails extends StandardObject<InstantDetails>
 
 	private long seconds_on_twenty_four_hour_clock;
 
+	//Where is the normal constructor?
+	
 	public InstantDetails(ObjectParseTree t)
 	{
 		this.success = t.getBoolean(FIELD_SUCCESS);
