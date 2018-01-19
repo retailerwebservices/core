@@ -85,7 +85,7 @@ class maven
 exec
 {
 
-'wget -O mvn.tar.gz http://mirrors.ibiblio.org/apache/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz' :
+'wget -O mvn.tar.gz http://mirrors.gigenet.com/apache/maven/maven-3/3.5.2/binaries/apache-maven-3.5.2-bin.tar.gz' :
 	cwd => '/home/ec2-user/downloads',
 	creates => '/home/ec2-user/downloads/mvn.tar.gz',
 	path => $default_path
