@@ -5,6 +5,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
@@ -72,6 +77,7 @@ public class TimeOfDayTest
 	public void getMinutesFromMidnight()
 	{
 		assertEquals(780, new TimeOfDay(TimeOfDay.toMillis(13, 0, 0, 0)).getSimpleMinutesFromMidnight());
+		assertEquals(1439, new TimeOfDay(TimeOfDay.toMillis(23, 59, 0, 0)).getSimpleMinutesFromMidnight());
 	}
 
 	@Test
@@ -98,13 +104,38 @@ public class TimeOfDayTest
 		assertEquals(0, new TimeOfDay(TimeOfDay.toMillis(0, 59, 59, 999)).getSimple24hrClockHours());
 	}
 
+	@Test(expected = ValidationException.class)
+	public void testAboveMaxLong()
+	{
+		new TimeOfDay(TimeOfDay.toMillis(24, 0, 0, 0));
+
+	}
+
+	@Test(expected = ValidationException.class)
+	public void testAboveMaxInt()
+	{
+		new TimeOfDay((int) TimeOfDay.toMillis(24, 0, 0, 0));
+	}
+
+	@Test(expected = ValidationException.class)
+	public void testNegativeLong()
+	{
+		new TimeOfDay(-1l);
+
+	}
+
+	@Test(expected = ValidationException.class)
+	public void testNegativeInt()
+	{
+
+		new TimeOfDay(-1);
+	}
+
 	@Test
 	public void test12Hour()
 	{
-
 		assertEquals(12, new TimeOfDay(TimeOfDay.toMillis(0, 0, 0, 0)).getSimple12hrClockHours());
 		assertEquals(12, new TimeOfDay(TimeOfDay.toMillis(0, 25, 0, 0)).getSimple12hrClockHours());
-		assertEquals(12, new TimeOfDay(TimeOfDay.toMillis(24, 00, 0, 0)).getSimple12hrClockHours());
 
 		assertEquals(1, new TimeOfDay(TimeOfDay.toMillis(1, 25, 0, 0)).getSimple12hrClockHours());
 		assertEquals(2, new TimeOfDay(TimeOfDay.toMillis(2, 25, 0, 0)).getSimple12hrClockHours());
@@ -117,7 +148,23 @@ public class TimeOfDayTest
 		assertEquals(1, new TimeOfDay(TimeOfDay.toMillis(13, 25, 0, 0)).getSimple12hrClockHours());
 		assertEquals(2, new TimeOfDay(TimeOfDay.toMillis(14, 25, 0, 0)).getSimple12hrClockHours());
 		assertEquals(3, new TimeOfDay(TimeOfDay.toMillis(15, 25, 0, 0)).getSimple12hrClockHours());
+	}
 
+	@Test
+	public void testComparison()
+	{
+		List<TimeOfDay> times = new ArrayList<>();
+		times.add(new TimeOfDay(TimeOfDay.toMillis(12, 25, 0, 0)));
+		times.add(new TimeOfDay(TimeOfDay.toMillis(0, 0, 0, 0)));
+		times.add(new TimeOfDay(TimeOfDay.toMillis(12, 25, 0, 0)));
+		times.add(new TimeOfDay(TimeOfDay.toMillis(12, 25, 0, 1)));
+		times.add(new TimeOfDay(TimeOfDay.toMillis(12, 24, 59, 999)));
+		Collections.sort(times);
+		assertTrue(times.get(0).equals(new TimeOfDay(TimeOfDay.toMillis(0, 0, 0, 0))));
+		assertTrue(times.get(1).equals(new TimeOfDay(TimeOfDay.toMillis(12, 24, 59, 999))));
+		assertTrue(times.get(2).equals(new TimeOfDay(TimeOfDay.toMillis(12, 25, 0, 0))));
+		assertTrue(times.get(3).equals(new TimeOfDay(TimeOfDay.toMillis(12, 25, 0, 0))));
+		assertTrue(times.get(4).equals(new TimeOfDay(TimeOfDay.toMillis(12, 25, 0, 1))));
 	}
 
 	@Test
@@ -125,8 +172,6 @@ public class TimeOfDayTest
 	{
 		assertEquals(25, new TimeOfDay(TimeOfDay.toMillis(12, 25, 0, 0)).getSimple12hrClockMinutes());
 		assertEquals(59, new TimeOfDay(TimeOfDay.toMillis(13, 59, 0, 0)).getSimple12hrClockMinutes());
-		assertEquals(0, new TimeOfDay(TimeOfDay.toMillis(24, 0, 0, 0)).getSimple12hrClockMinutes());
-		assertEquals(0, new TimeOfDay(TimeOfDay.toMillis(24, 60, 0, 0)).getSimple12hrClockMinutes());
 	}
 
 	@Test
