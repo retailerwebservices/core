@@ -12,7 +12,7 @@ import org.jimmutable.core.utils.Validator;
 import java.util.Objects;
 
 /**
- * Stores milliseconds from midnight
+ * Stores milliseconds from midnight up to 863999999
  * 
  * @author trevorbox
  *
@@ -36,11 +36,13 @@ public class TimeOfDay extends StandardImmutableObject<TimeOfDay>
 	public TimeOfDay(int ms_from_midnight)
 	{
 		this.ms_from_midnight = new Long(ms_from_midnight);
+		complete();
 	}
 
 	public TimeOfDay(long ms_from_midnight)
 	{
 		this.ms_from_midnight = ms_from_midnight;
+		complete();
 	}
 
 	public TimeOfDay(ObjectParseTree t)
@@ -63,6 +65,7 @@ public class TimeOfDay extends StandardImmutableObject<TimeOfDay>
 	 */
 	public long getSimpleSecondsFromMidnight()
 	{
+
 		return getSimpleMillisecondsFromMidnight() / MS_IN_SECOND;
 	}
 
