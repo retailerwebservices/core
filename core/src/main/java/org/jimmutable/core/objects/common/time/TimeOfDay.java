@@ -12,7 +12,7 @@ import org.jimmutable.core.utils.Validator;
 import java.util.Objects;
 
 /**
- * Stores milliseconds from midnight up to 863999999
+ * Stores milliseconds from midnight up to 86,399,999
  * 
  * @author trevorbox
  *
@@ -392,7 +392,7 @@ public class TimeOfDay extends StandardImmutableObject<TimeOfDay>
 	/**
 	 * This will wrap to the appropriate long from midnight within a single day.
 	 * Useful if you want to instantiate a TimeOfDay from a long outside of the
-	 * number of milliseconds in a single day (0-86400000). </br>
+	 * number of milliseconds in a single day (0-86399999). </br>
 	 * 
 	 * Examples:</br>
 	 * assertEquals(86399999, TimeOfDay.toDayOverlapMillis(-1));</br>
