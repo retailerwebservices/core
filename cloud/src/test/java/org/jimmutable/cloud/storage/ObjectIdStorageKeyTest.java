@@ -8,7 +8,7 @@ import org.junit.Test;
 
 public class ObjectIdStorageKeyTest extends StubTest
 {
-	private StringableTestingUtils<ObjectIdStorageKey> tester = new StringableTestingUtils<StorageKey>(new ObjectIdStorageKey.MyConverter());
+	private StringableTestingUtils<ObjectIdStorageKey> tester = new StringableTestingUtils<ObjectIdStorageKey>(new ObjectIdStorageKey.MyConverter());
 
 	@Test
 	public void testValid()
