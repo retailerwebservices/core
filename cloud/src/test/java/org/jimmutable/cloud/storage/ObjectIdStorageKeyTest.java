@@ -6,9 +6,9 @@ import org.jimmutable.cloud.StubTest;
 import org.jimmutable.core.utils.StringableTestingUtils;
 import org.junit.Test;
 
-public class StorageKeyTest extends StubTest
+public class ObjectIdStorageKeyTest extends StubTest
 {
-	private StringableTestingUtils<StorageKey> tester = new StringableTestingUtils<StorageKey>(new StorageKey.MyConverter());
+	private StringableTestingUtils<ObjectIdStorageKey> tester = new StringableTestingUtils<StorageKey>(new ObjectIdStorageKey.MyConverter());
 
 	@Test
 	public void testValid()

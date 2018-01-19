@@ -7,7 +7,7 @@ import org.jimmutable.cloud.IntegrationTest;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
-import org.jimmutable.cloud.storage.StorageKey;
+import org.jimmutable.cloud.storage.ObjectIdStorageKey;
 import org.jimmutable.cloud.storage.StorageKeyExtension;
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.common.Day;
@@ -48,7 +48,7 @@ public class ElasticSearchStressTestIT extends IntegrationTest
 
 		for (int i = 1; i <= 1000000; i++)
 		{
-			TestLibraryPatron patron = new TestLibraryPatron(index, new ObjectId(i), "firstname" + i, "lastname" + i, "emailaddress" + i, "ssn" + 1, new Day(1, 24, 1990), 2, new StorageKey(new Kind("somekind"), new ObjectId(i), new StorageKeyExtension("storagekeyextension")));
+			TestLibraryPatron patron = new TestLibraryPatron(index, new ObjectId(i), "firstname" + i, "lastname" + i, "emailaddress" + i, "ssn" + 1, new Day(1, 24, 1990), 2, new ObjectIdStorageKey(new Kind("somekind"), new ObjectId(i), new StorageKeyExtension("storagekeyextension")));
 			CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocumentAsync(patron);
 		}
 

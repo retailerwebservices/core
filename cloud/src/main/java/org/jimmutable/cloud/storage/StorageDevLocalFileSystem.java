@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jimmutable.cloud.ApplicationId;
+import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.utils.Validator;
 
@@ -37,7 +38,7 @@ public class StorageDevLocalFileSystem extends Storage
 	@Override
 	public boolean exists(StorageKey key, boolean default_value)
 	{
-		File f = new File(root + "/" + key.getSimpleValue());
+		File f = new File(root + "/" + key.toString());
 		if (f.exists() && !f.isDirectory())
 		{
 			return true;
@@ -65,7 +66,7 @@ public class StorageDevLocalFileSystem extends Storage
 		{
 			File pfile = new File(root.getAbsolutePath() + "/" + key.getSimpleKind());
 			pfile.mkdirs();
-			String path = root.getAbsolutePath() + "/" + key.getSimpleValue();
+			String path = root.getAbsolutePath() + "/" + key.toString();
 			File file = new File(path);
 			file.createNewFile();
 			FileOutputStream fos = new FileOutputStream(path);
@@ -74,7 +75,7 @@ public class StorageDevLocalFileSystem extends Storage
 			return Arrays.equals(bytes, getCurrentVersion(key, null));
 		} catch (Exception e)
 		{
-			File f = new File(root.getAbsolutePath() + "/" + key.getSimpleValue());
+			File f = new File(root.getAbsolutePath() + "/" + key.toString());
 			f.delete();
 			return false;
 		}
@@ -95,7 +96,7 @@ public class StorageDevLocalFileSystem extends Storage
 		Validator.notNull(key);
 		if (exists(key, false))
 		{
-			File file = new File(root.getAbsolutePath() + "/" + key.getSimpleValue());
+			File file = new File(root.getAbsolutePath() + "/" + key.toString());
 			byte[] bytesArray = new byte[(int) file.length()];
 			FileInputStream fis = null;
 			try
@@ -136,7 +137,7 @@ public class StorageDevLocalFileSystem extends Storage
 		Validator.notNull(key);
 		try
 		{
-			File f = new File(root.getAbsolutePath() + "/" + key.getSimpleValue());
+			File f = new File(root.getAbsolutePath() + "/" + key.toString());
 			return f.delete();
 		} catch (Exception e)
 		{
@@ -155,18 +156,115 @@ public class StorageDevLocalFileSystem extends Storage
 	@Override
 	public Iterable<StorageKey> listComplex(Kind kind, Iterable<StorageKey> default_value)
 	{
+		return (Iterable<StorageKey>) listComplexIter(kind, null, default_value, false);
+	}
+	
+	/**
+	 * @param kind
+	 *            The kind of the storable object you are looking for
+	 * @param prefix
+	 * 			The prefix to filter against
+	 * @param default_value
+	 *            the value you want returned if nothing is found.
+	 * @return If any StorageKeys were found, that Collection of objects will be
+	 *         returned, Otherwise the Default_value that was passed in.
+	 * @Override
+	 */
+	public Iterable<StorageKey> listComplex(Kind kind, StorageKeyName prefix, Iterable<StorageKey> default_value)
+	{
+		return (Iterable<StorageKey>) listComplexIter(kind, prefix, default_value, false);
+	}
+	
+	/**
+	 * @param StorageKey
+	 *            The prefix of the storable object you are looking for
+	 * @param default_value
+	 *            the value you want returned if nothing is found.
+	 * @return If any StorageKeys were found, that Collection of objects will be
+	 *         returned, Otherwise the Default_value that was passed in.
+	 */
+	@Override
+	public Iterable<ObjectIdStorageKey> listAllObjectIdsComplex(Kind kind, Iterable<ObjectIdStorageKey> default_value)
+	{
+		return (Iterable<ObjectIdStorageKey>) listComplexIter(kind, null, default_value, true);
+	}
+
+	/**
+	 * Private method that lists all files from the local env
+	 * @param kind
+	 * @param prefix
+	 * @param default_value
+	 * @param only_object_ids
+	 * @return
+	 */
+	private Iterable<? extends StorageKey> listComplexIter(Kind kind, StorageKeyName prefix, Iterable<? extends StorageKey> default_value, boolean only_object_ids)
+	{
 		Validator.notNull(kind);
 		File folder = new File(root.getAbsolutePath() + "/" + kind.getSimpleValue());
-		File[] listOfFiles = folder.listFiles();
+		File[] list_of_files = folder.listFiles();
 		List<StorageKey> keys = new ArrayList<>();
-		for (int i = 0; i < listOfFiles.length; i++)
+		for (int i = 0; i < list_of_files.length; i++)
 		{
-			if (listOfFiles[i].isFile())
+			if (list_of_files[i].isFile())
 			{
-				String key = kind + "/" + listOfFiles[i].getName();
-				keys.add(new StorageKey(key));
+				String[] file_name_and_ext = list_of_files[i].getName().split("\\."); 
+
+				if (file_name_and_ext.length < 2)
+				{
+					System.err.println("listComplex error with file: " + list_of_files[i]);
+					continue;
+				}
+
+				StorageKeyName name = new StorageKeyName(file_name_and_ext[0]);
+
+				if (prefix != null)
+				{
+					if ( !name.getSimpleValue().startsWith(prefix.getSimpleValue()) )
+					{
+						continue;
+					}
+				}
+
+				String key = kind + "/" + list_of_files[i].getName();
+
+				if (name.isObjectId())
+				{
+					keys.add(new ObjectIdStorageKey(key));
+				}
+				else
+				{
+					if (!only_object_ids)
+					{
+						keys.add(new GenericStorageKey(key));
+					}
+				}
 			}
 		}
+		
 		return keys;
+	}
+
+	/**
+	 * Retrieves the ObjectMetadata for this key param. For StorageDevLocalFileSystem, the last modified is checked from disk every time this method is called.
+	 * Further, the etag is simply the last modified timestamp on the file as well.
+	 * 
+	 * @Override
+	 */
+	public StorageMetadata getObjectMetadata(StorageKey key, StorageMetadata default_value)
+	{
+		File f = new File(root + "/" + key.toString());
+		if ( !f.exists() || f.isDirectory() )
+		{
+			return default_value;
+		}
+		
+		long last_modified = f.lastModified();
+		long size = f.length();
+
+		Builder builder = new Builder(StorageMetadata.TYPE_NAME);
+		builder.set(StorageMetadata.FIELD_LAST_MODIFIED, last_modified);
+		builder.set(StorageMetadata.FIELD_SIZE, size);
+
+		return (StorageMetadata) builder.create(null);
 	}
 }

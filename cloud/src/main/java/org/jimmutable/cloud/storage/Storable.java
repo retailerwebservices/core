@@ -39,13 +39,13 @@ public interface Storable
 	 * @return a new Storage Key with an extension type of XML based on the Kind and
 	 *         ObjectId of the Storable object.
 	 */
-	default public StorageKey createStorageKey()
+	default public ObjectIdStorageKey createStorageKey()
 	{
-		return new StorageKey(getSimpleKind(), getSimpleObjectId(), STORABLE_EXTENSION);
+		return new ObjectIdStorageKey(getSimpleKind(), getSimpleObjectId(), STORABLE_EXTENSION);
 	}
 
-	static public StorageKey createStorageKey(Kind kind, ObjectId id)
+	static public ObjectIdStorageKey createStorageKey(Kind kind, ObjectId id)
 	{
-		return new StorageKey(kind, id, STORABLE_EXTENSION);
+		return new ObjectIdStorageKey(kind, id, STORABLE_EXTENSION);
 	}
 }

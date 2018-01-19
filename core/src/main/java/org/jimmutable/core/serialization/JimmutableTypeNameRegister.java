@@ -6,12 +6,13 @@ import org.jimmutable.core.examples.book.BookDeckMap;
 import org.jimmutable.core.examples.book.BookDeckSet;
 import org.jimmutable.core.examples.product_data.ItemKey;
 import org.jimmutable.core.examples.product_data.ItemSpecifications;
-import org.jimmutable.core.objects.common.FacebookId;
-import org.jimmutable.core.objects.common.HostName;
 import org.jimmutable.core.objects.common.PhoneNumber;
 import org.jimmutable.core.objects.common.PhoneNumberDeck;
+import org.jimmutable.core.objects.common.USDMonetaryAmount;
+import org.jimmutable.core.objects.common.time.Instant;
+import org.jimmutable.core.objects.common.time.InstantDetails;
+import org.jimmutable.core.objects.common.time.TimeOfDay;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
-
 
 /**
  * Before a TypeName may be read, its corresponding class must be registered via
@@ -45,8 +46,16 @@ public class JimmutableTypeNameRegister
 
 		ObjectParseTree.registerTypeName(ItemKey.class);
 		ObjectParseTree.registerTypeName(ItemSpecifications.class);
-		
+
 		ObjectParseTree.registerTypeName(PhoneNumber.class);
 		ObjectParseTree.registerTypeName(PhoneNumberDeck.class);
+
+		ObjectParseTree.registerTypeName(USDMonetaryAmount.class);
+
+		ObjectParseTree.registerTypeName(TimeOfDay.class);
+
+		ObjectParseTree.registerTypeName(Instant.class);
+		ObjectParseTree.registerTypeName(InstantDetails.class);
+
 	}
 }

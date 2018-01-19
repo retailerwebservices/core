@@ -135,9 +135,9 @@ public class Builder
 		System.out.println(under_construction.toString());
 	}
 	
-	public StandardObject create(StandardObject default_value)
+	public <U extends StandardObject> U create(U default_value)
 	{
-		return (StandardObject)under_construction.asObject(default_value);
+		return (U) under_construction.asObject(default_value);
 	}
 	
 	public void add(FieldDefinition.Collection field, boolean value) { insertNonNullPrimative(field, Boolean.toString(value),false); }

@@ -6,7 +6,7 @@ import org.jimmutable.core.utils.Validator;
 /**
  * The kind stringable is frequently used as a label for a "kind" of object.
  * Legal characters are a-z, 0-9 and dash. Upper case characters are normalized
- * to lower case
+ * to lower case. Kind objects are used for StandardImmutableObject that implement Storable.
  * 
  * This object is length limited to 64 characters. Must be at least 3 characters
  * long

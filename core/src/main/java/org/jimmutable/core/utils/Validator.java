@@ -273,9 +273,16 @@ public class Validator
 		}
 	}
 	
-	static public void containsOnlyValidCharacters(String str, ValidCharacters... allowed_characters )
+	/**
+	 * This method is functionaly the same as the original 'void containsOnlyValidCharacters', but it doesn't throw an exception.
+	 * This is meant more as a general utility method, rather than something to be used during object construction.
+	 * @param str
+	 * @param allowed_characters
+	 * @return
+	 */
+	static public boolean containsOnlyValidCharactersQuiet(String str, ValidCharacters... allowed_characters )
 	{
-		if ( str == null ) return;
+		if ( str == null ) return false;
 		
 		char chars[] = str.toCharArray();
 		
@@ -292,7 +299,16 @@ public class Validator
 				}
 			}
 			
-			if ( !is_allowed ) throw new ValidationException(String.format("Illegal character %c in string %s", ch, str));
+			if ( !is_allowed ) return false;
 		}
+		
+		return true;
+	}
+	
+	static public void containsOnlyValidCharacters(String str, ValidCharacters... allowed_characters )
+	{
+		if (str == null) return;
+		
+		if (!containsOnlyValidCharactersQuiet(str, allowed_characters)) throw new ValidationException(String.format("Illegal character in string %s", str));
 	}
 }

@@ -1,10 +1,13 @@
 package org.jimmutable.core.objects.common;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
+import org.jimmutable.core.utils.Validator.ValidCharacters;
 
 /**
  * A stringable class used to represent a numerical Object Id. Id(s) are 16
@@ -156,6 +159,17 @@ public class ObjectId  extends Stringable
 		}
 	}
 	
+	public static void main(String[] args) {
+		System.out.println(new ObjectId(1));
+		System.out.println(new ObjectId(2));
+		System.out.println(new ObjectId(3));
+		System.out.println(new ObjectId(4));
+		System.out.println(new ObjectId(5));
+		System.out.println(new ObjectId(Long.MAX_VALUE));
+		System.out.println(new ObjectId(Long.MAX_VALUE-1));
+		System.out.println(new ObjectId(Long.MAX_VALUE-16));
+	}
+	
 	/**
 	 * Given an object id as a long (value), return the pretty printed version of it
 	 * 
@@ -184,4 +198,5 @@ public class ObjectId  extends Stringable
 		
 		return ret.toString();
 	}
+	
 }

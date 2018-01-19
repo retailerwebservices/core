@@ -1,5 +1,7 @@
 package org.jimmutable.cloud.elasticsearch;
 
+import org.jimmutable.core.fields.FieldArrayList;
+import org.jimmutable.core.fields.FieldList;
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.common.Day;
 import org.jimmutable.core.serialization.FieldName;
@@ -23,6 +25,13 @@ public class MyIndexable implements Indexable
 
 	public static final SearchIndexFieldDefinition theTimestamp = new SearchIndexFieldDefinition(new FieldName("timestamp"), SearchIndexFieldType.DAY);
 
+	public static final SearchIndexFieldDefinition theTextArray = new SearchIndexFieldDefinition(new FieldName("text_array"), SearchIndexFieldType.TEXT);
+	public static final SearchIndexFieldDefinition theAtomArray = new SearchIndexFieldDefinition(new FieldName("atom_array"), SearchIndexFieldType.ATOM);
+	public static final SearchIndexFieldDefinition theLongArray = new SearchIndexFieldDefinition(new FieldName("long_array"), SearchIndexFieldType.LONG);
+	public static final SearchIndexFieldDefinition theFloatArray = new SearchIndexFieldDefinition(new FieldName("float_array"), SearchIndexFieldType.FLOAT);
+	public static final SearchIndexFieldDefinition theBooleanArray = new SearchIndexFieldDefinition(new FieldName("boolean_array"), SearchIndexFieldType.BOOLEAN);
+	public static final SearchIndexFieldDefinition theTimestampArray = new SearchIndexFieldDefinition(new FieldName("timestamp_array"), SearchIndexFieldType.DAY);
+
 	private IndexDefinition index_definition;
 	private SearchDocumentId document_id;
 
@@ -39,6 +48,13 @@ public class MyIndexable implements Indexable
 		b.add(SearchIndexDefinition.FIELD_FIELDS, theFloat);
 		b.add(SearchIndexDefinition.FIELD_FIELDS, theLong);
 		b.add(SearchIndexDefinition.FIELD_FIELDS, theTimestamp);
+
+		b.add(SearchIndexDefinition.FIELD_FIELDS, theTextArray);
+		b.add(SearchIndexDefinition.FIELD_FIELDS, theAtomArray);
+		b.add(SearchIndexDefinition.FIELD_FIELDS, theLongArray);
+		b.add(SearchIndexDefinition.FIELD_FIELDS, theFloatArray);
+		b.add(SearchIndexDefinition.FIELD_FIELDS, theBooleanArray);
+		b.add(SearchIndexDefinition.FIELD_FIELDS, theTimestampArray);
 
 		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, new IndexDefinition("trevor:isawesome:v1"));
 
@@ -69,6 +85,28 @@ public class MyIndexable implements Indexable
 		writer.writeLong(theLong.getSimpleFieldName(), 100L);
 
 		writer.writeTimestamp(theTimestamp, 1420070400001L);
+
+		FieldList<String> list = new FieldArrayList<String>();
+		list.add("a");
+		list.add("b");
+		writer.writeTextArray(theTextArray, list);
+		writer.writeAtomArray(theAtomArray, list);
+
+		FieldList<Long> longs = new FieldArrayList<Long>();
+		longs.add(0L);
+		longs.add(1L);
+		writer.writeLongArray(theLongArray, longs);
+		writer.writeTimestampArray(theTimestampArray, longs);
+
+		FieldList<Float> floats = new FieldArrayList<Float>();
+		floats.add(0.0f);
+		floats.add(0.1f);
+		writer.writeFloatArray(theFloatArray, floats);
+
+		FieldList<Boolean> booleans = new FieldArrayList<Boolean>();
+		booleans.add(true);
+		booleans.add(false);
+		writer.writeBooleanArray(theBooleanArray, booleans);
 	}
 
 	@Override
