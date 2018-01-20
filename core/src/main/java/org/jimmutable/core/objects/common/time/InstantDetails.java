@@ -13,6 +13,13 @@ import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.utils.Comparison;
 import org.jimmutable.core.utils.Validator;
 
+/**
+ * Used to return mutable Instant details in JSON serialized form (*see
+ * corresponding servlet)</br>
+ * 
+ * @author trevorbox
+ *
+ */
 public class InstantDetails extends StandardObject<InstantDetails>
 {
 	static public final Kind KIND = new Kind("instant-details");
@@ -63,6 +70,12 @@ public class InstantDetails extends StandardObject<InstantDetails>
 
 	private long seconds_on_twenty_four_hour_clock;
 
+	/**
+	 * Only use Builder to instantiate object since there are many fields
+	 * 
+	 * @param t
+	 *            ObjectParseTree
+	 */
 	public InstantDetails(ObjectParseTree t)
 	{
 		this.success = t.getBoolean(FIELD_SUCCESS);

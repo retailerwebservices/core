@@ -388,6 +388,18 @@ public class SearchDocumentWriter
 	 * You can get the timestamp from the helpful function
 	 * System.currentTimeMillis().
 	 * 
+	 * </br>
+	 * Example kibana search:</br>
+	 * GET integration:placement-fb-image:v1/default/_search</br>
+	 * {</br>
+	 * "query": {</br>
+	 * "query_string" : {</br>
+	 * "query" : "start:[2012-01-01 TO 2017-12-31]"</br>
+	 * }</br>
+	 * }</br>
+	 * }</br>
+	 * 
+	 * 
 	 * @param search_index_definition
 	 *            The SearchIndexFieldDefinition
 	 * @param value
