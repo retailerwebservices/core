@@ -38,3 +38,15 @@ sudo puppet apply aws_default_config.pp
 # Command to update a GIT repository..
 
 git pull origin master
+
+
+# How to execute
+export jimmutable_messaging_server=test-messaging.yddwko.0001.usw2.cache.amazonaws.com:6379
+mvn exec:java -Dexec.mainClass="org.jimmutable.cloud.cache.TestMessagingPerformance"
+
+
+2.5MM investment in LRS
+
+42.5MM is cash at close
+
+2.5MM
