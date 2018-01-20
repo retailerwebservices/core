@@ -38,7 +38,7 @@ public class TestMessagingPerformance
 		
 		try { Thread.currentThread().sleep(2000); } catch(Exception e) {}
 		
-		signal = new SignalRedis(new ApplicationId("test"), new LowLevelRedisDriver (host, port);
+		signal = new SignalRedis(new ApplicationId("test"), new LowLevelRedisDriver (host, port));
 		
 		emitter = RateLimitingEmitter.startEmitter(new MessageSource(), new MessageSink(), 1.0f);
 		
