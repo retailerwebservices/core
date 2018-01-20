@@ -35,6 +35,8 @@ import redis.clients.jedis.ScanResult;
  */
 public class LowLevelRedisDriver
 {
+	static public final int DEFAULT_PORT_REDIS = 6379;
+	
 	private JedisPool pool;
 	
 	private ExecutorService pool_send = DaemonThreadFactory.createDaemonFixedThreadPool(1);
@@ -44,9 +46,11 @@ public class LowLevelRedisDriver
 	private RedisSignal signal;
 	private RedisQueue queue;
 	
+	
+	
 	public LowLevelRedisDriver()
 	{
-		this("localhost", 6379);
+		this("localhost", DEFAULT_PORT_REDIS);
 	}
 	
 	public LowLevelRedisDriver(String host, int port)
@@ -56,8 +60,7 @@ public class LowLevelRedisDriver
 		config.setMaxIdle(1000 * 60);
 		config.setTestOnBorrow(false);
 		
-		
-		pool = new JedisPool(config, "localhost", 6379);
+		pool = new JedisPool(config, host, port);
 		cache = new RedisCache();
 		queue = new RedisQueue();
 		signal = new RedisSignal();

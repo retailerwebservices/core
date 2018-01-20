@@ -120,7 +120,8 @@
 				<!-- </execution> -->
 				<!-- </executions> -->
 			</plugin>
-			<plugin>
+			<!-- I (Jim Kane) commented this out becuase it was messing up builds on EC2... Is this needed?
+			 <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
 				<version>1.5</version>
@@ -133,7 +134,7 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin>-->
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nexus-staging-maven-plugin</artifactId>

@@ -14,6 +14,7 @@ import org.jimmutable.cloud.new_messaging.signal.SignalTopicId;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
+import org.jimmutable.core.utils.NetUtils;
 import org.jimmutable.core.utils.RateLimitingEmitter;
 import org.jimmutable.core.utils.Sink;
 import org.jimmutable.core.utils.Source;
@@ -26,11 +27,16 @@ public class TestMessagingPerformance
 	static private Kind kind = new Kind("foo"); 
 	static private RateLimitingEmitter emitter;
 	
-	
-	
 	static public void main(String args[])
 	{
 		CloudExecutionEnvironment.startupStubTest(new ApplicationId("test"));
+		
+		String host = NetUtils.extractHostFromHostPortPair(System.getenv("jimmutable_messaging_server"), "localhost");
+		int port = NetUtils.extractPortFromHostPortPair(System.getenv("jimmutable_messaging_server"), LowLevelRedisDriver.DEFAULT_PORT_REDIS);
+		
+		System.out.println("Starting test of messaging on "+host+":"+port+" in 2 seconds");
+		
+		try { Thread.currentThread().sleep(2000); } catch(Exception e) {}
 		
 		signal = new SignalRedis(new ApplicationId("test"), new LowLevelRedisDriver ());
 		
