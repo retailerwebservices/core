@@ -1,12 +1,19 @@
 package org.jimmutable.cloud.cache;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.cache.redis.LowLevelRedisDriver;
 import org.jimmutable.cloud.messaging.StandardMessageOnUpsert;
+import org.jimmutable.cloud.new_messaging.queue.Queue;
+import org.jimmutable.cloud.new_messaging.queue.QueueId;
+import org.jimmutable.cloud.new_messaging.queue.QueueListener;
+import org.jimmutable.cloud.new_messaging.queue.QueueRedis;
 import org.jimmutable.cloud.new_messaging.signal.Signal;
 import org.jimmutable.cloud.new_messaging.signal.SignalListener;
 import org.jimmutable.cloud.new_messaging.signal.SignalRedis;
@@ -17,17 +24,317 @@ import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.utils.NetUtils;
 import org.jimmutable.core.utils.RateLimitingEmitter;
 import org.jimmutable.core.utils.Sink;
-import org.jimmutable.core.utils.Source;
+import org.jimmutable.core.utils.Source.CountSource;
 
 public class TestMessagingPerformance
 {
 	static private SignalTopicId topic_id = new SignalTopicId("test-topic");
-	static private Signal signal;
-	static private List<MessageListener> listeners = new ArrayList();
+	static private QueueId queue_id = new QueueId("test-queue");
 	static private Kind kind = new Kind("foo"); 
-	static private RateLimitingEmitter emitter;
 	
 	static public void main(String args[])
+	{
+		CommandLineParser parser = new DefaultParser();
+		
+		try
+		{
+			CommandLine cmd = parser.parse(createOptions(), args);
+			
+			String test = cmd.getOptionValue("test");
+			
+			if ( test == null || (!test.equalsIgnoreCase("signal") && !test.equalsIgnoreCase("queue")) )
+			{
+				onUsageError("You must specify a test with -test signal or -test queue");
+			}
+			
+			String mode = cmd.getOptionValue("mode");
+			
+			if ( mode == null || (!mode.equalsIgnoreCase("source") && !mode.equalsIgnoreCase("sink")) )
+			{
+				onUsageError("You must specify a mode with -mode source or -mode sink");
+			}
+			
+			String host = NetUtils.extractHostFromHostPortPair(cmd.getOptionValue("server"), "localhost");
+			int port = NetUtils.extractPortFromHostPortPair(cmd.getOptionValue("server"), LowLevelRedisDriver.DEFAULT_PORT_REDIS);
+			
+			CloudExecutionEnvironment.startupStubTest(new ApplicationId("test"));
+			
+			if ( test.equalsIgnoreCase("signal") && mode.equalsIgnoreCase("source") ) testSignalSource(host, port);
+			if ( test.equalsIgnoreCase("signal") && mode.equalsIgnoreCase("sink") ) testSignalSink(host, port);
+			if ( test.equalsIgnoreCase("queue") && mode.equalsIgnoreCase("source") ) testQueueSource(host, port);
+			if ( test.equalsIgnoreCase("queue") && mode.equalsIgnoreCase("sink") ) testQueueSink(host, port);
+		}
+		catch(Exception e)
+		{
+			onUsageError("command line parse error: "+e);
+		}
+	}
+	
+	static private void testSignalSource(String host, int port)
+	{
+		System.out.println(String.format("Starting signal source %s:%d in 2 sec", host, port));
+		silentSleep(2000);
+		
+		LowLevelRedisDriver redis = new LowLevelRedisDriver (host, port);
+		Signal signal = new SignalRedis(new ApplicationId("test"), redis);
+		
+		RateLimitingEmitter message_emitter = RateLimitingEmitter.startEmitter(new CountSource(), new SendSignal(signal), 1.0f);
+		RateLimitingEmitter status_emitter = RateLimitingEmitter.startEmitter(new CountSource(), new SendSignalStatusPrinter(redis, message_emitter), 1.0f);
+	}
+	
+	static public class SendSignal implements Sink<Integer>
+	{
+		private Signal signal;
+		
+		public SendSignal(Signal signal)
+		{
+			this.signal = signal;
+		}
+		
+		public void onEmit( Integer value )
+		{
+			signal.sendAsync(topic_id, new StandardMessageOnUpsert(kind,new ObjectId(value)));
+		}
+	}
+	
+	static public class SendSignalStatusPrinter implements Sink<Integer>
+	{
+		private RateLimitingEmitter message_emitter;
+		private LowLevelRedisDriver redis;
+		
+		public SendSignalStatusPrinter(LowLevelRedisDriver redis, RateLimitingEmitter message_emitter)
+		{
+			this.redis = redis;
+			this.message_emitter = message_emitter;
+		}
+		
+		public void onEmit( Integer count )
+		{
+			System.out.println(String.format("signal source %d: Redis Up: %b, Signal send rate: %.2f/sec", count, redis.isRedisUp(), message_emitter.getRate()));
+			
+			if ( count.intValue() % 5 == 0 ) 
+				message_emitter.setRate(message_emitter.getRate()*2.0f);
+		}
+	}
+	
+	static private void testQueueSource(String host, int port)
+	{
+		System.out.println(String.format("Starting queue source %s:%d in 2 sec", host, port));
+		silentSleep(2000);
+		
+		LowLevelRedisDriver redis = new LowLevelRedisDriver (host, port);
+		QueueRedis queue = new QueueRedis(new ApplicationId("test"), redis);
+		
+		RateLimitingEmitter message_emitter = RateLimitingEmitter.startEmitter(new CountSource(), new SendQueue(queue), 1.0f);
+		RateLimitingEmitter status_emitter = RateLimitingEmitter.startEmitter(new CountSource(), new SendQueueStatusPrinter(redis, message_emitter, queue), 1.0f);
+	}
+	
+	static public class SendQueue implements Sink<Integer>
+	{
+		private Queue queue;
+		
+		public SendQueue(Queue queue)
+		{
+			this.queue = queue;
+		}
+		
+		public void onEmit( Integer value )
+		{
+			queue.submitAsync(queue_id, new StandardMessageOnUpsert(kind,new ObjectId(value)));
+		}
+	}
+	
+	static public class SendQueueStatusPrinter implements Sink<Integer>
+	{
+		private RateLimitingEmitter message_emitter;
+		private LowLevelRedisDriver redis;
+		private QueueRedis queue;
+		
+		public SendQueueStatusPrinter(LowLevelRedisDriver redis, RateLimitingEmitter message_emitter, QueueRedis queue)
+		{
+			this.redis = redis;
+			this.message_emitter = message_emitter;
+			this.queue = queue;
+		}
+		
+		public void onEmit( Integer count )
+		{
+			System.out.println(String.format("queue source %d: Redis Up: %b, Queue send rate: %.2f/sec, queue length: %,d", count, redis.isRedisUp(), message_emitter.getRate(), queue.getLength(queue_id)));
+			
+			if ( count.intValue() % 5 == 0 ) 
+				message_emitter.setRate(message_emitter.getRate()*2.0f);
+		}
+	}
+	
+	static private void testSignalSink(String host, int port)
+	{
+		System.out.println(String.format("Starting signal sink %s:%d in 2 sec", host, port));
+		silentSleep(2000);
+		
+		LowLevelRedisDriver redis = new LowLevelRedisDriver (host, port);
+		Signal signal = new SignalRedis(new ApplicationId("test"), redis);
+		
+		MySignalListener listener = new MySignalListener();
+		
+		signal.startListening(topic_id, listener);
+
+		
+		RateLimitingEmitter status_emitter = RateLimitingEmitter.startEmitter(new CountSource(), new SinkSignalStatusPrinter(redis, listener), 1.0f);
+	}
+	
+	static private class MySignalListener implements SignalListener
+	{
+		public int count = 0;
+
+		@Override
+		public void onMessageReceived( StandardObject message )
+		{
+			count++;
+		}
+	}
+	
+	static public class SinkSignalStatusPrinter implements Sink<Integer>
+	{
+		private LowLevelRedisDriver redis;
+		private MySignalListener listener;
+		
+		private int last_count = 0;
+		private long last_time = System.currentTimeMillis();
+		
+		public SinkSignalStatusPrinter(LowLevelRedisDriver redis, MySignalListener listener)
+		{
+			this.redis = redis;
+			this.listener = listener;
+		}
+		
+		public void onEmit( Integer count )
+		{
+			int processed_in_last_interval = listener.count - last_count;
+			long time_in_last_interval = System.currentTimeMillis() - last_time;
+			
+			float processed_per_second = (float)processed_in_last_interval*1000.0f/(float)time_in_last_interval;
+			
+			System.out.println(String.format("signal sink %d: Redis Up: %b, Process Rate %.2f/sec", count, redis.isRedisUp(), processed_per_second));
+			
+			last_count = listener.count;
+			last_time = System.currentTimeMillis();
+		}
+	}
+	
+	
+	
+	static private void testQueueSink(String host, int port)
+	{
+		System.out.println(String.format("Starting queue sink %s:%d in 2 sec", host, port));
+		silentSleep(2000);
+		
+		LowLevelRedisDriver redis = new LowLevelRedisDriver (host, port);
+		QueueRedis queue = new QueueRedis(new ApplicationId("test"), redis);
+		
+		MyQueueListener listener = new MyQueueListener();
+		
+		queue.startListening(queue_id, listener, 1);
+		
+		RateLimitingEmitter status_emitter = RateLimitingEmitter.startEmitter(new CountSource(), new SinkQueueStatusPrinter(redis, listener), 1.0f);
+	}
+	
+	static private class MyQueueListener implements QueueListener
+	{
+		public int count = 0;
+
+		@Override
+		public void onMessageReceived( StandardObject message )
+		{
+			count++;
+		}
+	}
+	
+	static public class SinkQueueStatusPrinter implements Sink<Integer>
+	{
+		private LowLevelRedisDriver redis;
+		private MyQueueListener listener;
+		
+		private int last_count = 0;
+		private long last_time = System.currentTimeMillis();
+		
+		public SinkQueueStatusPrinter(LowLevelRedisDriver redis, MyQueueListener listener)
+		{
+			this.redis = redis;
+			this.listener = listener;
+		}
+		
+		public void onEmit( Integer count )
+		{
+			
+			int processed_in_last_interval = listener.count - last_count;
+			long time_in_last_interval = System.currentTimeMillis() - last_time;
+			
+			float processed_per_second = (float)processed_in_last_interval*1000.0f/(float)time_in_last_interval;
+			
+			System.out.println(String.format("queue sink %d: Redis Up: %b, Process Rate %.2f/sec", count, redis.isRedisUp(), processed_per_second));
+			
+			last_count = listener.count;
+			last_time = System.currentTimeMillis();
+		}
+	}
+	
+	static private void silentSleep(long ms)
+	{
+		try { Thread.currentThread().sleep(2000); } catch(Exception e) {}
+	}
+	
+	static public void onUsageError(String message)
+	{
+		System.out.println(message);
+		System.out.println();
+		onHelp();
+		System.out.flush();
+		System.exit(1);
+	}
+	
+	static public void onHelp()
+	{
+		HelpFormatter formatter = new HelpFormatter();
+		formatter.printHelp( "test_messaging", createOptions() );
+	}
+	
+	static public Options createOptions()
+	{
+		Option help = new Option("help", "print this help message");
+		
+
+		Option test   = Option.builder( "test" )
+                .hasArg()
+                .desc("specify which type of test to run")
+                .argName("signal | queue")
+                .build();
+		
+		Option mode   = Option.builder( "mode" )
+                .hasArg()
+                .desc("specify if the instance is to generate messages or process them")
+                .argName("source | sink")
+                .build();
+		
+		Option server   = Option.builder( "server" )
+                .hasArg()
+                .desc("specify the redis server to use")
+                .argName("host:port")
+                .build();
+		
+		Options options = new Options();
+		
+		options.addOption(help);
+		
+		options.addOption(test);
+		options.addOption(mode);
+	
+		
+		options.addOption(server);
+		
+		return options;
+	}
+	
+	/*static public void run()
 	{
 		CloudExecutionEnvironment.startupStubTest(new ApplicationId("test"));
 		
@@ -56,26 +363,7 @@ public class TestMessagingPerformance
 		Thread status_printer = new Thread(new StatusPrinter());
 		status_printer.start();
 	}
-	
-	static public class MessageSource implements Source<StandardMessageOnUpsert>
-	{
-		private int count = 0;
-
-		@Override
-		public StandardMessageOnUpsert getNext( StandardMessageOnUpsert default_value )
-		{
-			count++;
-			return new StandardMessageOnUpsert(kind, new ObjectId(count)); 
-		}
-	}
-	
-	static public class MessageSink implements Sink<StandardMessageOnUpsert>
-	{
-		public void onEmit( StandardMessageOnUpsert value )
-		{
-			signal.sendAsync(topic_id, value);
-		}
-	}
+	*/
 
 	
 	static public class MessageListener implements SignalListener
@@ -91,50 +379,6 @@ public class TestMessagingPerformance
 		public void onMessageReceived( StandardObject message )
 		{
 			count++;
-		}
-		
-	}
-	
-	static public class StatusPrinter implements Runnable
-	{
-		int cycle_count = 0;
-		
-		public void run()
-		{
-			while(true)
-			{
-				try
-				{
-					cycle_count++;
-					
-					for ( MessageListener listener : listeners )
-					{
-						listener.count = 0;
-					}
-					
-					long start_time = System.currentTimeMillis();
-					
-					Thread.currentThread().sleep(1000);
-					
-					int total_count = 0;
-					for ( MessageListener listener : listeners )
-					{
-						total_count += listener.count;
-					}
-					
-					float seconds = (float)(System.currentTimeMillis()-start_time)/1000.0f;
-					float count_per_sec = (float)total_count / seconds;
-					
-					System.out.println(String.format("Message send rate %.2f/sec, Messages received: %.2f/sec", emitter.getRate(), count_per_sec));
-					
-					if ( cycle_count % 5 == 0 ) 
-						emitter.setRate(emitter.getRate()*2);
-				}
-				catch(Exception e)
-				{
-					e.printStackTrace();
-				}
-			}
 		}
 	}
 }

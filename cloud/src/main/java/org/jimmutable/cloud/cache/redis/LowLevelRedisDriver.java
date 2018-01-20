@@ -66,6 +66,19 @@ public class LowLevelRedisDriver
 		signal = new RedisSignal();
 	}
 	
+	public boolean isRedisUp()
+	{
+		try(Jedis jedis = pool.getResource();)
+		{
+			String str = jedis.ping();
+			return str.equalsIgnoreCase("PONG");
+		}
+		catch(Exception e)
+		{
+			return false;
+		}
+	}
+	
 	/**
 	 * Access the cache functionality of the Redis driver
 	 * 

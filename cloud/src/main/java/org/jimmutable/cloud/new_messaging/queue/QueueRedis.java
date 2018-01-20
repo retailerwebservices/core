@@ -53,4 +53,8 @@ public class QueueRedis implements Queue
 		
 	}
 
+	public int getLength(QueueId queue_id)
+	{
+		return redis.queue().getQueueLength(app, queue_id, 0);
+	}
 }
