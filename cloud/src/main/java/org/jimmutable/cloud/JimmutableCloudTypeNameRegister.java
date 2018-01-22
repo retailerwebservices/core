@@ -1,8 +1,11 @@
 package org.jimmutable.cloud;
 
+import org.jimmutable.cloud.attachments.AttachmentMetaData;
+import org.jimmutable.cloud.attachments.DownloadFileName;
 import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
 import org.jimmutable.cloud.messaging.StandardMessageOnUpsert;
+import org.jimmutable.cloud.objects.StandardChangeLogEntry;
 import org.jimmutable.cloud.servlet_utils.common_objects.GeneralResponseError;
 import org.jimmutable.cloud.servlet_utils.common_objects.GeneralResponseOK;
 import org.jimmutable.cloud.servlet_utils.get.GetResponseError;
@@ -12,7 +15,6 @@ import org.jimmutable.cloud.servlet_utils.search.AdvancedSearchField;
 import org.jimmutable.cloud.servlet_utils.search.IncludeFieldInView;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
 import org.jimmutable.cloud.servlet_utils.search.RequestExportCSV;
-import org.jimmutable.cloud.servlet_utils.search.SearchBuilderRequest;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.SearchUIData;
@@ -20,6 +22,7 @@ import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.servlet_utils.upsert.UpsertResponseOK;
 import org.jimmutable.cloud.servlet_utils.upsert.UpsertResponseValidationError;
 import org.jimmutable.cloud.storage.StorageMetadata;
+import org.jimmutable.cloud.tinyurl.TinyUrlResult;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 
 /**
@@ -68,5 +71,9 @@ public class JimmutableCloudTypeNameRegister
 		ObjectParseTree.registerTypeName(RequestExportCSV.class);
 		
 		ObjectParseTree.registerTypeName(StorageMetadata.class);
+		
+		ObjectParseTree.registerTypeName(StandardChangeLogEntry.class);
+		ObjectParseTree.registerTypeName(AttachmentMetaData.class);
+		ObjectParseTree.registerTypeName(TinyUrlResult.class);
 	}
 }
