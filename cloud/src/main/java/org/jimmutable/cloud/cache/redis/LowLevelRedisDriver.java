@@ -46,8 +46,6 @@ public class LowLevelRedisDriver
 	private RedisSignal signal;
 	private RedisQueue queue;
 	
-	
-	
 	public LowLevelRedisDriver()
 	{
 		this("localhost", DEFAULT_PORT_REDIS);
