@@ -25,6 +25,7 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.WriteRequest.RefreshPolicy;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.io.stream.NotSerializableExceptionWrapper;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -366,10 +367,6 @@ public class ElasticSearch implements ISearch
 
 			int next_page = from + size;
 
-			// if the size was met try and see if there are more results
-
-			logger.info(String.format("TOTAL:%s SIZE:%s", response.getHits().totalHits, response.getHits().getHits().length));
-
 			boolean has_more_results = response.getHits().totalHits > next_page;
 
 			boolean has_previous_results = from != 0;
@@ -387,7 +384,8 @@ public class ElasticSearch implements ISearch
 
 			SearchResponseOK ok = new SearchResponseOK(request, results, from, has_more_results, has_previous_results, next_page, from);
 
-			logger.log(level, String.format("Index:%s Status:%s Hits:%s TotalHits:%s StandardSearchRequest:%s first_result_idx:%s has_more_results:%s has_previous_results:%s start_of_next_page_of_results:%s start_of_previous_page_of_results:%s", index.getSimpleValue(), response.status(), results.size(), response.getHits().totalHits, ok.getSimpleSearchRequest(), ok.getSimpleFirstResultIdx(), ok.getSimpleHasMoreResults(), ok.getSimpleHasMoreResults(), ok.getSimpleStartOfNextPageOfResults(), ok.getSimpleStartOfPreviousPageOfResults()));
+			logger.log(level, String.format("QUERY:%s INDEX:%s STATUS:%s HITS:%s TOTAL_HITS:%s MAX_RESULTS:%d START_RESULTS_AFTER:%d", ok.getSimpleSearchRequest().getSimpleQueryString(), index.getSimpleValue(), response.status(), results.size(), response.getHits().totalHits, ok.getSimpleSearchRequest().getSimpleMaxResults(), ok.getSimpleSearchRequest().getSimpleStartResultsAfter()));
+			logger.trace(String.format("FIRST_RESULT_IDX:%s HAS_MORE_RESULTS:%s HAS_PREVIOUS_RESULTS:%s START_OF_NEXT_PAGE_OF_RESULTS:%s START_OF_PREVIOUS_PAGE_OF_RESULTS:%s", ok.getSimpleFirstResultIdx(), ok.getSimpleHasMoreResults(), ok.getSimpleHasMoreResults(), ok.getSimpleStartOfNextPageOfResults(), ok.getSimpleStartOfPreviousPageOfResults()));
 			logger.trace(ok.getSimpleResults().toString());
 
 			return ok;
