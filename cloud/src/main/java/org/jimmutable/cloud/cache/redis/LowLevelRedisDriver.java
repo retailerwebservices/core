@@ -37,9 +37,10 @@ public class LowLevelRedisDriver
 {
 	static public final int DEFAULT_PORT_REDIS = 6379;
 	
+	// CODEREVIEW Are JedisPool and Jedis thread safe? Or do we need to wrap accesses to them inside our own code?
 	private JedisPool pool;
 	
-	private ExecutorService pool_send = DaemonThreadFactory.createDaemonFixedThreadPool(1);
+	private ExecutorService pool_send = DaemonThreadFactory.createDaemonFixedThreadPool(1); // CODEREVIEW Per previous conversations, I though object creation/assignment was bad outside the constructor? -JMD
 	private ExecutorService pool_receive = DaemonThreadFactory.createDaemonFixedThreadPool(10);
 	
 	private RedisCache cache;
@@ -82,6 +83,7 @@ public class LowLevelRedisDriver
 	 * 
 	 * @return
 	 */
+    // CODEREVIEW Tsk, tsk. This should be getSimpleCache() (just like in CEE). -JMD
 	public RedisCache cache() { return cache; }
 	
 	/**
@@ -89,6 +91,7 @@ public class LowLevelRedisDriver
 	 * 
 	 * @return
 	 */
+    // CODEREVIEW Tsk, tsk. This should be getSimpleSignal() (just like in CEE). -JMD
 	public RedisSignal signal() { return signal; }
 	
 	/**
@@ -96,6 +99,7 @@ public class LowLevelRedisDriver
 	 * 
 	 * @return
 	 */
+	// CODEREVIEW Tsk, tsk. This should be getSimpleQueue() (just like in CEE). -JMD
 	public RedisQueue queue() { return queue; }
 	
 	public class RedisCache
@@ -423,6 +427,7 @@ public class LowLevelRedisDriver
 			{
 				try(Jedis jedis = pool.getResource();)
 				{
+				    // CODEREVIEW I suggest encapusulating this magic string in a getKey method like RedisQueue -JMD
 					jedis.publish(app+"/"+topic, message.serialize(Format.JSON));
 				}
 			}
@@ -446,12 +451,14 @@ public class LowLevelRedisDriver
 			}
 			public void run()
 			{
+                // CODEREVIEW Why do you have to keep re-subscribing to the signal topic? -JMD
 				while(true)
 				{
 					try
 					{
 						try(Jedis jedis = pool.getResource();)
 						{
+						    // CODEREVIEW Magic string should be encapsulated in a getKey method (or similar) -JMD
 							jedis.subscribe(new ListenSubscriber(listener), app+"/"+topic);
 						}
 					}
@@ -460,11 +467,18 @@ public class LowLevelRedisDriver
 						e.printStackTrace();
 					}
 					
-					try { Thread.currentThread().sleep(1000); } catch(Exception e) {}
+					try { Thread.sleep(1000); } catch(Exception e) {}
 				}
 			}
 		}
 		
+		/*
+		 * CODEREVIEW
+		 * So, a thread, creates a listener, which puts a runnable on a thread pool?
+		 * I don't know much about redis, admittedly, but that seems complicated.
+		 * Is there not a simpler/more direct way to listen for messages from redis?
+		 * -JMD
+		 */
 		private class ListenSubscriber extends JedisPubSub
 		{
 			private SignalListener listener;
@@ -596,6 +610,13 @@ public class LowLevelRedisDriver
 		 */
 		public void submit(ApplicationId app, QueueId queue, StandardObject message)
 		{
+		    /*
+		     * CODEREVIEW
+		     * submitAsync and submit should share code if possible.
+		     * One idea is to externalize the Runnable from submitAsync into a
+		     * private nested class. Then call send_task.run() in submit.
+		     * -JMD
+		     */
 			if ( app == null || queue == null || message == null ) return;
 			
 			try(Jedis jedis = pool.getResource();)
@@ -655,7 +676,7 @@ public class LowLevelRedisDriver
 						if ( message == null ) 
 						{
 							// If there is no message, sleep for 1/2 second before trying again
-							try { Thread.currentThread().sleep(500); } catch(Exception e) {}
+							try { Thread.sleep(500); } catch(Exception e) {}
 							continue;
 						}
 						else

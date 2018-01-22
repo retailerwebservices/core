@@ -1,6 +1,5 @@
 package org.jimmutable.cloud.new_messaging.queue;
 
-import org.jimmutable.cloud.new_messaging.signal.SignalTopicId;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
 
@@ -14,7 +13,6 @@ import org.jimmutable.core.utils.Validator;
  * @author kanej
  *
  */
-
 public class QueueId extends Stringable
 {
 	public QueueId( String value )
@@ -39,6 +37,7 @@ public class QueueId extends Stringable
 				Validator.NUMBERS);  
 
 	}
+	
 	static public class MyConverter extends Stringable.Converter<QueueId>
 	{
 		public QueueId fromString(String str, QueueId default_value)

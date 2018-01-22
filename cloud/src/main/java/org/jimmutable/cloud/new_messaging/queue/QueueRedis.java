@@ -27,14 +27,17 @@ public class QueueRedis implements Queue
 		this.redis = redis;
 	}
 	
-	public void submitAsync( QueueId queue, StandardObject message )
+    @Override
+	@SuppressWarnings("rawtypes")
+    public void submitAsync( QueueId queue, StandardObject message )
 	{
 		if ( queue == null || message == null ) return;
 		
 		redis.queue().submitAsync(app, queue, message);
 	}
 
-	@Override
+    @Override
+	@SuppressWarnings("rawtypes")
 	public void submit( QueueId queue, StandardObject message )
 	{
 		if ( queue == null || message == null ) return;
@@ -53,6 +56,14 @@ public class QueueRedis implements Queue
 		
 	}
 
+	/*
+	 * CODEREVIEW
+	 * Why is this method here? It isn't in the interface, so it will
+	 * never be used by a normal jimmutable application. Also, the 
+	 * contract is odd since you define a default_value of 0 but don't
+	 * give that option to the caller.
+	 * -JMD
+	 */
 	public int getLength(QueueId queue_id)
 	{
 		return redis.queue().getQueueLength(app, queue_id, 0);

@@ -1,6 +1,5 @@
 package org.jimmutable.cloud.new_messaging.signal;
 
-import org.jimmutable.cloud.messaging.TopicId;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
 
