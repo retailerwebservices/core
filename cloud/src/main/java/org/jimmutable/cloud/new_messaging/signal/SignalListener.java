@@ -13,21 +13,16 @@ public interface SignalListener
 {
 	/**
 	 * This is a lightweight method. Any implementation of this method should not
-	 * need to take a lot of time (signals processing happens in a small thread
-	 * listening pool). If your instance falls behind in signal processing messages
-	 * may be lost
+	 * need to take a lot of time.
+	 * 
+	 * Unlike Queue, with Signal you cannot control the
+	 * rate that messages come in. Also, there will likely be a LOT of messages
+	 * (because they're lightweight). So, if you try to do something complicated with
+	 * a signal, your application won't just lose messages, it will choke to death.
 	 * 
 	 * @param message
 	 *            will never be null;
 	 */
-    /*
-     * CODEREVIEW
-     * Does a common cache.deleteAsync count as not "a lot of time"? If that's the most
-     * common use for signaling, then that use case should be supported. Otherwise,
-     * every client will require it's own thread pool etc. to process messages, and in
-     * that case, I'd rather bake it into the library so it's done right.
-     * -JMD
-     */
 	@SuppressWarnings("rawtypes")
     public void onMessageReceived( StandardObject message );
 

@@ -16,6 +16,15 @@ import org.jimmutable.core.objects.StandardObject;
  * @author kanej
  *
  */
+/*
+ * CODEREVIEW
+ * Possibly a nitpick, but this should be ISignal. For the other backplane
+ * services, IFoo is the interface, Foo is the abstract root class, and FooBar
+ * is the implementation of IFoo using Bar driver. Now, if you want to rename
+ * everything to Foo, AbstractFoo, and FooBar, I'm okay with that too (prefer
+ * it actually). But we should have a standard one way or the other.
+ * -JMD
+ */
 public interface Signal
 {
 	/**

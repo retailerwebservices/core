@@ -14,7 +14,7 @@ public class CacheRedis implements Cache
 	
 	public CacheRedis(ApplicationId app, LowLevelRedisDriver redis)
 	{
-		Validator.notNull(redis);
+		Validator.notNull(app, redis);
 		this.redis = redis;
 		this.app = app;
 	}
@@ -30,7 +30,8 @@ public class CacheRedis implements Cache
 		redis.cache().set(app, key, data, max_ttl);
 	}
 
-	@Override
+    @Override
+	@SuppressWarnings("rawtypes")
 	public void put( CacheKey key, StandardObject data, long max_ttl )
 	{
 		if ( key == null ) return;
@@ -57,7 +58,8 @@ public class CacheRedis implements Cache
 		return redis.cache().getString(app, key, default_value);
 	}
 
-	@Override
+    @Override
+	@SuppressWarnings("rawtypes")
 	public StandardObject getObject( CacheKey key, StandardObject default_value )
 	{
 		String str = getString(key, null);
@@ -86,8 +88,16 @@ public class CacheRedis implements Cache
 		
 		RedisScanOperation low_level_op = new RedisScanOperation()
 		{
-			public void performOperation(LowLevelRedisDriver redis, CacheKey key)
+			public void performOperation(LowLevelRedisDriver driver, CacheKey key)
 			{
+			    /*
+			     * CODEREVIEW
+			     * Why do you ignore the LowLevelRedisDriver passed in? Sure,
+			     * CacheRedis.this and driver *should* be the same, but splicing
+			     * the contract like this will probably lead to a weird bug in the future.
+			     *   operation.performOperation(driver.cache(), key)
+			     * -JMD
+			     */
 				operation.performOperation(CacheRedis.this, key);
 			}
 		};
