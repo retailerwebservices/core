@@ -14,7 +14,7 @@ public class ScanOperationDeleteAll implements ScanOperation
 	
 	private ScanOperationDeleteAll() {}
 	
-	public void performOperation( Cache cache, CacheKey key )
+	public void performOperation( ICache cache, CacheKey key )
 	{
 		cache.delete(key);
 	}

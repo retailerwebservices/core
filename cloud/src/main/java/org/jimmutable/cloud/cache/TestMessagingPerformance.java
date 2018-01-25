@@ -10,11 +10,11 @@ import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.cache.redis.LowLevelRedisDriver;
 import org.jimmutable.cloud.messaging.StandardMessageOnUpsert;
-import org.jimmutable.cloud.new_messaging.queue.Queue;
+import org.jimmutable.cloud.new_messaging.queue.IQueue;
 import org.jimmutable.cloud.new_messaging.queue.QueueId;
 import org.jimmutable.cloud.new_messaging.queue.QueueListener;
 import org.jimmutable.cloud.new_messaging.queue.QueueRedis;
-import org.jimmutable.cloud.new_messaging.signal.Signal;
+import org.jimmutable.cloud.new_messaging.signal.ISignal;
 import org.jimmutable.cloud.new_messaging.signal.SignalListener;
 import org.jimmutable.cloud.new_messaging.signal.SignalRedis;
 import org.jimmutable.cloud.new_messaging.signal.SignalTopicId;
@@ -76,7 +76,7 @@ public class TestMessagingPerformance
 		silentSleep(2000);
 		
 		LowLevelRedisDriver redis = new LowLevelRedisDriver (host, port);
-		Signal signal = new SignalRedis(new ApplicationId("test"), redis);
+		ISignal signal = new SignalRedis(new ApplicationId("test"), redis);
 		
 		RateLimitingEmitter message_emitter = RateLimitingEmitter.startEmitter(new CountSource(), new SendSignal(signal), 1.0f);
 		RateLimitingEmitter status_emitter = RateLimitingEmitter.startEmitter(new CountSource(), new SendSignalStatusPrinter(redis, message_emitter), 1.0f);
@@ -84,9 +84,9 @@ public class TestMessagingPerformance
 	
 	static public class SendSignal implements Sink<Integer>
 	{
-		private Signal signal;
+		private ISignal signal;
 		
-		public SendSignal(Signal signal)
+		public SendSignal(ISignal signal)
 		{
 			this.signal = signal;
 		}
@@ -131,9 +131,9 @@ public class TestMessagingPerformance
 	
 	static public class SendQueue implements Sink<Integer>
 	{
-		private Queue queue;
+		private IQueue queue;
 		
-		public SendQueue(Queue queue)
+		public SendQueue(IQueue queue)
 		{
 			this.queue = queue;
 		}
@@ -159,7 +159,7 @@ public class TestMessagingPerformance
 		
 		public void onEmit( Integer count )
 		{
-			System.out.println(String.format("queue source %d: Redis Up: %b, Queue send rate: %.2f/sec, queue length: %,d", count, redis.isRedisUp(), message_emitter.getRate(), queue.getLength(queue_id)));
+			System.out.println(String.format("queue source %d: Redis Up: %b, Queue send rate: %.2f/sec, queue length: %,d", count, redis.isRedisUp(), message_emitter.getRate(), queue.getLength(queue_id,0)));
 			
 			if ( count.intValue() % 5 == 0 ) 
 				message_emitter.setRate(message_emitter.getRate()*2.0f);
@@ -172,7 +172,7 @@ public class TestMessagingPerformance
 		silentSleep(2000);
 		
 		LowLevelRedisDriver redis = new LowLevelRedisDriver (host, port);
-		Signal signal = new SignalRedis(new ApplicationId("test"), redis);
+		ISignal signal = new SignalRedis(new ApplicationId("test"), redis);
 		
 		MySignalListener listener = new MySignalListener();
 		

@@ -63,7 +63,6 @@ public class ExpirationCache<K, V>
 	 */
 	public V getOptional( K key, V default_value )
 	{
-		// CODE REVIEW: spacing and formatting of this function is not correct
 		Long time_in_cache = put_times.get(key, null);
 		
 		if ( time_in_cache != null )

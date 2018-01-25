@@ -23,16 +23,7 @@ import org.jimmutable.core.objects.StandardObject;
  * 
  * @author kanej
  */
-/*
- * CODEREVIEW
- * Possibly a nitpick, but this should be IQueue. For the other backplane
- * services, IFoo is the interface, Foo is the abstract root class, and FooBar
- * is the implementation of IFoo using Bar driver. Now, if you want to rename
- * everything to Foo, AbstractFoo, and FooBar, I'm okay with that too (prefer
- * it actually). But we should have a standard one way or the other.
- * -JMD
- */
-public interface Queue
+public interface IQueue
 {
 	/**
 	 * Asynchronously submit a message to the specified queue. The function returns
@@ -54,10 +45,11 @@ public interface Queue
 	 *            The topic id to send the message to
 	 * @param message
 	 *            The message to send. A null message does nothing.
+	 * 
+	 * @return True if the message was submitted without error, false otherwise
 	 */
 	@SuppressWarnings("rawtypes")
-	// CODEREVIEW What happens if an error occurs? How is that reported to the client? -JMD
-    public void submit(QueueId queue, StandardObject message);
+    public boolean submit(QueueId queue, StandardObject message);
 	
 	/**
 	 * Start listening for messages on a specified queue

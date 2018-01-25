@@ -15,7 +15,7 @@ import org.jimmutable.core.utils.Validator;
  * @author kanej
  *
  */
-public class QueueRedis implements Queue
+public class QueueRedis implements IQueue
 {
 	private LowLevelRedisDriver redis;
 	private ApplicationId app;
@@ -33,16 +33,16 @@ public class QueueRedis implements Queue
 	{
 		if ( queue == null || message == null ) return;
 		
-		redis.queue().submitAsync(app, queue, message);
+		redis.getSimpleQueue().submitAsync(app, queue, message);
 	}
 
     @Override
 	@SuppressWarnings("rawtypes")
-	public void submit( QueueId queue, StandardObject message )
+	public boolean submit( QueueId queue, StandardObject message )
 	{
-		if ( queue == null || message == null ) return;
+		if ( queue == null || message == null ) return false;
 		
-		redis.queue().submit(app, queue, message);
+		return redis.getSimpleQueue().submit(app, queue, message);
 		
 	}
 
@@ -52,20 +52,12 @@ public class QueueRedis implements Queue
 		Validator.notNull(queue, listener);
 		Validator.min(number_of_worker_threads, 1);
 		
-		redis.queue().startListening(app, queue, listener, number_of_worker_threads);
+		redis.getSimpleQueue().startListening(app, queue, listener, number_of_worker_threads);
 		
 	}
 
-	/*
-	 * CODEREVIEW
-	 * Why is this method here? It isn't in the interface, so it will
-	 * never be used by a normal jimmutable application. Also, the 
-	 * contract is odd since you define a default_value of 0 but don't
-	 * give that option to the caller.
-	 * -JMD
-	 */
-	public int getLength(QueueId queue_id)
+	public int getLength(QueueId queue_id, int default_value)
 	{
-		return redis.queue().getQueueLength(app, queue_id, 0);
+		return redis.getSimpleQueue().getQueueLength(app, queue_id, default_value);
 	}
 }

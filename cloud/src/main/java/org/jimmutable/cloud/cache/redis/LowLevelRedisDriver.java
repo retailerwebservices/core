@@ -36,11 +36,10 @@ public class LowLevelRedisDriver
 {
 	static public final int DEFAULT_PORT_REDIS = 6379;
 	
-	// CODEREVIEW Are JedisPool and Jedis thread safe? Or do we need to wrap accesses to them inside our own code?
 	private JedisPool pool;
 	
-	private ExecutorService pool_send = DaemonThreadFactory.createDaemonFixedThreadPool(1); // CODEREVIEW Per previous conversations, I though object creation/assignment was bad outside the constructor? -JMD
-	private ExecutorService pool_receive = DaemonThreadFactory.createDaemonFixedThreadPool(10);
+	private ExecutorService pool_send;
+	private ExecutorService pool_receive;
 	
 	private RedisCache cache;
 	private RedisSignal signal;
@@ -62,6 +61,10 @@ public class LowLevelRedisDriver
 		cache = new RedisCache();
 		queue = new RedisQueue();
 		signal = new RedisSignal();
+		
+		pool_send = DaemonThreadFactory.createDaemonFixedThreadPool(1);
+		pool_receive = DaemonThreadFactory.createDaemonFixedThreadPool(10);
+		
 	}
 	
 	public boolean isRedisUp()
@@ -82,24 +85,21 @@ public class LowLevelRedisDriver
 	 * 
 	 * @return
 	 */
-    // CODEREVIEW Tsk, tsk. This should be getSimpleCache() (just like in CEE). -JMD
-	public RedisCache cache() { return cache; }
+	public RedisCache getSimpleCache() { return cache; }
 	
 	/**
 	 * Access the siganl functionality of the Redis driver
 	 * 
 	 * @return
 	 */
-    // CODEREVIEW Tsk, tsk. This should be getSimpleSignal() (just like in CEE). -JMD
-	public RedisSignal signal() { return signal; }
+	public RedisSignal getSimpleSignal() { return signal; }
 	
 	/**
 	 * Access the queue functionality of the Redis driver
 	 * 
 	 * @return
 	 */
-	// CODEREVIEW Tsk, tsk. This should be getSimpleQueue() (just like in CEE). -JMD
-	public RedisQueue queue() { return queue; }
+	public RedisQueue getSimpleQueue() { return queue; }
 	
 	public class RedisCache
 	{
@@ -130,7 +130,6 @@ public class LowLevelRedisDriver
 		 *            The maximum length of time that the data will remain in the cache
 		 *            (in ms). Zero or negative values have the meaning of "infinite"
 		 */
-		// CODEREVIEW Since there is an explicit delete operation, why support delete on null? -JMD
 		public void set(ApplicationId app, CacheKey key, byte data[], long max_ttl)
 		{
 			if ( data == null )
@@ -150,7 +149,6 @@ public class LowLevelRedisDriver
 				{ 
 					max_ttl /= 1000;
 					jedis.expire(cache_key_bytes, (int)max_ttl);
-					// CODEREVIEW If redis doesn't support ms resolution, why not just make the interface seconds? -JMD
 				}
 			}
 		}
@@ -411,6 +409,11 @@ public class LowLevelRedisDriver
 			Thread t = new Thread(new ListenRunnable(app,topic,listener));
 			t.start();
 		}
+		
+		private String getRedisTopicString(ApplicationId app, SignalTopicId topic)
+		{
+			return app+"/"+topic;
+		}
 	
         @SuppressWarnings("rawtypes")
 		private class SignalSendRunnable implements Runnable
@@ -431,11 +434,12 @@ public class LowLevelRedisDriver
 			{
 				try(Jedis jedis = pool.getResource();)
 				{
-				    // CODEREVIEW I suggest encapusulating this magic string in a getKey method like RedisQueue -JMD
-					jedis.publish(app+"/"+topic, message.serialize(Format.JSON));
+					jedis.publish(getRedisTopicString(app,topic), message.serialize(Format.JSON));
 				}
 			}
 		}
+        
+        
 	
 		
 		
@@ -455,15 +459,14 @@ public class LowLevelRedisDriver
 			}
 			public void run()
 			{
-                // CODEREVIEW Why do you have to keep re-subscribing to the signal topic? -JMD
 				while(true)
 				{
 					try
 					{
 						try(Jedis jedis = pool.getResource();)
 						{
-						    // CODEREVIEW Magic string should be encapsulated in a getKey method (or similar) -JMD
-							jedis.subscribe(new ListenSubscriber(listener), app+"/"+topic);
+						    
+							jedis.subscribe(new ListenSubscriber(listener), getRedisTopicString(app,topic));
 						}
 					}
 					catch(Exception e)
@@ -586,19 +589,30 @@ public class LowLevelRedisDriver
 			{
 				public void run() 
 				{
-					try(Jedis jedis = pool.getResource();)
-					{
-						jedis.lpush(getKey(app,queue_id), message.serialize(Format.JSON));
-						
-						if ( r.nextInt(100) == 52 ) // about once per one hundred inserts, trim to 10_000 elements, for performance
-						{
-							jedis.ltrim(getKey(app,queue_id), 0, 10_000);
-						}
-					}
+					executeSubmit(app,queue_id, message);
 				}
 			};
 			
 			pool_send.submit(send_task);
+		}
+		
+		private boolean executeSubmit(ApplicationId app, QueueId queue_id, StandardObject message)
+		{
+			try(Jedis jedis = pool.getResource();)
+			{
+				jedis.lpush(getKey(app,queue_id), message.serialize(Format.JSON));
+				
+				if ( r.nextInt(100) == 52 ) // about once per one hundred inserts, trim to 10_000 elements, for performance
+				{
+					jedis.ltrim(getKey(app,queue_id), 0, 10_000);
+				}
+				
+				return true;
+			}
+			catch(Exception e)
+			{
+				return false;
+			}
 		}
 		
 		/**
@@ -609,26 +623,11 @@ public class LowLevelRedisDriver
 		 * @param message
 		 */
 		@SuppressWarnings("rawtypes")
-        public void submit(ApplicationId app, QueueId queue_id, StandardObject message)
+        public boolean submit(ApplicationId app, QueueId queue_id, StandardObject message)
 		{
-		    /*
-		     * CODEREVIEW
-		     * submitAsync and submit should share code if possible.
-		     * One idea is to externalize the Runnable from submitAsync into a
-		     * private nested class. Then call send_task.run() in submit.
-		     * -JMD
-		     */
-			if ( app == null || queue_id == null || message == null ) return;
+			if ( app == null || queue_id == null || message == null ) return false;
 			
-			try(Jedis jedis = pool.getResource();)
-			{
-				jedis.lpush(getKey(app,queue_id), message.serialize(Format.JSON));
-				
-				if ( r.nextInt(100) == 52 ) // about once per one hundred inserts, trim to 10_000 elements, for performance
-				{
-					jedis.ltrim(getKey(app,queue_id), 0, 10_000);
-				}
-			}
+			return executeSubmit(app,queue_id, message);
 		}
 		
 		/**

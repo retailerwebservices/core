@@ -45,37 +45,37 @@ public class LowLevelRedisDriverTest extends StubTest
 		{
 			QueueId queue_id = new QueueId("overflow-test");
 			
-			redis.queue().clear(app, queue_id);
-			assert(redis.queue().getQueueLength(app, queue_id, 0) == 0);
+			redis.getSimpleQueue().clear(app, queue_id);
+			assert(redis.getSimpleQueue().getQueueLength(app, queue_id, 0) == 0);
 			
 			for ( int i = 0; i < 20_000; i++ )
-				redis.queue().submit(app, queue_id, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(i)));
+				redis.getSimpleQueue().submit(app, queue_id, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(i)));
 			
-			assert(redis.queue().getQueueLength(app, queue_id, 0) < 20_000);
-			assert(redis.queue().getQueueLength(app, queue_id, 0) > 9_000);
+			assert(redis.getSimpleQueue().getQueueLength(app, queue_id, 0) < 20_000);
+			assert(redis.getSimpleQueue().getQueueLength(app, queue_id, 0) > 9_000);
 		}
 		
 		// Test fan out
 		{
 			QueueId queue_id = new QueueId("fan-out-test");
 			
-			redis.queue().clear(app, queue_id);
-			assert(redis.queue().getQueueLength(app, queue_id, 0) == 0);
+			redis.getSimpleQueue().clear(app, queue_id);
+			assert(redis.getSimpleQueue().getQueueLength(app, queue_id, 0) == 0);
 			
 			for ( int i = 0; i < 1_000; i++ )
-				redis.queue().submit(app, queue_id, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(i)));
+				redis.getSimpleQueue().submit(app, queue_id, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(i)));
 			
-			assert(redis.queue().getQueueLength(app, queue_id, 0) == 1_000);
+			assert(redis.getSimpleQueue().getQueueLength(app, queue_id, 0) == 1_000);
 			
 			TestListener one = new TestListener(10);
 			TestListener two = new TestListener(10);
 			TestListener three = new TestListener(10);
 			TestListener four = new TestListener(10);
 			
-			redis.queue().startListening(app, queue_id, one, 1);
-			redis.queue().startListening(app, queue_id, two, 1);
-			redis.queue().startListening(app, queue_id, three, 1);
-			redis.queue().startListening(app, queue_id, four, 2);
+			redis.getSimpleQueue().startListening(app, queue_id, one, 1);
+			redis.getSimpleQueue().startListening(app, queue_id, two, 1);
+			redis.getSimpleQueue().startListening(app, queue_id, three, 1);
+			redis.getSimpleQueue().startListening(app, queue_id, four, 2);
 			
 			System.out.println("Testing fan out");
 			for ( int i = 0; i < 16; i++ )
@@ -89,7 +89,7 @@ public class LowLevelRedisDriverTest extends StubTest
 			
 			System.out.println();
 			
-			assert(redis.queue().getQueueLength(app, queue_id, 0) == 0);
+			assert(redis.getSimpleQueue().getQueueLength(app, queue_id, 0) == 0);
 			assert(one.ids.size()+two.ids.size()+three.ids.size()+four.ids.size() == 1_000);
 			
 			assert(four.ids.size() > one.ids.size());
@@ -108,14 +108,14 @@ public class LowLevelRedisDriverTest extends StubTest
 		
 		SignalTopicId topic = new SignalTopicId("test");
 		
-		redis.signal().startListening(app, topic, listener);
-		redis.signal().startListening(app, topic, listener2);
+		redis.getSimpleSignal().startListening(app, topic, listener);
+		redis.getSimpleSignal().startListening(app, topic, listener2);
 		
 		try { Thread.currentThread().sleep(250); } catch(Exception e) {}
 		
-		redis.signal().sendAsync(app, topic, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(1)));
-		redis.signal().sendAsync(app, topic, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(2)));
-		redis.signal().sendAsync(app, topic, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(10)));
+		redis.getSimpleSignal().sendAsync(app, topic, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(1)));
+		redis.getSimpleSignal().sendAsync(app, topic, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(2)));
+		redis.getSimpleSignal().sendAsync(app, topic, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(10)));
 		
 		try { Thread.currentThread().sleep(500); } catch(Exception e) {}
 		
@@ -166,10 +166,10 @@ public class LowLevelRedisDriverTest extends StubTest
 			CacheKey key2 = new CacheKey("exist-test://two");
 
 
-			redis.cache().set(app, key1, "Hello World", -1); 
+			redis.getSimpleCache().set(app, key1, "Hello World", -1); 
 			
-			assert(redis.cache().exists(app, key1) == true);
-			assert(redis.cache().exists(app, key2) == false);
+			assert(redis.getSimpleCache().exists(app, key1) == true);
+			assert(redis.getSimpleCache().exists(app, key2) == false);
 		}
 		
 		// Test the acid string as a string value
@@ -177,9 +177,9 @@ public class LowLevelRedisDriverTest extends StubTest
 			CacheKey key = new CacheKey("acid-string-test://test-acid-string-value");
 			
 			String acid_string = createAcidString();
-			redis.cache().set(app, key, acid_string, -1); 
+			redis.getSimpleCache().set(app, key, acid_string, -1); 
 			
-			String from_cache = redis.cache().getString(app, key, null);
+			String from_cache = redis.getSimpleCache().getString(app, key, null);
 			
 			assert(Objects.equals(acid_string, from_cache));
 		}
@@ -189,7 +189,7 @@ public class LowLevelRedisDriverTest extends StubTest
 		{
 			CacheKey key = new CacheKey("get-unset-test://a-key-that-is-not-set");
 			
-			String from_cache = redis.cache().getString(app, key, null);
+			String from_cache = redis.getSimpleCache().getString(app, key, null);
 			
 			assert(Objects.equals(from_cache, null)); 
 		}
@@ -200,8 +200,8 @@ public class LowLevelRedisDriverTest extends StubTest
 			
 			CacheKey key = new CacheKey("acid-string-test://"+acid_string);
 			
-			redis.cache().set(app, key, acid_string, -1); 
-			String from_cache = redis.cache().getString(app, key, null);
+			redis.getSimpleCache().set(app, key, acid_string, -1); 
+			String from_cache = redis.getSimpleCache().getString(app, key, null);
 			
 			assert(Objects.equals(acid_string, from_cache));
 		}
@@ -210,8 +210,8 @@ public class LowLevelRedisDriverTest extends StubTest
 		{
 			CacheKey key = new CacheKey("ttl-test://test-ttl");
 			
-			redis.cache().set(app, key, "Hello World", 10_000);
-			long value = redis.cache().getTTL(app, key, -1);
+			redis.getSimpleCache().set(app, key, "Hello World", 10_000);
+			long value = redis.getSimpleCache().getTTL(app, key, -1);
 			
 			assert(value > 8_500);
 		}
@@ -220,13 +220,13 @@ public class LowLevelRedisDriverTest extends StubTest
 		{
 			CacheKey key = new CacheKey("ttl-test://test-ttl-unset");
 			
-			redis.cache().set(app, key, "Hello World", -1);
-			long value = redis.cache().getTTL(app, key, -1);
+			redis.getSimpleCache().set(app, key, "Hello World", -1);
+			long value = redis.getSimpleCache().getTTL(app, key, -1);
 			
 			assert(value == -1);
 			
-			redis.cache().set(app, key, "Hello World", 0);
-			value = redis.cache().getTTL(app, key, -1);
+			redis.getSimpleCache().set(app, key, "Hello World", 0);
+			value = redis.getSimpleCache().getTTL(app, key, -1);
 			
 			assert(value == -1);
 		}
@@ -235,24 +235,24 @@ public class LowLevelRedisDriverTest extends StubTest
 		{
 			CacheKey key = new CacheKey("ttl-delete://test-delete");
 			
-			redis.cache().set(app, key, "Hello World", -1);
+			redis.getSimpleCache().set(app, key, "Hello World", -1);
 			
-			String from_cache = redis.cache().getString(app, key, null);
+			String from_cache = redis.getSimpleCache().getString(app, key, null);
 			assert(Objects.equals(from_cache, "Hello World"));
 			
-			redis.cache().delete(app, key);
+			redis.getSimpleCache().delete(app, key);
 			
-			from_cache = redis.cache().getString(app, key, null);
+			from_cache = redis.getSimpleCache().getString(app, key, null);
 			
 			assert(Objects.equals(from_cache, null));
 			
 			// test delete on null data
-			redis.cache().set(app, key, "Hello World", -1);
-			from_cache = redis.cache().getString(app, key, null);
+			redis.getSimpleCache().set(app, key, "Hello World", -1);
+			from_cache = redis.getSimpleCache().getString(app, key, null);
 			assert(Objects.equals(from_cache, "Hello World"));
 			
-			redis.cache().set(app, key, (String)null, -1);
-			from_cache = redis.cache().getString(app, key, null);
+			redis.getSimpleCache().set(app, key, (String)null, -1);
+			from_cache = redis.getSimpleCache().getString(app, key, null);
 			assert(Objects.equals(from_cache, null));
 		}
 		
@@ -261,9 +261,9 @@ public class LowLevelRedisDriverTest extends StubTest
 			CacheKey key = new CacheKey("binary-data://test-binary-data");
 			byte data[] = createRandomBytes(1024*1024);
 			
-			redis.cache().set(app, key, data, -1);
+			redis.getSimpleCache().set(app, key, data, -1);
 			
-			byte from_cache[]  =redis.cache().getBytes(app, key, null);
+			byte from_cache[]  =redis.getSimpleCache().getBytes(app, key, null);
 			
 			assert(from_cache != null);
 			assert(Arrays.equals(data, from_cache));
@@ -277,12 +277,12 @@ public class LowLevelRedisDriverTest extends StubTest
 			{
 				CacheKey key = new CacheKey("scan-test://"+i);
 				scan_test.add(key);
-				redis.cache().set(app, key, ""+i, -1);
+				redis.getSimpleCache().set(app, key, ""+i, -1);
 			}
 			
 			AccumulateKeyScanOp op = new AccumulateKeyScanOp();
 			
-			redis.cache().scan(app, new CacheKey("scan-test://"), op);
+			redis.getSimpleCache().scan(app, new CacheKey("scan-test://"), op);
 			
 			assert(op.keys.size() == scan_test.size());
 			
@@ -293,14 +293,14 @@ public class LowLevelRedisDriverTest extends StubTest
 		{
 			CacheKey key = new CacheKey("ttl-test://test-ttl-expiration");
 			
-			redis.cache().set(app, key, "Hello World", 1_000);
+			redis.getSimpleCache().set(app, key, "Hello World", 1_000);
 			
-			String from_cache = redis.cache().getString(app, key, null);
+			String from_cache = redis.getSimpleCache().getString(app, key, null);
 			assert(Objects.equals(from_cache, "Hello World"));
 			
 			try { Thread.currentThread().sleep(2000); } catch(Exception e) {}
 			
-			from_cache = redis.cache().getString(app, key, null);
+			from_cache = redis.getSimpleCache().getString(app, key, null);
 			
 			assert(Objects.equals(from_cache, null));
 		}
@@ -324,8 +324,8 @@ public class LowLevelRedisDriverTest extends StubTest
 		{
 			CacheKey key = new CacheKey("live-test://test-one-key");
 			
-			redis.cache().set(app, key, "hello world", -1);
-			String get_result = redis.cache().getString(app, key, null);
+			redis.getSimpleCache().set(app, key, "hello world", -1);
+			String get_result = redis.getSimpleCache().getString(app, key, null);
 			
 			return get_result.equalsIgnoreCase("hello world");
 		}

@@ -56,7 +56,7 @@ public class TestCache
 		}
 		
 		
-		Cache cache = new CacheRedis(new ApplicationId("cache-test"), driver);		
+		ICache cache = new CacheRedis(new ApplicationId("cache-test"), driver);		
 	
 		cache.put("test://aleph/foo", "1");
 		cache.put("test://aleph/bar", "2");
@@ -118,7 +118,7 @@ public class TestCache
 	 * @param cache The cache to use
 	 * @param n The number of blocks to write
 	 */
-	static private void writeBinaryData(Cache cache, int n)
+	static private void writeBinaryData(ICache cache, int n)
 	{
 		for ( int i = 0; i < n; i++ )
 		{
@@ -151,11 +151,11 @@ public class TestCache
 	 * 
 	 * @param cache The cache to use for testing
 	 */
-	static private void testTTL(Cache cache)
+	static private void testTTL(ICache cache)
 	{
 		cache.put(new CacheKey("test://dalet/foo"),"bar",3_000);
 		
-		System.out.println("expiration time: "+cache.getTTL(new CacheKey("test://dalet/foo"), -1));
+		System.out.println("expiration time: "+cache.getRemainingTTL(new CacheKey("test://dalet/foo"), -1));
 		
 		int i = 0;
 		
@@ -183,7 +183,7 @@ public class TestCache
 	{
 
 		@Override
-		public void performOperation( Cache cache, CacheKey key )
+		public void performOperation( ICache cache, CacheKey key )
 		{
 			System.out.println(key);
 		}

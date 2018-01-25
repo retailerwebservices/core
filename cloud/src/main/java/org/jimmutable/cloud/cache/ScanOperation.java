@@ -20,5 +20,5 @@ public interface ScanOperation
 	 * @param key
 	 *            The key
 	 */
-	public void performOperation(Cache cache, CacheKey key);
+	public void performOperation(ICache cache, CacheKey key);
 }
