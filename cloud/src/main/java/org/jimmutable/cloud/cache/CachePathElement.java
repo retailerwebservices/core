@@ -1,7 +1,6 @@
 package org.jimmutable.cloud.cache;
 
 import org.jimmutable.core.objects.Stringable;
-import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.utils.Validator;
 
 /**

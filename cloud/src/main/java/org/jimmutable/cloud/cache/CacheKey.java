@@ -1,7 +1,5 @@
 package org.jimmutable.cloud.cache;
 
-import java.util.List;
-
 import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
@@ -14,15 +12,30 @@ import org.jimmutable.core.utils.Validator;
  * and limited to letters, numbers and dashes. There is no practical length
  * limit on cache keys.
  * 
- * Name(s) can contain any character. Name(s) are trimmed (whitespace at the begging
- * and ending whitespace deleted).  Name(s) are case sensitive
+ * Name(s) can contain any character. Name(s) are trimmed (whitespace at the beginning
+ * and ending deleted). Name(s) are case sensitive.
  * 
  * Examples of valid cache keys include
  * 
- * foo/bar://quz foo/bar://https://www.google.com foo://11248
+ * foo/bar://quz
+ * foo/bar://https://www.google.com
+ * foo://11248
  * 
  * @author kanej
- *
+ */
+/*
+ * CODEREVIEW
+ * I'm super confused. I've read the docs and classes for CachePatha and CacheKey.
+ * I can't figure out what's what. You have what I think are copy-paste errors in
+ * class comments where you use CachePath/path and CacheKey/key interchangeably.
+ * See the first paragraph above. "Cache path(s) are / separated....limit on cache keys."
+ * Also, the field is called "name", but the error message says "value".
+ * Finally, neither javadoc gives a reasonable explanation for _what_ a CachePath or CacheKey
+ * _is_, what it is used for, and how they differ/relate. What would be a real-world
+ * example of a CachePath and CacheKey's?
+ * 
+ * Since this is a client-facing concept, I want to make sure it is nailed down.
+ * -JMD
  */
 public class CacheKey extends Stringable
 {

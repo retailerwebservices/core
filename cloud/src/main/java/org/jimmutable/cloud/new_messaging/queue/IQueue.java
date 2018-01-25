@@ -1,7 +1,5 @@
 package org.jimmutable.cloud.new_messaging.queue;
 
-import org.jimmutable.cloud.new_messaging.signal.SignalListener;
-import org.jimmutable.cloud.new_messaging.signal.SignalTopicId;
 import org.jimmutable.core.objects.StandardObject;
 
 /**
@@ -24,9 +22,8 @@ import org.jimmutable.core.objects.StandardObject;
  * receive approximately 1/n of the messages
  * 
  * @author kanej
- *
  */
-public interface Queue
+public interface IQueue
 {
 	/**
 	 * Asynchronously submit a message to the specified queue. The function returns
@@ -37,7 +34,8 @@ public interface Queue
 	 * @param message
 	 *            The message to send. A null message does nothing.
 	 */
-	public void submitAsync(QueueId queue, StandardObject message);
+	@SuppressWarnings("rawtypes")
+    public void submitAsync(QueueId queue, StandardObject message);
 	
 	/**
 	 * Submit a message to the specified queue. Function does not return until the
@@ -47,8 +45,11 @@ public interface Queue
 	 *            The topic id to send the message to
 	 * @param message
 	 *            The message to send. A null message does nothing.
+	 * 
+	 * @return True if the message was submitted without error, false otherwise
 	 */
-	public void submit(QueueId queue, StandardObject message);
+	@SuppressWarnings("rawtypes")
+    public boolean submit(QueueId queue, StandardObject message);
 	
 	/**
 	 * Start listening for messages on a specified queue
@@ -59,6 +60,12 @@ public interface Queue
 	 *            The listener that will process messages
 	 * @param number_of_worker_threads
 	 *            The number of worker threads to process messages with
+	 */
+	/*
+     * CODEREVIEW
+     * So Queue will manage the underlying thread pool?
+     * If so, that's fine, but it should be explicit.
+     * -JMD
 	 */
 	public void startListening(QueueId queue, QueueListener listener, int number_of_worker_threads);
 }

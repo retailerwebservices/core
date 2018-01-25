@@ -1,0 +1,37 @@
+1.)  Security / Networking primer
+
+  - When you create elastic cache you specify a set of EC2 security groups that can access the cache
+  - If a ec2 instnace is not in these security groups, connecting to the elastic cache will time out (really annoying)
+  - Elastic cache is on the "private" network (VPC), therefore you need a TCP custom inbount rule to allow traffic on 6379 (source all)
+  - This should be part of the security group in EC2
+  - MAKE SURE THE SECURITY GROUP IS ENABLED ON BOTH ENDS (EC2 *and* ELASTI-CACHE)
+
+  - The cache instance must be in the same region but also same data center (we use us-west-2b)
+
+
+2.)  When creating elastic cache
+
+  v.3.2.10
+  No replicas
+  Place in the correct availability zone (us-west-2b)
+
+3.)  You need the parameter group to be redis-3-2-LRU
+
+    (this is the same as the default 3.2, but maxmemory-policy is set to allkeys-lru)
+
+  # Signal source
+
+  # queue
+  mvn exec:java -Dexec.mainClass="org.jimmutable.cloud.cache.TestMessagingPerformance" -Dexec.args="-test queue -mode source -server common-elastic-cache.yddwko.0001.usw2.cache.amazonaws.com:6379"
+  mvn exec:java -Dexec.mainClass="org.jimmutable.cloud.cache.TestMessagingPerformance" -Dexec.args="-test queue -mode sink -server common-elastic-cache.yddwko.0001.usw2.cache.amazonaws.com:6379"
+
+  # signal
+  mvn exec:java -Dexec.mainClass="org.jimmutable.cloud.cache.TestMessagingPerformance" -Dexec.args="-test signal -mode source -server common-elastic-cache.yddwko.0001.usw2.cache.amazonaws.com:6379"
+  mvn exec:java -Dexec.mainClass="org.jimmutable.cloud.cache.TestMessagingPerformance" -Dexec.args="-test signal -mode sink -server common-elastic-cache.yddwko.0001.usw2.cache.amazonaws.com:6379"
+
+  # cache
+
+  mvn exec:java -Dexec.mainClass="org.jimmutable.cloud.cache.TestCache" -Dexec.args="-server common-elastic-cache.yddwko.0001.usw2.cache.amazonaws.com:6379"
+
+
+  

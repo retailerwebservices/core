@@ -19,5 +19,6 @@ public interface QueueListener
 	 * @param message
 	 *            will never be null;
 	 */
-	public void onMessageReceived( StandardObject message );
+	@SuppressWarnings("rawtypes")
+    public void onMessageReceived( StandardObject message );
 }

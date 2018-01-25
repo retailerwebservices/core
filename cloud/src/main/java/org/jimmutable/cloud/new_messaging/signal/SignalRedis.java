@@ -15,7 +15,7 @@ import org.jimmutable.core.utils.Validator;
  * @author kanej
  *
  */
-public class SignalRedis implements Signal
+public class SignalRedis implements ISignal
 {
 	private LowLevelRedisDriver redis;
 	private ApplicationId app;
@@ -27,18 +27,20 @@ public class SignalRedis implements Signal
 		this.redis = redis;
 	}
 
-	@Override
+    @Override
+	@SuppressWarnings("rawtypes")
 	public void sendAsync( SignalTopicId topic, StandardObject message )
 	{
 		if ( topic == null || message == null ) return;
-		redis.signal().sendAsync(app, topic, message);
+		redis.getSimpleSignal().sendAsync(app, topic, message);
 	}
 
-	@Override
+    @Override
+	@SuppressWarnings("rawtypes")
 	public void send( SignalTopicId topic, StandardObject message )
 	{
 		if ( topic == null || message == null ) return;
-		redis.signal().send(app, topic, message);
+		redis.getSimpleSignal().send(app, topic, message);
 	}
 
 	@Override
@@ -46,7 +48,7 @@ public class SignalRedis implements Signal
 	{
 		Validator.notNull(topic, listener);
 		
-		redis.signal().startListening(app, topic, listener);
+		redis.getSimpleSignal().startListening(app, topic, listener);
 	}
 	
 	

@@ -5,7 +5,6 @@ import java.util.Random;
 import java.util.concurrent.ExecutorService;
 
 import org.jimmutable.cloud.ApplicationId;
-import org.jimmutable.cloud.cache.Cache;
 import org.jimmutable.cloud.cache.CacheKey;
 import org.jimmutable.cloud.new_messaging.queue.QueueId;
 import org.jimmutable.cloud.new_messaging.queue.QueueListener;
@@ -24,7 +23,7 @@ import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 
 /**
- * Low leve driver class for Redis.
+ * Low level driver class for Redis.
  * 
  * DO NOT MODIFY UNLESS YOU REALLY UNDERSTAND REDIS, THREADING *AND* WHAT YOU ARE DOING 
  * 
@@ -35,10 +34,12 @@ import redis.clients.jedis.ScanResult;
  */
 public class LowLevelRedisDriver
 {
+	static public final int DEFAULT_PORT_REDIS = 6379;
+	
 	private JedisPool pool;
 	
-	private ExecutorService pool_send = DaemonThreadFactory.createDaemonFixedThreadPool(1);
-	private ExecutorService pool_receive = DaemonThreadFactory.createDaemonFixedThreadPool(10);
+	private ExecutorService pool_send;
+	private ExecutorService pool_receive;
 	
 	private RedisCache cache;
 	private RedisSignal signal;
@@ -46,7 +47,7 @@ public class LowLevelRedisDriver
 	
 	public LowLevelRedisDriver()
 	{
-		this("localhost", 6379);
+		this("localhost", DEFAULT_PORT_REDIS);
 	}
 	
 	public LowLevelRedisDriver(String host, int port)
@@ -56,11 +57,27 @@ public class LowLevelRedisDriver
 		config.setMaxIdle(1000 * 60);
 		config.setTestOnBorrow(false);
 		
-		
-		pool = new JedisPool(config, "localhost", 6379);
+		pool = new JedisPool(config, host, port);
 		cache = new RedisCache();
 		queue = new RedisQueue();
 		signal = new RedisSignal();
+		
+		pool_send = DaemonThreadFactory.createDaemonFixedThreadPool(1);
+		pool_receive = DaemonThreadFactory.createDaemonFixedThreadPool(10);
+		
+	}
+	
+	public boolean isRedisUp()
+	{
+		try(Jedis jedis = pool.getResource();)
+		{
+			String str = jedis.ping();
+			return str.equalsIgnoreCase("PONG");
+		}
+		catch(Exception e)
+		{
+			return false;
+		}
 	}
 	
 	/**
@@ -68,21 +85,21 @@ public class LowLevelRedisDriver
 	 * 
 	 * @return
 	 */
-	public RedisCache cache() { return cache; }
+	public RedisCache getSimpleCache() { return cache; }
 	
 	/**
-	 * Access the siganl functionality of the Redis driver
+	 * Access the signal functionality of the Redis driver
 	 * 
 	 * @return
 	 */
-	public RedisSignal signal() { return signal; }
+	public RedisSignal getSimpleSignal() { return signal; }
 	
 	/**
 	 * Access the queue functionality of the Redis driver
 	 * 
 	 * @return
 	 */
-	public RedisQueue queue() { return queue; }
+	public RedisQueue getSimpleQueue() { return queue; }
 	
 	public class RedisCache
 	{
@@ -229,7 +246,7 @@ public class LowLevelRedisDriver
 				if ( ret == null ) return default_value;
 				
 				if ( ret.longValue() <= 0 ) return default_value;
-				return ret.longValue()*1000; // conver to ms
+				return ret.longValue()*1000; // convert to ms
 			}
 			catch(Exception e)
 			{
@@ -349,7 +366,8 @@ public class LowLevelRedisDriver
 		 * @param message
 		 *            The message to send
 		 */
-		public void sendAsync(ApplicationId app, SignalTopicId topic, StandardObject message)
+		@SuppressWarnings("rawtypes")
+        public void sendAsync(ApplicationId app, SignalTopicId topic, StandardObject message)
 		{
 			if ( app == null || topic == null || message == null ) return;
 			
@@ -366,7 +384,8 @@ public class LowLevelRedisDriver
 		 * @param message
 		 *            The message to send
 		 */
-		public void send(ApplicationId app, SignalTopicId topic, StandardObject message)
+		@SuppressWarnings("rawtypes")
+        public void send(ApplicationId app, SignalTopicId topic, StandardObject message)
 		{
 			if ( app == null || topic == null || message == null ) return;
 			
@@ -390,14 +409,20 @@ public class LowLevelRedisDriver
 			Thread t = new Thread(new ListenRunnable(app,topic,listener));
 			t.start();
 		}
+		
+		private String getRedisTopicString(ApplicationId app, SignalTopicId topic)
+		{
+			return app+"/"+topic;
+		}
 	
+        @SuppressWarnings("rawtypes")
 		private class SignalSendRunnable implements Runnable
 		{
 			ApplicationId app;
 			SignalTopicId topic;
 			StandardObject message;
 			
-			private SignalSendRunnable(ApplicationId app, SignalTopicId topic, StandardObject message)
+            private SignalSendRunnable(ApplicationId app, SignalTopicId topic, StandardObject message)
 			{
 				Validator.notNull(app, topic, message);
 				
@@ -409,10 +434,12 @@ public class LowLevelRedisDriver
 			{
 				try(Jedis jedis = pool.getResource();)
 				{
-					jedis.publish(app+"/"+topic, message.serialize(Format.JSON));
+					jedis.publish(getRedisTopicString(app,topic), message.serialize(Format.JSON));
 				}
 			}
 		}
+        
+        
 	
 		
 		
@@ -438,7 +465,8 @@ public class LowLevelRedisDriver
 					{
 						try(Jedis jedis = pool.getResource();)
 						{
-							jedis.subscribe(new ListenSubscriber(listener), app+"/"+topic);
+						    
+							jedis.subscribe(new ListenSubscriber(listener), getRedisTopicString(app,topic));
 						}
 					}
 					catch(Exception e)
@@ -446,7 +474,7 @@ public class LowLevelRedisDriver
 						e.printStackTrace();
 					}
 					
-					try { Thread.currentThread().sleep(1000); } catch(Exception e) {}
+					try { Thread.sleep(1000); } catch(Exception e) {}
 				}
 			}
 		}
@@ -462,6 +490,7 @@ public class LowLevelRedisDriver
 				this.listener = listener;
 			}
 		
+            @SuppressWarnings("rawtypes")
 			public void onMessage( String channel, String message )
 			{
 				try
@@ -477,6 +506,7 @@ public class LowLevelRedisDriver
 			}
 		}
 		
+        @SuppressWarnings("rawtypes")
 		private class OnMessageReceivedRunnable implements Runnable
 		{
 			private SignalListener listener;
@@ -500,26 +530,26 @@ public class LowLevelRedisDriver
 	{
 		Random r = new Random();
 		
-		private String getKey(ApplicationId app, QueueId queue)
+		private String getKey(ApplicationId app, QueueId queue_id)
 		{
-			return "$queue/"+app+"/"+queue;
+			return "$queue/"+app+"/"+queue_id;
 		}
 		
 		/**
 		 * Get the current queue length
 		 * 
 		 * @param app
-		 * @param queue
+		 * @param queue_id
 		 * @param default_value
 		 * @return
 		 */
-		public int getQueueLength(ApplicationId app, QueueId queue, int default_value)
+		public int getQueueLength(ApplicationId app, QueueId queue_id, int default_value)
 		{
-			if ( app == null || queue == null ) return default_value;
+			if ( app == null || queue_id == null ) return default_value;
 			
 			try(Jedis jedis = pool.getResource();)
 			{
-				Long ret = jedis.llen(getKey(app,queue));
+				Long ret = jedis.llen(getKey(app,queue_id));
 				
 				if ( ret == null ) return default_value;
 				if ( ret.longValue() < 0 ) return default_value;
@@ -534,43 +564,55 @@ public class LowLevelRedisDriver
 		 * @param app
 		 * @param queue
 		 */
-		public void clear(ApplicationId app, QueueId queue)
+		public void clear(ApplicationId app, QueueId queue_id)
 		{
-			Validator.notNull(app,queue);
+			Validator.notNull(app,queue_id);
 			
 			try(Jedis jedis = pool.getResource();)
 			{
-				jedis.del(getKey(app,queue));
+				jedis.del(getKey(app,queue_id));
 			}
 		}
 		
 		/**
 		 * Submit a message to a queue (asynchronously) 
 		 * @param app
-		 * @param queue
+		 * @param queue_id
 		 * @param message
 		 */
-		public void submitAsync(ApplicationId app, QueueId queue, StandardObject message)
+		@SuppressWarnings("rawtypes")
+        public void submitAsync(ApplicationId app, QueueId queue_id, StandardObject message)
 		{
-			if ( app == null || queue == null || message == null ) return;
+			if ( app == null || queue_id == null || message == null ) return;
 			
 			Runnable send_task = new Runnable()
 			{
 				public void run() 
 				{
-					try(Jedis jedis = pool.getResource();)
-					{
-						jedis.lpush(getKey(app,queue), message.serialize(Format.JSON));
-						
-						if ( r.nextInt(100) == 52 ) // about once per one hundred inserts, trim to 10_000 elements, for performance
-						{
-							jedis.ltrim(getKey(app,queue), 0, 10_000);
-						}
-					}
+					executeSubmit(app,queue_id, message);
 				}
 			};
 			
 			pool_send.submit(send_task);
+		}
+		
+		private boolean executeSubmit(ApplicationId app, QueueId queue_id, StandardObject message)
+		{
+			try(Jedis jedis = pool.getResource();)
+			{
+				jedis.lpush(getKey(app,queue_id), message.serialize(Format.JSON));
+				
+				if ( r.nextInt(100) == 52 ) // about once per one hundred inserts, trim to 10_000 elements, for performance
+				{
+					jedis.ltrim(getKey(app,queue_id), 0, 10_000);
+				}
+				
+				return true;
+			}
+			catch(Exception e)
+			{
+				return false;
+			}
 		}
 		
 		/**
@@ -580,19 +622,12 @@ public class LowLevelRedisDriver
 		 * @param queue
 		 * @param message
 		 */
-		public void submit(ApplicationId app, QueueId queue, StandardObject message)
+		@SuppressWarnings("rawtypes")
+        public boolean submit(ApplicationId app, QueueId queue_id, StandardObject message)
 		{
-			if ( app == null || queue == null || message == null ) return;
+			if ( app == null || queue_id == null || message == null ) return false;
 			
-			try(Jedis jedis = pool.getResource();)
-			{
-				jedis.lpush(getKey(app,queue), message.serialize(Format.JSON));
-				
-				if ( r.nextInt(100) == 52 ) // about once per one hundred inserts, trim to 10_000 elements, for performance
-				{
-					jedis.ltrim(getKey(app,queue), 0, 10_000);
-				}
-			}
+			return executeSubmit(app,queue_id, message);
 		}
 		
 		/**
@@ -603,30 +638,31 @@ public class LowLevelRedisDriver
 		 * @param listener
 		 * @param num_worker_threads
 		 */
-		public void startListening(ApplicationId app, QueueId queue, QueueListener listener, int num_worker_threads)
+		public void startListening(ApplicationId app, QueueId queue_id, QueueListener listener, int num_worker_threads)
 		{
-			Validator.notNull(app, queue, listener);
+			Validator.notNull(app, queue_id, listener);
 			Validator.min(num_worker_threads, 1);
 			
 			for ( int i = 0; i < num_worker_threads; i++ )
 			{
-				Thread t = new Thread(new ListenRunnable(app, queue, listener));
+				Thread t = new Thread(new ListenRunnable(app, queue_id, listener));
 				t.start();
 			}
 		}
 		
+        @SuppressWarnings("rawtypes")
 		private class ListenRunnable implements Runnable
 		{
 			private ApplicationId app;
-			private QueueId queue;
+			private QueueId queue_id;
 			private QueueListener listener;
 			
-			private ListenRunnable(ApplicationId app, QueueId queue, QueueListener listener) 
+			private ListenRunnable(ApplicationId app, QueueId queue_id, QueueListener listener) 
 			{
 				Validator.notNull(app,queue,listener);
 				
 				this.app = app;
-				this.queue = queue;
+				this.queue_id = queue_id;
 				this.listener = listener;
 			}
 			
@@ -641,7 +677,7 @@ public class LowLevelRedisDriver
 						if ( message == null ) 
 						{
 							// If there is no message, sleep for 1/2 second before trying again
-							try { Thread.currentThread().sleep(500); } catch(Exception e) {}
+							try { Thread.sleep(500); } catch(Exception e) {}
 							continue;
 						}
 						else
@@ -656,11 +692,11 @@ public class LowLevelRedisDriver
 				}
 			}
 			
-			private StandardObject popOneObject(StandardObject default_value)
+            private StandardObject popOneObject(StandardObject default_value)
 			{
 				try(Jedis jedis = pool.getResource();)
 				{
-					String obj_str = jedis.rpop(getKey(app,queue));
+					String obj_str = jedis.rpop(getKey(app,queue_id));
 					
 					if ( obj_str == null ) return default_value;
 					

@@ -10,11 +10,11 @@ package org.jimmutable.cloud.cache;
  */
 public class ScanOperationDeleteAll implements ScanOperation
 {
-	static public ScanOperationDeleteAll OPERATION = new ScanOperationDeleteAll();
+	static public final ScanOperationDeleteAll OPERATION = new ScanOperationDeleteAll();
 	
 	private ScanOperationDeleteAll() {}
 	
-	public void performOperation( Cache cache, CacheKey key )
+	public void performOperation( ICache cache, CacheKey key )
 	{
 		cache.delete(key);
 	}

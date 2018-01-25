@@ -7,57 +7,59 @@ import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.utils.Validator;
 
-public class CacheRedis implements Cache
+public class CacheRedis extends Cache
 { 
 	private LowLevelRedisDriver redis;
 	private ApplicationId app;
 	
 	public CacheRedis(ApplicationId app, LowLevelRedisDriver redis)
 	{
-		Validator.notNull(redis);
+		Validator.notNull(app, redis);
 		this.redis = redis;
 		this.app = app;
 	}
 	
 	public void put( CacheKey key, byte[] data, long max_ttl )
 	{
-		redis.cache().set(app, key, data, max_ttl);
+		redis.getSimpleCache().set(app, key, data, max_ttl);
 	}
 
 	@Override
 	public void put( CacheKey key, String data, long max_ttl )
 	{
-		redis.cache().set(app, key, data, max_ttl);
+		redis.getSimpleCache().set(app, key, data, max_ttl);
 	}
 
-	@Override
+    @Override
+	@SuppressWarnings("rawtypes")
 	public void put( CacheKey key, StandardObject data, long max_ttl )
 	{
 		if ( key == null ) return;
 		if ( data == null ) { delete(key); return; }
 		
-		redis.cache().set(app, key, data.serialize(Format.JSON), max_ttl);
+		redis.getSimpleCache().set(app, key, data.serialize(Format.JSON), max_ttl);
 	}
 
 	@Override
-	public long getTTL( CacheKey key, long default_value )
+	public long getRemainingTTL( CacheKey key, long default_value )
 	{
-		return redis.cache().getTTL(app, key, default_value);
+		return redis.getSimpleCache().getTTL(app, key, default_value);
 	}
 
 	@Override
 	public byte[] getBytes( CacheKey key, byte[] default_value )
 	{
-		return redis.cache().getBytes(app, key, default_value);
+		return redis.getSimpleCache().getBytes(app, key, default_value);
 	}
 
 	@Override
 	public String getString( CacheKey key, String default_value )
 	{
-		return redis.cache().getString(app, key, default_value);
+		return redis.getSimpleCache().getString(app, key, default_value);
 	}
 
-	@Override
+    @Override
+	@SuppressWarnings("rawtypes")
 	public StandardObject getObject( CacheKey key, StandardObject default_value )
 	{
 		String str = getString(key, null);
@@ -76,7 +78,7 @@ public class CacheRedis implements Cache
 	@Override
 	public void delete( CacheKey key )
 	{
-		redis.cache().delete(app, key);
+		redis.getSimpleCache().delete(app, key);
 	}
 
 	@Override
@@ -86,19 +88,27 @@ public class CacheRedis implements Cache
 		
 		RedisScanOperation low_level_op = new RedisScanOperation()
 		{
-			public void performOperation(LowLevelRedisDriver redis, CacheKey key)
+			public void performOperation(LowLevelRedisDriver driver, CacheKey key)
 			{
+			    /*
+			     * CODEREVIEW
+			     * Why do you ignore the LowLevelRedisDriver passed in? Sure,
+			     * CacheRedis.this and driver *should* be the same, but splicing
+			     * the contract like this will probably lead to a weird bug in the future.
+			     *   operation.performOperation(driver.cache(), key)
+			     * -JMD
+			     */
 				operation.performOperation(CacheRedis.this, key);
 			}
 		};
 		
-		redis.cache().scan(app, prefix, low_level_op);
+		redis.getSimpleCache().scan(app, prefix, low_level_op);
 	}
 
 	@Override
 	public boolean exists( CacheKey key )
 	{
-		return redis.cache().exists(app, key);
+		return redis.getSimpleCache().exists(app, key);
 	}
 	
 }

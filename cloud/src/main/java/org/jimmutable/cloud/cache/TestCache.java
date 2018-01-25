@@ -3,8 +3,16 @@ package org.jimmutable.cloud.cache;
 import java.util.Arrays;
 import java.util.Random;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.jimmutable.cloud.ApplicationId;
+import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.cache.redis.LowLevelRedisDriver;
+import org.jimmutable.core.utils.NetUtils;
 
 /**
  * NOTES: 
@@ -26,7 +34,29 @@ public class TestCache
 {
 	static public void main(String args[])
 	{
-		Cache cache = new CacheRedis(new ApplicationId("cache-test"), new LowLevelRedisDriver());		
+		CommandLineParser parser = new DefaultParser();
+		LowLevelRedisDriver driver = null;
+
+		try
+		{
+			CommandLine cmd = parser.parse(createOptions(), args);
+
+			String host = NetUtils.extractHostFromHostPortPair(cmd.getOptionValue("server"), "localhost");
+			int port = NetUtils.extractPortFromHostPortPair(cmd.getOptionValue("server"), LowLevelRedisDriver.DEFAULT_PORT_REDIS);
+			
+			System.out.println("testing cache: "+host+":"+port);
+			
+			driver = new LowLevelRedisDriver(host, port); 
+
+			CloudExecutionEnvironment.startupStubTest(new ApplicationId("test"));
+		}
+		catch(Exception e)
+		{
+			onUsageError("command line parse error: "+e);
+		}
+		
+		
+		ICache cache = new CacheRedis(new ApplicationId("cache-test"), driver);		
 	
 		cache.put("test://aleph/foo", "1");
 		cache.put("test://aleph/bar", "2");
@@ -48,13 +78,47 @@ public class TestCache
 		testTTL(cache);
 	}
 	
+	static public void onUsageError(String message)
+	{
+		System.out.println(message);
+		System.out.println();
+		onHelp();
+		System.out.flush();
+		System.exit(1);
+	}
+	
+	static public void onHelp()
+	{
+		HelpFormatter formatter = new HelpFormatter();
+		formatter.printHelp( "test_messaging", createOptions() );
+	}
+	
+	static public Options createOptions()
+	{
+		Option help = new Option("help", "print this help message");
+		
+		Option server   = Option.builder( "server" )
+                .hasArg()
+                .desc("specify the redis server to use")
+                .argName("host:port")
+                .build();
+		
+		Options options = new Options();
+		
+		options.addOption(help);
+		
+		options.addOption(server);
+		
+		return options;
+	}
+	
 	/**
 	 * Writes random 1mb blocks of data in an effort to over-fill the cache
 	 * 
 	 * @param cache The cache to use
 	 * @param n The number of blocks to write
 	 */
-	static private void writeBinaryData(Cache cache, int n)
+	static private void writeBinaryData(ICache cache, int n)
 	{
 		for ( int i = 0; i < n; i++ )
 		{
@@ -87,11 +151,11 @@ public class TestCache
 	 * 
 	 * @param cache The cache to use for testing
 	 */
-	static private void testTTL(Cache cache)
+	static private void testTTL(ICache cache)
 	{
 		cache.put(new CacheKey("test://dalet/foo"),"bar",3_000);
 		
-		System.out.println("expiration time: "+cache.getTTL(new CacheKey("test://dalet/foo"), -1));
+		System.out.println("expiration time: "+cache.getRemainingTTL(new CacheKey("test://dalet/foo"), -1));
 		
 		int i = 0;
 		
@@ -119,7 +183,7 @@ public class TestCache
 	{
 
 		@Override
-		public void performOperation( Cache cache, CacheKey key )
+		public void performOperation( ICache cache, CacheKey key )
 		{
 			System.out.println(key);
 		}
