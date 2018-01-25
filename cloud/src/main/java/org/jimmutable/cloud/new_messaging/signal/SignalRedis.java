@@ -27,14 +27,16 @@ public class SignalRedis implements Signal
 		this.redis = redis;
 	}
 
-	@Override
+    @Override
+	@SuppressWarnings("rawtypes")
 	public void sendAsync( SignalTopicId topic, StandardObject message )
 	{
 		if ( topic == null || message == null ) return;
 		redis.signal().sendAsync(app, topic, message);
 	}
 
-	@Override
+    @Override
+	@SuppressWarnings("rawtypes")
 	public void send( SignalTopicId topic, StandardObject message )
 	{
 		if ( topic == null || message == null ) return;

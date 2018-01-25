@@ -24,6 +24,16 @@ import org.jimmutable.core.utils.Validator;
  * @author kanej
  *
  */
+/*
+ * CODEREVIEW
+ * Possibly a nitpick, but this should be ICache. For the other backplane
+ * services, IFoo is the interface, Foo is the abstract root class, and FooBar
+ * is the implementation of IFoo using Bar driver. Now, if you want to rename
+ * everything to Foo, AbstractFoo, and FooBar, I'm okay with that too (prefer
+ * it actually). But we should have a standard one way or the other.
+ * -JMD
+ */
+@SuppressWarnings("rawtypes")
 public interface Cache
 {
 	/**
@@ -33,7 +43,7 @@ public interface Cache
 	 * @param data The data
 	 */
 	default public void put(CacheKey key, byte data[]) { put(key,data,-1); }
-	
+	// CODEREVIEW I thought we solved a lot of problems by requiring all cache data to have a TTL? -JMD
 	
 	/**
 	 * Put data (String) into a cache (no expiration time)
@@ -42,6 +52,7 @@ public interface Cache
 	 * @param data The data
 	 */
 	default public void put(CacheKey key, String data) { put(key,data,-1); }
+    // CODEREVIEW I thought we solved a lot of problems by requiring all cache data to have a TTL? -JMD
 	
 	/**
 	 * Put data (StandardObject) into a cache (no expiration time)
@@ -49,7 +60,8 @@ public interface Cache
 	 * @param key The key for the data
 	 * @param data The data
 	 */
-	default public void put(CacheKey key, StandardObject data) { put(key,data,-1); }
+    default public void put(CacheKey key, StandardObject data) { put(key,data,-1); }
+    // CODEREVIEW I thought we solved a lot of problems by requiring all cache data to have a TTL? -JMD
 	
 	/**
 	 * Put data (byte array) into the cache while also specifying a maximum time to
@@ -94,7 +106,7 @@ public interface Cache
 	 *            The maximum time to live for the data, in milliseconds. Negative
 	 *            and zero values have the meaning of "never expire"
 	 */
-	public void put(CacheKey key, StandardObject data, long max_ttl);
+    public void put(CacheKey key, StandardObject data, long max_ttl);
 	
 	/**
 	 * Check to see if a given key exists in the cache. Remember, caches are
@@ -120,6 +132,7 @@ public interface Cache
 	 *         entry does not exist or any other error occurs
 	 */
 	public long getTTL(CacheKey key, long default_value);
+	// CODEREVIEW In the spirit of explicitness, can we rename to getRemailingTTL? -JMD
 	
 	/**
 	 * Get data from the cache
@@ -149,12 +162,12 @@ public interface Cache
 	 * @return The data associated with a key, or default_value if the key does not exist in the cache
 	 * 
 	 */
-	public StandardObject getObject(CacheKey key, StandardObject default_value);
+    public StandardObject getObject(CacheKey key, StandardObject default_value);
 	
 	/**
 	 * Delete an entry from the cache
 	 * 
-	 * @param key The key of the entry to delte
+	 * @param key The key of the entry to delete
 	 */
 	public void delete(CacheKey key);
 	
@@ -199,16 +212,23 @@ public interface Cache
 	 * @param prefix
 	 *            The prefix of the key to delete. May not be null
 	 */
-	default public void deleteAsync(CacheKey prefix)
+	default public void deleteAllAsync(CacheKey prefix)
 	{
 		scanAsync(prefix, ScanOperationDeleteAll.OPERATION);
 	}
 	
+	/*
+	 * CODEREVIEW
+	 * Why have you abandoned the interface/abstract class split?
+	 * I think the division of responsibilities between IStorage vs Storage
+	 * works well.
+	 * -JMD
+	 */
 	
 	
 	default public void put(String key, byte data[]) { put(new CacheKey(key), data); }
 	default public void put(String key, String data) { put(new CacheKey(key), data); }
-	default public void put(String key, StandardObject data) { put(new CacheKey(key), data); }
+    default public void put(String key, StandardObject data) { put(new CacheKey(key), data); }
 	default public void put(String key, byte data[], long max_ttl) { put(new CacheKey(key), data, max_ttl); }
 	default public void put(String key, String data, long max_ttl) { put(new CacheKey(key), data, max_ttl); }
 	default public void put(String key, StandardObject data, long max_ttl) { put(new CacheKey(key), data, max_ttl); }
@@ -221,5 +241,5 @@ public interface Cache
 	default public void deleteAllSlow(String prefix) { deleteAllSlow(new CacheKey(prefix)); }
 	default public void scan(String prefix, ScanOperation operation) { scan(new CacheKey(prefix),operation); }
 	default public void scanAsync(String prefix, ScanOperation operation) { scanAsync(new CacheKey(prefix), operation); }
-	default public void deleteAsync(String prefix) { deleteAsync(new CacheKey(prefix)); }
+	default public void deleteAsync(String prefix) { deleteAllAsync(new CacheKey(prefix)); }
 }

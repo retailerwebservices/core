@@ -16,6 +16,15 @@ import org.jimmutable.core.objects.StandardObject;
  * @author kanej
  *
  */
+/*
+ * CODEREVIEW
+ * Possibly a nitpick, but this should be ISignal. For the other backplane
+ * services, IFoo is the interface, Foo is the abstract root class, and FooBar
+ * is the implementation of IFoo using Bar driver. Now, if you want to rename
+ * everything to Foo, AbstractFoo, and FooBar, I'm okay with that too (prefer
+ * it actually). But we should have a standard one way or the other.
+ * -JMD
+ */
 public interface Signal
 {
 	/**
@@ -24,18 +33,20 @@ public interface Signal
 	 * @param id The topic id to send the message to
 	 * @param message The message to send.  A null message does nothing.
 	 */
-	public void sendAsync(SignalTopicId topic, StandardObject message);
+	@SuppressWarnings("rawtypes")
+    public void sendAsync(SignalTopicId topic, StandardObject message);
 	
 	/**
 	 * Send a message to the specified topic. Function does not return until the
-	 * message has been sent or an error occours.
+	 * message has been sent or an error occurs.
 	 * 
 	 * @param id
 	 *            The topic id to send the message to
 	 * @param message
 	 *            The message to send. A null message does nothing.
 	 */
-	public void send(SignalTopicId topic, StandardObject message);
+	@SuppressWarnings("rawtypes")
+    public void send(SignalTopicId topic, StandardObject message);
 	
 	/**
 	 * Start listening for messages on a specified topic

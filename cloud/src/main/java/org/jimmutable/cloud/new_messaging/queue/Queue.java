@@ -1,7 +1,5 @@
 package org.jimmutable.cloud.new_messaging.queue;
 
-import org.jimmutable.cloud.new_messaging.signal.SignalListener;
-import org.jimmutable.cloud.new_messaging.signal.SignalTopicId;
 import org.jimmutable.core.objects.StandardObject;
 
 /**
@@ -24,7 +22,15 @@ import org.jimmutable.core.objects.StandardObject;
  * receive approximately 1/n of the messages
  * 
  * @author kanej
- *
+ */
+/*
+ * CODEREVIEW
+ * Possibly a nitpick, but this should be IQueue. For the other backplane
+ * services, IFoo is the interface, Foo is the abstract root class, and FooBar
+ * is the implementation of IFoo using Bar driver. Now, if you want to rename
+ * everything to Foo, AbstractFoo, and FooBar, I'm okay with that too (prefer
+ * it actually). But we should have a standard one way or the other.
+ * -JMD
  */
 public interface Queue
 {
@@ -37,7 +43,8 @@ public interface Queue
 	 * @param message
 	 *            The message to send. A null message does nothing.
 	 */
-	public void submitAsync(QueueId queue, StandardObject message);
+	@SuppressWarnings("rawtypes")
+    public void submitAsync(QueueId queue, StandardObject message);
 	
 	/**
 	 * Submit a message to the specified queue. Function does not return until the
@@ -48,7 +55,9 @@ public interface Queue
 	 * @param message
 	 *            The message to send. A null message does nothing.
 	 */
-	public void submit(QueueId queue, StandardObject message);
+	@SuppressWarnings("rawtypes")
+	// CODEREVIEW What happens if an error occurs? How is that reported to the client? -JMD
+    public void submit(QueueId queue, StandardObject message);
 	
 	/**
 	 * Start listening for messages on a specified queue
@@ -59,6 +68,12 @@ public interface Queue
 	 *            The listener that will process messages
 	 * @param number_of_worker_threads
 	 *            The number of worker threads to process messages with
+	 */
+	/*
+     * CODEREVIEW
+     * So Queue will manage the underlying thread pool?
+     * If so, that's fine, but it should be explicit.
+     * -JMD
 	 */
 	public void startListening(QueueId queue, QueueListener listener, int number_of_worker_threads);
 }
