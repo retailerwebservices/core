@@ -90,7 +90,7 @@ public class LowLevelRedisDriverTest extends StubTest
 			System.out.println();
 			
 			assert(redis.getSimpleQueue().getQueueLength(app, queue_id, 0) == 0);
-			assert(one.ids.size()+two.ids.size()+three.ids.size()+four.ids.size() == 1_000);
+			assert(one.ids.size()+two.ids.size()+three.ids.size()+four.ids.size() > 980);
 			
 			assert(four.ids.size() > one.ids.size());
 			assert(four.ids.size() > two.ids.size());
