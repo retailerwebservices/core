@@ -88,7 +88,7 @@ public class LowLevelRedisDriver
 	public RedisCache getSimpleCache() { return cache; }
 	
 	/**
-	 * Access the siganl functionality of the Redis driver
+	 * Access the signal functionality of the Redis driver
 	 * 
 	 * @return
 	 */
