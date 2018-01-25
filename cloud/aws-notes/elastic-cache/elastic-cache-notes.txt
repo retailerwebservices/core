@@ -15,7 +15,9 @@
   No replicas
   Place in the correct availability zone (us-west-2b)
 
+3.)  You need the parameter group to be redis-3-2-LRU
 
+    (this is the same as the default 3.2, but maxmemory-policy is set to allkeys-lru)
 
   # Signal source
 
@@ -26,3 +28,10 @@
   # signal
   mvn exec:java -Dexec.mainClass="org.jimmutable.cloud.cache.TestMessagingPerformance" -Dexec.args="-test signal -mode source -server common-elastic-cache.yddwko.0001.usw2.cache.amazonaws.com:6379"
   mvn exec:java -Dexec.mainClass="org.jimmutable.cloud.cache.TestMessagingPerformance" -Dexec.args="-test signal -mode sink -server common-elastic-cache.yddwko.0001.usw2.cache.amazonaws.com:6379"
+
+  # cache
+
+  mvn exec:java -Dexec.mainClass="org.jimmutable.cloud.cache.TestCache" -Dexec.args="-server common-elastic-cache.yddwko.0001.usw2.cache.amazonaws.com:6379"
+
+
+  
