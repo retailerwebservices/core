@@ -38,18 +38,19 @@ public class DoUpsertChangeLog extends HttpServlet
 	static private final Logger logger = LogManager.getLogger(DoUpsertChangeLog.class);
 
 	@Override
-	protected void doPost( HttpServletRequest request, HttpServletResponse response )
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 	{
 		try
 		{
 			RequestPageData page_data = ServletUtil.getPageDataFromPost(request, new RequestPageData());
-			
-			if (page_data.isEmpty()) {
+
+			if (page_data.isEmpty())
+			{
 				logger.error("Request contains no data");
 				ServletUtil.writeSerializedResponse(response, new GeneralResponseError("Request failed"), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				return;
 			}
-			
+
 			HandReader r = new HandReader(page_data.getOptionalDefaultJSONData(""));
 
 			logger.info(page_data.getOptionalDefaultJSONData(""));
@@ -58,7 +59,7 @@ public class DoUpsertChangeLog extends HttpServlet
 
 			StandardChangeLogEntry entry = (StandardChangeLogEntry) StandardObject.deserialize(new String(CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(new ObjectIdStorageKey(StandardChangeLogEntry.KIND, id, StandardChangeLogEntry.STORABLE_EXTENSION), null)));
 
-			logger.info(entry.toJavaCode(Format.JSON_PRETTY_PRINT, "entry"));
+			// logger.info(entry.toJavaCode(Format.JSON_PRETTY_PRINT, "entry"));
 
 			Builder b = new Builder(StandardChangeLogEntry.TYPE_NAME);
 
@@ -69,10 +70,10 @@ public class DoUpsertChangeLog extends HttpServlet
 			b.set(StandardChangeLogEntry.FIELD_SHORT_DESCRIPTION, r.readString(StandardChangeLogEntry.FIELD_SHORT_DESCRIPTION.getSimpleFieldName().getSimpleName(), null));
 			b.set(StandardChangeLogEntry.FIELD_COMMENTS, r.readString(StandardChangeLogEntry.FIELD_COMMENTS.getSimpleFieldName().getSimpleName(), entry.getOptionalComments(null)));
 
-			while ( true )
+			while (true)
 			{
 				String attachment_id = r.readString(StandardChangeLogEntry.FIELD_ATTACHMENTS.getSimpleFieldName().getSimpleName(), null);
-				if ( attachment_id == null )
+				if (attachment_id == null)
 				{
 					break;
 				}
@@ -83,20 +84,20 @@ public class DoUpsertChangeLog extends HttpServlet
 
 			Collection<PageDataElement> elements = page_data.getAllElements();
 
-			for ( PageDataElement element : elements )
+			for (PageDataElement element : elements)
 			{
-				if ( element.hasFileData() )
+				if (element.hasFileData())
 				{
 					String file_name = element.getOptionalFilename(null);
 					byte[] bytes = element.getOptionalFileData(null);
 
-					if ( bytes == null )
+					if (bytes == null)
 					{
 						ServletUtil.writeSerializedResponse(response, new GeneralResponseError("failed to read bytes from part"), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 						return;
 					}
 
-					if ( file_name != null )
+					if (file_name != null)
 					{
 						StorageKeyExtension extension = new StorageKeyExtension(".unknown");
 
@@ -104,8 +105,7 @@ public class DoUpsertChangeLog extends HttpServlet
 						try
 						{
 							extension = new StorageKeyExtension(file_name.substring(extension_delim).toLowerCase());
-						}
-						catch ( Exception e )
+						} catch (Exception e)
 						{
 							logger.error(e);
 						}
@@ -114,8 +114,7 @@ public class DoUpsertChangeLog extends HttpServlet
 						try
 						{
 							key = new ObjectIdStorageKey(KIND, ObjectId.createRandomId(), extension);
-						}
-						catch ( Exception e )
+						} catch (Exception e)
 						{
 							logger.error(e);
 						}
@@ -124,19 +123,17 @@ public class DoUpsertChangeLog extends HttpServlet
 						try
 						{
 							meta_data = new AttachmentMetaData(key.getSimpleObjectId(), file_name, new DownloadFileName(file_name), extension.getSimpleMimeType(), System.currentTimeMillis(), new Long(bytes.length));
-						}
-						catch ( Exception e )
+						} catch (Exception e)
 						{
 							logger.error(e);
 						}
 
-						if ( CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().upsert(key, bytes, false) && CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().upsert(meta_data, Format.JSON_PRETTY_PRINT) )
+						if (CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().upsert(key, bytes, false) && CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().upsert(meta_data, Format.JSON_PRETTY_PRINT))
 						{
 							b.add(StandardChangeLogEntry.FIELD_ATTACHMENTS, key.getSimpleObjectId());
 							logger.info(String.format("Got request part: %s=%s, file size=%d stored as %s", element.getElementName(), file_name, element.getOptionalFileSize(0), key.getSimpleValue()));
 
-						}
-						else
+						} else
 						{
 							ServletUtil.writeSerializedResponse(response, new GeneralResponseError(String.format("Failed to upsert file %s", file_name)), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 							return;
@@ -155,13 +152,12 @@ public class DoUpsertChangeLog extends HttpServlet
 
 			try
 			{
-				if ( !CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().upsert(new_entry, Format.JSON_PRETTY_PRINT) )
+				if (!CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().upsert(new_entry, Format.JSON_PRETTY_PRINT))
 				{
 					ServletUtil.writeSerializedResponse(response, new GeneralResponseError("Storage failed"), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 					return;
 				}
-			}
-			catch ( Exception e )
+			} catch (Exception e)
 			{
 				logger.warn(e);
 			}
@@ -169,21 +165,19 @@ public class DoUpsertChangeLog extends HttpServlet
 			try
 			{
 
-				if ( !CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocumentAsync(new_entry) )
+				if (!CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocumentAsync(new_entry))
 				{
 					ServletUtil.writeSerializedResponse(response, new GeneralResponseError("Search failed"), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 					return;
 				}
-			}
-			catch ( Exception e )
+			} catch (Exception e)
 			{
 				logger.warn(e);
 			}
 
 			ServletUtil.writeSerializedResponse(response, new GeneralResponseOK("Success"), HttpServletResponse.SC_OK);
 			return;
-		}
-		catch ( Exception e )
+		} catch (Exception e)
 		{
 			logger.error(e);
 			ServletUtil.writeSerializedResponse(response, new GeneralResponseError("Failed to upsert new changelog entry"), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

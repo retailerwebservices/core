@@ -18,6 +18,7 @@ import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.entity.ContentType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -197,18 +198,20 @@ public class ServletUtil
 		ServletFileUpload upload = new ServletFileUpload();
 
 		// Parse the request
-		FileItemIterator iter;
+
 		InputStream stream = null;
 		try
 		{
-			iter = upload.getItemIterator(request);
+
+			FileItemIterator iter = upload.getItemIterator(request);
+
 			while (iter.hasNext())
 			{
 				FileItemStream item = iter.next();
+
 				String field_name = item.getFieldName();
 				file_name = item.getName();
 				stream = item.openStream();
-
 				if (item.isFormField())
 				{
 					// JSON data
@@ -229,28 +232,17 @@ public class ServletUtil
 					file_bytes = getBytesFromInputStream(stream, new byte[0]);
 					page_data.addElement(new PageDataElement(field_name, null, file_bytes, file_name));
 				}
-				file_name = null;
-				raw_json = "";
-				file_bytes = null;
-				field_name = null;
+				// file_name = null;
+				// raw_json = "";
+				// file_bytes = null;
+				// field_name = null;
 				stream.close();
 			}
 		} catch (FileUploadException | IOException e)
 		{
 			logger.error(e);
-			e.printStackTrace();
 			// Replace page with an empty one
 			page_data = new RequestPageData();
-		} finally
-		{
-			try
-			{
-				stream.close();
-			} catch (IOException e)
-			{
-				logger.error(e);
-				e.printStackTrace();
-			}
 		}
 
 		return page_data;
@@ -264,28 +256,14 @@ public class ServletUtil
 	 */
 	private static byte[] getBytesFromInputStream(InputStream is, byte[] default_value)
 	{
-		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-		BufferedInputStream bis = new BufferedInputStream(is);
-
-		int nRead;
-
-		byte[] data = new byte[1024];
-
 		try
 		{
-			while ((nRead = bis.read(data, 0, data.length)) != -1)
-			{
-				buffer.write(data, 0, nRead);
-			}
-			buffer.flush();
+			return IOUtils.toByteArray(is);
 		} catch (IOException e)
 		{
 			logger.error(e);
-			e.printStackTrace();
 			return default_value;
 		}
-
-		return buffer.toByteArray();
 	}
 
 	private static RequestPageData getJSONFromRequestBody(HttpServletRequest request)

@@ -140,7 +140,7 @@ public class DoGetAttachments extends HttpServlet
 
 				} catch (Exception e)
 				{
-					logger.error("No Metadata available", e);
+					logger.warn(String.format("No metadata available for attachment, using %s as the filename", file_name));
 				}
 
 				response.setHeader("Content-Disposition", "attachment; filename=" + file_name);
