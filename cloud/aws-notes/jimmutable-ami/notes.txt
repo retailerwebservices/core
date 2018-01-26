@@ -1,0 +1,113 @@
+# Update the instance
+
+sudo yum update
+
+# Install java
+
+sudo yum install java-1.8.0-openjdk-devel.x86_64
+sudo yum remove java-1.7.0-openjdk.x86_64
+
+# Install git
+
+sudo yum install git
+
+# Install maven
+
+mkdir bin
+wget -O mvn.tar.gz http://mirrors.gigenet.com/apache/maven/maven-3/3.5.2/binaries/apache-maven-3.5.2-bin.tar.gz
+tar xvf mvn.tar.gz
+
+Create /etc/profile.d/maven.sh
+sudo vi /etc/profile.d/maven.sh
+
+export PATH=$PATH:/home/ec2-user/bin/apache-maven-3.5.2/bin
+export M2_HOME=/home/ec2-user/bin/apache-maven-3.5.2
+export M2=/home/ec2-user/bin/apache-maven-3.5.2/bin
+export MAVEN_OPTS=-Xmx1024m
+
+Log out
+Log back in
+Run mvn
+
+# Put the settings.xml file for maven there...
+cd
+cd .m2
+vi settings.xml
+
+<!-- Place this file within your ~/.m2 folder -->
+<settings>
+  <mirrors>
+    <mirror>
+      <!--This sends everything else to /public -->
+      <id>nexus</id>
+      <mirrorOf>*</mirrorOf>
+      <url>http://nexus.rwsgateway.com:8081/repository/maven-public/</url>
+    </mirror>
+  </mirrors>
+  <profiles>
+    <profile>
+      <id>nexus</id>
+      <!--Enable snapshots for the built in central repo to direct -->
+      <!--all requests to nexus via the mirror -->
+      <repositories>
+        <repository>
+          <id>central</id>
+          <url>http://central</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+      </repositories>
+     <pluginRepositories>
+        <pluginRepository>
+          <id>central</id>
+          <url>http://central</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+        </pluginRepository>
+      </pluginRepositories>
+    </profile>
+  </profiles>
+  <activeProfiles>
+    <!--make the profile active all the time -->
+    <activeProfile>nexus</activeProfile>
+  </activeProfiles>
+  <servers>
+    <server>
+      <id>nexus</id>
+      <username>jim.kane@retailerwebservices.com</username>
+      <password>jM3Wkq0RnpAK6GlPXOn87FVWBY5cM52EojBs6etnYt9K20V29Yis</password>
+    </server>
+  </servers>
+</settings>
+
+# Install redis
+
+sudo yum install gcc make
+
+sudo wget http://download.redis.io/releases/redis-3.2.10.tar.gz
+tar xvf redis-3.2.10.tar.gz
+make
+
+
+
+sudo vi /etc/profile.d/redis.sh
+
+export PATH=$PATH:/home/ec2-user/bin/redis-3.2.10/src
+
+log out
+log back in
+
+
+
+-------------------------------------------------------------------------------
+
+1.)  How to check out jimmutable core
+
+git clone https://github.com/jimmutable/core.git src/jimmutable
+git checkout [branch name]
+
+git pull (if you want an update)
+
+2.)  How to check out digital panda
+
+git clone https://github.com/digital-panda/src.git src/digitalpanda

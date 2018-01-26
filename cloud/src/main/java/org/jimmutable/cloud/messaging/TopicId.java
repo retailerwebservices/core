@@ -9,8 +9,6 @@ import org.jimmutable.core.utils.Validator;
  *This class is designed to help us monitor our messaging topics
  */
 
-//CODE REVIEW: The javadoc comment for this class is not correct.  This class is a stringable that enforces our limitations on topic id(s)... namely, min of 3 characters, max of 64 characters, a-z, 0-9 and dashes
-
 
 public class TopicId extends Stringable
 {

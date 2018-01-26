@@ -2,7 +2,6 @@ package org.jimmutable.cloud.cache;
 
 import java.util.List;
 
-import org.jimmutable.cloud.cache.CacheKey.MyConverter;
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.fields.FieldList;
 import org.jimmutable.core.objects.Stringable;
@@ -46,7 +45,7 @@ public class CachePath extends Stringable
 		Validator.min(getSimpleValue().length(), 1);
 		
 		String arr[] = getSimpleValue().split("/");
-		elements = new FieldArrayList();
+		elements = new FieldArrayList<>();
 		
 		for ( String element : arr )
 		{
@@ -116,6 +115,7 @@ public class CachePath extends Stringable
 			ret.append(element.toString());
 		}
 		
+		// CODEREVIEW Shouldn't this return a CachePath? -JMD
 		return new CacheKey(ret.toString());
 	}
 	

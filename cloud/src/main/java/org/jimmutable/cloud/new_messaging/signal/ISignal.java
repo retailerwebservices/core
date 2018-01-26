@@ -16,7 +16,8 @@ import org.jimmutable.core.objects.StandardObject;
  * @author kanej
  *
  */
-public interface Signal
+
+public interface ISignal
 {
 	/**
 	 * Send a message to the specified topic asynchronously (function returns immediately)
@@ -24,18 +25,20 @@ public interface Signal
 	 * @param id The topic id to send the message to
 	 * @param message The message to send.  A null message does nothing.
 	 */
-	public void sendAsync(SignalTopicId topic, StandardObject message);
+	@SuppressWarnings("rawtypes")
+    public void sendAsync(SignalTopicId topic, StandardObject message);
 	
 	/**
 	 * Send a message to the specified topic. Function does not return until the
-	 * message has been sent or an error occours.
+	 * message has been sent or an error occurs.
 	 * 
 	 * @param id
 	 *            The topic id to send the message to
 	 * @param message
 	 *            The message to send. A null message does nothing.
 	 */
-	public void send(SignalTopicId topic, StandardObject message);
+	@SuppressWarnings("rawtypes")
+    public void send(SignalTopicId topic, StandardObject message);
 	
 	/**
 	 * Start listening for messages on a specified topic
