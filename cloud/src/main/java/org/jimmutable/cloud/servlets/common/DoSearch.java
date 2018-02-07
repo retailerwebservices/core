@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.elasticsearch.IndexDefinition;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
+import org.jimmutable.cloud.servlet_utils.get.GetResponseError;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
@@ -60,6 +61,7 @@ public abstract class DoSearch extends HttpServlet
 		} catch (Exception e)
 		{
 			logger.error(e);
+			ServletUtil.writeSerializedResponse(response, new GetResponseError(String.format("Failed to create StandardSearchRequest %s", e.getMessage())), GetResponseError.HTTP_STATUS_CODE_ERROR);
 		}
 
 		try
@@ -86,36 +88,40 @@ public abstract class DoSearch extends HttpServlet
 
 	}
 
-	public static String checkForTimes( String search_string )
+	public static String checkForTimes(String search_string)
 	{
-		if(!(search_string.contains("scheduled_start")||search_string.contains("scheduled_stop"))) {
+		if (!(search_string.contains("scheduled_start") || search_string.contains("scheduled_stop")))
+		{
 			return search_string;
-		}else {
+		} else
+		{
 			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 			String[] clauses = search_string.split(" AND");
 			StringJoiner refined_search_string = new StringJoiner(" AND");
-			for ( String clause : clauses )
+			for (String clause : clauses)
 			{
-				if(clause.contains(">")||clause.contains("<")) { //if we need to do any faffing about with ranges. 
+				if (clause.contains(">") || clause.contains("<"))
+				{ // if we need to do any faffing about with ranges.
 					String split_string = ":>";
-					if(clause.contains("<")) {
+					if (clause.contains("<"))
+					{
 						split_string = ":<";
 					}
-					String[] clause_breakdown = clause.split(split_string,2);
+					String[] clause_breakdown = clause.split(split_string, 2);
 					try
 					{
 						Date date = formatter.parse(clause_breakdown[1].replace('T', ' '));
-						refined_search_string.add(clause_breakdown[0]+split_string+date.getTime());
-					}
-					catch ( ParseException e )
+						refined_search_string.add(clause_breakdown[0] + split_string + date.getTime());
+					} catch (ParseException e)
 					{
 						logger.error(e);
 					}
-				}else {
+				} else
+				{
 					refined_search_string.add(clause);
 				}
 			}
-			
+
 			return refined_search_string.toString();
 		}
 	}
