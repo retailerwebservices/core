@@ -32,10 +32,21 @@ public abstract class DoSearch extends HttpServlet
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-	{
+	{		
+		String base_search_terms = baseSearchTermsForAllSearchRequests(request, response);
+		String search_string = base_search_terms == null ? "" : base_search_terms;
+		
+		String user_input_search = request.getParameter("search-string") == null ? "" : request.getParameter("search-string");
 
-		String search_string = request.getParameter("search-string") == null ? "" : request.getParameter("search-string");
-
+		if(!search_string.isEmpty() && !user_input_search.isEmpty())
+		{
+			search_string += " AND " + user_input_search;
+		}
+		else if(!user_input_search.isEmpty())
+		{
+			search_string = user_input_search;
+		}
+		
 		int max_results = 100;
 		try
 		{
@@ -128,4 +139,9 @@ public abstract class DoSearch extends HttpServlet
 
 	abstract protected IndexDefinition getSearchIndexDefinition();
 
+	/**
+	 * Override this to add any search terms that need to exist for all searches
+	 * on a page.
+	 */
+	protected String baseSearchTermsForAllSearchRequests(HttpServletRequest request, HttpServletResponse response) {return ""; }
 }
