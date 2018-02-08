@@ -1,11 +1,12 @@
 package org.jimmutable.cloud.elasticsearch;
 
+import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.fields.FieldCollection;
 import org.jimmutable.core.objects.common.Day;
 import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.utils.Validator;
-
+import org.jimmutable.core.objects.common.ObjectId;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -91,6 +92,41 @@ public class SearchDocumentWriter
 			s = s.trim();
 		}
 		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements);
+	}
+
+	/**
+	 * Add a ObjectId array to a text field within the document. These fields are
+	 * not analyzed, that is they are not passed through an analyzer to convert the
+	 * strings into a list of individual terms before being indexed.
+	 * 
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
+	 * @param elements
+	 *            The text of the field. Must not contain any null elements. Blanks
+	 *            are ignored.
+	 */
+	public void writeAtomObjectIdArray(SearchIndexFieldDefinition search_index_definition, FieldCollection<ObjectId> elements)
+	{
+
+		Validator.notNull(search_index_definition);
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.ATOM))
+		{
+			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.ATOM, search_index_definition.getSimpleFieldName()));
+		}
+		Validator.notNull(elements);
+		Validator.containsNoNulls(elements);
+
+		if (elements == null)
+			return;
+		if (elements.size() == 0)
+			return;
+
+		FieldCollection<String> ids = new FieldArrayList<String>();
+		for (ObjectId id : elements)
+		{
+			ids.add(id.getSimpleValue());
+		}
+		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), ids);
 	}
 
 	/**
