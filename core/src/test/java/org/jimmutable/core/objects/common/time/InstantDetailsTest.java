@@ -62,6 +62,7 @@ public class InstantDetailsTest
 		b.set(InstantDetails.FIELD_HOURS_ON_TWENTY_FOUR_HOUR_CLOCK, i.toTimeOfDay(timezone_id).getSimple24hrClockHours());
 		b.set(InstantDetails.FIELD_MINUTES_ON_TWENTY_FOUR_HOUR_CLOCK, i.toTimeOfDay(timezone_id).getSimple24hrClockMinutes());
 		b.set(InstantDetails.FIELD_SECONDS_ON_TWENTY_FOUR_HOUR_CLOCK, i.toTimeOfDay(timezone_id).getSimple24hrClockSeconds());
+		b.set(InstantDetails.FIELD_TIMESTAMP, i.createTimestampString(timezone_id, true, null));
 
 		String json = "{\n" + 
 				"  \"type_hint\" : \"instant_details\",\n" + 
@@ -78,7 +79,8 @@ public class InstantDetailsTest
 				"  \"is_am_on_twelve_hour_clock\" : false,\n" + 
 				"  \"hours_on_twenty_four_hour_clock\" : 17,\n" + 
 				"  \"minutes_on_twenty_four_hour_clock\" : 0,\n" + 
-				"  \"seconds_on_twenty_four_hour_clock\" : 0\n" + 
+				"  \"seconds_on_twenty_four_hour_clock\" : 0,\n" + 
+				"  \"timestamp\" : \"12/31/1969 5:00 PM US/Arizona\"\n" + 
 				"}";
 		
 		assertEquals(json, ObjectWriter.serialize(Format.JSON_PRETTY_PRINT, (InstantDetails) b.create(null)));

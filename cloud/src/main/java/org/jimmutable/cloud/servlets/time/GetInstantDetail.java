@@ -72,7 +72,11 @@ public class GetInstantDetail extends HttpServlet
 			b.set(InstantDetails.FIELD_HOURS_ON_TWENTY_FOUR_HOUR_CLOCK, instant.toTimeOfDay(timezone_id).getSimple24hrClockHours());
 			b.set(InstantDetails.FIELD_MINUTES_ON_TWENTY_FOUR_HOUR_CLOCK, instant.toTimeOfDay(timezone_id).getSimple24hrClockMinutes());
 			b.set(InstantDetails.FIELD_SECONDS_ON_TWENTY_FOUR_HOUR_CLOCK, instant.toTimeOfDay(timezone_id).getSimple24hrClockSeconds());
-
+			
+			
+			b.set(InstantDetails.FIELD_TIMESTAMP, instant.createTimestampString(timezone_id, true, null));
+			
+			
 			ServletUtil.writeSerializedResponse(response, (InstantDetails) b.create(null), GetResponseOK.HTTP_STATUS_CODE_OK);
 		} catch (Exception e)
 		{

@@ -40,7 +40,8 @@ public class InstantDetails extends StandardObject<InstantDetails>
 
 	static public final FieldDefinition.Long FIELD_HOURS_ON_TWENTY_FOUR_HOUR_CLOCK = new FieldDefinition.Long("hours_on_twenty_four_hour_clock", null);
 	static public final FieldDefinition.Long FIELD_MINUTES_ON_TWENTY_FOUR_HOUR_CLOCK = new FieldDefinition.Long("minutes_on_twenty_four_hour_clock", null);
-	static public final FieldDefinition.Long FIELD_SECONDS_ON_TWENTY_FOUR_HOUR_CLOCK = new FieldDefinition.Long("seconds_on_twenty_four_hour_clock", null);
+	static public final FieldDefinition.Long FIELD_SECONDS_ON_TWENTY_FOUR_HOUR_CLOCK = new FieldDefinition.Long("seconds_on_twenty_four_hour_clock", null);	
+	static public final FieldDefinition.String FIELD_TIMESTAMP = new FieldDefinition.String("timestamp", null);
 
 	private boolean success;
 
@@ -69,6 +70,8 @@ public class InstantDetails extends StandardObject<InstantDetails>
 	private long minutes_on_twenty_four_hour_clock;
 
 	private long seconds_on_twenty_four_hour_clock;
+	
+	private String timestamp;
 
 	/**
 	 * Only use Builder to instantiate object since there are many fields
@@ -92,6 +95,7 @@ public class InstantDetails extends StandardObject<InstantDetails>
 		this.hours_on_twenty_four_hour_clock = t.getLong(FIELD_HOURS_ON_TWENTY_FOUR_HOUR_CLOCK);
 		this.minutes_on_twenty_four_hour_clock = t.getLong(FIELD_MINUTES_ON_TWENTY_FOUR_HOUR_CLOCK);
 		this.seconds_on_twenty_four_hour_clock = t.getLong(FIELD_SECONDS_ON_TWENTY_FOUR_HOUR_CLOCK);
+		this.timestamp = t.getString(FIELD_TIMESTAMP);
 	}
 
 	public long getSimpleMillisecondsFromEpoch()
@@ -130,6 +134,7 @@ public class InstantDetails extends StandardObject<InstantDetails>
 		writer.writeLong(FIELD_HOURS_ON_TWENTY_FOUR_HOUR_CLOCK, hours_on_twenty_four_hour_clock);
 		writer.writeLong(FIELD_MINUTES_ON_TWENTY_FOUR_HOUR_CLOCK, minutes_on_twenty_four_hour_clock);
 		writer.writeLong(FIELD_SECONDS_ON_TWENTY_FOUR_HOUR_CLOCK, seconds_on_twenty_four_hour_clock);
+		writer.writeString(FIELD_TIMESTAMP, timestamp);
 	}
 
 	@Override
@@ -141,7 +146,7 @@ public class InstantDetails extends StandardObject<InstantDetails>
 	public void validate()
 	{
 
-		Validator.notNull(success, ms_from_epoch, timezone_id, day, day_year, day_month, day_day, hours_on_twelve_hour_clock, minutes_on_twelve_hour_clock, seconds_on_twelve_hour_clock, is_am_on_twelve_hour_clock, hours_on_twenty_four_hour_clock, minutes_on_twenty_four_hour_clock, seconds_on_twenty_four_hour_clock);
+		Validator.notNull(success, ms_from_epoch, timezone_id, day, day_year, day_month, day_day, hours_on_twelve_hour_clock, minutes_on_twelve_hour_clock, seconds_on_twelve_hour_clock, is_am_on_twelve_hour_clock, hours_on_twenty_four_hour_clock, minutes_on_twenty_four_hour_clock, seconds_on_twenty_four_hour_clock, timestamp);
 	}
 
 	@Override
