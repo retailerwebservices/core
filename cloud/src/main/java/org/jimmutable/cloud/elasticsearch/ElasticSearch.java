@@ -654,7 +654,7 @@ public class ElasticSearch implements ISearch
 
 		try
 		{
-			DeleteResponse response = client.prepareDelete(index.getSimpleValue(), ELASTICSEARCH_DEFAULT_TYPE, document_id.getSimpleValue()).get();
+			DeleteResponse response = client.prepareDelete(index.getSimpleValue(), ELASTICSEARCH_DEFAULT_TYPE, document_id.getSimpleValue()).setRefreshPolicy(RefreshPolicy.IMMEDIATE).get();
 
 			logger.info(String.format("Result:%s SearchDocumentId:%s IndexDefinition:%s", response.getResult(), response.getId(), response.getIndex()));
 
