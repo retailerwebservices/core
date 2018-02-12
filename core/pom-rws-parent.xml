@@ -60,6 +60,68 @@
 					<skipITs>${skipITs}</skipITs>
 				</configuration>
 			</plugin>
+			<!-- Taken from embedded-jetty-uber-jar example https://github.com/jetty-project/embedded-jetty-uber-jar/blob/master/pom.xml -->
+			<!-- Use java -jar front_end-0.0.1-SNAPSHOT.jar to run the built jar -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>rebuild-war</id>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<createDependencyReducedPom>false</createDependencyReducedPom>
+							<artifactSet>
+								<includes>
+									<include>*:*</include>
+								</includes>
+							</artifactSet>
+							<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/VERSION.txt</exclude>
+										<exclude>META-INF/LICENSE.txt</exclude>
+									</excludes>
+								</filter>
+								<!-- exclude the MANIFEST.MF entries that will cause problems -->
+								<filter>
+									<artifact>javax.annotation:*</artifact>
+									<excludes>
+										<exclude>META-INF/MANIFEST.MF</exclude>
+									</excludes>
+								</filter>
+								<filter>
+									<artifact>javax.servlet:*</artifact>
+									<excludes>
+										<exclude>META-INF/MANIFEST.MF</exclude>
+									</excludes>
+								</filter>
+								<filter>
+									<artifact>org.eclipse.jetty:*</artifact>
+									<excludes>
+										<exclude>META-INF/MANIFEST.MF</exclude>
+									</excludes>
+								</filter>
+								<filter>
+									<artifact>org.ow2.asm:*</artifact>
+									<excludes>
+										<exclude>META-INF/MANIFEST.MF</exclude>
+									</excludes>
+								</filter>
+							</filters>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+							</transformers>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
