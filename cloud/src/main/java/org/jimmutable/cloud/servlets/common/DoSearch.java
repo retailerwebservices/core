@@ -73,10 +73,17 @@ public abstract class DoSearch extends HttpServlet
 			logger.error(e);
 		}
 
+		getAdditionalParameters(request);
+		
 		try
 		{
 			JSONServletResponse json_servlet_response = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(getSearchIndexDefinition(), search_request);
 
+			if (json_servlet_response instanceof SearchResponseOK)
+			{
+				json_servlet_response = updateSearchResponse(json_servlet_response, search_request);
+			}
+			
 			if (json_servlet_response instanceof SearchResponseOK)
 			{
 				SearchResponseOK ok = (SearchResponseOK) json_servlet_response;
@@ -95,6 +102,16 @@ public abstract class DoSearch extends HttpServlet
 			ServletUtil.writeSerializedResponse(response, error, SearchResponseError.HTTP_STATUS_CODE_ERROR);
 		}
 
+	}
+
+	protected void getAdditionalParameters(HttpServletRequest request) {
+		// Template method - intended to be overridden if necessary
+	}
+	
+	protected JSONServletResponse updateSearchResponse( JSONServletResponse search_response, StandardSearchRequest request ) 
+	{
+		// Override to further enrich, change, filter or validate the search response
+		return search_response;
 	}
 
 	public static String checkForTimes( String search_string )
