@@ -129,6 +129,7 @@ public class DoGetFile extends HttpServlet
 					return;
 				}
 
+//				response.setHeader("Content-disposition", "attachment; filename=" + "file"+storage_key.getSimpleExtension().getSimpleValue());
 				response.setContentType(storage_key.getSimpleExtension().getSimpleMimeType());
 				response.setContentLength(bytes.length);
 
