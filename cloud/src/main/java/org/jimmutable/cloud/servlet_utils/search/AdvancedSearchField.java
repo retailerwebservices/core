@@ -11,8 +11,6 @@ import org.jimmutable.cloud.elasticsearch.IndexVersion;
 import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldType;
-import org.jimmutable.cloud.messaging.TopicDefinition;
-import org.jimmutable.cloud.messaging.TopicId;
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.StandardImmutableObject;
@@ -48,8 +46,6 @@ public class AdvancedSearchField extends StandardImmutableObject<AdvancedSearchF
 
 	static public final TypeName TYPE_NAME = new TypeName("advancedsearchfield");
 	static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("advancedsearchfield"), new IndexVersion("v1"));
-
-	static public final TopicDefinition TOPIC_DEF = new TopicDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new TopicId("advancedsearchfield"));
 
 	private String label;// required
 	private SearchFieldId search_document_field;// required

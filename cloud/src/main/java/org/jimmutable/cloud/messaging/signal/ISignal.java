@@ -1,4 +1,4 @@
-package org.jimmutable.cloud.new_messaging.signal;
+package org.jimmutable.cloud.messaging.signal;
 
 import org.jimmutable.core.objects.StandardObject;
 

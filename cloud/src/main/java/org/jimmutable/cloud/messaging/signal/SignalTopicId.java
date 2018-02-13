@@ -1,11 +1,11 @@
-package org.jimmutable.cloud.new_messaging.queue;
+package org.jimmutable.cloud.messaging.signal;
 
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
 
 /**
  * 
- * Each Queue has an Id (encapsulated by this class)
+ * You send a signal to a topic. This class is used to encapsulate a topic id
  * 
  * Legal characters are numbers, lower case letters and dashes. Must be between
  * 3 and 64 characters
@@ -13,9 +13,10 @@ import org.jimmutable.core.utils.Validator;
  * @author kanej
  *
  */
-public class QueueId extends Stringable
+
+public class SignalTopicId extends Stringable
 {
-	public QueueId( String value )
+	public SignalTopicId( String value )
 	{
 		super(value);
 	}
@@ -37,14 +38,13 @@ public class QueueId extends Stringable
 				Validator.NUMBERS);  
 
 	}
-	
-	static public class MyConverter extends Stringable.Converter<QueueId>
+	static public class MyConverter extends Stringable.Converter<SignalTopicId>
 	{
-		public QueueId fromString(String str, QueueId default_value)
+		public SignalTopicId fromString(String str, SignalTopicId default_value)
 		{
 			try
 			{
-				return new QueueId(str);
+				return new SignalTopicId(str);
 			}
 			catch(Exception e)
 			{
