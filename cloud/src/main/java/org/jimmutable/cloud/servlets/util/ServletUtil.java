@@ -90,6 +90,37 @@ public class ServletUtil
 		}
 	}
 
+	public static void writeSerializedResponse(HttpServletResponse response, Object obj, int http_status_code)
+	{
+
+		String json = "";
+		try
+		{
+			json = ObjectWriter.serialize(Format.JSON_PRETTY_PRINT, obj);
+		} catch (Exception e)
+		{
+			logger.error("Failure during serialization", e);
+			http_status_code = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+		}
+
+		response.setContentType(APPLICATION_JSON);
+
+		response.setCharacterEncoding(UTF8);
+
+		response.setStatus(http_status_code);
+
+		try
+		{
+			PrintWriter out = response.getWriter();
+			out.write(json);
+			out.flush();
+		} catch (IOException e)
+		{
+			logger.error(e);
+		}
+	}
+
+	
 	/**
 	 * Parse the int from a string (http parameter). If it fails just return the
 	 * default value
