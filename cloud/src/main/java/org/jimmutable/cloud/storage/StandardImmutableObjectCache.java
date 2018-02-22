@@ -15,13 +15,16 @@ import org.jimmutable.core.threading.ExpirationCache;
 public class StandardImmutableObjectCache
 {
 	private ExpirationCache<ObjectReference, StandardImmutableObject> cache = new ExpirationCache<>(TimeUnit.MINUTES.toMillis(5), 100_000);
+
+	/**
+	 * Central topic for all standard immutable objects that are going to be upserted 
+	 */
+	public static SignalTopicId TOPIC_ID = new SignalTopicId("standard-immutable-object-cache");
 	
 	public static void setupListeners()
 	{
 		UpsertListener upsert_listener = new UpsertListener();
-		
-		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSignalService().startListening(new SignalTopicId("public-standard-immutable-object-cache"), upsert_listener);
-		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSignalService().startListening(new SignalTopicId("private-standard-immutable-object-cache"), upsert_listener);
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSignalService().startListening(TOPIC_ID, upsert_listener);
 	}
 	
 	public void put( Kind kind, ObjectId id, StandardImmutableObject object )

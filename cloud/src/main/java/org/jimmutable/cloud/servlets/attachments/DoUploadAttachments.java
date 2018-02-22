@@ -23,6 +23,7 @@ import org.jimmutable.cloud.servlets.util.PageDataElement;
 import org.jimmutable.cloud.servlets.util.RequestPageData;
 import org.jimmutable.cloud.servlets.util.ServletUtil;
 import org.jimmutable.cloud.storage.ObjectIdStorageKey;
+import org.jimmutable.cloud.storage.StandardImmutableObjectCache;
 import org.jimmutable.cloud.storage.StorageKey;
 import org.jimmutable.cloud.storage.StorageKeyExtension;
 import org.jimmutable.core.fields.FieldArrayList;
@@ -41,7 +42,6 @@ public class DoUploadAttachments extends HttpServlet
 	 *
 	 */
 	private static final long serialVersionUID = -5235981695936464860L;
-
 	static private final Logger logger = LogManager.getLogger(DoUpsertAvatar.class);
 
 	@Override
@@ -186,7 +186,7 @@ public class DoUploadAttachments extends HttpServlet
 		simple_current.getSimpleStorage().upsert(new ObjectIdStorageKey(kind, meta_data.getSimpleObjectId(), StorageKeyExtension.BIN), data, false);
 		simple_current.getSimpleCache().put(kind, meta_data.getSimpleObjectId(), meta_data);
 
-		simple_current.getSimpleSignalService().sendAsync(new SignalTopicId("attatchment-uploads"), new StandardMessageOnUpsert(kind, meta_data.getSimpleObjectId()));
+		simple_current.getSimpleSignalService().sendAsync(StandardImmutableObjectCache.TOPIC_ID, new StandardMessageOnUpsert(kind, meta_data.getSimpleObjectId()));
 		return meta_data;
 	}
 }
