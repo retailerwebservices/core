@@ -28,7 +28,7 @@ public class USDMonetaryAmountTest
 		
 		USDMonetaryAmount test_business = new USDMonetaryAmount(20l);
 		String serialized_value = test_business.serialize(Format.JSON_PRETTY_PRINT);
-		assertEquals("{\n" + "  \"type_hint\" : \"usd_monetary_amount\",\n" + "  \"amount_in_cents\" : 20,\n" + "  \"text\" : \"$.20\"\n" + "}", serialized_value);
+		assertEquals("{\n" + "  \"type_hint\" : \"usd_monetary_amount\",\n" + "  \"amount_in_cents\" : 20,\n" + "  \"text\" : \"$0.20\"\n" + "}", serialized_value);
 		System.out.println(test_business.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 		String obj_string = String.format("%s\n%s\n%s\n%s\n%s", "{", "  \"type_hint\" : \"usd_monetary_amount\",", "  \"amount_in_cents\" : 20,", "  \"text\" : \"$.20\"", "}");
 
@@ -50,19 +50,19 @@ public class USDMonetaryAmountTest
 		
 		test_business = new USDMonetaryAmount(".20");
 		serialized_value = test_business.serialize(Format.JSON_PRETTY_PRINT);
-		assertEquals("{\n" + "  \"type_hint\" : \"usd_monetary_amount\",\n" + "  \"amount_in_cents\" : 20,\n" + "  \"text\" : \"$.20\"\n" + "}", serialized_value);
+		assertEquals("{\n" + "  \"type_hint\" : \"usd_monetary_amount\",\n" + "  \"amount_in_cents\" : 20,\n" + "  \"text\" : \"$0.20\"\n" + "}", serialized_value);
 		
 		test_business = new USDMonetaryAmount(".2");
 		serialized_value = test_business.serialize(Format.JSON_PRETTY_PRINT);
-		assertEquals("{\n" + "  \"type_hint\" : \"usd_monetary_amount\",\n" + "  \"amount_in_cents\" : 20,\n" + "  \"text\" : \"$.20\"\n" + "}", serialized_value);
+		assertEquals("{\n" + "  \"type_hint\" : \"usd_monetary_amount\",\n" + "  \"amount_in_cents\" : 20,\n" + "  \"text\" : \"$0.20\"\n" + "}", serialized_value);
 		
 		test_business = new USDMonetaryAmount(".002");
 		serialized_value = test_business.serialize(Format.JSON_PRETTY_PRINT);
-		assertEquals("{\n" + "  \"type_hint\" : \"usd_monetary_amount\",\n" + "  \"amount_in_cents\" : 0,\n" + "  \"text\" : \"$.00\"\n" + "}", serialized_value);
+		assertEquals("{\n" + "  \"type_hint\" : \"usd_monetary_amount\",\n" + "  \"amount_in_cents\" : 0,\n" + "  \"text\" : \"$0.00\"\n" + "}", serialized_value);
 		
 		test_business = new USDMonetaryAmount(".012");
 		serialized_value = test_business.serialize(Format.JSON_PRETTY_PRINT);
-		assertEquals("{\n" + "  \"type_hint\" : \"usd_monetary_amount\",\n" + "  \"amount_in_cents\" : 1,\n" + "  \"text\" : \"$.01\"\n" + "}", serialized_value);
+		assertEquals("{\n" + "  \"type_hint\" : \"usd_monetary_amount\",\n" + "  \"amount_in_cents\" : 1,\n" + "  \"text\" : \"$0.01\"\n" + "}", serialized_value);
 		
 		test_business = new USDMonetaryAmount("$1,000,000,000,000.00");
 		serialized_value = test_business.serialize(Format.JSON_PRETTY_PRINT);
@@ -83,7 +83,7 @@ public class USDMonetaryAmountTest
 		USDMonetaryAmount test_business = new USDMonetaryAmount(-1l);
 		assertEquals(-1l, test_business.getSimpleAmountInCents());
 		String serialized_value = test_business.serialize(Format.JSON_PRETTY_PRINT);
-		assertEquals("{\n" + "  \"type_hint\" : \"usd_monetary_amount\",\n" + "  \"amount_in_cents\" : -1,\n" + "  \"text\" : \"-$.01\"\n" + "}", serialized_value);
+		assertEquals("{\n" + "  \"type_hint\" : \"usd_monetary_amount\",\n" + "  \"amount_in_cents\" : -1,\n" + "  \"text\" : \"-$0.01\"\n" + "}", serialized_value);
 	
 	}
 
@@ -124,6 +124,12 @@ public class USDMonetaryAmountTest
 
 		s = USDMonetaryAmount.convertFromLongToString(180219200l);
 		assertEquals("$1,802,192.00", s);
+		
+		s = USDMonetaryAmount.convertFromLongToString(99);
+		assertEquals("$0.99", s);
+		
+		s = USDMonetaryAmount.convertFromLongToString(0);
+		assertEquals("$0.00", s);
 	}
 
 	@Test
