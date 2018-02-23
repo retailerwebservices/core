@@ -1,12 +1,12 @@
 package org.jimmutable.cloud.storage;
 
 import org.jimmutable.cloud.CloudExecutionEnvironment;
-import org.jimmutable.cloud.messaging.MessageListener;
 import org.jimmutable.cloud.messaging.StandardMessageOnUpsert;
+import org.jimmutable.cloud.messaging.signal.SignalListener;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.ObjectReference;
 
-public class UpsertListener implements MessageListener
+public class UpsertListener implements SignalListener
 {
 	@Override
 	public void onMessageReceived( StandardObject message )

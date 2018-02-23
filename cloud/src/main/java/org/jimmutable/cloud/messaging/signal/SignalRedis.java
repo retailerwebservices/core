@@ -1,4 +1,4 @@
-package org.jimmutable.cloud.new_messaging.signal;
+package org.jimmutable.cloud.messaging.signal;
 
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.cache.redis.LowLevelRedisDriver;
@@ -25,6 +25,11 @@ public class SignalRedis implements ISignal
 		Validator.notNull(app,redis);
 		this.app = app;
 		this.redis = redis;
+	}
+
+	public SignalRedis(ApplicationId app)
+	{ 
+		this (app, new LowLevelRedisDriver(LowLevelRedisDriver.DEFAULT_HOST, LowLevelRedisDriver.DEFAULT_PORT_REDIS));
 	}
 
     @Override

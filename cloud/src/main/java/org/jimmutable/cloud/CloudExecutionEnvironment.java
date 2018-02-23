@@ -15,9 +15,12 @@ import org.jimmutable.cloud.elasticsearch.ElasticSearchEndpoint;
 import org.jimmutable.cloud.elasticsearch.ISearch;
 import org.jimmutable.cloud.elasticsearch.StubSearch;
 import org.jimmutable.cloud.logging.Log4jUtil;
-import org.jimmutable.cloud.messaging.IMessaging;
-import org.jimmutable.cloud.messaging.StubMessaging;
-import org.jimmutable.cloud.messaging.dev_local.MessagingDevLocalFileSystem;
+import org.jimmutable.cloud.messaging.queue.IQueue;
+import org.jimmutable.cloud.messaging.queue.QueueRedis;
+import org.jimmutable.cloud.messaging.queue.QueueStub;
+import org.jimmutable.cloud.messaging.signal.ISignal;
+import org.jimmutable.cloud.messaging.signal.SignalRedis;
+import org.jimmutable.cloud.messaging.signal.SignalStub;
 import org.jimmutable.cloud.storage.IStorage;
 import org.jimmutable.cloud.storage.StandardImmutableObjectCache;
 import org.jimmutable.cloud.storage.StorageDevLocalFileSystem;
@@ -38,8 +41,9 @@ public class CloudExecutionEnvironment
 
 	private ISearch search;
 	private IStorage storage;
-	private IMessaging messaging;
-
+	private IQueue queue_service;
+	private ISignal signal_service;
+	
 	// System properties
 	private static final String ENV_TYPE_VARIABLE_NAME = "JIMMUTABLE_ENV_TYPE";
 	private static final String ENV_LOGGING_LEVEL = "JIMMUTABLE_LOGGING_LEVEL";
@@ -59,13 +63,12 @@ public class CloudExecutionEnvironment
 		logger.trace(String.format("Logging level: %s", level));
 	}
 
-	private CloudExecutionEnvironment(ISearch search, IStorage storage, IMessaging messaging)
+	private CloudExecutionEnvironment(ISearch search, IStorage storage, IQueue queue_service, ISignal signal_service)
 	{
-
 		this.search = search;
 		this.storage = storage;
-		this.messaging = messaging;
-
+		this.queue_service = queue_service;
+		this.signal_service = signal_service;
 	}
 
 	public EnvironmentType getSimpleEnvironmentType()
@@ -98,14 +101,14 @@ public class CloudExecutionEnvironment
 		return storage;
 	}
 
-	/**
-	 * Messaging system the application uses to send messages (pub/sub)
-	 *
-	 * @return
-	 */
-	public IMessaging getSimpleMessaging()
+	public IQueue getSimpleQueueService()
 	{
-		return messaging;
+		return queue_service;
+	}
+	
+	public ISignal getSimpleSignalService()
+	{
+		return signal_service;
 	}
 
 	/**
@@ -158,13 +161,13 @@ public class CloudExecutionEnvironment
 				throw new RuntimeException("Failed to instantiate the elasticsearch client!");
 			}
 
-			CURRENT = new CloudExecutionEnvironment(new ElasticSearch(client), new StorageDevLocalFileSystem(false, APPLICATION_ID), new MessagingDevLocalFileSystem());
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearch(client), new StorageDevLocalFileSystem(false, APPLICATION_ID), new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID));
 
 			break;
 		case STUB:
 
 			checkOs();
-			CURRENT = new CloudExecutionEnvironment(new StubSearch(), new StubStorage(), new StubMessaging());
+			CURRENT = new CloudExecutionEnvironment(new StubSearch(), new StubStorage(), new QueueStub(), new SignalStub());
 			break;
 
 		default:

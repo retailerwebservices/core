@@ -1,4 +1,4 @@
-package org.jimmutable.cloud.new_messaging.queue;
+package org.jimmutable.cloud.messaging.queue;
 
 import org.jimmutable.core.objects.StandardObject;
 

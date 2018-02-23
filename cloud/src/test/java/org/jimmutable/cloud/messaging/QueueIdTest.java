@@ -1,17 +1,15 @@
-package jimmutable.messaging;
+package org.jimmutable.cloud.messaging;
 
 import static org.junit.Assert.assertTrue;
 
-import org.jimmutable.cloud.messaging.TopicId;
-import org.jimmutable.core.utils.StringableTester;
+import org.jimmutable.cloud.StubTest;
+import org.jimmutable.cloud.messaging.queue.QueueId;
 import org.jimmutable.core.utils.StringableTestingUtils;
 import org.junit.Test;
 
-import junit.framework.TestCase;
-
-public class TopicIdTest
+public class QueueIdTest extends StubTest
 {
-	private StringableTestingUtils<TopicId> tester = new StringableTestingUtils(new TopicId.MyConverter());
+	private StringableTestingUtils<QueueId> tester = new StringableTestingUtils(new QueueId.MyConverter());
 
 	@Test
 	public void testValid()
@@ -35,6 +33,6 @@ public class TopicIdTest
 		assertTrue(tester.isInvalid("foo..bar"));
 		assertTrue(tester.isInvalid("foo/bar"));
 		assertTrue(tester.isInvalid("some_id"));
+		assertTrue(tester.isInvalid("01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"));
 	}
 }
-
