@@ -72,7 +72,7 @@ public class Instant extends StandardImmutableObject<Instant>
 		DateTime dt = new DateTime(ms_from_epoch, timezone.getSimpleDateTimeZoneValue());
 		return new TimeOfDay(TimeOfDay.toMillis(dt.getHourOfDay(), dt.getMinuteOfHour(), dt.getSecondOfMinute(), dt.getMillisOfSecond()));
 	}
-	
+
 	/**
 	 * Given a Instant we will make a more human readable timestamp string.
 	 * 
@@ -81,8 +81,8 @@ public class Instant extends StandardImmutableObject<Instant>
 	 * @param timezone_id
 	 *            the timezone to base our string off of
 	 * @param show_timezone
-	 *            boolean, when set to true this will show the currently
-	 *            selected timezone the time is from
+	 *            boolean, when set to true this will show the currently selected
+	 *            timezone the time is from
 	 * @param default_value
 	 *            Return value on creation failure
 	 * 
@@ -98,7 +98,8 @@ public class Instant extends StandardImmutableObject<Instant>
 		timestamp_string_builder.append(toDay(timezone_id).getSimpleYear());
 		timestamp_string_builder.append(" ");
 		timestamp_string_builder.append(toTimeOfDay(timezone_id).getSimple12hrClockPrettyPrint());
-		if(show_timezone) timestamp_string_builder.append(" " + timezone_id.getSimpleValue());
+		if (show_timezone)
+			timestamp_string_builder.append(" " + timezone_id.getSimpleValue());
 
 		return timestamp_string_builder.toString();
 	}
@@ -154,8 +155,8 @@ public class Instant extends StandardImmutableObject<Instant>
 		}
 
 		Instant other = (Instant) obj;
-		//CODEREVIEW Style thing only: Why did you not use Objects.equals() to do the comparison?
-		return getSimpleMillisecondsFromEpoch() == other.getSimpleMillisecondsFromEpoch();
+
+		return Objects.equals(getSimpleMillisecondsFromEpoch(), other.getSimpleMillisecondsFromEpoch());
 	}
 
 }

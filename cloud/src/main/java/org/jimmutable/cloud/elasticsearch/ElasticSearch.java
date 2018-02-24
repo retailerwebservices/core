@@ -29,6 +29,7 @@ import org.elasticsearch.common.io.stream.NotSerializableExceptionWrapper;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.QueryShardException;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -392,8 +393,15 @@ public class ElasticSearch implements ISearch
 
 		} catch (Exception e)
 		{
-			logger.warn(String.format("Search failed for %s", request), e);
-			return new SearchResponseError(request, e.getMessage());
+			if (e.getCause() instanceof QueryShardException)
+			{
+				logger.warn(String.format("%s on index %s", e.getCause().getMessage(), index.getSimpleValue()));
+				return new SearchResponseError(request, e.getCause().getMessage());
+			} else
+			{
+				logger.error(String.format("Search failed for %s on index %s", request.getSimpleQueryString(), index.getSimpleValue()), e);
+				return new SearchResponseError(request, e.getMessage());
+			}
 		}
 
 	}
