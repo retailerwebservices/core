@@ -1,8 +1,8 @@
-package org.jimmutable.cloud.new_messaging;
+package org.jimmutable.cloud.messaging;
 
 import static org.junit.Assert.assertTrue;
 
-import org.jimmutable.cloud.new_messaging.signal.SignalTopicId;
+import org.jimmutable.cloud.messaging.signal.SignalTopicId;
 import org.jimmutable.core.utils.StringableTestingUtils;
 import org.junit.Test;
 

@@ -3,12 +3,6 @@ package org.jimmutable.cloud.servlet_utils.search;
 import java.util.List;
 import java.util.Objects;
 
-import org.jimmutable.cloud.CloudExecutionEnvironment;
-import org.jimmutable.cloud.elasticsearch.IndexDefinition;
-import org.jimmutable.cloud.elasticsearch.IndexId;
-import org.jimmutable.cloud.elasticsearch.IndexVersion;
-import org.jimmutable.cloud.messaging.TopicDefinition;
-import org.jimmutable.cloud.messaging.TopicId;
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.serialization.FieldDefinition;

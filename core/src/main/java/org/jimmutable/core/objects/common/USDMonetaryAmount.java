@@ -122,8 +122,13 @@ public class USDMonetaryAmount extends StandardImmutableObject<USDMonetaryAmount
 		}
 		if ( l < 10l )
 		{
-			return negative +"$.0" + l;
+			return negative +"$0.0" + l;
 		}
+		else if(l < 100l)
+		{
+			return negative +"$0." + l;
+		}
+		
 		String s = "" +l;
 		String dollars = s.substring(0, s.length() - 2);
 		String cents = s.substring(s.length() - 2, s.length());

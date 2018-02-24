@@ -2,13 +2,8 @@ package org.jimmutable.cloud.storage;
 
 import java.util.concurrent.TimeUnit;
 
-import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
-import org.jimmutable.cloud.messaging.QueueDefinition;
-import org.jimmutable.cloud.messaging.QueueId;
-import org.jimmutable.cloud.messaging.SubscriptionDefinition;
-import org.jimmutable.cloud.messaging.TopicDefinition;
-import org.jimmutable.cloud.messaging.TopicId;
+import org.jimmutable.cloud.messaging.signal.SignalTopicId;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
@@ -20,13 +15,16 @@ import org.jimmutable.core.threading.ExpirationCache;
 public class StandardImmutableObjectCache
 {
 	private ExpirationCache<ObjectReference, StandardImmutableObject> cache = new ExpirationCache<>(TimeUnit.MINUTES.toMillis(5), 100_000);
+
+	/**
+	 * Central topic for all standard immutable objects that are going to be upserted 
+	 */
+	public static SignalTopicId TOPIC_ID = new SignalTopicId("standard-immutable-object-cache");
 	
 	public static void setupListeners()
 	{
-		ApplicationId application_id= CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId();
-		UpsertListener upser_listener = new UpsertListener();
-		CloudExecutionEnvironment.getSimpleCurrent().getSimpleMessaging().startListening(new SubscriptionDefinition(new TopicDefinition(application_id,TopicId.application_public), new QueueDefinition(application_id,new QueueId("object-cache-public-queue"))), upser_listener);
-		CloudExecutionEnvironment.getSimpleCurrent().getSimpleMessaging().startListening(new SubscriptionDefinition(new TopicDefinition(application_id,TopicId.application_private), new QueueDefinition(application_id,new QueueId("object-cache-private-queue"))), upser_listener);
+		UpsertListener upsert_listener = new UpsertListener();
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSignalService().startListening(TOPIC_ID, upsert_listener);
 	}
 	
 	public void put( Kind kind, ObjectId id, StandardImmutableObject object )

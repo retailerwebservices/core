@@ -62,7 +62,6 @@ public class JimmutableCloudTypeNameRegister
 		ObjectParseTree.registerTypeName(SearchIndexDefinition.class);
 
 
-		ObjectParseTree.registerTypeName(StandardMessageOnUpsert.class);
 		ObjectParseTree.registerTypeName(SearchUIData.class);
 		ObjectParseTree.registerTypeName(AdvancedSearchField.class);
 		ObjectParseTree.registerTypeName(AdvancedSearchComboBoxChoice.class);
@@ -75,5 +74,7 @@ public class JimmutableCloudTypeNameRegister
 		ObjectParseTree.registerTypeName(StandardChangeLogEntry.class);
 		ObjectParseTree.registerTypeName(AttachmentMetaData.class);
 		ObjectParseTree.registerTypeName(TinyUrlResult.class);
+		
+		ObjectParseTree.registerTypeName(StandardMessageOnUpsert.class);
 	}
 }

@@ -9,8 +9,6 @@ import org.jimmutable.cloud.elasticsearch.IndexVersion;
 import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldType;
-import org.jimmutable.cloud.messaging.TopicDefinition;
-import org.jimmutable.cloud.messaging.TopicId;
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.serialization.FieldDefinition;
@@ -33,8 +31,6 @@ public class AdvancedSearchComboBoxChoice extends StandardImmutableObject<Advanc
 
 	static public final TypeName TYPE_NAME = new TypeName("advancedsearchcomboboxchoice");
 	static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("advancedsearchcomboboxchoice"), new IndexVersion("v1"));
-
-	static public final TopicDefinition TOPIC_DEF = new TopicDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new TopicId("advancedsearchcomboboxchoice"));
 
 	static private final SearchIndexFieldDefinition SEARCH_FIELD_LABEL = new SearchIndexFieldDefinition(FIELD_LABEL.getSimpleFieldName(), SearchIndexFieldType.TEXT);
 	static private final SearchIndexFieldDefinition SEARCH_FIELD_VALUE = new SearchIndexFieldDefinition(FIELD_VALUE.getSimpleFieldName(), SearchIndexFieldType.TEXT);

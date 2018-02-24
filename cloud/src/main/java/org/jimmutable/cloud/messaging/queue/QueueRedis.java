@@ -1,4 +1,4 @@
-package org.jimmutable.cloud.new_messaging.queue;
+package org.jimmutable.cloud.messaging.queue;
 
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.cache.redis.LowLevelRedisDriver;
@@ -25,6 +25,11 @@ public class QueueRedis implements IQueue
 		Validator.notNull(app,redis);
 		this.app = app;
 		this.redis = redis;
+	}
+	
+	public QueueRedis(ApplicationId app)
+	{
+		this(app, new LowLevelRedisDriver(LowLevelRedisDriver.DEFAULT_HOST, LowLevelRedisDriver.DEFAULT_PORT_REDIS));
 	}
 	
     @Override

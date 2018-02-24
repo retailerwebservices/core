@@ -6,10 +6,10 @@ import java.util.concurrent.ExecutorService;
 
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.cache.CacheKey;
-import org.jimmutable.cloud.new_messaging.queue.QueueId;
-import org.jimmutable.cloud.new_messaging.queue.QueueListener;
-import org.jimmutable.cloud.new_messaging.signal.SignalListener;
-import org.jimmutable.cloud.new_messaging.signal.SignalTopicId;
+import org.jimmutable.cloud.messaging.queue.QueueId;
+import org.jimmutable.cloud.messaging.queue.QueueListener;
+import org.jimmutable.cloud.messaging.signal.SignalListener;
+import org.jimmutable.cloud.messaging.signal.SignalTopicId;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.threading.DaemonThreadFactory;
@@ -34,6 +34,7 @@ import redis.clients.jedis.ScanResult;
  */
 public class LowLevelRedisDriver
 {
+	static public final String DEFAULT_HOST = "localhost";
 	static public final int DEFAULT_PORT_REDIS = 6379;
 	
 	private JedisPool pool;
