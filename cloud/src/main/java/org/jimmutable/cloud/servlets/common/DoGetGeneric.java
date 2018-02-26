@@ -39,12 +39,12 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 		}
 	}
 	
-	private Object getMoreSpeciificData(T obj) {
+	protected Object getMoreSpeciificData(T obj) {
 		//to be overriddden if more specific data is needed. 
 		return obj;
 	}
 	
-	private StorageKeyExtension getExtension() {
+	protected StorageKeyExtension getExtension() {
 		//to be overriddden if more specific data is needed. 
 		return Storable.STORABLE_EXTENSION;
 	}
