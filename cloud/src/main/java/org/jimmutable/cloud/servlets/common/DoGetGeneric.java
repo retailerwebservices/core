@@ -1,5 +1,7 @@
 package org.jimmutable.cloud.servlets.common;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,30 +27,78 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 	private static final long serialVersionUID = 8993193171889935131L;
 
 	@Override
-	public void doGet( HttpServletRequest request, HttpServletResponse response ) {
+	public void doGet( HttpServletRequest request, HttpServletResponse response )
+	{
 		try
 		{
-			StorageKey key = new ObjectIdStorageKey(getKind(), new ObjectId(request.getParameter("id")),  getExtension());
-			T object= (T) StandardObject.deserialize(new String(CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(key, null)));
+			String id = request.getParameter(getId()) == null ? "" : request.getParameter(getId());
+			StorageKey key = new ObjectIdStorageKey(getKind(), new ObjectId(request.getParameter(id)), getExtension());
+			T object = (T) StandardObject.deserialize(new String(CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(key, null)));
 
-			ServletUtil.writeSerializedResponse(response, getMoreSpeciificData(object), GetResponseOK.HTTP_STATUS_CODE_OK);
-		} catch (Exception e)
+			Object more_speciific_data = null;
+			try
+			{
+				more_speciific_data = getMoreSpeciificData(object, request);
+			}
+			catch ( Exception e )
+			{
+				handleError(response,e);
+			}
+			if ( more_speciific_data != null )
+			{
+				ServletUtil.writeSerializedResponse(response, more_speciific_data, GetResponseOK.HTTP_STATUS_CODE_OK);
+			}
+			else
+			{
+				objectNotFoundFunction(response);
+			}
+		}
+		catch ( Exception e )
 		{
-			getLogger().error("Invalid id", e);
-			ServletUtil.writeSerializedResponse(response, new GetResponseError("Invalid storage key"), GetResponseError.HTTP_STATUS_CODE_ERROR);
+			getLogger().error(e);
+			ServletUtil.writeSerializedResponse(response, new GetResponseError(e.getMessage()), GetResponseError.HTTP_STATUS_CODE_ERROR);
 		}
 	}
-	
-	protected Object getMoreSpeciificData(T obj) {
-		//to be overriddden if more specific data is needed. 
+
+	protected void objectNotFoundFunction(HttpServletResponse response)
+	{
+		try
+		{
+			response.sendError(HttpServletResponse.SC_NOT_FOUND);
+		}
+		catch ( IOException e )
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	protected void handleError( HttpServletResponse response, Exception e )
+	{
+		getLogger().error(e);
+		ServletUtil.writeSerializedResponse(response, new GetResponseError(e.toString()), GetResponseError.HTTP_STATUS_CODE_ERROR);
+		
+	}
+
+	protected Object getMoreSpeciificData( T obj, HttpServletRequest request )
+	{
+		// to be overriddden if more specific data is needed.
 		return obj;
 	}
-	
-	protected StorageKeyExtension getExtension() {
-		//to be overriddden if more specific data is needed. 
+
+	protected StorageKeyExtension getExtension()
+	{
+		// to be overriddden if more specific data is needed.
 		return Storable.STORABLE_EXTENSION;
 	}
+
+	protected String getId()
+	{
+		// to be overriddden if more specific data is needed.
+		return "id";
+	}
+
 	abstract protected Logger getLogger();
-	
+
 	abstract protected Kind getKind();
 }
