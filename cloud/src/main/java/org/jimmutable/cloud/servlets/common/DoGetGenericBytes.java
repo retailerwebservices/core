@@ -36,7 +36,7 @@ public abstract class DoGetGenericBytes extends HttpServlet
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 	{
 
-		String id = request.getParameter("id");
+		String id = request.getParameter(getId());
 
 		if (id == null)
 		{
@@ -91,6 +91,11 @@ public abstract class DoGetGenericBytes extends HttpServlet
 
 	}
 	
+	protected String getId()
+	{
+		return "id";
+	}
+
 	abstract protected Logger getLogger();
 
 	abstract protected Kind getKind();
