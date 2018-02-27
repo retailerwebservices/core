@@ -40,7 +40,7 @@ public abstract class DoGetGenericBytes extends HttpServlet
 
 		if (id == null)
 		{
-			ServletUtil.writeSerializedResponse(response, new GetResponseError("Missing required parameter id"), GetResponseError.HTTP_STATUS_CODE_ERROR);
+			idNotFound(request, response);
 			return;
 		}
 
@@ -52,7 +52,7 @@ public abstract class DoGetGenericBytes extends HttpServlet
 
 			if (bytes == null)
 			{
-				ServletUtil.writeSerializedResponse(response, new GetResponseError(String.format("Nothing returned from storage for %s", storage_key.toString())), GetResponseError.HTTP_STATUS_CODE_ERROR);
+				bytesNotFound(request, response);
 				return;
 			}
 
@@ -90,9 +90,19 @@ public abstract class DoGetGenericBytes extends HttpServlet
 		}
 
 	}
+	
 	abstract protected Logger getLogger();
 
 	abstract protected Kind getKind();
 	
 	abstract protected StorageKeyExtension getExtension();
+	
+	protected void idNotFound(HttpServletRequest request,HttpServletResponse response) {
+		ServletUtil.writeSerializedResponse(response, new GetResponseError("Missing required parameter id"), GetResponseError.HTTP_STATUS_CODE_ERROR);
+	}
+	
+	protected void bytesNotFound( HttpServletRequest request, HttpServletResponse response )
+	{
+		ServletUtil.writeSerializedResponse(response, new GetResponseError("Nothing returned from storage"), GetResponseError.HTTP_STATUS_CODE_ERROR);	
+	}
 }

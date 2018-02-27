@@ -13,6 +13,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
+import org.jimmutable.cloud.servlet_utils.get.GetResponseError;
+import org.jimmutable.cloud.servlets.common.DoGetGenericBytes;
+import org.jimmutable.cloud.servlets.util.ServletUtil;
 import org.jimmutable.cloud.storage.ObjectIdStorageKey;
 import org.jimmutable.cloud.storage.StorageKey;
 import org.jimmutable.cloud.storage.StorageKeyExtension;
@@ -25,7 +28,7 @@ import org.jimmutable.core.objects.common.ObjectId;
  * @author trevorbox
  *
  */
-public class DoGetAvatar extends HttpServlet
+public class DoGetAvatar extends DoGetGenericBytes
 {
 
 	/**
@@ -37,115 +40,97 @@ public class DoGetAvatar extends HttpServlet
 	static private final Logger logger = LogManager.getLogger(DoGetAvatar.class);
 
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+	protected Logger getLogger()
 	{
+		return logger;
+	}
 
-		String id = request.getParameter("id");
+	@Override
+	protected Kind getKind()
+	{
+		return KIND;
+	}
 
+	@Override
+	protected StorageKeyExtension getExtension()
+	{
+		return EXTENSION;
+	}
+
+	@Override
+	protected void idNotFound( HttpServletRequest request, HttpServletResponse response )
+	{
+		getDefaultImage(request, response);
+	}
+	
+	@Override
+	protected void bytesNotFound( HttpServletRequest request, HttpServletResponse response )
+	{
+		getDefaultImage(request, response);
+	}
+	
+	private void getDefaultImage(HttpServletRequest request, HttpServletResponse response) {
 		String default_image = request.getParameter("default-image");
-		if (default_image == null)
+		if ( default_image == null )
 		{
 			logger.error("Missing required parameter default_image");
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			return;
 		}
+		OutputStream os = null;
 
-		StorageKey storage_key = null;
-		byte[] bytes = null;
+		InputStream is = null;
+
 		try
 		{
-			storage_key = new ObjectIdStorageKey(KIND, new ObjectId(id), EXTENSION);
-			bytes = CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(storage_key, null);
-		} catch (Exception e)
-		{
-		}
+			os = response.getOutputStream();
 
-		if (bytes == null)
-		{
+			URL url = new URL(default_image);
 
-			OutputStream os = null;
+			is = url.openStream();
 
-			InputStream is = null;
+			String mime = URLConnection.guessContentTypeFromStream(is);
 
-			try
+			response.setContentType(mime);
+
+			byte[] buffer = new byte[4096];
+			int n;
+
+			while ( (n = is.read(buffer)) > 0 )
 			{
-				os = response.getOutputStream();
-
-				URL url = new URL(default_image);
-
-				is = url.openStream();
-
-				String mime = URLConnection.guessContentTypeFromStream(is);
-
-				response.setContentType(mime);
-
-				byte[] buffer = new byte[4096];
-				int n;
-
-				while ((n = is.read(buffer)) > 0)
-				{
-					os.write(buffer, 0, n);
-				}
-
-				os.flush();
-
-			} catch (Exception e)
-			{
-				logger.error(e);
-				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-				return;
-			} finally
-			{
-
-				try
-				{
-					if (is != null)
-					{
-						is.close();
-					}
-					if (os != null)
-					{
-						os.close();
-					}
-				} catch (IOException e)
-				{
-					logger.error(e);
-				}
-
+				os.write(buffer, 0, n);
 			}
-			return;
+
+			os.flush();
 
 		}
-
-		response.setContentType(storage_key.getSimpleExtension().getSimpleMimeType());
-
-		OutputStream out = null;
-		try
-		{
-			out = response.getOutputStream();
-			out.write(bytes);
-
-			out.flush();
-		} catch (IOException e)
+		catch ( Exception e )
 		{
 			logger.error(e);
-			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			return;
-		} finally
+		}
+		finally
 		{
+
 			try
 			{
-				if (out != null)
+				if ( is != null )
 				{
-					out.close();
+					is.close();
 				}
-			} catch (IOException e)
+				if ( os != null )
+				{
+					os.close();
+				}
+			}
+			catch ( IOException e )
 			{
 				logger.error(e);
 			}
-		}
 
-		response.setStatus(HttpServletResponse.SC_OK);
+		}
+		return;
 
 	}
 
