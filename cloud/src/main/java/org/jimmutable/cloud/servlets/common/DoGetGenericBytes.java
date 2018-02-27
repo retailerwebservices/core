@@ -17,6 +17,7 @@ import org.jimmutable.cloud.storage.StorageKeyExtension;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 
+//CR class overview would be handy here for the future maintainability - AG
 public abstract class DoGetGenericBytes extends HttpServlet
 {
 	/**

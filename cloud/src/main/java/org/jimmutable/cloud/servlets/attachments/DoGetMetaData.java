@@ -37,6 +37,7 @@ public class DoGetMetaData extends DoGetGeneric<AttachmentMetaData>
 		return "objectid";
 	}
 	
+	//CR do we need this need to be overridden here? - AG
 	@Override
 	protected void objectNotFoundFunction(HttpServletResponse response)
 	{
@@ -51,6 +52,7 @@ public class DoGetMetaData extends DoGetGeneric<AttachmentMetaData>
 		}
 	}
 
+	//CR clean up when done - AG
 //	@Override
 //	public void doGet( HttpServletRequest request, HttpServletResponse response ) throws IOException
 //	{

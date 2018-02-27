@@ -19,6 +19,7 @@ import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 
+//CR class overview would be handy here for the future maintainability - AG
 public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 {
 	/**
@@ -35,6 +36,7 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 			StorageKey key = new ObjectIdStorageKey(getKind(), new ObjectId(request.getParameter(id)), getExtension());
 			T object = (T) StandardObject.deserialize(new String(CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(key, null)));
 
+			//CR specific spelt wrong throughout -AG
 			Object more_speciific_data = null;
 			try
 			{
@@ -55,6 +57,7 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 		}
 		catch ( Exception e )
 		{
+			//CR Should this should call handleError as well so clients can decide the behavior? -AG
 			getLogger().error(e);
 			ServletUtil.writeSerializedResponse(response, new GetResponseError(e.getMessage()), GetResponseError.HTTP_STATUS_CODE_ERROR);
 		}
@@ -68,7 +71,9 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 		}
 		catch ( IOException e )
 		{
+			//CR remove - AG
 			// TODO Auto-generated catch block
+			//CR add to log channel - AG
 			e.printStackTrace();
 		}
 	}
