@@ -38,7 +38,7 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 		try
 		{
 			String id = request.getParameter(getId()) == null ? "" : request.getParameter(getId());
-			StorageKey key = new ObjectIdStorageKey(getKind(), new ObjectId(request.getParameter(id)), getExtension());
+			StorageKey key = new ObjectIdStorageKey(getKind(), new ObjectId(id), getExtension());
 			T object = (T) StandardObject.deserialize(new String(CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(key, null)));
 
 			Object more_specific_data = null;
