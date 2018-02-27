@@ -17,7 +17,14 @@ import org.jimmutable.cloud.storage.StorageKeyExtension;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 
-//CR class overview would be handy here for the future maintainability - AG
+/**
+ * This class is designed to get byte information from our storage
+ *<br>
+ *I.E. FbSimpleImageAd
+ * <b> DO NOT GET STANDARDIMMUTABLE OBJECTS WITH THIS</b>
+ * @author andrew.towe
+ *
+ */
 public abstract class DoGetGenericBytes extends HttpServlet
 {
 	/**

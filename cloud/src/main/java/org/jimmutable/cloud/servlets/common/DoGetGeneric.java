@@ -19,7 +19,12 @@ import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 
-//CR class overview would be handy here for the future maintainability - AG
+/**
+ * This Class is used to get StandardImmutableObjects or specific data related to them. 
+ * @author andrew.towe
+ *
+ * @param <T>
+ */
 public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 {
 	/**
@@ -36,19 +41,18 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 			StorageKey key = new ObjectIdStorageKey(getKind(), new ObjectId(request.getParameter(id)), getExtension());
 			T object = (T) StandardObject.deserialize(new String(CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(key, null)));
 
-			//CR specific spelt wrong throughout -AG
-			Object more_speciific_data = null;
+			Object more_specific_data = null;
 			try
 			{
-				more_speciific_data = getMoreSpeciificData(object, request);
+				more_specific_data = getMoreSpeciificData(object, request);
 			}
 			catch ( Exception e )
 			{
 				handleError(response,e);
 			}
-			if ( more_speciific_data != null )
+			if ( more_specific_data != null )
 			{
-				ServletUtil.writeSerializedResponse(response, more_speciific_data, GetResponseOK.HTTP_STATUS_CODE_OK);
+				ServletUtil.writeSerializedResponse(response, more_specific_data, GetResponseOK.HTTP_STATUS_CODE_OK);
 			}
 			else
 			{
@@ -57,7 +61,7 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 		}
 		catch ( Exception e )
 		{
-			//CR Should this should call handleError as well so clients can decide the behavior? -AG
+			handleError(response, e);
 			getLogger().error(e);
 			ServletUtil.writeSerializedResponse(response, new GetResponseError(e.getMessage()), GetResponseError.HTTP_STATUS_CODE_ERROR);
 		}
@@ -71,10 +75,8 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 		}
 		catch ( IOException e )
 		{
-			//CR remove - AG
-			// TODO Auto-generated catch block
-			//CR add to log channel - AG
 			e.printStackTrace();
+			getLogger().error(e);
 		}
 	}
 
