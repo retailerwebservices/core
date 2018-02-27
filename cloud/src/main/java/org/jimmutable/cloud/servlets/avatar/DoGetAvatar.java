@@ -71,7 +71,7 @@ public class DoGetAvatar extends DoGetGenericBytes
 	
 	private void getDefaultImage(HttpServletRequest request, HttpServletResponse response) {
 		String default_image = request.getParameter("default-image");
-		if ( default_image == null )
+		if ( default_image == null ||default_image.equals(""))
 		{
 			logger.error("Missing required parameter default_image");
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
