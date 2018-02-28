@@ -311,7 +311,7 @@ public class ElasticSearch implements ISearch
 
 		} catch (Exception e)
 		{
-			logger.log(Level.FATAL, "Failure during upsert operation!", e);
+			logger.log(Level.FATAL, String.format("Failure during upsert operation of Document id:%s on Index:%s", object.getSimpleSearchDocumentId().getSimpleValue() , object.getSimpleSearchIndexDefinition().getSimpleValue()), e);
 			return false;
 		}
 
