@@ -46,11 +46,11 @@ public interface IStorage
      * 
      * @return true if the Object was updated/inserted, else false
 	 */
-	public boolean upsert(final StorageKey key, final InputStream source, final boolean hint_content_likely_to_be_compressible);
+	public boolean upsertStreaming(final StorageKey key, final InputStream source, final boolean hint_content_likely_to_be_compressible);
 	
 	/**
 	 * This method will not read objects larger than {@value Storage#MAX_TRANSFER_BYTES_IN_MB} MB.
-	 * If you need to retrieve large objects, use {@link #getCurrentVersion(StorageKey, OutputStream)}.
+	 * If you need to retrieve large objects, use {@link #getCurrentVersionStreaming(StorageKey, OutputStream)}.
 	 * 
 	 * @param key
 	 *            key associated with Stored Object you want to retrieve the current
@@ -75,7 +75,7 @@ public interface IStorage
      * @return Byte array of Stored object if Object was found, otherwise
      *         default_value
      */
-	public boolean getCurrentVersion(final StorageKey key, final OutputStream sink);
+	public boolean getCurrentVersionStreaming(final StorageKey key, final OutputStream sink);
 	
 	/**
 	 * @param key

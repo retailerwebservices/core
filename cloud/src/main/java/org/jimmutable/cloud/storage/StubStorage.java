@@ -23,7 +23,7 @@ public class StubStorage implements IStorage
 	}
 
     @Override
-    public boolean upsert(StorageKey key, InputStream source, boolean hint_content_likely_to_be_compressible)
+    public boolean upsertStreaming(StorageKey key, InputStream source, boolean hint_content_likely_to_be_compressible)
     {
         throw new RuntimeException(ERROR_MESSAGE);
     }
@@ -35,7 +35,7 @@ public class StubStorage implements IStorage
 	}
 
     @Override
-    public boolean getCurrentVersion(StorageKey key, OutputStream sink)
+    public boolean getCurrentVersionStreaming(StorageKey key, OutputStream sink)
     {
         throw new RuntimeException(ERROR_MESSAGE);
     }

@@ -217,12 +217,12 @@ public class StorageS3IT extends IntegrationTest
             StorageKey stream_key = new GenericStorageKey("s3-test-upsert/stream.txt");
             try (InputStream fin = new FileInputStream(temp_source))
             {
-                assertTrue(storage.upsert(stream_key, fin, false));
+                assertTrue(storage.upsertStreaming(stream_key, fin, false));
             }
             
             try (OutputStream fout = new FileOutputStream(temp_dest))
             {
-                assertTrue(storage.getCurrentVersion(stream_key, fout));
+                assertTrue(storage.getCurrentVersionStreaming(stream_key, fout));
             }
             
             String test_value = FileUtils.getComplexFileContentsAsString(temp_dest, null);
@@ -233,12 +233,12 @@ public class StorageS3IT extends IntegrationTest
             
             try (InputStream fin = new FileInputStream(temp_source))
             {
-                assertTrue(storage.upsert(stream_key, fin, false));
+                assertTrue(storage.upsertStreaming(stream_key, fin, false));
             }
             
             try (OutputStream fout = new FileOutputStream(temp_dest))
             {
-                assertTrue(storage.getCurrentVersion(stream_key, fout));
+                assertTrue(storage.getCurrentVersionStreaming(stream_key, fout));
             }
             
             test_value = FileUtils.getComplexFileContentsAsString(temp_dest, null);
@@ -359,13 +359,13 @@ public class StorageS3IT extends IntegrationTest
                     
                     try (InputStream fin = new FileInputStream(temp_source))
                     {
-                        assertTrue(storage.upsert(key, fin, false));
+                        assertTrue(storage.upsertStreaming(key, fin, false));
                         after_upsert = System.currentTimeMillis();
                     }
                     
                     try (OutputStream fout = new FileOutputStream(temp_dest))
                     {
-                        assertTrue(storage.getCurrentVersion(key, fout));
+                        assertTrue(storage.getCurrentVersionStreaming(key, fout));
                     }
                     
                     String test_value = FileUtils.getComplexFileContentsAsString(temp_dest, null);
@@ -376,13 +376,13 @@ public class StorageS3IT extends IntegrationTest
                     
                     try (InputStream fin = new FileInputStream(temp_source))
                     {
-                        assertTrue(storage.upsert(key, fin, false));
+                        assertTrue(storage.upsertStreaming(key, fin, false));
                         after_upsert = System.currentTimeMillis();
                     }
                     
                     try (OutputStream fout = new FileOutputStream(temp_dest))
                     {
-                        assertTrue(storage.getCurrentVersion(key, fout));
+                        assertTrue(storage.getCurrentVersionStreaming(key, fout));
                     }
                     
                     test_value = FileUtils.getComplexFileContentsAsString(temp_dest, null);

@@ -71,7 +71,7 @@ public abstract class Storage implements IStorage
         
         if (isReadOnly()) return false;
 
-        return upsert(key, new ByteArrayInputStream(bytes), hint_content_likely_to_be_compressible);
+        return upsertStreaming(key, new ByteArrayInputStream(bytes), hint_content_likely_to_be_compressible);
     }
 
     @Override
@@ -81,7 +81,7 @@ public abstract class Storage implements IStorage
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         OutputStream out = new IOUtils.LimitBytesOutputStream(bytes, MAX_TRANSFER_BYTES_IN_BYTES);
         
-        final boolean result = getCurrentVersion(key, out);
+        final boolean result = getCurrentVersionStreaming(key, out);
         
         if (result)
         {

@@ -109,7 +109,7 @@ public class StorageS3 extends Storage
 
     // TODO Use hint_content_likely_to_be_compressible to auto-gzip contents. Must be able to detect dynamically on read.
     @Override
-    public boolean upsert(final StorageKey key, final InputStream source, final boolean hint_content_likely_to_be_compressible)
+    public boolean upsertStreaming(final StorageKey key, final InputStream source, final boolean hint_content_likely_to_be_compressible)
     {
         Validator.notNull(key, source);
         
@@ -185,7 +185,7 @@ public class StorageS3 extends Storage
     }
     
     @Override
-    public boolean getCurrentVersion(final StorageKey key, final OutputStream sink)
+    public boolean getCurrentVersionStreaming(final StorageKey key, final OutputStream sink)
     {
         Validator.notNull(key, sink);
         

@@ -72,7 +72,7 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 		
 		try (InputStream fin = new FileInputStream(temp))
 		{
-	        assertTrue(sdlfs.upsert(new ObjectIdStorageKey("alpha/0000-0000-0000-0123.txt"), fin, false));
+	        assertTrue(sdlfs.upsertStreaming(new ObjectIdStorageKey("alpha/0000-0000-0000-0123.txt"), fin, false));
 		}
 		
         result = readFile(f);
@@ -163,7 +163,7 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
         
         try (OutputStream fout = new FileOutputStream(temp))
         {
-            sdlfs.getCurrentVersion(key, fout);
+            sdlfs.getCurrentVersionStreaming(key, fout);
             String file_contents = readFile(temp);
             assertEquals(file_contents, "Hello from the other side");
         }
