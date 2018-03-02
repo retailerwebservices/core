@@ -1,12 +1,18 @@
 package org.jimmutable.cloud.storage;
 
-import org.jimmutable.core.utils.Validator;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.util.function.Consumer;
+
 import org.apache.logging.log4j.LogManager;
-import org.jimmutable.cloud.ApplicationId;
-import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
+import org.jimmutable.core.threading.OperationPool;
+import org.jimmutable.core.threading.OperationRunnable;
+import org.jimmutable.core.utils.IOUtils;
+import org.jimmutable.core.utils.Validator;
 
 /**
  *
@@ -17,6 +23,14 @@ import org.jimmutable.core.serialization.writer.ObjectWriter;
 
 public abstract class Storage implements IStorage
 {
+    /**
+     * The largest {@code byte[]} that can be {@link #upsert(StorageKey, byte[], boolean) upserted}
+     * or {@link #getCurrentVersion(StorageKey, byte[]) retrieved}.
+     */
+    static public final int MAX_TRANSFER_BYTES_IN_MB = 25;
+    static public final int MAX_TRANSFER_BYTES_IN_BYTES = MAX_TRANSFER_BYTES_IN_MB * 1024 * 1024;
+    
+    
 	// Storage instance = null;
 	private boolean is_readonly = false;
 
@@ -24,6 +38,11 @@ public abstract class Storage implements IStorage
 	{
 		this.is_readonly = is_readOnly;
 	}
+    
+    public boolean isReadOnly()
+    {
+        return is_readonly;
+    }
 
 	/**
 	 * Retrieves the StorageMetadata associated to this Storable object,
@@ -38,9 +57,41 @@ public abstract class Storage implements IStorage
 	
 	public boolean upsert(Storable obj, Format format)
 	{
-		Validator.notNull(obj);
+        Validator.notNull(obj);
+        
+        if (isReadOnly()) return false;
+
 		return upsert(obj.createStorageKey(), ObjectWriter.serialize(format, obj).getBytes(), true);
 	}
+
+    @Override
+    public boolean upsert(final StorageKey key, final byte[] bytes, final boolean hint_content_likely_to_be_compressible)
+    {
+        Validator.max(bytes.length, MAX_TRANSFER_BYTES_IN_BYTES);
+        
+        if (isReadOnly()) return false;
+
+        return upsert(key, new ByteArrayInputStream(bytes), hint_content_likely_to_be_compressible);
+    }
+
+    @Override
+    @SuppressWarnings("resource")
+    public byte[] getCurrentVersion(final StorageKey key, final byte[] default_value)
+    {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        OutputStream out = new IOUtils.LimitBytesOutputStream(bytes, MAX_TRANSFER_BYTES_IN_BYTES);
+        
+        final boolean result = getCurrentVersion(key, out);
+        
+        if (result)
+        {
+            return bytes.toByteArray();
+        }
+        else
+        {
+            return default_value;
+        }
+    }
 
 	public boolean exists(Storable obj, boolean default_value)
 	{
@@ -67,9 +118,136 @@ public abstract class Storage implements IStorage
 		return delete(obj.createStorageKey());
 	}
 
-	public boolean isReadOnly()
-	{
-		return is_readonly;
-	}
-
+    @Override
+    public boolean scan(Kind kind, StorageKeyHandler handler, int num_handler_threads)
+    {
+        return scan(kind, null, handler, num_handler_threads);
+    }
+    
+    @Override
+    public boolean scan(final Kind kind, final StorageKeyName prefix, final StorageKeyHandler handler, final int num_handler_threads)
+    {
+        return scanImpl(kind, prefix, handler, num_handler_threads, false);
+    }
+    
+    @Override
+    public boolean scanForObjectIds(Kind kind, StorageKeyHandler handler, int num_handler_threads)
+    {
+        return scanForObjectIds(kind, null, handler, num_handler_threads);
+    }
+    
+    @Override
+    public boolean scanForObjectIds(final Kind kind, final StorageKeyName prefix, final StorageKeyHandler handler, final int num_handler_threads)
+    {
+        return scanImpl(kind, prefix, handler, num_handler_threads, true);
+    }
+    
+    private boolean scanImpl(final Kind kind, final StorageKeyName prefix, final StorageKeyHandler handler, final int num_handler_threads, final boolean only_object_ids)
+    {
+        Scanner scanner = createScanner(kind, prefix, only_object_ids);
+        OperationPool pool = new OperationPool(scanner, num_handler_threads);
+        
+        scanner.setSink((StorageKey key) ->
+        {
+            pool.submitOperation(new StorageKeyHandlerWorker(handler, key));
+        });
+        
+        OperationRunnable.Result result = OperationRunnable.execute(pool, OperationRunnable.Result.ERROR);
+        return OperationRunnable.Result.SUCCESS == result;
+    }
+    
+    static private class StorageKeyHandlerWorker extends OperationRunnable
+    {
+        private final StorageKeyHandler handler;
+        private final StorageKey key;
+        
+        public StorageKeyHandlerWorker(final StorageKeyHandler handler, final StorageKey key)
+        {
+            this.handler = handler;
+            this.key = key;
+        }
+        
+        @Override
+        protected Result performOperation() throws Exception
+        {
+            if (null == handler) return Result.SUCCESS;
+            
+            handler.handle(key);
+            
+            return Result.SUCCESS;
+        }
+    }
+    
+    /**
+     * This class does the main listing operation for scan*.
+     * It runs in it's own thread and throws each StorageKey it
+     * finds into another OperationRunnable running in a common
+     * pool.
+     *
+     * @author Jeff Dezso
+     */
+    abstract protected class Scanner extends OperationRunnable
+    {
+        private final Kind kind;
+        private final StorageKeyName prefix;
+        private final boolean only_object_ids;
+        
+        private Consumer<StorageKey> sink;
+        
+        public Scanner(final Kind kind, final StorageKeyName prefix, final boolean only_object_ids)
+        {
+            Validator.notNull(kind);
+            
+            this.kind = kind;
+            this.prefix = prefix;
+            this.only_object_ids = only_object_ids;
+        }
+        
+        protected Kind getSimpleKind()
+        {
+            return kind;
+        }
+        
+        protected boolean hasPrefix()
+        {
+            return null != prefix;
+        }
+        
+        protected StorageKeyName getOptionalPrefix(StorageKeyName default_value)
+        {
+            if (null != prefix)
+            {
+                return prefix;
+            }
+            
+            return default_value;
+        }
+        
+        protected boolean onlyObjectIds()
+        {
+            return only_object_ids;
+        }
+        
+        /**
+         * The sink has to be set after construction to avoid a race condition
+         * between construction of the OperationPool and construction the seed
+         * OperationRunnable
+         * 
+         * @param handler
+         */
+        public void setSink(Consumer<StorageKey> sink)
+        {
+            this.sink = sink;
+        }
+        
+        protected void emit(StorageKey key)
+        {
+            if (null != sink)
+            {
+                sink.accept(key);
+            }
+        }
+    }
+    
+    abstract protected Scanner createScanner(final Kind kind, final StorageKeyName prefix, final boolean only_object_ids);
 }

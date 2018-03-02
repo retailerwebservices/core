@@ -2,23 +2,28 @@ package org.jimmutable.cloud.storage;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.IntegrationTest;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
+import org.jimmutable.core.utils.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -41,7 +46,7 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 	}
 
 	@Test
-	public void testUpsert()
+	public void testUpsert() throws IOException
 	{
 		// test insert
 		assertTrue(sdlfs.upsert(new ObjectIdStorageKey("alpha/0000-0000-0000-0123.txt"), "Hello from the other side".getBytes(), false));
@@ -59,6 +64,19 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 		assertTrue(sdlfs.upsert(new ObjectIdStorageKey("alpha/0000-0000-0000-0123.txt"), "I wish I called a thousand times".getBytes(), false));
 		result = readFile(f);
 		assertEquals("I wish I called a thousand times", result);
+		
+        // test streaming upload
+		File temp = File.createTempFile("sdlfs_", ".txt");
+		temp.deleteOnExit();
+		FileUtils.writeFile(temp, "Over the river and through the woods, to Grandmother's house we go!");
+		
+		try (InputStream fin = new FileInputStream(temp))
+		{
+	        assertTrue(sdlfs.upsert(new ObjectIdStorageKey("alpha/0000-0000-0000-0123.txt"), fin, false));
+		}
+		
+        result = readFile(f);
+        assertEquals("Over the river and through the woods, to Grandmother's house we go!", result);
 
 		// load testing, we are commenting this out so we do not have put in our source
 		// control
@@ -99,29 +117,20 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 
 	private static String readFile(File f)
 	{
-		FileInputStream fis = null;
-		byte[] bytesArray = new byte[(int) f.length()];
-		try
-		{
-			fis = new FileInputStream(f);
-			fis.read(bytesArray); // read file into bytes[]
-
-		} catch (Exception e)
-		{
-			throw new RuntimeException("Something went wierd when reading the file");
-		} finally
-		{
-			try
-			{
-				fis.close();
-			} catch (IOException e)
-			{
-				throw new RuntimeException("Something went weird when trying to close the file stream");
-			}
-		}
-		return new String(bytesArray);
-	}
-
+        byte[] bytesArray = new byte[(int) f.length()];
+        
+        try (FileInputStream fis = new FileInputStream(f))
+        {
+            fis.read(bytesArray); // read file into bytes[]
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Something went wierd when reading the file");
+        }
+        
+        return new String(bytesArray);
+    }
+    
 	@Test
 	public void testExists()
 	{
@@ -134,18 +143,30 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 	}
 
 	@Test
-	public void testGetCurrentVersion()
+	public void testGetCurrentVersion() throws IOException
 	{
 		// test that it will read from file
 		ObjectIdStorageKey key = new ObjectIdStorageKey("zeta/0000-0000-0000-0123.txt");
 		sdlfs.upsert(key, "Hello from the other side".getBytes(), false);
-		byte[] testvalue = sdlfs.getCurrentVersion(key, null);
+		byte[] testvalue = sdlfs.getCurrentVersion(key, (byte[]) null);
 		assertEquals("Hello from the other side", new String(testvalue));
 
 		// test that it will return the default if no file is found.
 		key = new ObjectIdStorageKey("zeta/0000-0000-0000-0456.txt");
 		testvalue = sdlfs.getCurrentVersion(key, "I wish I called a thousand times".getBytes());
 		assertEquals("I wish I called a thousand times", new String(testvalue));
+		
+		// test streaming read
+        key = new ObjectIdStorageKey("zeta/0000-0000-0000-0123.txt"); // Same as above. This is important!
+        File temp = File.createTempFile("sdlfs_", ".txt");
+        temp.deleteOnExit();
+        
+        try (OutputStream fout = new FileOutputStream(temp))
+        {
+            sdlfs.getCurrentVersion(key, fout);
+            String file_contents = readFile(temp);
+            assertEquals(file_contents, "Hello from the other side");
+        }
 	}
 
 	@Test
@@ -167,8 +188,27 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 		assertFalse(sdlfs.delete(key));
 	}
 
+	static private class ScanCounter implements StorageKeyHandler
+	{
+	    // By definition, this will be used in a multithreaded environment
+	    private final AtomicInteger count;
+	    
+	    public int getCount() { return count.get(); }
+	    
+	    public ScanCounter()
+        {
+	        count = new AtomicInteger(0);
+        }
+	    
+        @Override
+        public void handle(StorageKey key)
+        {
+            count.incrementAndGet();
+        }
+	}
+	
 	@Test
-	public void testList()
+	public void testObjectIdScan()
 	{
 		Kind gamma = new Kind("gamma");
 		
@@ -179,38 +219,25 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 		sdlfs.upsert(new ObjectIdStorageKey("gamma/5.txt"), "Hello from the other side".getBytes(), false);
 		sdlfs.upsert(new ObjectIdStorageKey("gamma/6.txt"), "Hello from the other side".getBytes(), false);
 		
-		Iterable<StorageKey> l = sdlfs.listComplex(gamma, null);
-		int count = 0;
-		for (StorageKey storageKey : l)
-		{
-			count++;
-		}
-		assertEquals(6, count);
+        ScanCounter count = new ScanCounter();
+		assertTrue(sdlfs.scan(gamma, count, 2));
+		assertEquals(6, count.getCount());
 
 		sdlfs.upsert(new ObjectIdStorageKey("gamma/" + new ObjectId(Long.MAX_VALUE) + ".txt"), "Hello from the other side".getBytes(), false);
 		sdlfs.upsert(new ObjectIdStorageKey("gamma/" + new ObjectId(Long.MAX_VALUE-1) + ".txt"), "Hello from the other side".getBytes(), false);
 		sdlfs.upsert(new ObjectIdStorageKey("gamma/" + new ObjectId(Long.MAX_VALUE-16) + ".txt"), "Hello from the other side".getBytes(), false);
 		
-		Iterable<StorageKey> filtered = sdlfs.listComplex(gamma, new StorageKeyName("7fff"), null);
-		int filtered_count = 0;
-		for (StorageKey key : filtered)
-		{
-			filtered_count++;
-		}
-		assertEquals(filtered_count, 3);
+        ScanCounter filtered_count = new ScanCounter();
+        assertTrue(sdlfs.scan(gamma, new StorageKeyName("7fff"), filtered_count, 2));
+		assertEquals(filtered_count.getCount(), 3);
 		
-		Iterable<ObjectIdStorageKey> object_ids = sdlfs.listAllObjectIdsComplex(gamma, null);
-		int object_id_count = 0;
-		for (ObjectIdStorageKey cur_storage_key : object_ids)
-		{
-			object_id_count++;
-		}
-		
-		assertEquals(object_id_count, 9);
+        ScanCounter object_id_count = new ScanCounter();
+        assertTrue(sdlfs.scanForObjectIds(gamma, object_id_count, 2));
+		assertEquals(object_id_count.getCount(), 9);
 	}
 
 	@Test
-	public void testGenericList()
+	public void testGenericScan()
 	{
 		Kind delta = new Kind("delta");
 
@@ -219,38 +246,21 @@ public class StorageDevLocalFileSystemTest extends IntegrationTest
 		sdlfs.upsert(new GenericStorageKey("delta/t4i5-is_no7_a-p1pe.txt"), "Hello from the other side".getBytes(), false);
 		sdlfs.upsert(new GenericStorageKey("delta/where-areyou_going-where-have_you_been.txt"), "Hello from the other side".getBytes(), false);
 		
-		Iterable<StorageKey> l = sdlfs.listComplex(delta, null);
-		int count = 0;
-		for (StorageKey storageKey : l)
-		{
-			count++;
-		}
-		assertEquals(4, count);
+        ScanCounter count = new ScanCounter();
+        assertTrue(sdlfs.scan(delta, count, 2));
+		assertEquals(4, count.getCount());
 
-		Iterable<ObjectIdStorageKey> object_ids = sdlfs.listAllObjectIdsComplex(delta, null);
-		int object_id_count = 0;
-		for (ObjectIdStorageKey cur_storage_key : object_ids)
-		{
-			object_id_count++;
-		}
+        ScanCounter object_id_count = new ScanCounter();
+        assertTrue(sdlfs.scanForObjectIds(delta, object_id_count, 2));
+		assertEquals(0, object_id_count.getCount());
 		
-		assertEquals(0, object_id_count);
+        ScanCounter prefix_count = new ScanCounter();
+        assertTrue(sdlfs.scan(delta, new StorageKeyName("this"), prefix_count, 2));
+		assertEquals(2, prefix_count.getCount());
 		
-		Iterable<StorageKey> prefix_search = sdlfs.listComplex(delta, new StorageKeyName("this"), null);
-		int prefix_count = 0;
-		for (StorageKey storageKey : prefix_search)
-		{
-			prefix_count++;
-		}
-		assertEquals(2, prefix_count);
-		
-		Iterable<StorageKey> full_name_search = sdlfs.listComplex(delta, new StorageKeyName("where-areyou_going-where-have_you_been"), null);
-		int full_name_count = 0;
-		for (StorageKey storageKey : full_name_search)
-		{
-			full_name_count++;
-		}
-		assertEquals(1, full_name_count);
+        ScanCounter full_name_search = new ScanCounter();
+        assertTrue(sdlfs.scan(delta, new StorageKeyName("where-areyou_going-where-have_you_been"), full_name_search, 2));
+		assertEquals(1, full_name_search.getCount());
 	}
 
 	

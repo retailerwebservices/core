@@ -28,6 +28,20 @@ public class StorageMetadata extends StandardImmutableObject<StorageMetadata>
 	private long size; // required, non-negative
 	private String etag; // required, set to last modified if not provided
 	
+    public StorageMetadata(final long last_modified, final long size)
+    {
+        this(last_modified, size, null);
+    }
+    
+	public StorageMetadata(final long last_modified, final long size, final String etag)
+	{
+	    this.last_modified = last_modified;
+	    this.size = size;
+	    this.etag = etag;
+	    
+	    complete();
+	}
+	
 	public StorageMetadata(ObjectParseTree reader)
 	{
 		last_modified = reader.getLong(FIELD_LAST_MODIFIED);
