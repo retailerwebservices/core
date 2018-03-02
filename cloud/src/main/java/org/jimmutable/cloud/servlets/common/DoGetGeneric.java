@@ -44,7 +44,7 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 			Object more_specific_data = null;
 			try
 			{
-				more_specific_data = getMoreSpeciificData(object, request);
+				more_specific_data = getMoreSpecificData(object, request);
 			}
 			catch ( Exception e )
 			{
@@ -87,7 +87,7 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 		
 	}
 
-	protected Object getMoreSpeciificData( T obj, HttpServletRequest request )
+	protected Object getMoreSpecificData( T obj, HttpServletRequest request )
 	{
 		// to be overriddden if more specific data is needed.
 		return obj;
