@@ -181,6 +181,20 @@ public class Builder
 		under_construction.add(new_child);
 	}
 	
+	public void add(FieldDefinition.Collection field, StandardEnum value)
+	{
+		Validator.notNull(field);
+		
+		if ( value == null ) return;
+		
+		TokenBuffer token_buffer = ObjectWriter.serializeToTokenBuffer(value.toString());
+		
+		ObjectParseTree new_child = Parser.parse(token_buffer);
+		new_child.setFieldName(field.getSimpleFieldName());
+		
+		under_construction.add(new_child);
+	}
+	
 	private ObjectParseTree mapKeyOrValueToObjectParseTree(FieldName field_name, Object value)
 	{
 		Validator.notNull(field_name, value);
