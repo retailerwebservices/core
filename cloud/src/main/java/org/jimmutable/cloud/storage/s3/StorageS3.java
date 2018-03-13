@@ -349,4 +349,12 @@ public class StorageS3 extends Storage
     {
         return new Scanner(kind, prefix, only_object_ids);
     }
+
+	@Override
+	public boolean deleteKind(Kind kind)
+	{
+		//TODO
+		System.err.println("deleteKind is not implemented yet for S3");
+		return false;
+	}
 }

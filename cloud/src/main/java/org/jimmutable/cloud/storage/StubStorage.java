@@ -105,4 +105,10 @@ public class StubStorage implements IStorage
 	{
 		throw new RuntimeException(ERROR_MESSAGE);
 	}
+
+	@Override
+	public boolean deleteKind(Kind kind)
+	{
+		throw new RuntimeException(ERROR_MESSAGE);
+	}
 }

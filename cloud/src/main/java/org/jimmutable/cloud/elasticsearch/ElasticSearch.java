@@ -232,6 +232,74 @@ public class ElasticSearch implements ISearch
 	}
 
 	/**
+	 * Runnable class to upsert the document
+	 * 
+	 * @author trevorbox
+	 *
+	 */
+	private class UpsertQuietDocumentRunnable implements Runnable
+	{
+		private Indexable object;
+		private Map<String, Object> data;
+
+		public UpsertQuietDocumentRunnable(Indexable object, Map<String, Object> data)
+		{
+			this.object = object;
+			this.data = data;
+		}
+
+		@Override
+		public void run()
+		{
+			try
+			{
+				String index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
+				String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
+				client.prepareIndex(index_name, ELASTICSEARCH_DEFAULT_TYPE, document_name).setSource(data).get();
+
+			} catch (Exception e)
+			{
+				logger.log(Level.FATAL, "Failure during upsert operation!", e);
+			}
+		}
+	}
+
+	/**
+	 * Upsert a document to a search index asynchronously AND without logging to
+	 * INFO
+	 * 
+	 * 
+	 * @param object
+	 *            The Indexable object
+	 * @return boolean If successful or not
+	 */
+	@Override
+	public boolean upsertQuietDocumentAsync(Indexable object)
+	{
+
+		if (object == null)
+		{
+			logger.error("Null object!");
+			return false;
+		}
+
+		SearchDocumentWriter writer = new SearchDocumentWriter();
+		object.writeSearchDocument(writer);
+		Map<String, Object> data = writer.getSimpleFieldsMap();
+
+		try
+		{
+			document_upsert_pool.execute(new UpsertQuietDocumentRunnable(object, data));
+		} catch (Exception e)
+		{
+			logger.log(Level.FATAL, "Failure during thread pool execution!", e);
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Upsert a document to a search index asynchronously
 	 * 
 	 * 
@@ -311,7 +379,7 @@ public class ElasticSearch implements ISearch
 
 		} catch (Exception e)
 		{
-			logger.log(Level.FATAL, String.format("Failure during upsert operation of Document id:%s on Index:%s", object.getSimpleSearchDocumentId().getSimpleValue() , object.getSimpleSearchIndexDefinition().getSimpleValue()), e);
+			logger.log(Level.FATAL, String.format("Failure during upsert operation of Document id:%s on Index:%s", object.getSimpleSearchDocumentId().getSimpleValue(), object.getSimpleSearchIndexDefinition().getSimpleValue()), e);
 			return false;
 		}
 
@@ -573,7 +641,14 @@ public class ElasticSearch implements ISearch
 		return true;
 	}
 
-	private boolean deleteIndex(SearchIndexDefinition index)
+	/**
+	 * Deletes an entire index
+	 * 
+	 * @param index
+	 *            SearchIndexDefinition
+	 * @return boolean - true if successfully deleted, else false
+	 */
+	public boolean deleteIndex(SearchIndexDefinition index)
 	{
 		if (index == null)
 		{

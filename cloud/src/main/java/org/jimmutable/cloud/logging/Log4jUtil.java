@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.selector.BasicContextSelector;
 import org.jimmutable.core.utils.Validator;
 
 /**
@@ -38,14 +39,19 @@ public class Log4jUtil
 
 		LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
 		Configuration conf = ctx.getConfiguration();
+	
+//		conf.getRootLogger().setLevel(Level.OFF);
 
+		
 		conf.getLoggers().forEach((k, v) -> {
 			conf.getLoggerConfig(k).setLevel(level);
 		});
 		ctx.updateLoggers(conf);
 
 		Logger log = LogManager.getLogger(LogManager.ROOT_LOGGER_NAME);
+
 		log.info(String.format("Updated logging levels to %s", log.getLevel()));
+	
 	}
 
 }

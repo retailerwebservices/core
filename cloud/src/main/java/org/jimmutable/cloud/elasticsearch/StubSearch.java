@@ -78,4 +78,16 @@ public class StubSearch implements ISearch
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
+	@Override
+	public boolean upsertQuietDocumentAsync(Indexable object)
+	{
+		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
+	}
+
+	@Override
+	public boolean deleteIndex(SearchIndexDefinition index)
+	{
+		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
+	}
+
 }

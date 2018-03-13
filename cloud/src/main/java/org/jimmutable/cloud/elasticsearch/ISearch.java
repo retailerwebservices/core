@@ -37,6 +37,17 @@ public interface ISearch
 	public boolean upsertDocumentAsync(Indexable object);
 
 	/**
+	 * Upsert a document to a search index asynchronously AND without logging to
+	 * INFO
+	 * 
+	 * 
+	 * @param object
+	 *            The Indexable object
+	 * @return boolean If successful or not
+	 */
+	public boolean upsertQuietDocumentAsync(Indexable object);
+
+	/**
 	 * Upsert a document to a search index
 	 * 
 	 * @param object
@@ -148,5 +159,14 @@ public interface ISearch
 	 * @return SearchRequestBuilder
 	 */
 	public SearchRequestBuilder getBuilder(IndexDefinition index);
+
+	/**
+	 * Deletes an entire index
+	 * 
+	 * @param index
+	 *            SearchIndexDefinition
+	 * @return boolean - true if successfully deleted, else false
+	 */
+	public boolean deleteIndex(SearchIndexDefinition index);
 
 }

@@ -29,7 +29,7 @@ import org.supercsv.prefs.CsvPreference;
 public class CSVExport
 {
 
-	static private final int SEARCH_MAX = 100;
+	static private final int SEARCH_MAX = 10000;
 	static private final CsvPreference CSV_PREFERENCE = CsvPreference.STANDARD_PREFERENCE;
 
 	static private final Logger logger = LogManager.getLogger(CSVExport.class);
