@@ -284,6 +284,15 @@ public class StorageS3IT extends IntegrationTest
         assertFalse(storage.exists(test_key, false));
     }
     
+    
+    @Test
+    public void testDeleteAll()
+    {
+    		//TODO
+    }
+    
+    
+    
     @Test
     public void testGetMetadata()
     {
