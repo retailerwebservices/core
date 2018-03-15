@@ -40,7 +40,7 @@ public class SearchResponseOKTest extends StubTest
 		try
 		{
 			result = new SearchResponseOK(search_request, search_result_list, 1, true,
-					true, 20, 1);
+					true, 20, 1, 1l);
 
 			System.out.println(result.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 		} catch ( Exception e )
@@ -62,7 +62,7 @@ public class SearchResponseOKTest extends StubTest
 		// Test with empty object parameters passed to constructor
 		try
 		{
-			result = new SearchResponseOK(new StandardSearchRequest(""), new ArrayList<OneSearchResult>(), 0, false, false, 0, 0);
+			result = new SearchResponseOK(new StandardSearchRequest(""), new ArrayList<OneSearchResult>(), 0, false, false, 0, 0, 1l);
 		} catch (Exception e)
 		{
 			fail();

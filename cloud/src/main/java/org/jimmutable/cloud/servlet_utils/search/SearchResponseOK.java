@@ -38,6 +38,7 @@ public class SearchResponseOK extends JSONServletResponse
 	static public final FieldDefinition.Boolean FIELD_HAS_PREVIOUS_RESULTS = new FieldDefinition.Boolean("has_previous_results", false);
 	static public final FieldDefinition.Integer FIELD_START_OF_NEXT_PAGE_OF_RESULTS = new FieldDefinition.Integer("start_of_next_page_of_results", -1);
 	static public final FieldDefinition.Integer FIELD_START_OF_PREVIOUS_PAGE_OF_RESULTS = new FieldDefinition.Integer("start_of_previous_page_of_results", -1);
+	static public final FieldDefinition.Long FIELD_TOTAL_HITS = new FieldDefinition.Long("total_hits", -1l);
 
 	static public final int HTTP_STATUS_CODE_OK = 200;
 
@@ -48,8 +49,9 @@ public class SearchResponseOK extends JSONServletResponse
 	private boolean has_previous_results; // required
 	private int start_of_next_page_of_results; // optional
 	private int start_of_previous_page_of_results; // optional
+	private long total_hits; // required
 
-	public SearchResponseOK( StandardSearchRequest search_request, List<OneSearchResult> results, int first_result_idx, boolean has_more_results, boolean has_previous_results, int start_of_next_page_of_results, int start_of_previous_page_of_results )
+	public SearchResponseOK(StandardSearchRequest search_request, List<OneSearchResult> results, int first_result_idx, boolean has_more_results, boolean has_previous_results, int start_of_next_page_of_results, int start_of_previous_page_of_results, long total_hits)
 	{
 		this.search_request = search_request;
 		this.results = results;
@@ -58,10 +60,11 @@ public class SearchResponseOK extends JSONServletResponse
 		this.has_previous_results = has_previous_results;
 		this.start_of_next_page_of_results = start_of_next_page_of_results;
 		this.start_of_previous_page_of_results = start_of_previous_page_of_results;
+		this.total_hits = total_hits;
 		complete();
 	}
 
-	public SearchResponseOK( ObjectParseTree t )
+	public SearchResponseOK(ObjectParseTree t)
 	{
 		this.search_request = (StandardSearchRequest) t.getObject(FIELD_SEARCH_REQUEST);
 		this.results = t.getCollection(FIELD_RESULTS, new ArrayList<OneSearchResult>(), ReadAs.OBJECT, OnError.SKIP);
@@ -70,12 +73,13 @@ public class SearchResponseOK extends JSONServletResponse
 		this.has_previous_results = t.getBoolean(FIELD_HAS_PREVIOUS_RESULTS);
 		this.start_of_next_page_of_results = t.getInt(FIELD_START_OF_NEXT_PAGE_OF_RESULTS);
 		this.start_of_previous_page_of_results = t.getInt(FIELD_START_OF_PREVIOUS_PAGE_OF_RESULTS);
+		this.total_hits = t.getLong(FIELD_TOTAL_HITS);
 	}
 
 	@Override
-	public int compareTo( JSONServletResponse obj )
+	public int compareTo(JSONServletResponse obj)
 	{
-		if ( !(obj instanceof SearchResponseOK) )
+		if (!(obj instanceof SearchResponseOK))
 			return 0;
 
 		SearchResponseOK other = (SearchResponseOK) obj;
@@ -87,12 +91,12 @@ public class SearchResponseOK extends JSONServletResponse
 		ret = Comparison.continueCompare(ret, getSimpleHasPreviousResults(), other.getSimpleHasPreviousResults());
 		ret = Comparison.continueCompare(ret, getSimpleStartOfNextPageOfResults(), other.getSimpleStartOfNextPageOfResults());
 		ret = Comparison.continueCompare(ret, getSimpleStartOfPreviousPageOfResults(), other.getSimpleStartOfPreviousPageOfResults());
-
+		ret = Comparison.continueCompare(ret, getSimpleTotalHits(), other.getSimpleTotalHits());
 		return ret;
 	}
 
 	@Override
-	public void write( ObjectWriter writer )
+	public void write(ObjectWriter writer)
 	{
 		writer.writeObject(FIELD_SEARCH_REQUEST, getSimpleSearchRequest());
 		writer.writeCollection(FIELD_RESULTS, getSimpleResults(), WriteAs.OBJECT);
@@ -101,7 +105,7 @@ public class SearchResponseOK extends JSONServletResponse
 		writer.writeBoolean(FIELD_HAS_PREVIOUS_RESULTS, getSimpleHasPreviousResults());
 		writer.writeInt(FIELD_START_OF_NEXT_PAGE_OF_RESULTS, getSimpleStartOfNextPageOfResults());
 		writer.writeInt(FIELD_START_OF_PREVIOUS_PAGE_OF_RESULTS, getSimpleStartOfPreviousPageOfResults());
-
+		writer.writeLong(FIELD_TOTAL_HITS, getSimpleTotalHits());
 	}
 
 	public StandardSearchRequest getSimpleSearchRequest()
@@ -139,6 +143,11 @@ public class SearchResponseOK extends JSONServletResponse
 		return start_of_previous_page_of_results;
 	}
 
+	public long getSimpleTotalHits()
+	{
+		return total_hits;
+	}
+
 	@Override
 	public int getSimpleHTTPResponseCode()
 	{
@@ -153,15 +162,16 @@ public class SearchResponseOK extends JSONServletResponse
 	@Override
 	public void normalize()
 	{
-		if ( start_of_next_page_of_results == 0 )
-		{
-			start_of_next_page_of_results = -1;
-		}
+//		if (start_of_next_page_of_results == 0)
+//		{
+//			start_of_next_page_of_results = -1;
+//		}
+//
+//		if (start_of_previous_page_of_results == 0)
+//		{
+//			start_of_previous_page_of_results = -1;
+//		}
 
-		if ( start_of_previous_page_of_results == 0 )
-		{
-			start_of_previous_page_of_results = -1;
-		}
 	}
 
 	@Override
@@ -169,40 +179,44 @@ public class SearchResponseOK extends JSONServletResponse
 	{
 		Validator.notNull(search_request);
 		Validator.notNull(results);
+		Validator.notNull(total_hits);
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(getSimpleHTTPResponseCode(), getSimpleSearchRequest(), getSimpleFirstResultIdx(), getSimpleHasMoreResults(), getSimpleHasPreviousResults(), getSimpleStartOfNextPageOfResults(), getSimpleStartOfPreviousPageOfResults());
+		return Objects.hash(getSimpleHTTPResponseCode(), getSimpleSearchRequest(), getSimpleFirstResultIdx(), getSimpleHasMoreResults(), getSimpleHasPreviousResults(), getSimpleStartOfNextPageOfResults(), getSimpleStartOfPreviousPageOfResults(), getSimpleTotalHits());
 	}
 
 	@Override
-	public boolean equals( Object obj )
+	public boolean equals(Object obj)
 	{
-		if ( !(obj instanceof SearchResponseOK) )
+		if (!(obj instanceof SearchResponseOK))
 			return false;
 
 		SearchResponseOK other = (SearchResponseOK) obj;
-		if ( !Objects.equals(getSimpleSearchRequest(), other.getSimpleSearchRequest()) )
+		if (!Objects.equals(getSimpleSearchRequest(), other.getSimpleSearchRequest()))
 			return false;
 
-		if ( !Objects.equals(getSimpleResults(), other.getSimpleResults()) )
+		if (!Objects.equals(getSimpleResults(), other.getSimpleResults()))
 			return false;
 
-		if ( getSimpleFirstResultIdx() != other.getSimpleFirstResultIdx() )
+		if (getSimpleFirstResultIdx() != other.getSimpleFirstResultIdx())
 			return false;
 
-		if ( getSimpleHasMoreResults() != other.getSimpleHasMoreResults() )
+		if (getSimpleHasMoreResults() != other.getSimpleHasMoreResults())
 			return false;
 
-		if ( getSimpleHasPreviousResults() != other.getSimpleHasPreviousResults() )
+		if (getSimpleHasPreviousResults() != other.getSimpleHasPreviousResults())
 			return false;
 
-		if ( getSimpleStartOfNextPageOfResults() != other.getSimpleStartOfNextPageOfResults() )
+		if (getSimpleStartOfNextPageOfResults() != other.getSimpleStartOfNextPageOfResults())
 			return false;
 
-		if ( getSimpleStartOfPreviousPageOfResults() != other.getSimpleStartOfPreviousPageOfResults() )
+		if (getSimpleStartOfPreviousPageOfResults() != other.getSimpleStartOfPreviousPageOfResults())
+			return false;
+
+		if (getSimpleTotalHits() != other.getSimpleTotalHits())
 			return false;
 
 		return true;

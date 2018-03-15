@@ -266,15 +266,6 @@ public class StorageS3 extends Storage
 	}
 
 	@Override
-	public boolean deleteKind(Kind kind)
-	{
-		// TODO
-
-		return false;
-
-	}
-
-	@Override
 	public StorageMetadata getObjectMetadata(final StorageKey key, final StorageMetadata default_value)
 	{
 		try

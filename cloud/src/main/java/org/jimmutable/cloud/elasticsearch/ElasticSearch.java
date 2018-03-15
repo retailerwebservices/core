@@ -434,11 +434,14 @@ public class ElasticSearch implements ISearch
 				results.add(new OneSearchResult(map));
 			});
 
+			long total_hits = response.getHits().totalHits;
+
 			int next_page = from + size;
+			int previous_page = (from - size) < 0 ? 0 : (from - size);
 
-			boolean has_more_results = response.getHits().totalHits > next_page;
+			boolean has_more_results = total_hits > next_page;
 
-			boolean has_previous_results = from != 0;
+			boolean has_previous_results = from > 0;
 
 			Level level;
 			switch (response.status())
@@ -451,9 +454,9 @@ public class ElasticSearch implements ISearch
 				break;
 			}
 
-			SearchResponseOK ok = new SearchResponseOK(request, results, from, has_more_results, has_previous_results, next_page, from);
+			SearchResponseOK ok = new SearchResponseOK(request, results, from, has_more_results, has_previous_results, next_page, previous_page, total_hits);
 
-			logger.log(level, String.format("QUERY:%s INDEX:%s STATUS:%s HITS:%s TOTAL_HITS:%s MAX_RESULTS:%d START_RESULTS_AFTER:%d", ok.getSimpleSearchRequest().getSimpleQueryString(), index.getSimpleValue(), response.status(), results.size(), response.getHits().totalHits, ok.getSimpleSearchRequest().getSimpleMaxResults(), ok.getSimpleSearchRequest().getSimpleStartResultsAfter()));
+			logger.log(level, String.format("QUERY:%s INDEX:%s STATUS:%s HITS:%s TOTAL_HITS:%s MAX_RESULTS:%d START_RESULTS_AFTER:%d", ok.getSimpleSearchRequest().getSimpleQueryString(), index.getSimpleValue(), response.status(), results.size(), ok.getSimpleTotalHits(), ok.getSimpleSearchRequest().getSimpleMaxResults(), ok.getSimpleSearchRequest().getSimpleStartResultsAfter()));
 			logger.trace(String.format("FIRST_RESULT_IDX:%s HAS_MORE_RESULTS:%s HAS_PREVIOUS_RESULTS:%s START_OF_NEXT_PAGE_OF_RESULTS:%s START_OF_PREVIOUS_PAGE_OF_RESULTS:%s", ok.getSimpleFirstResultIdx(), ok.getSimpleHasMoreResults(), ok.getSimpleHasMoreResults(), ok.getSimpleStartOfNextPageOfResults(), ok.getSimpleStartOfPreviousPageOfResults()));
 			logger.trace(ok.getSimpleResults().toString());
 

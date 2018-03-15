@@ -16,7 +16,6 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.EnumSet;
 
-import org.apache.commons.io.FileUtils;
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.common.Kind;
@@ -114,32 +113,6 @@ public class StorageDevLocalFileSystem extends Storage
 		{
 			File f = new File(root.getAbsolutePath() + "/" + key.toString());
 			return f.delete();
-		} catch (Exception e)
-		{
-			return false;
-		}
-	}
-
-	/**
-	 * WARNING: this will delete EVERYTHING in that is this kind
-	 * 
-	 * @param kind
-	 *            Kind associated with StorageObjects
-	 * @return true if the Kind was deleted, false otherwise
-	 */
-
-	public boolean deleteKind(Kind kind)
-	{
-		if (isReadOnly())
-		{
-			return false;
-		}
-		Validator.notNull(kind);
-		try
-		{
-			File f = new File(root.getAbsolutePath() + "/" + kind.getSimpleValue() + "/");
-			FileUtils.deleteDirectory(f);
-			return true;
 		} catch (Exception e)
 		{
 			return false;

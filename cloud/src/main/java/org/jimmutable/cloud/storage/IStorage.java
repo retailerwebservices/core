@@ -90,15 +90,6 @@ public interface IStorage
 	public boolean delete(StorageKey key);
 
 	/**
-	 * WARNING: this will delete EVERYTHING in that is this kind
-	 * 
-	 * @param kind
-	 *            Kind associated with StorageObjects
-	 * @return true if the Kind was deleted, false otherwise
-	 */
-	public boolean deleteKind(Kind kind);
-
-	/**
 	 * Scan the {@code IStorage} system for all keys of {@link Kind} {@code kind}.
 	 * Processing of the found keys is done in a managed thread pool. The thread
 	 * pool is entirely managed by the {@code scan} implementation, and the call to

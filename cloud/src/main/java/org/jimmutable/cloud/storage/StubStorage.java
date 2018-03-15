@@ -9,7 +9,7 @@ import org.jimmutable.core.serialization.Format;
 public class StubStorage implements IStorage
 {
 	public static final String ERROR_MESSAGE = "This should have never been called for unit testing, use a different implementation for integration testing!";
-	
+
 	@Override
 	public boolean exists(StorageKey key, boolean default_value)
 	{
@@ -22,11 +22,11 @@ public class StubStorage implements IStorage
 		throw new RuntimeException(ERROR_MESSAGE);
 	}
 
-    @Override
-    public boolean upsertStreaming(StorageKey key, InputStream source, boolean hint_content_likely_to_be_compressible)
-    {
-        throw new RuntimeException(ERROR_MESSAGE);
-    }
+	@Override
+	public boolean upsertStreaming(StorageKey key, InputStream source, boolean hint_content_likely_to_be_compressible)
+	{
+		throw new RuntimeException(ERROR_MESSAGE);
+	}
 
 	@Override
 	public byte[] getCurrentVersion(StorageKey key, byte[] default_value)
@@ -34,11 +34,11 @@ public class StubStorage implements IStorage
 		throw new RuntimeException(ERROR_MESSAGE);
 	}
 
-    @Override
-    public boolean getCurrentVersionStreaming(StorageKey key, OutputStream sink)
-    {
-        throw new RuntimeException(ERROR_MESSAGE);
-    }
+	@Override
+	public boolean getCurrentVersionStreaming(StorageKey key, OutputStream sink)
+	{
+		throw new RuntimeException(ERROR_MESSAGE);
+	}
 
 	@Override
 	public boolean delete(StorageKey key)
@@ -46,30 +46,30 @@ public class StubStorage implements IStorage
 		throw new RuntimeException(ERROR_MESSAGE);
 	}
 
-    @Override
-    public boolean scan(Kind kind, StorageKeyHandler handler, int num_handler_threads)
-    {
-        throw new RuntimeException(ERROR_MESSAGE);
-    }
-    
-    @Override
-    public boolean scan(Kind kind, StorageKeyName prefix, StorageKeyHandler handler, int num_handler_threads)
-    {
-        throw new RuntimeException(ERROR_MESSAGE);
-    }
-    
-    @Override
-    public boolean scanForObjectIds(Kind kind, StorageKeyHandler handler, int num_handler_threads)
-    {
-        throw new RuntimeException(ERROR_MESSAGE);
-    }
-    
-    @Override
-    public boolean scanForObjectIds(Kind kind, StorageKeyName prefix, StorageKeyHandler handler, int num_handler_threads)
-    {
-        throw new RuntimeException(ERROR_MESSAGE);
-    }
-	
+	@Override
+	public boolean scan(Kind kind, StorageKeyHandler handler, int num_handler_threads)
+	{
+		throw new RuntimeException(ERROR_MESSAGE);
+	}
+
+	@Override
+	public boolean scan(Kind kind, StorageKeyName prefix, StorageKeyHandler handler, int num_handler_threads)
+	{
+		throw new RuntimeException(ERROR_MESSAGE);
+	}
+
+	@Override
+	public boolean scanForObjectIds(Kind kind, StorageKeyHandler handler, int num_handler_threads)
+	{
+		throw new RuntimeException(ERROR_MESSAGE);
+	}
+
+	@Override
+	public boolean scanForObjectIds(Kind kind, StorageKeyName prefix, StorageKeyHandler handler, int num_handler_threads)
+	{
+		throw new RuntimeException(ERROR_MESSAGE);
+	}
+
 	@Override
 	public boolean upsert(Storable obj, Format format)
 	{
@@ -106,9 +106,4 @@ public class StubStorage implements IStorage
 		throw new RuntimeException(ERROR_MESSAGE);
 	}
 
-	@Override
-	public boolean deleteKind(Kind kind)
-	{
-		throw new RuntimeException(ERROR_MESSAGE);
-	}
 }
