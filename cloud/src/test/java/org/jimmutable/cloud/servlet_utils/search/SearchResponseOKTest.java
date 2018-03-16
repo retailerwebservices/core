@@ -1,5 +1,6 @@
 package org.jimmutable.cloud.servlet_utils.search;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -67,15 +68,14 @@ public class SearchResponseOKTest extends StubTest
 		{
 			fail();
 		}
-		
-		assertTrue(result.getSimpleSearchRequest() != null);
-		assertTrue(result.getSimpleSearchRequest().getSimpleQueryString() == "");
-		assertTrue(result.getSimpleResults().size() == 0);
-		assertTrue(result.getSimpleFirstResultIdx() == 0);
-		assertTrue(result.getSimpleHasMoreResults() == false);
-		assertTrue(result.getSimpleHasPreviousResults() == false);
-		assertTrue(result.getSimpleStartOfNextPageOfResults() == -1);
-		assertTrue(result.getSimpleStartOfPreviousPageOfResults() == -1);
+
+		assertEquals(result.getSimpleSearchRequest().getSimpleQueryString(), "");
+		assertEquals(result.getSimpleResults().size(), 0);
+		assertEquals(result.getSimpleFirstResultIdx(), 0);
+		assertEquals(result.getSimpleHasMoreResults(), false);
+		assertEquals(result.getSimpleHasPreviousResults(), false);
+		assertEquals(result.getSimpleStartOfNextPageOfResults(), 0);
+		assertEquals(result.getSimpleStartOfPreviousPageOfResults(), 0);
 
 	}
 	
