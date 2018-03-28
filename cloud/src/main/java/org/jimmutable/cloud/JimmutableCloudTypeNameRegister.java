@@ -4,6 +4,7 @@ import org.jimmutable.cloud.attachments.AttachmentMetaData;
 import org.jimmutable.cloud.attachments.DownloadFileName;
 import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
+import org.jimmutable.cloud.logging.LogLevelMessageOnChange;
 import org.jimmutable.cloud.messaging.StandardMessageOnUpsert;
 import org.jimmutable.cloud.objects.StandardChangeLogEntry;
 import org.jimmutable.cloud.servlet_utils.common_objects.GeneralResponseError;
@@ -76,5 +77,6 @@ public class JimmutableCloudTypeNameRegister
 		ObjectParseTree.registerTypeName(TinyUrlResult.class);
 		
 		ObjectParseTree.registerTypeName(StandardMessageOnUpsert.class);
+		ObjectParseTree.registerTypeName(LogLevelMessageOnChange.class);
 	}
 }

@@ -7,6 +7,9 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.selector.BasicContextSelector;
+import org.jimmutable.cloud.CloudExecutionEnvironment;
+import org.jimmutable.cloud.messaging.signal.SignalTopicId;
+import org.jimmutable.cloud.storage.UpsertListener;
 import org.jimmutable.core.utils.Validator;
 
 /**
@@ -19,6 +22,16 @@ import org.jimmutable.core.utils.Validator;
 public class Log4jUtil
 {
 
+	/**
+	 * Central topic for all log level change messages
+	 */
+	public static final SignalTopicId TOPIC_ID = new SignalTopicId("log-level-change");
+	public static void setupListeners()
+	{
+		LogLevelChangeListener log_level_change_listener = new LogLevelChangeListener();
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSignalService().startListening(TOPIC_ID, log_level_change_listener);
+	}
+	
 	/**
 	 * -Dlog4j.configurationFile=/Users/trevorbox/log4j2.properties
 	 * -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager

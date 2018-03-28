@@ -162,7 +162,7 @@ public class CloudExecutionEnvironment
 			}
 
 			CURRENT = new CloudExecutionEnvironment(new ElasticSearch(client), new StorageDevLocalFileSystem(false, APPLICATION_ID), new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID));
-
+			
 			break;
 		case STUB:
 
@@ -178,6 +178,8 @@ public class CloudExecutionEnvironment
 
 		JimmutableTypeNameRegister.registerAllTypes();
 		JimmutableCloudTypeNameRegister.registerAllTypes();
+		Log4jUtil.setupListeners();
+
 	}
 
 	/**
