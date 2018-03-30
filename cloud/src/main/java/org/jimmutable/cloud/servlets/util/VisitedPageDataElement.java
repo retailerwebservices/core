@@ -10,6 +10,9 @@ import org.jimmutable.core.utils.Validator;
 public class VisitedPageDataElement
 {
 
+	public static String DEFAULT_JSON_ELEMENT = "json";
+	public static String DEFAULT_FILE_ELEMENT = "file";
+	
 	protected String element_name = null;  // Required
 	private String element_json = null; // Optional
 	private InputStream element_data = null; // Optional

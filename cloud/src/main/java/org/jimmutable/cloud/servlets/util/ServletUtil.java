@@ -355,11 +355,12 @@ public class ServletUtil
 		try
 		{
 			raw_json = request.getReader().lines().collect(Collectors.joining());
-			handler.handle(new VisitedPageDataElement(RequestPageData.DEFAULT_JSON_ELEMENT, raw_json));
+			handler.handle(new VisitedPageDataElement(VisitedPageDataElement.DEFAULT_JSON_ELEMENT, raw_json));
 		}
 		catch ( Exception e )
 		{
 			logger.error(e);
+			handler.onError("Default JSON not found in request");
 		}
 	}
 
@@ -391,7 +392,7 @@ public class ServletUtil
 					// JSON data
 					if ( field_name == null || field_name == "" )
 					{
-						field_name = RequestPageData.DEFAULT_JSON_ELEMENT;
+						field_name = VisitedPageDataElement.DEFAULT_JSON_ELEMENT;
 					}
 					raw_json = new String(getBytesFromInputStream(stream, new byte[0]), StandardCharsets.UTF_8);
 					handler.handle(new VisitedPageDataElement(field_name, raw_json));
@@ -401,7 +402,7 @@ public class ServletUtil
 					// File data
 					if ( field_name == null || field_name == "" )
 					{
-						field_name = RequestPageData.DEFAULT_FILE_ELEMENT;
+						field_name = VisitedPageDataElement.DEFAULT_FILE_ELEMENT;
 					}
 					logger.info("File field " + field_name + " with file name " + item.getName() + " detected.");
 					handler.handle(new VisitedPageDataElement(field_name, null, stream, file_name));
