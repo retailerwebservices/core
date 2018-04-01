@@ -21,6 +21,8 @@ import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldType;
 import org.jimmutable.cloud.storage.Storable;
 import org.jimmutable.core.fields.FieldArrayList;
+import org.jimmutable.core.fields.FieldCollection;
+import org.jimmutable.core.fields.FieldHashSet;
 import org.jimmutable.core.fields.FieldList;
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.StandardImmutableObject;
@@ -70,24 +72,17 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 	private StandardImmutableObject<?> before;// optional
 	private StandardImmutableObject<?> after;// optional
 
-	static public final SearchIndexFieldDefinition SEARCH_FIELD_ID = new SearchIndexFieldDefinition(FIELD_ID.getSimpleFieldName(), SearchIndexFieldType.TEXT);
-	static public final SearchIndexFieldDefinition SEARCH_FIELD_ID_ATOM = new SearchIndexFieldDefinition(new FieldName(String.format("%s_atom", FIELD_ID.getSimpleFieldName().getSimpleName())), SearchIndexFieldType.ATOM);
-	static public final SearchIndexFieldDefinition SEARCH_FIELD_SUBJECT = new SearchIndexFieldDefinition(FIELD_SUBJECT.getSimpleFieldName(), SearchIndexFieldType.TEXT);
+	static public final SearchIndexFieldDefinition SEARCH_FIELD_ID = new SearchIndexFieldDefinition(FIELD_ID.getSimpleFieldName(), SearchIndexFieldType.ATOM);
+	static public final SearchIndexFieldDefinition SEARCH_FIELD_SUBJECT = new SearchIndexFieldDefinition(FIELD_SUBJECT.getSimpleFieldName(), SearchIndexFieldType.ATOM);
 
-	static public final SearchIndexFieldDefinition SEARCH_FIELD_BEFORE_ID = new SearchIndexFieldDefinition(new FieldName(String.format("%s_id", FIELD_BEFORE.getSimpleFieldName().getSimpleName())), SearchIndexFieldType.TEXT);
-	static public final SearchIndexFieldDefinition SEARCH_FIELD_BEFORE_ID_ATOM = new SearchIndexFieldDefinition(new FieldName(String.format("%s_id_atom", FIELD_BEFORE.getSimpleFieldName().getSimpleName())), SearchIndexFieldType.ATOM);
+	static public final SearchIndexFieldDefinition SEARCH_FIELD_BEFORE_ID = new SearchIndexFieldDefinition(new FieldName(String.format("%s_id", FIELD_BEFORE.getSimpleFieldName().getSimpleName())), SearchIndexFieldType.ATOM);
+	static public final SearchIndexFieldDefinition SEARCH_FIELD_AFTER_ID = new SearchIndexFieldDefinition(new FieldName(String.format("%s_id", FIELD_AFTER.getSimpleFieldName().getSimpleName())), SearchIndexFieldType.ATOM);
 
-	static public final SearchIndexFieldDefinition SEARCH_FIELD_AFTER_ID = new SearchIndexFieldDefinition(new FieldName(String.format("%s_id", FIELD_AFTER.getSimpleFieldName().getSimpleName())), SearchIndexFieldType.TEXT);
-	static public final SearchIndexFieldDefinition SEARCH_FIELD_AFTER_ID_ATOM = new SearchIndexFieldDefinition(new FieldName(String.format("%s_id_atom", FIELD_AFTER.getSimpleFieldName().getSimpleName())), SearchIndexFieldType.ATOM);
-
-	static public final SearchIndexFieldDefinition SEARCH_FIELD_TIMESTAMP = new SearchIndexFieldDefinition(FIELD_TIMESTAMP.getSimpleFieldName(), SearchIndexFieldType.LONG);
-
-	static public final SearchIndexFieldDefinition SEARCH_FIELD_CHANGE_MADE_BY_USER_ID = new SearchIndexFieldDefinition(FIELD_CHANGE_MADE_BY_USER_ID.getSimpleFieldName(), SearchIndexFieldType.TEXT);
-	static public final SearchIndexFieldDefinition SEARCH_FIELD_CHANGE_MADE_BY_USER_ID_ATOM = new SearchIndexFieldDefinition(new FieldName(String.format("%s_atom", FIELD_CHANGE_MADE_BY_USER_ID.getSimpleFieldName().getSimpleName())), SearchIndexFieldType.ATOM);
-
+	static public final SearchIndexFieldDefinition SEARCH_FIELD_TIMESTAMP = new SearchIndexFieldDefinition(FIELD_TIMESTAMP.getSimpleFieldName(), SearchIndexFieldType.DAY);
+	static public final SearchIndexFieldDefinition SEARCH_FIELD_CHANGE_MADE_BY_USER_ID = new SearchIndexFieldDefinition(FIELD_CHANGE_MADE_BY_USER_ID.getSimpleFieldName(), SearchIndexFieldType.ATOM);
 	static public final SearchIndexFieldDefinition SEARCH_FIELD_SHORT_DESCRIPTION = new SearchIndexFieldDefinition(FIELD_SHORT_DESCRIPTION.getSimpleFieldName(), SearchIndexFieldType.TEXT);
 	static public final SearchIndexFieldDefinition SEARCH_FIELD_COMMENTS = new SearchIndexFieldDefinition(FIELD_COMMENTS.getSimpleFieldName(), SearchIndexFieldType.TEXT);
-	static public final SearchIndexFieldDefinition SEARCH_FIELD_ATTACHMENTS = new SearchIndexFieldDefinition(FIELD_ATTACHMENTS.getSimpleFieldName(), SearchIndexFieldType.TEXT);
+	static public final SearchIndexFieldDefinition SEARCH_FIELD_ATTACHMENTS = new SearchIndexFieldDefinition(FIELD_ATTACHMENTS.getSimpleFieldName(), SearchIndexFieldType.ATOM);
 
 	static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("change-log-entry"), new IndexVersion("v1"));
 
@@ -101,22 +96,14 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
 
 		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_ID);
-		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_ID_ATOM);
-
 		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_SUBJECT);
 		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_TIMESTAMP);
 		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_CHANGE_MADE_BY_USER_ID);
-		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_CHANGE_MADE_BY_USER_ID_ATOM);
 		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_SHORT_DESCRIPTION);
 		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_COMMENTS);
 		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_ATTACHMENTS);
-
 		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_BEFORE_ID);
-		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_BEFORE_ID_ATOM);
-
 		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_AFTER_ID);
-		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_AFTER_ID_ATOM);
-
 		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
 
 		INDEX_MAPPING = (SearchIndexDefinition) b.create(null);
@@ -354,15 +341,13 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 	@Override
 	public void writeSearchDocument(SearchDocumentWriter writer)
 	{
-		writer.writeText(SEARCH_FIELD_ID, getSimpleObjectId().getSimpleValue());
-		writer.writeAtom(SEARCH_FIELD_ID_ATOM, getSimpleObjectId().getSimpleValue());
+		writer.writeAtom(SEARCH_FIELD_ID, getSimpleObjectId().getSimpleValue());
 
-		writer.writeText(SEARCH_FIELD_SUBJECT, getSimpleSubject().getSimpleValue());
+		writer.writeAtom(SEARCH_FIELD_SUBJECT, getSimpleSubject().getSimpleValue());
 
-		writer.writeLong(SEARCH_FIELD_TIMESTAMP, getSimpleTimestamp());
+		writer.writeTimestamp(SEARCH_FIELD_TIMESTAMP, getSimpleTimestamp());
 
-		writer.writeText(SEARCH_FIELD_CHANGE_MADE_BY_USER_ID, getSimpleChangeMadeByUserId().getSimpleValue());
-		writer.writeAtom(SEARCH_FIELD_CHANGE_MADE_BY_USER_ID_ATOM, getSimpleChangeMadeByUserId().getSimpleValue());
+		writer.writeAtom(SEARCH_FIELD_CHANGE_MADE_BY_USER_ID, getSimpleChangeMadeByUserId().getSimpleValue());
 
 		writer.writeText(SEARCH_FIELD_SHORT_DESCRIPTION, getSimpleShortDescription());
 
@@ -371,14 +356,13 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 			writer.writeText(SEARCH_FIELD_COMMENTS, getOptionalComments(null));
 		}
 
-		StringJoiner sj = new StringJoiner(" ");
-		Iterator<ObjectId> i = getSimpleAttachments().iterator();
-		while (i.hasNext())
+		FieldCollection<ObjectId> attachments = new FieldHashSet<>();
+		getSimpleAttachments().forEach(attachment ->
 		{
-			sj.add(i.next().getSimpleValue());
-		}
+			attachments.add(attachment);
+		});
 
-		writer.writeText(SEARCH_FIELD_ATTACHMENTS, sj.toString());
+		writer.writeAtomObjectIdArray(SEARCH_FIELD_ATTACHMENTS, attachments);
 
 		StandardImmutableObject<?> before_object = getOptionalBefore(null);
 
@@ -386,9 +370,7 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 		{
 			if (before_object instanceof Storable)
 			{
-				String before_id = ((Storable) before_object).getSimpleObjectId().getSimpleValue();
-				writer.writeText(SEARCH_FIELD_BEFORE_ID, before_id);
-				writer.writeAtom(SEARCH_FIELD_BEFORE_ID_ATOM, before_id);
+				writer.writeAtom(SEARCH_FIELD_BEFORE_ID, ((Storable) before_object).getSimpleObjectId().getSimpleValue());
 			}
 		}
 
@@ -398,9 +380,7 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 		{
 			if (after_object instanceof Storable)
 			{
-				String after_id = ((Storable) after_object).getSimpleObjectId().getSimpleValue();
-				writer.writeText(SEARCH_FIELD_AFTER_ID, after_id);
-				writer.writeAtom(SEARCH_FIELD_AFTER_ID_ATOM, after_id);
+				writer.writeAtom(SEARCH_FIELD_AFTER_ID, ((Storable) after_object).getSimpleObjectId().getSimpleValue());
 			}
 		}
 

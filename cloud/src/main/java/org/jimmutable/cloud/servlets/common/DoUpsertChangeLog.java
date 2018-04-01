@@ -148,7 +148,7 @@ public class DoUpsertChangeLog extends HttpServlet
 
 			StandardChangeLogEntry new_entry = (StandardChangeLogEntry) b.create(null);
 
-			logger.info(new_entry);
+//			logger.info(new_entry);
 
 			try
 			{
