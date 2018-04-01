@@ -339,16 +339,16 @@ public class ServletUtil
 		if ( ServletFileUpload.isMultipartContent(request) )
 		{
 			request.setAttribute(Request.__MULTIPART_CONFIG_ELEMENT, MULTI_PART_CONFIG);
-			parseDataFromMultipartFormWithVisitor(request, handler);
+			parseDataFromMultipartFormWithHandler(request, handler);
 		}
 		else
 		{
-			parseJSONFromRequestBodyWithVisitor(request, handler);
+			parseJSONFromRequestBodyWithHandler(request, handler);
 		}
 
 	}
 
-	private static void parseJSONFromRequestBodyWithVisitor( HttpServletRequest request, PageDataHandler handler )
+	private static void parseJSONFromRequestBodyWithHandler( HttpServletRequest request, PageDataHandler handler )
 	{
 		String raw_json = "";
 
@@ -364,7 +364,7 @@ public class ServletUtil
 		}
 	}
 
-	private static void parseDataFromMultipartFormWithVisitor( HttpServletRequest request, PageDataHandler handler )
+	private static void parseDataFromMultipartFormWithHandler( HttpServletRequest request, PageDataHandler handler )
 	{
 		String file_name = null;
 		String raw_json = "";
