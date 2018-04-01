@@ -1,7 +1,5 @@
 package org.jimmutable.cloud.servlets.common;
 
-import java.io.IOException;
-
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,7 +18,9 @@ import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 
 /**
- * This Class is used to get StandardImmutableObjects or specific data related to them. 
+ * This Class is used to get StandardImmutableObjects or specific data related
+ * to them.
+ * 
  * @author andrew.towe
  *
  * @param <T>
@@ -33,63 +33,97 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 	private static final long serialVersionUID = 8993193171889935131L;
 
 	@Override
-	public void doGet( HttpServletRequest request, HttpServletResponse response )
+	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	{
+
+		ObjectId id = null;
 		try
 		{
-			String id = request.getParameter(getId()) == null ? "" : request.getParameter(getId());
-			StorageKey key = new ObjectIdStorageKey(getKind(), new ObjectId(id), getExtension());
-			T object = (T) StandardObject.deserialize(new String(CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(key, null)));
-
-			Object more_specific_data = null;
-			try
-			{
-				more_specific_data = getMoreSpecificData(object, request);
-			}
-			catch ( Exception e )
-			{
-				handleError(response,e);
-			}
-			if ( more_specific_data != null )
-			{
-				ServletUtil.writeSerializedResponse(response, more_specific_data, GetResponseOK.HTTP_STATUS_CODE_OK);
-			}
-			else
-			{
-				objectNotFoundFunction(response);
-			}
-		}
-		catch ( Exception e )
+			id = new ObjectId(request.getParameter(getId()));
+		} catch (Exception e)
 		{
-			handleError(response, e);
 			getLogger().error(e);
-			ServletUtil.writeSerializedResponse(response, new GetResponseError(e.getMessage()), GetResponseError.HTTP_STATUS_CODE_ERROR);
+			ServletUtil.writeSerializedResponse(response, new GetResponseError(String.format("Invalid ObjectId from parameter:%s", getId())), GetResponseError.HTTP_STATUS_CODE_ERROR);
+			return;
 		}
-	}
 
-	protected void objectNotFoundFunction(HttpServletResponse response)
-	{
+		StorageKey key = null;
 		try
 		{
-			response.sendError(HttpServletResponse.SC_NOT_FOUND);
-		}
-		catch ( IOException e )
+			key = new ObjectIdStorageKey(getKind(), id, getExtension());
+		} catch (Exception e)
 		{
-			e.printStackTrace();
 			getLogger().error(e);
+			ServletUtil.writeSerializedResponse(response, new GetResponseError(String.format("Failed to create valid StorageKey from parameter:%s", getId())), GetResponseError.HTTP_STATUS_CODE_ERROR);
+			return;
 		}
+
+		byte[] bytes = CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(key, null);
+
+		if (bytes == null)
+		{
+			String error = String.format("%s not found in storage", key.getSimpleName());
+			getLogger().error(error);
+			ServletUtil.writeSerializedResponse(response, new GetResponseError(error), GetResponseError.HTTP_STATUS_CODE_ERROR);
+
+			return;
+		}
+
+		T object = null;
+		try
+		{
+			object = (T) StandardObject.deserialize(new String(bytes));
+		} catch (Exception e)
+		{
+			String error = String.format("Failed to serialize %s from storage", key.getSimpleName());
+			getLogger().error(error);
+			ServletUtil.writeSerializedResponse(response, new GetResponseError(error), GetResponseError.HTTP_STATUS_CODE_ERROR);
+
+			return;
+		}
+
+		Object more_specific_data = null;
+		try
+		{
+			more_specific_data = getMoreSpecificData(object, request, null);
+		} catch (Exception e)
+		{
+			getLogger().error(e);
+			ServletUtil.writeSerializedResponse(response, new GetResponseError(e.toString()), GetResponseError.HTTP_STATUS_CODE_ERROR);
+			return;
+		}
+
+		if (more_specific_data != null)
+		{
+			ServletUtil.writeSerializedResponse(response, more_specific_data, GetResponseOK.HTTP_STATUS_CODE_OK);
+			return;
+		} else
+		{
+			String error = String.format("Failed to create object please contact an admin");
+			getLogger().error(error);
+			ServletUtil.writeSerializedResponse(response, new GetResponseError(error), GetResponseError.HTTP_STATUS_CODE_ERROR);
+			return;
+		}
+
 	}
 
-	protected void handleError( HttpServletResponse response, Exception e )
+	/**
+	 * Used to decorate an existing object into a new one
+	 * 
+	 * @param obj
+	 *            T an Object
+	 * @param request
+	 *            HttpServletRequest
+	 * @param default_value
+	 *            Object returned if failure
+	 * @return the new Object
+	 */
+	protected Object getMoreSpecificData(T obj, HttpServletRequest request, Object default_value)
 	{
-		getLogger().error(e);
-		ServletUtil.writeSerializedResponse(response, new GetResponseError(e.toString()), GetResponseError.HTTP_STATUS_CODE_ERROR);
-		
-	}
-
-	protected Object getMoreSpecificData( T obj, HttpServletRequest request )
-	{
-		// to be overriddden if more specific data is needed.
+		if (obj == null)
+		{
+			return default_value;
+		}
 		return obj;
 	}
 

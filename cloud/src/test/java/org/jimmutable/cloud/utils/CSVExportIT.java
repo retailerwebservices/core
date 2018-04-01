@@ -53,15 +53,11 @@ public class CSVExportIT extends IntegrationTest
 		Set<SearchFieldId> set = new HashSet<SearchFieldId>();
 
 		set.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_ID.getSimpleFieldName().getSimpleName()));
-		set.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_ID_ATOM.getSimpleFieldName().getSimpleName()));
 		set.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_SUBJECT.getSimpleFieldName().getSimpleName()));
 		set.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_BEFORE_ID.getSimpleFieldName().getSimpleName()));
-		set.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_BEFORE_ID_ATOM.getSimpleFieldName().getSimpleName()));
 		set.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_AFTER_ID.getSimpleFieldName().getSimpleName()));
-		set.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_AFTER_ID_ATOM.getSimpleFieldName().getSimpleName()));
 		set.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_TIMESTAMP.getSimpleFieldName().getSimpleName()));
 		set.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_CHANGE_MADE_BY_USER_ID.getSimpleFieldName().getSimpleName()));
-		set.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_CHANGE_MADE_BY_USER_ID_ATOM.getSimpleFieldName().getSimpleName()));
 		set.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_SHORT_DESCRIPTION.getSimpleFieldName().getSimpleName()));
 		set.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_COMMENTS.getSimpleFieldName().getSimpleName()));
 		set.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_ATTACHMENTS.getSimpleFieldName().getSimpleName()));

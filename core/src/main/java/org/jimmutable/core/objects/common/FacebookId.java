@@ -28,7 +28,7 @@ public class FacebookId extends Stringable
 	{
 		String simpleValue = getSimpleValue();
 		Validator.notNull(simpleValue);
-		Validator.containsOnlyValidCharacters(simpleValue, Validator.LETTERS, Validator.NUMBERS);
+		Validator.containsOnlyValidCharacters(simpleValue, Validator.LETTERS, Validator.NUMBERS, Validator.DOT, Validator.UNDERSCORE);
 		Validator.min(simpleValue.length(), 3);
 		Validator.max(simpleValue.length(), 255);
 	}
