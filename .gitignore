@@ -1,2 +1,5 @@
 base/target/
 core/target/
+org.eclipse.core.resources.prefs
+.project
+.gitignore
