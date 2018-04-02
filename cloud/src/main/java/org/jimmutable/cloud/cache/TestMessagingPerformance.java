@@ -54,8 +54,8 @@ public class TestMessagingPerformance
 				onUsageError("You must specify a mode with -mode source or -mode sink");
 			}
 			
-			String host = NetUtils.extractHostFromHostPortPair(cmd.getOptionValue("server"), "localhost");
-			int port = NetUtils.extractPortFromHostPortPair(cmd.getOptionValue("server"), LowLevelRedisDriver.DEFAULT_PORT_REDIS);
+			String host = LowLevelRedisDriver.DEFAULT_HOST;
+			int port = LowLevelRedisDriver.DEFAULT_PORT_REDIS;
 			
 			CloudExecutionEnvironment.startupStubTest(new ApplicationId("test"));
 			
@@ -75,7 +75,7 @@ public class TestMessagingPerformance
 		System.out.println(String.format("Starting signal source %s:%d in 2 sec", host, port));
 		silentSleep(2000);
 		
-		LowLevelRedisDriver redis = new LowLevelRedisDriver (host, port);
+		LowLevelRedisDriver redis = new LowLevelRedisDriver ();
 		ISignal signal = new SignalRedis(new ApplicationId("test"), redis);
 		
 		RateLimitingEmitter message_emitter = RateLimitingEmitter.startEmitter(new CountSource(), new SendSignal(signal), 1.0f);
@@ -122,7 +122,7 @@ public class TestMessagingPerformance
 		System.out.println(String.format("Starting queue source %s:%d in 2 sec", host, port));
 		silentSleep(2000);
 		
-		LowLevelRedisDriver redis = new LowLevelRedisDriver (host, port);
+		LowLevelRedisDriver redis = new LowLevelRedisDriver ();
 		QueueRedis queue = new QueueRedis(new ApplicationId("test"), redis);
 		
 		RateLimitingEmitter message_emitter = RateLimitingEmitter.startEmitter(new CountSource(), new SendQueue(queue), 1.0f);
@@ -171,7 +171,7 @@ public class TestMessagingPerformance
 		System.out.println(String.format("Starting signal sink %s:%d in 2 sec", host, port));
 		silentSleep(2000);
 		
-		LowLevelRedisDriver redis = new LowLevelRedisDriver (host, port);
+		LowLevelRedisDriver redis = new LowLevelRedisDriver ();
 		ISignal signal = new SignalRedis(new ApplicationId("test"), redis);
 		
 		MySignalListener listener = new MySignalListener();
@@ -228,7 +228,7 @@ public class TestMessagingPerformance
 		System.out.println(String.format("Starting queue sink %s:%d in 2 sec", host, port));
 		silentSleep(2000);
 		
-		LowLevelRedisDriver redis = new LowLevelRedisDriver (host, port);
+		LowLevelRedisDriver redis = new LowLevelRedisDriver ();
 		QueueRedis queue = new QueueRedis(new ApplicationId("test"), redis);
 		
 		MyQueueListener listener = new MyQueueListener();

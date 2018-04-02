@@ -13,6 +13,7 @@ import org.jimmutable.cloud.messaging.signal.SignalTopicId;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.threading.DaemonThreadFactory;
+import org.jimmutable.core.utils.NetUtils;
 import org.jimmutable.core.utils.Validator;
 
 import redis.clients.jedis.Jedis;
@@ -48,15 +49,16 @@ public class LowLevelRedisDriver
 	
 	public LowLevelRedisDriver()
 	{
-		this("localhost", DEFAULT_PORT_REDIS);
-	}
-	
-	public LowLevelRedisDriver(String host, int port)
-	{
+		String redis_address = System.getProperty("redis.address");
+		String host = NetUtils.extractHostFromHostPortPair(redis_address, LowLevelRedisDriver.DEFAULT_HOST);
+		int port = NetUtils.extractPortFromHostPortPair(redis_address, DEFAULT_PORT_REDIS);
+		
 		JedisPoolConfig config = new JedisPoolConfig();
 		config.setMaxTotal(250);
 		config.setMaxIdle(1000 * 60);
 		config.setTestOnBorrow(false);
+		
+		System.out.println("[LowLevelRedisDriver.init] starting LowLevelRedisDriver on host: " + host + ", port: " + port);
 		
 		pool = new JedisPool(config, host, port);
 		cache = new RedisCache();
