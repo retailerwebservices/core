@@ -44,9 +44,9 @@ public class TestCache
 			String host = NetUtils.extractHostFromHostPortPair(cmd.getOptionValue("server"), "localhost");
 			int port = NetUtils.extractPortFromHostPortPair(cmd.getOptionValue("server"), LowLevelRedisDriver.DEFAULT_PORT_REDIS);
 			
-			System.out.println("testing cache: "+host+":"+port);
+			System.out.println("testing cache: "+LowLevelRedisDriver.DEFAULT_HOST+":"+LowLevelRedisDriver.DEFAULT_PORT_REDIS);
 			
-			driver = new LowLevelRedisDriver(host, port); 
+			driver = new LowLevelRedisDriver(); 
 
 			CloudExecutionEnvironment.startupStubTest(new ApplicationId("test"));
 		}

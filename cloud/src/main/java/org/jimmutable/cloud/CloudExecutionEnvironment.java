@@ -25,6 +25,8 @@ import org.jimmutable.cloud.storage.IStorage;
 import org.jimmutable.cloud.storage.StandardImmutableObjectCache;
 import org.jimmutable.cloud.storage.StorageDevLocalFileSystem;
 import org.jimmutable.cloud.storage.StubStorage;
+import org.jimmutable.cloud.storage.s3.RegionSpecificAmazonS3ClientFactory;
+import org.jimmutable.cloud.storage.s3.StorageS3;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 
 /**
@@ -143,6 +145,8 @@ public class CloudExecutionEnvironment
 
 		switch (env_type)
 		{
+		// For now, staging is the same as dev
+		case STAGING:
 		case DEV:
 
 			checkOs();
@@ -151,7 +155,8 @@ public class CloudExecutionEnvironment
 			try
 			{
 				client = new PreBuiltTransportClient(Settings.EMPTY).addTransportAddress(new TransportAddress(InetAddress.getByName(ElasticSearchEndpoint.CURRENT.getSimpleHost()), ElasticSearchEndpoint.CURRENT.getSimplePort()));
-			} catch (UnknownHostException e)
+			}
+			catch (UnknownHostException e)
 			{
 				logger.log(Level.FATAL, "Failed to instantiate the elasticsearch client!", e);
 			}
@@ -164,6 +169,27 @@ public class CloudExecutionEnvironment
 			CURRENT = new CloudExecutionEnvironment(new ElasticSearch(client), new StorageDevLocalFileSystem(false, APPLICATION_ID), new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID));
 
 			break;
+		case PRODUCTION:
+			checkOs();
+			
+			TransportClient prod_client = null;
+			try
+			{
+				prod_client = new PreBuiltTransportClient(Settings.EMPTY).addTransportAddress(new TransportAddress(InetAddress.getByName(ElasticSearchEndpoint.CURRENT.getSimpleHost()), ElasticSearchEndpoint.CURRENT.getSimplePort()));
+			}
+			catch (UnknownHostException e)
+			{
+				logger.log(Level.FATAL, "Failed to instantiate the elasticsearch client!", e);
+			}
+			
+			if (prod_client == null)
+			{
+				throw new RuntimeException("Failed to instantiate the elasticsearch client!");
+			}
+
+	        StorageS3 storage = new StorageS3(RegionSpecificAmazonS3ClientFactory.defaultFactory(), APPLICATION_ID, false);
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearch(prod_client), storage, new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID));
+	        break;
 		case STUB:
 
 			checkOs();
@@ -214,13 +240,17 @@ public class CloudExecutionEnvironment
 	 */
 	public static EnvironmentType getEnvironmentTypeFromSystemProperty(EnvironmentType default_value)
 	{
-
 		String env_level = System.getProperty(ENV_TYPE_VARIABLE_NAME);
+		if (env_level == null) env_level = System.getProperty(ENV_TYPE_VARIABLE_NAME.toLowerCase());
+		
 		if (env_level != null)
 		{
+			logger.info("starting environment with type: " + env_level);
+			
 			EnvironmentType tmp_type = null;
 			try
 			{
+				env_level = env_level.toUpperCase();
 				tmp_type = EnvironmentType.valueOf(env_level);
 			} catch (Exception e)
 			{

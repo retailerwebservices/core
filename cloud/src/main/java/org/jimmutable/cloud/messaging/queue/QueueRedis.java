@@ -29,7 +29,7 @@ public class QueueRedis implements IQueue
 	
 	public QueueRedis(ApplicationId app)
 	{
-		this(app, new LowLevelRedisDriver(LowLevelRedisDriver.DEFAULT_HOST, LowLevelRedisDriver.DEFAULT_PORT_REDIS));
+		this(app, new LowLevelRedisDriver());
 	}
 	
     @Override

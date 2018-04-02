@@ -29,7 +29,7 @@ public class SignalRedis implements ISignal
 
 	public SignalRedis(ApplicationId app)
 	{ 
-		this (app, new LowLevelRedisDriver(LowLevelRedisDriver.DEFAULT_HOST, LowLevelRedisDriver.DEFAULT_PORT_REDIS));
+		this (app, new LowLevelRedisDriver());
 	}
 
     @Override
