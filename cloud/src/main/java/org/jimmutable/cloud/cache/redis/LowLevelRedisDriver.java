@@ -15,6 +15,8 @@ import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.threading.DaemonThreadFactory;
 import org.jimmutable.core.utils.NetUtils;
 import org.jimmutable.core.utils.Validator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -37,6 +39,7 @@ public class LowLevelRedisDriver
 {
 	static public final String DEFAULT_HOST = "localhost";
 	static public final int DEFAULT_PORT_REDIS = 6379;
+	static public final Logger logger = LogManager.getLogger(LowLevelRedisDriver.class);
 	
 	private JedisPool pool;
 	
@@ -58,7 +61,7 @@ public class LowLevelRedisDriver
 		config.setMaxIdle(1000 * 60);
 		config.setTestOnBorrow(false);
 		
-		System.out.println("[LowLevelRedisDriver.init] starting LowLevelRedisDriver on host: " + host + ", port: " + port);
+		logger.info("[LowLevelRedisDriver.init] starting LowLevelRedisDriver on host: " + host + ", port: " + port);
 		
 		pool = new JedisPool(config, host, port);
 		cache = new RedisCache();
