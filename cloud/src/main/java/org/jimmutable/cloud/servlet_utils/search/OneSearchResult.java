@@ -17,12 +17,15 @@ import org.jimmutable.core.serialization.writer.WriteAs;
 import org.jimmutable.core.utils.Validator;
 
 /**
+ * This class has been deprecated in favor of OneSearchResultWithTyping
+ * 
  * OneSearchResult Represents a single search result
  * 
  * Stores FieldName, String pairs in a HashMap. HashMap can be empty.
  * 
  * @author Preston McCumber
  */
+@Deprecated
 public class OneSearchResult extends StandardImmutableMapDeck<OneSearchResult, FieldName, String>
 {
 

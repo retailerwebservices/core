@@ -1,5 +1,6 @@
 package org.jimmutable.core.utils;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
@@ -183,6 +184,16 @@ public class Validator
 	{
 		containsOnlyInstancesOf(key,map.keySet());
 		containsOnlyInstancesOf(value,map.values());
+	}
+	
+	static public void containsOnlyInstancesOfValueStringArray(Class<?> key, Class<?> value, Map<?, String[]> map)
+	{
+		containsOnlyInstancesOf(key,map.keySet());
+		
+		for ( Object[] obj : map.values())
+		{
+			containsOnlyInstancesOf(value,Arrays.asList(obj));
+		}		
 	}
 
 	static public <E extends Enum<E>> void notEqual(Enum<E> one, Enum<E> two)

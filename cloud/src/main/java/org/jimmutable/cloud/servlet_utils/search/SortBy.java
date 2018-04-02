@@ -7,7 +7,6 @@ import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.TypeName;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
-import org.jimmutable.core.serialization.reader.ReadAs;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.utils.Comparison;
 import org.jimmutable.core.utils.Validator;
@@ -21,8 +20,6 @@ import org.jimmutable.core.utils.Validator;
  */
 public class SortBy extends StandardImmutableObject<SortBy>
 {
-	static public final Converter<SortBy> CONVERTER = new Converter<>();
-
 	public static final FieldDefinition.StandardObject FIELD_FIELD = new FieldDefinition.StandardObject("field", null);
 	public static final FieldDefinition.Enum<SortDirection> FIELD_DIRECTION = new FieldDefinition.Enum<SortDirection>("direction", null, SortDirection.CONVERTER);
 
@@ -121,27 +118,4 @@ public class SortBy extends StandardImmutableObject<SortBy>
 
 		return true;
 	}
-
-	static private class Converter<S extends SortBy> extends ReadAs
-	{
-		public SortBy from(SearchIndexFieldDefinition field, SortDirection direction, SortBy default_value)
-		{
-			try
-			{
-				return new SortBy(field, direction);
-			} catch (Exception e)
-			{
-				return default_value;
-			}
-		}
-
-		@Override
-		public Object readAs(ObjectParseTree t)
-		{
-			SearchIndexFieldDefinition name = (SearchIndexFieldDefinition) t.getObject(FIELD_FIELD);
-			SortDirection type = t.getEnum(FIELD_DIRECTION);
-			return from(name, type, null);
-		}
-	}
-
 }

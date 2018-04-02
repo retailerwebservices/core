@@ -2,8 +2,10 @@ package org.jimmutable.cloud.servlet_utils.search;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.fields.FieldList;
@@ -43,6 +45,15 @@ public class Sort extends StandardImmutableObject<Sort>
 	public Sort(Collection<SortBy> fields)
 	{
 		super();
+		this.sort_order = new FieldArrayList<SortBy>(fields);
+		complete();
+	}
+	
+	public Sort(SortBy field)
+	{
+		super();
+		Set<SortBy> fields = new HashSet<>();
+		fields.add(field);
 		this.sort_order = new FieldArrayList<SortBy>(fields);
 		complete();
 	}

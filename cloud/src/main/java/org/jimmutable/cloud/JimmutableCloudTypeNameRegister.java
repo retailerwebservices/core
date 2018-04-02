@@ -1,7 +1,6 @@
 package org.jimmutable.cloud;
 
 import org.jimmutable.cloud.attachments.AttachmentMetaData;
-import org.jimmutable.cloud.attachments.DownloadFileName;
 import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
 import org.jimmutable.cloud.messaging.StandardMessageOnUpsert;
@@ -13,6 +12,7 @@ import org.jimmutable.cloud.servlet_utils.get.GetResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.AdvancedSearchComboBoxChoice;
 import org.jimmutable.cloud.servlet_utils.search.AdvancedSearchField;
 import org.jimmutable.cloud.servlet_utils.search.IncludeFieldInView;
+import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
 import org.jimmutable.cloud.servlet_utils.search.RequestExportCSV;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
@@ -57,6 +57,7 @@ public class JimmutableCloudTypeNameRegister
 
 		ObjectParseTree.registerTypeName(StandardSearchRequest.class);
 		ObjectParseTree.registerTypeName(OneSearchResult.class);
+		ObjectParseTree.registerTypeName(OneSearchResultWithTyping.class);
 
 		ObjectParseTree.registerTypeName(SearchIndexFieldDefinition.class);
 		ObjectParseTree.registerTypeName(SearchIndexDefinition.class);
