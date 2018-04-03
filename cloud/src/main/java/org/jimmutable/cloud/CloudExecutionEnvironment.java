@@ -172,6 +172,8 @@ public class CloudExecutionEnvironment
 		case PRODUCTION:
 			checkOs();
 			
+			logger.log(Level.INFO, "Starting production environment");
+			
 			TransportClient prod_client = null;
 			try
 			{
