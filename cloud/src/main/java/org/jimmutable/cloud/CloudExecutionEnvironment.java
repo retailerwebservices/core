@@ -190,6 +190,8 @@ public class CloudExecutionEnvironment
 			}
 
 	        StorageS3 storage = new StorageS3(RegionSpecificAmazonS3ClientFactory.defaultFactory(), APPLICATION_ID, false);
+	        storage.upsertBucketIfNeeded();
+	        
 			CURRENT = new CloudExecutionEnvironment(new ElasticSearch(prod_client), storage, new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID));
 	        break;
 		case STUB:
