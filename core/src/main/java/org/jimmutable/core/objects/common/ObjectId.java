@@ -1,13 +1,11 @@
 package org.jimmutable.core.objects.common;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.Stringable;
+import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.utils.Validator;
-import org.jimmutable.core.utils.Validator.ValidCharacters;
 
 /**
  * A stringable class used to represent a numerical Object Id. Id(s) are 16
@@ -30,6 +28,7 @@ public class ObjectId  extends Stringable
 	static private Random random = new Random();
 	
 	static public final MyConverter CONVERTER = new MyConverter();
+	static public final FieldDefinition.Stringable<ObjectId> FIELD_OBJECT_ID = new FieldDefinition.Stringable<ObjectId>("id", null, ObjectId.CONVERTER);
 	
 	private long long_value;
 	
