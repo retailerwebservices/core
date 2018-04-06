@@ -174,6 +174,8 @@ public class StorageS3 extends Storage
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		try (OutputStream bout = new IOUtils.LimitBytesOutputStream(bytes, MAX_TRANSFER_BYTES_IN_BYTES))
 		{
+			
+			
 			try (S3Object s3_obj = client.getObject(bucket_name, key.toString()))
 			{
 				try (InputStream s3in = s3_obj.getObjectContent())
