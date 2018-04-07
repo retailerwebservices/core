@@ -1,7 +1,7 @@
 package org.jimmutable.core.objects.common;
 
+import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.StandardObject;
-import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 
 import junit.framework.Test;
@@ -14,7 +14,7 @@ import junit.framework.TestSuite;
  * @author jim.kane
  *
  */
-public class PhoneNumberDeckTest  extends TestCase
+public class PhoneNumberDeckTest extends TestCase
 {
     /**
      * Create the test case
@@ -35,6 +35,21 @@ public class PhoneNumberDeckTest  extends TestCase
     	
         return new TestSuite( PhoneNumberDeckTest.class );
     }
+    
+	public void testBuilder()
+	{
+		PhoneNumber mobile = new PhoneNumber("1231231234", PhoneNumberType.MOBILE);
+		PhoneNumber work = new PhoneNumber("1111111111", PhoneNumberType.WORK);
+
+		Builder phone_deck_builder = new Builder(PhoneNumberDeck.TYPE_NAME);
+		phone_deck_builder.add(PhoneNumberDeck.FIELD_PHONE_NUMBERS, mobile);
+		phone_deck_builder.add(PhoneNumberDeck.FIELD_PHONE_NUMBERS, work);
+		PhoneNumberDeck deck = phone_deck_builder.create(null);
+
+		PhoneNumberDeck deck2 = new PhoneNumberDeck(mobile, work);
+
+		assertEquals(deck, deck2);
+	}
 
     
     public void testManual()
@@ -67,7 +82,7 @@ public class PhoneNumberDeckTest  extends TestCase
         assertEquals(fax, deck.getSimplePhoneNumbers().get(4));
         assertEquals(other, deck.getSimplePhoneNumbers().get(5));
         
-        System.out.println(deck.toJavaCode(Format.XML_PRETTY_PRINT, "obj"));
+        //System.out.println(deck.toJavaCode(Format.XML_PRETTY_PRINT, "obj"));
     }
     
     public void testSerialization()
