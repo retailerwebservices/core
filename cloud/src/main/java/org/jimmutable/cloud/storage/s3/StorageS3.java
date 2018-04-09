@@ -25,6 +25,7 @@ import org.jimmutable.core.utils.Validator;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.CreateBucketRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
@@ -61,7 +62,22 @@ public class StorageS3 extends Storage
 		client = client_factory.create();
 		transfer_manager = TransferManagerBuilder.standard().withS3Client(client).build();
 	}
-
+	
+	public void upsertBucketIfNeeded()
+	{
+		if (!client.doesBucketExist(bucket_name))
+		{
+			LOGGER.info("creating bucket: " + bucket_name);
+			
+	        CreateBucketRequest request = new CreateBucketRequest(bucket_name, RegionSpecificAmazonS3ClientFactory.DEFAULT_REGION);
+	        client.createBucket(request);
+		}
+		else
+		{
+			LOGGER.info("using storage bucket: " + bucket_name);
+		}
+	}
+	
 	public String getSimpleBucketName()
 	{
 		return bucket_name;
@@ -99,7 +115,8 @@ public class StorageS3 extends Storage
 
 			client.putObject(bucket_name, key.toString(), bin, metadata);
 			return true;
-		} catch (Exception e)
+		}
+		catch (Exception e)
 		{
 			LOGGER.catching(e);
 			return false;

@@ -38,7 +38,7 @@ import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
  */
 public class CloudExecutionEnvironment
 {
-	private static Logger logger;
+	private static Logger logger = LogManager.getLogger(CloudExecutionEnvironment.class);
 	private static CloudExecutionEnvironment CURRENT;
 
 	private ISearch search;
@@ -55,15 +55,6 @@ public class CloudExecutionEnvironment
 	private static EnvironmentType ENV_TYPE;
 	private static ApplicationId APPLICATION_ID;
 	private static StandardImmutableObjectCache STANDARD_IMMUTABLE_OBJECT_CACHE;
-
-	// setup the logging level programmatically
-	static
-	{
-		Level level = Level.toLevel(System.getProperty(ENV_LOGGING_LEVEL), DEFAULT_LEVEL);
-		Log4jUtil.setAllLoggerLevels(level);
-		logger = LogManager.getLogger(CloudExecutionEnvironment.class);
-		logger.trace(String.format("Logging level: %s", level));
-	}
 
 	private CloudExecutionEnvironment(ISearch search, IStorage storage, IQueue queue_service, ISignal signal_service)
 	{
@@ -149,6 +140,11 @@ public class CloudExecutionEnvironment
 		case STAGING:
 		case DEV:
 
+			// setup the logging level programmatically in dev and staging
+			Level level = Level.toLevel(System.getProperty(ENV_LOGGING_LEVEL), DEFAULT_LEVEL);
+			Log4jUtil.setAllLoggerLevels(level);
+			logger.trace(String.format("Logging level: %s", level));
+			
 			checkOs();
 
 			TransportClient client = null;
@@ -172,6 +168,8 @@ public class CloudExecutionEnvironment
 		case PRODUCTION:
 			checkOs();
 			
+			logger.log(Level.INFO, "Starting production environment");
+			
 			TransportClient prod_client = null;
 			try
 			{
@@ -188,6 +186,8 @@ public class CloudExecutionEnvironment
 			}
 
 	        StorageS3 storage = new StorageS3(RegionSpecificAmazonS3ClientFactory.defaultFactory(), APPLICATION_ID, false);
+	        storage.upsertBucketIfNeeded();
+	        
 			CURRENT = new CloudExecutionEnvironment(new ElasticSearch(prod_client), storage, new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID));
 	        break;
 		case STUB:
