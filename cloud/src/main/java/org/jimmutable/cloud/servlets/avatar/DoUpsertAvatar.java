@@ -27,6 +27,7 @@ import org.jimmutable.cloud.servlets.util.ServletUtil;
 import org.jimmutable.cloud.storage.ObjectIdStorageKey;
 import org.jimmutable.cloud.storage.StorageKey;
 import org.jimmutable.core.objects.common.ObjectId;
+import org.jimmutable.core.utils.Optional;
 
 /**
  * Writes a png, jpeg or gif to the avatars folder from multipart/form-data.
@@ -130,7 +131,7 @@ public class DoUpsertAvatar extends HttpServlet
 
 		try
 		{
-			String type = URLConnection.guessContentTypeFromStream(is);
+			String type = Optional.getOptional(URLConnection.guessContentTypeFromStream(is), null, "image/jpg");
 
 			if (ALLOWED_IMG_EXTENSIONS.contains(type.toLowerCase()))
 			{
