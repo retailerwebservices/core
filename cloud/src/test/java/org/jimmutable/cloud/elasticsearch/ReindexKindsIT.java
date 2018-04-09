@@ -185,7 +185,7 @@ public class ReindexKindsIT extends IntegrationTest
 
 	}
 	
-	public class ReindexITKinds extends ReindexKinds
+	public class ReindexITKinds extends SearchSync
 	{
 		public ReindexITKinds(Set<Kind> kinds, boolean should_setup_environment)
 		{

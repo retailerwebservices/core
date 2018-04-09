@@ -221,4 +221,12 @@ public class StorageDevLocalFileSystem extends Storage
 	{
 		return new Scanner(kind, prefix, only_object_ids);
 	}
+	
+	/**
+	 * @return the file path for where Storage lives
+	 */
+	public File getDevLocalFileSystemRoot()
+	{
+		return root;
+	}
 }

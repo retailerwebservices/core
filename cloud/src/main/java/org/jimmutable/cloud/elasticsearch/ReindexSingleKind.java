@@ -67,6 +67,7 @@ public class ReindexSingleKind implements Runnable
 	 */
 	private static IndexDefinition syncSearchAndStorage(Kind kind, IndexDefinition default_value)
 	{
+		
 		UpsertDataHandler data_handler = new UpsertDataHandler();
 		if (!CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().scan(kind, data_handler, 10))
 		{

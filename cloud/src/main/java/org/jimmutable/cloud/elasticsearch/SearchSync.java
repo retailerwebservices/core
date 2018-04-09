@@ -4,8 +4,10 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -24,10 +26,12 @@ import org.jimmutable.cloud.storage.ObjectIdStorageKey;
 import org.jimmutable.cloud.storage.Storable;
 import org.jimmutable.cloud.storage.StorageKey;
 import org.jimmutable.cloud.storage.StorageKeyHandler;
+import org.jimmutable.core.exceptions.SerializeException;
 import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
+import org.jimmutable.core.serialization.TypeName;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 
 
@@ -55,9 +59,10 @@ import org.jimmutable.core.serialization.reader.ObjectParseTree;
  * 
  * @author avery.gonzales
  */
-public abstract class ReindexKinds
+public abstract class SearchSync
 {
-	private static final Logger logger = LogManager.getLogger(ReindexKinds.class);
+	private static final Logger logger = LogManager.getLogger(SearchSync.class);
+	static private Set<Kind> indexable_kinds = ConcurrentHashMap.newKeySet();
 
 	public static final int REINDEX_THREAD_POOL_SIZE = 5;
 	public static final int MAX_REINDEX_COMPLETION_TIME_MINUTES = 120;
@@ -68,7 +73,7 @@ public abstract class ReindexKinds
 	//All the kinds in your application that need to be re-indexed
 	private Set<Kind> kinds;
 	
-	public ReindexKinds(Set<Kind> kinds, boolean should_setup_environment)
+	public SearchSync(Set<Kind> kinds, boolean should_setup_environment)
 	{
 		this.kinds = kinds;
 		this.should_setup_environment = should_setup_environment;
@@ -155,5 +160,24 @@ public abstract class ReindexKinds
 	private Set<Kind> getSimpleKinds()
 	{
 		return kinds;
+	}
+	
+	static public <C extends Storable & Indexable> void registerIndexableKind(Class<C> c)
+	{
+		try
+		{
+			Kind kind = (Kind)c.getField("KIND").get(null);
+			if ( kind == null ) throw new SerializeException("Unable to extract Kind from " + c);
+			indexable_kinds.add(kind);
+		}
+		catch(Exception e)
+		{
+			logger.error(String.format("Unable to register a Kind for %s, could not read static public field %s.KIND", c.getSimpleName(),c.getSimpleName()), e);
+		}
+	}
+	
+	static public Set<Kind> getSimpleAllRegisteredIndexableKinds()
+	{
+		return indexable_kinds;
 	}
 }
