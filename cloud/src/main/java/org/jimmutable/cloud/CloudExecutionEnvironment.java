@@ -25,6 +25,8 @@ import org.jimmutable.cloud.storage.IStorage;
 import org.jimmutable.cloud.storage.StandardImmutableObjectCache;
 import org.jimmutable.cloud.storage.StorageDevLocalFileSystem;
 import org.jimmutable.cloud.storage.StubStorage;
+import org.jimmutable.cloud.storage.s3.RegionSpecificAmazonS3ClientFactory;
+import org.jimmutable.cloud.storage.s3.StorageS3;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 
 /**
@@ -36,7 +38,7 @@ import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
  */
 public class CloudExecutionEnvironment
 {
-	private static Logger logger;
+	private static Logger logger = LogManager.getLogger(CloudExecutionEnvironment.class);
 	private static CloudExecutionEnvironment CURRENT;
 
 	private ISearch search;
@@ -53,15 +55,6 @@ public class CloudExecutionEnvironment
 	private static EnvironmentType ENV_TYPE;
 	private static ApplicationId APPLICATION_ID;
 	private static StandardImmutableObjectCache STANDARD_IMMUTABLE_OBJECT_CACHE;
-
-	// setup the logging level programmatically
-	static
-	{
-		Level level = Level.toLevel(System.getProperty(ENV_LOGGING_LEVEL), DEFAULT_LEVEL);
-		Log4jUtil.setAllLoggerLevels(level);
-		logger = LogManager.getLogger(CloudExecutionEnvironment.class);
-		logger.trace(String.format("Logging level: %s", level));
-	}
 
 	private CloudExecutionEnvironment(ISearch search, IStorage storage, IQueue queue_service, ISignal signal_service)
 	{
@@ -143,15 +136,23 @@ public class CloudExecutionEnvironment
 
 		switch (env_type)
 		{
+		// For now, staging is the same as dev
+		case STAGING:
 		case DEV:
 
+			// setup the logging level programmatically in dev and staging
+			Level level = Level.toLevel(System.getProperty(ENV_LOGGING_LEVEL), DEFAULT_LEVEL);
+			Log4jUtil.setAllLoggerLevels(level);
+			logger.trace(String.format("Logging level: %s", level));
+			
 			checkOs();
 
 			TransportClient client = null;
 			try
 			{
 				client = new PreBuiltTransportClient(Settings.EMPTY).addTransportAddress(new TransportAddress(InetAddress.getByName(ElasticSearchEndpoint.CURRENT.getSimpleHost()), ElasticSearchEndpoint.CURRENT.getSimplePort()));
-			} catch (UnknownHostException e)
+			}
+			catch (UnknownHostException e)
 			{
 				logger.log(Level.FATAL, "Failed to instantiate the elasticsearch client!", e);
 			}
@@ -164,6 +165,31 @@ public class CloudExecutionEnvironment
 			CURRENT = new CloudExecutionEnvironment(new ElasticSearch(client), new StorageDevLocalFileSystem(false, APPLICATION_ID), new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID));
 
 			break;
+		case PRODUCTION:
+			checkOs();
+			
+			logger.log(Level.INFO, "Starting production environment");
+			
+			TransportClient prod_client = null;
+			try
+			{
+				prod_client = new PreBuiltTransportClient(Settings.EMPTY).addTransportAddress(new TransportAddress(InetAddress.getByName(ElasticSearchEndpoint.CURRENT.getSimpleHost()), ElasticSearchEndpoint.CURRENT.getSimplePort()));
+			}
+			catch (UnknownHostException e)
+			{
+				logger.log(Level.FATAL, "Failed to instantiate the elasticsearch client!", e);
+			}
+			
+			if (prod_client == null)
+			{
+				throw new RuntimeException("Failed to instantiate the elasticsearch client!");
+			}
+
+	        StorageS3 storage = new StorageS3(RegionSpecificAmazonS3ClientFactory.defaultFactory(), APPLICATION_ID, false);
+	        storage.upsertBucketIfNeeded();
+	        
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearch(prod_client), storage, new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID));
+	        break;
 		case STUB:
 
 			checkOs();
@@ -214,13 +240,17 @@ public class CloudExecutionEnvironment
 	 */
 	public static EnvironmentType getEnvironmentTypeFromSystemProperty(EnvironmentType default_value)
 	{
-
 		String env_level = System.getProperty(ENV_TYPE_VARIABLE_NAME);
+		if (env_level == null) env_level = System.getProperty(ENV_TYPE_VARIABLE_NAME.toLowerCase());
+		
 		if (env_level != null)
 		{
+			logger.info("starting environment with type: " + env_level);
+			
 			EnvironmentType tmp_type = null;
 			try
 			{
+				env_level = env_level.toUpperCase();
 				tmp_type = EnvironmentType.valueOf(env_level);
 			} catch (Exception e)
 			{
