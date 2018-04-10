@@ -42,8 +42,9 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 			id = new ObjectId(request.getParameter(getId()));
 		} catch (Exception e)
 		{
-			getLogger().error(e);
-			ServletUtil.writeSerializedResponse(response, new GetResponseError(String.format("Invalid ObjectId from parameter:%s", getId())), GetResponseError.HTTP_STATUS_CODE_ERROR);
+			String error_message = String.format("Invalid ObjectId from parameter:%s", getId());
+			getLogger().error(error_message, e);
+			ServletUtil.writeSerializedResponse(response, new GetResponseError(error_message), GetResponseError.HTTP_STATUS_CODE_ERROR);
 			return;
 		}
 
@@ -53,8 +54,9 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 			key = new ObjectIdStorageKey(getKind(), id, getExtension());
 		} catch (Exception e)
 		{
-			getLogger().error(e);
-			ServletUtil.writeSerializedResponse(response, new GetResponseError(String.format("Failed to create valid StorageKey from parameter:%s", getId())), GetResponseError.HTTP_STATUS_CODE_ERROR);
+			String error_message = String.format("Failed to create valid StorageKey from parameter:%s", getId());
+			getLogger().error(error_message, e);
+			ServletUtil.writeSerializedResponse(response, new GetResponseError(error_message), GetResponseError.HTTP_STATUS_CODE_ERROR);
 			return;
 		}
 
@@ -62,34 +64,21 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 
 		if (bytes == null)
 		{
-			String error = String.format("%s not found in storage", key.getSimpleName());
-			getLogger().error(error);
-			ServletUtil.writeSerializedResponse(response, new GetResponseError(error), GetResponseError.HTTP_STATUS_CODE_ERROR);
-
-			return;
-		}
-
-		T object = null;
-		try
-		{
-			object = (T) StandardObject.deserialize(new String(bytes));
-		} catch (Exception e)
-		{
-			String error = String.format("Failed to serialize %s from storage", key.getSimpleName());
-			getLogger().error(error);
-			ServletUtil.writeSerializedResponse(response, new GetResponseError(error), GetResponseError.HTTP_STATUS_CODE_ERROR);
-
+			String error_message = String.format("%s %s not found in storage", key.getSimpleKind().getSimpleValue(), key.getSimpleName());
+			getLogger().error(error_message);
+			ServletUtil.writeSerializedResponse(response, new GetResponseError(error_message), GetResponseError.HTTP_STATUS_CODE_ERROR);
 			return;
 		}
 
 		Object more_specific_data = null;
 		try
 		{
-			more_specific_data = getMoreSpecificData(object, request, null);
+			more_specific_data = getMoreSpecificData((T) StandardObject.deserialize(new String(bytes)), request, null);
 		} catch (Exception e)
 		{
-			getLogger().error(e);
-			ServletUtil.writeSerializedResponse(response, new GetResponseError(e.toString()), GetResponseError.HTTP_STATUS_CODE_ERROR);
+			String error_message = String.format("Failed to serialize %s from storage", key.getSimpleName());
+			getLogger().error(error_message, e);
+			ServletUtil.writeSerializedResponse(response, new GetResponseError(error_message), GetResponseError.HTTP_STATUS_CODE_ERROR);
 			return;
 		}
 
@@ -99,9 +88,9 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 			return;
 		} else
 		{
-			String error = String.format("Failed to create object please contact an admin");
-			getLogger().error(error);
-			ServletUtil.writeSerializedResponse(response, new GetResponseError(error), GetResponseError.HTTP_STATUS_CODE_ERROR);
+			String error_message = String.format("Failed to create object please contact an admin");
+			getLogger().error(error_message);
+			ServletUtil.writeSerializedResponse(response, new GetResponseError(error_message), GetResponseError.HTTP_STATUS_CODE_ERROR);
 			return;
 		}
 
