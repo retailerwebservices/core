@@ -1,6 +1,8 @@
 package org.jimmutable.cloud.elasticsearch;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,7 +53,6 @@ public class SyncSingleKind implements Runnable
 		if(this.kind == null) throw new ValidationException("No Kind was passed in, kind is required");
 		if(!SearchSync.getSimpleAllRegisteredIndexableKinds().contains(kind)) throw new ValidationException("Kind %s was not registered with SearchSync.registerIndexableKind()");
 		if(this.index_definition == null) throw new ValidationException("No IndexDefinition was passed in, IndexDefinition is required");
-		//TODO should we check that the index is properly configured here? If so, what should be done with an invalid index?
 	}
 
 	/**
@@ -81,7 +82,9 @@ public class SyncSingleKind implements Runnable
 
 	/**
 	 * This will scan all of Storage for the Kind passed in and for each item
-	 * found it will attempt to upsert its matching search document
+	 * found it will attempt to upsert its matching search document.
+	 * 
+	 * @return true on success
 	 */
 	private boolean syncSearchAndStorage()
 	{
@@ -102,7 +105,6 @@ public class SyncSingleKind implements Runnable
 	 */
 	private class UpsertDataHandler implements StorageKeyHandler
 	{
-		boolean index_exists = false;
 		private UpsertDataHandler(){}
 		
 		@SuppressWarnings("rawtypes")
@@ -145,73 +147,65 @@ public class SyncSingleKind implements Runnable
 			//If this happens we want to exit the process completely and send a signal about this failing.
 			List<OneSearchResult> results = ((SearchResponseOK) json_servlet_response).getSimpleResults();
 			int acceptable_unsyced_documents_threshold = (int) Math.round(results.size() * MAX_UNSYNCED_SEARCH_DOCUMENT_THRESHOLD);
-			int documents_to_delete = extractCountOfDeleteableDocuments(results);
-			int search_results_size_if_documents_deleted = results.size() - documents_to_delete;
+			Set<String> documents_to_delete = extractCountOfDeleteableDocuments(results);
+			int number_of_documents_to_delete = documents_to_delete.size();
+			int search_results_size_if_documents_deleted = results.size() - number_of_documents_to_delete;
 			
 			if(search_results_size_if_documents_deleted < acceptable_unsyced_documents_threshold)
 			{
 				throw new Exception("FATAL ERROR: the kind " + kind + " Storage and Search are more than 10% out of sync. Expected at least " + Math.round(results.size() * .9) + " search documents, but found " + search_results_size_if_documents_deleted);
 			}
 			
-			deleteUnsyncedSearchDocsForCurrentSearch(results);
+			for(String deletable_key : documents_to_delete)
+			{
+				logger.info("Key: " + deletable_key + " existed in search but not in storage for Kind " + kind + ". Deleting result from search.");
+				//TODO this is not in storage but only in search. We don't have a guarntee that this searchdocumentId will be the ObjectId in search
+				//However, we don't have another way to get it currently, ElasticSearch could be extended
+				CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().deleteDocument(index_definition, new SearchDocumentId(deletable_key));
+			}
 		}
 		else
 		{
 			logger.error("Invalid query given for Kind: " + kind + ". Unable to finish checking if deletion is need.");
 		}
 	}
-	
 
+	
 	/**
-	 * For all the results given from our current search we will check Storage
-	 * to ensure each one has a matching file and delete from search if it does
-	 * not.
+	 * This will go through and get the count of documents that would be deleted
+	 * to make a given search index match Storage.
 	 */
-	private void deleteUnsyncedSearchDocsForCurrentSearch(List<OneSearchResult> results)
+	private Set<String> extractCountOfDeleteableDocuments(List<OneSearchResult> results)
 	{
+		Set<String> deletable_keys = new HashSet<>();
 		for (OneSearchResult result : results)
 		{
 			//TODO Code Review: Thoughts on this?
 			//We can't rely on the Indexable.SearchDocumentId because according to the docs this value isn't always guaranteed be the ObjectId
 			//So this needs to be implemented long term otherwise we may have indices that don't have the object id set as id
 			String cur_object_id = result.getSimpleContents().getOrDefault(ObjectId.FIELD_OBJECT_ID.getSimpleFieldName(), null);
-			//Try catch fail here
-			ObjectId id = new ObjectId(cur_object_id);
 
-			StorageKey key = new ObjectIdStorageKey(kind, id, Storable.STORABLE_EXTENSION);
-
-			//If it doesn't exist in storage, we should remove it from search
-			if (!CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().exists(key, false))
+			ObjectId id = null;
+			try
 			{
-				logger.info("Key: " + key + " existed in search but not in storage for Kind " + kind + ". Deleting result from search.");
-				CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().deleteDocument(index_definition, new SearchDocumentId(id.getSimpleValue()));
+				id = new ObjectId(cur_object_id);
 			}
-		}
-	}
-	
-	/**
-	 * This will go through and get the count of documents that would be deleted
-	 * to make a given search index match Storage.
-	 */
-	private int extractCountOfDeleteableDocuments(List<OneSearchResult> results)
-	{
-		int deletable_count = 0;
-		for (OneSearchResult result : results)
-		{
-			String cur_object_id = result.getSimpleContents().getOrDefault(ObjectId.FIELD_OBJECT_ID.getSimpleFieldName(), null);
-			//Try catch fail here
-			ObjectId id = new ObjectId(cur_object_id);
+			catch(Exception e)
+			{
+				logger.error("Could not extract ObjectId from results ", e);
+				continue;
+			}
 
 			StorageKey key = new ObjectIdStorageKey(kind, id, Storable.STORABLE_EXTENSION);
 
 			//If it doesn't exist in storage, we should remove it from search
 			if (!CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().exists(key, false))
 			{
-				deletable_count++;
+				deletable_keys.add(id.getSimpleValue());
 			}
 		}
 		
-		return deletable_count;
+		return deletable_keys;
 	}
 	
 	/**

@@ -418,6 +418,7 @@ public class ElasticSearch implements ISearch
 			builder.setTypes(ELASTICSEARCH_DEFAULT_TYPE);
 			builder.setFrom(from);
 			builder.setSize(size);
+			//TODO go over this option builder.setScroll(new TimeValue(60000));
 			builder.setQuery(QueryBuilders.queryStringQuery(request.getSimpleQueryString()));
 
 			SearchResponse response = builder.get();

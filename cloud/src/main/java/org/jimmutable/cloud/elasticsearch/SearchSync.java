@@ -47,7 +47,7 @@ import org.jimmutable.core.objects.common.Kind;
 public abstract class SearchSync
 {
 	private static final Logger logger = LogManager.getLogger(SearchSync.class);
-	static private Map<Kind, IndexDefinition> indexable_kinds = new ConcurrentHashMap();
+	static private Map<Kind, IndexDefinition> indexable_kinds = new ConcurrentHashMap<>();
 
 	public static final int REINDEX_THREAD_POOL_SIZE = 5;
 	public static final int MAX_REINDEX_COMPLETION_TIME_MINUTES = 120;
