@@ -31,7 +31,7 @@ import org.junit.Test;
 
 
 
-public class ReindexKindsIT extends IntegrationTest
+public class SearchSyncIT extends IntegrationTest
 {
 	private static SearchIndexDefinition def;
 	private static TestLibraryPatron patron_in_storage_and_search;
@@ -43,6 +43,7 @@ public class ReindexKindsIT extends IntegrationTest
 	{
 		setupEnvironment();
 		ObjectParseTree.registerTypeName(TestLibraryPatron.class);
+		SearchSync.registerIndexableKind(TestLibraryPatron.class);
 	}
 	
 	@Before
@@ -193,9 +194,10 @@ public class ReindexKindsIT extends IntegrationTest
 		}
 
 		@Override
-		public void setupTypeNameRegisters()
+		public void setupRegisters()
 		{
 			ObjectParseTree.registerTypeName(TestLibraryPatron.class);
+			SearchSync.registerIndexableKind(TestLibraryPatron.class);
 		}
 
 		@Override

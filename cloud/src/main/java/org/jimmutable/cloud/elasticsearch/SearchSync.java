@@ -2,15 +2,11 @@ package org.jimmutable.cloud.elasticsearch;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
@@ -18,21 +14,10 @@ import org.apache.logging.log4j.Logger;
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.EnvironmentType;
-import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
-import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
-import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
-import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
-import org.jimmutable.cloud.storage.ObjectIdStorageKey;
 import org.jimmutable.cloud.storage.Storable;
-import org.jimmutable.cloud.storage.StorageKey;
-import org.jimmutable.cloud.storage.StorageKeyHandler;
 import org.jimmutable.core.exceptions.SerializeException;
 import org.jimmutable.core.exceptions.ValidationException;
-import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Kind;
-import org.jimmutable.core.objects.common.ObjectId;
-import org.jimmutable.core.serialization.TypeName;
-import org.jimmutable.core.serialization.reader.ObjectParseTree;
 
 
 /**
@@ -62,7 +47,7 @@ import org.jimmutable.core.serialization.reader.ObjectParseTree;
 public abstract class SearchSync
 {
 	private static final Logger logger = LogManager.getLogger(SearchSync.class);
-	static private Set<Kind> indexable_kinds = ConcurrentHashMap.newKeySet();
+	static private Map<Kind, IndexDefinition> indexable_kinds = new ConcurrentHashMap();
 
 	public static final int REINDEX_THREAD_POOL_SIZE = 5;
 	public static final int MAX_REINDEX_COMPLETION_TIME_MINUTES = 120;
@@ -103,7 +88,7 @@ public abstract class SearchSync
 			//Need environment type and application id passed in, otherwise the environment won't be setup properly
 			CloudExecutionEnvironment.startup(getSimpleApplicationID(), environment_type);
 			//Need a method to collect all the possible types
-			setupTypeNameRegisters();	
+			setupRegisters();	
 		}
 
 		long start = System.currentTimeMillis();
@@ -115,16 +100,15 @@ public abstract class SearchSync
 		{
 			try
 			{
-				executor.submit(new ReindexSingleKind(kind));
+				executor.submit(new SyncSingleKind(kind));
 			}
 			catch(Exception e)
 			{
-				logger.error("Invalid ReindexSingleKind", e);
+				logger.error("Unable to run ReindexSingleKind", e);
 			}
 		}
 		executor.shutdown();
-		//TODO For code review: Should we await the termination of the re-indexing for metrics... 
-		//Or should this just shutdown and complete on its own time?
+		//TODO For code review: this was said to be a blocking call so we await for a long period of time. Thoughts?
 		try
 		{
 			executor.awaitTermination(MAX_REINDEX_COMPLETION_TIME_MINUTES, TimeUnit.MINUTES);
@@ -142,9 +126,9 @@ public abstract class SearchSync
 
 	/**
 	 * Should call a method that sets up all of your applications types through
-	 * ObjectParseTree.registerTypeName
+	 * ObjectParseTree.registerTypeName and SearchSync.registerIndexableKind
 	 */
-	public abstract void setupTypeNameRegisters();
+	public abstract void setupRegisters();
 	
 	/**
 	 * Should return an ApplicationId identical to your applications
@@ -162,21 +146,35 @@ public abstract class SearchSync
 		return kinds;
 	}
 	
+	/**
+	 * The usage of this class is similar to that of ObjectParseTree, anytime
+	 * you have a new Storable & Indexable class it should be registered with SearchSync so
+	 * that syncing of Search and Storage can be accomplished with the Object.
+	 */
 	static public <C extends Storable & Indexable> void registerIndexableKind(Class<C> c)
 	{
 		try
 		{
 			Kind kind = (Kind)c.getField("KIND").get(null);
 			if ( kind == null ) throw new SerializeException("Unable to extract Kind from " + c);
-			indexable_kinds.add(kind);
+			
+			IndexDefinition index_definition = (IndexDefinition)c.getField("INDEX_DEFINITION").get(null);
+			if ( index_definition == null ) throw new SerializeException("Unable to extract IndexDefinition from " + c);
+			
+			indexable_kinds.put(kind, index_definition);
 		}
 		catch(Exception e)
 		{
-			logger.error(String.format("Unable to register a Kind for %s, could not read static public field %s.KIND", c.getSimpleName(),c.getSimpleName()), e);
+			logger.error(String.format("Unable to register a Kind for %s, could not read static public field KIND or INDEX_DEFINITION.", c.getSimpleName(),c.getSimpleName()), e);
 		}
 	}
 	
 	static public Set<Kind> getSimpleAllRegisteredIndexableKinds()
+	{
+		return indexable_kinds.keySet();
+	}
+	
+	static public Map<Kind, IndexDefinition> getSimpleAllRegisteredIndexableKindsMap()
 	{
 		return indexable_kinds;
 	}

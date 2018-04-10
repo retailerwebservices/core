@@ -1,5 +1,7 @@
 package org.jimmutable.cloud.elasticsearch;
 
+import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
@@ -28,22 +30,28 @@ import org.jimmutable.core.objects.common.ObjectId;
  * 
  * @author avery.gonzales
  */
-public class ReindexSingleKind implements Runnable
+public class SyncSingleKind implements Runnable
 {
-	private static final Logger logger = LogManager.getLogger(ReindexSingleKind.class);
+	private static final Logger logger = LogManager.getLogger(SyncSingleKind.class);
 	public static final int MAX_ELASTIC_SEARCH_RESULTS = 10_000;
+	private static final double MAX_UNSYNCED_SEARCH_DOCUMENT_THRESHOLD = .90; //Our search should be within 10% sync of our Storage
 
-	Kind kind; //Required and must be both Indexable and Storable for any actions to be taken
+	private Kind kind; //Required and must be both Indexable and Storable for any actions to be taken
+	private IndexDefinition index_definition;
 
-	public ReindexSingleKind(Kind kind) throws ValidationException
+	public SyncSingleKind(Kind kind) throws ValidationException
 	{
 		this.kind = kind;
+		this.index_definition = SearchSync.getSimpleAllRegisteredIndexableKindsMap().getOrDefault(kind, null);
 		validate();
 	}
 	
 	private void validate()
 	{
 		if(this.kind == null) throw new ValidationException("No Kind was passed in, kind is required");
+		if(!SearchSync.getSimpleAllRegisteredIndexableKinds().contains(kind)) throw new ValidationException("Kind %s was not registered with SearchSync.registerIndexableKind()");
+		if(this.index_definition == null) throw new ValidationException("No IndexDefinition was passed in, IndexDefinition is required");
+		//TODO should we check that the index is properly configured here? If so, what should be done with an invalid index?
 	}
 
 	/**
@@ -53,10 +61,20 @@ public class ReindexSingleKind implements Runnable
 	public void run()
 	{
 		logger.info("Reindexing of Kind " + kind + " started");
-		IndexDefinition kinds_index_definition = syncSearchAndStorage(kind, null);
-		if (kinds_index_definition != null)
+		boolean success = syncSearchAndStorage();
+		//TODO code reviewer: should we attempt delete search documents if Storage finds nothing? I leaned towards no.
+		if (success)
 		{
-			deleteSearchDocumentsThatAreNotInStorage(kind, kinds_index_definition);
+			try
+			{
+				deleteSearchDocumentsThatAreNotInStorage();
+			}
+			catch (Exception e)
+			{
+				logger.fatal("FATALITY: Unable to reindex Kind " + kind + " because Search was greater than 10% out of sync with Storage", e);
+				logger.fatal("In able to preserve data integrity this process will now shutdown");
+				System.exit(1);
+			}
 		}
 		logger.info("Reindexing of Kind " + kind + " finished");
 	}
@@ -65,17 +83,14 @@ public class ReindexSingleKind implements Runnable
 	 * This will scan all of Storage for the Kind passed in and for each item
 	 * found it will attempt to upsert its matching search document
 	 */
-	private static IndexDefinition syncSearchAndStorage(Kind kind, IndexDefinition default_value)
+	private boolean syncSearchAndStorage()
 	{
-		
-		UpsertDataHandler data_handler = new UpsertDataHandler();
-		if (!CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().scan(kind, data_handler, 10))
+		if (!CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().scan(kind, new UpsertDataHandler(), 10))
 		{
-			logger.error("Storage scanner for Kind " + kind + " was unable to successfully run. This Kind may not be fully re-indexed.");
-			return default_value;
+			logger.error("Storage scanner for Kind " + kind + " was unable to successfully run. This Kind may not be fully re-indexed, or no entries may currently exist in Storage.");
+			return false;
 		}
-
-		return data_handler.getOptionalKindIndexDefinition(default_value);
+		return true;
 	}
 
 	/**
@@ -85,11 +100,12 @@ public class ReindexSingleKind implements Runnable
 	 * if not yet set. Then attempt to upsert the single Object's search
 	 * document into Search.
 	 */
-	private static class UpsertDataHandler implements StorageKeyHandler
+	private class UpsertDataHandler implements StorageKeyHandler
 	{
-		private IndexDefinition kinds_index_definition;
+		boolean index_exists = false;
 		private UpsertDataHandler(){}
-
+		
+		@SuppressWarnings("rawtypes")
 		@Override
 		public void handle(StorageKey key)
 		{
@@ -102,31 +118,11 @@ public class ReindexSingleKind implements Runnable
 			}
 			catch (Exception e)
 			{
-				logger.error("This object was unable to be deserialized as a Storable and Indexable object...");
-				e.printStackTrace();
+				logger.error("This object was unable to be deserialized as a Storable and Indexable object...", e);
 				return;
 			}
-
-			//We get the kind's index definition at this point because Kind's don't have relation to a definition until paired in an Object
-			if (this.kinds_index_definition == null) this.kinds_index_definition = obj.getSimpleIndexDefinition();
-
-			//If we don't have search index for this Indexable Object we shouldn't be the ones creating it.
-			//This script is to only deal with what has already been made.
-			if (CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexExists(obj.getSimpleIndexDefinition()))
-			{
-				CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocument((Indexable) obj.getObject());
-			}
-			else
-			{
-				logger.error("The index for Kind " + obj.getSimpleKind() + " had not been previously created. No re-indexing done on it.");
-			}
-		}
-
-		public IndexDefinition getOptionalKindIndexDefinition(IndexDefinition default_value)
-		{
-			if (this.kinds_index_definition == null) return default_value;
-
-			return this.kinds_index_definition;
+			
+			CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocument((Indexable) obj.getObject());
 		}
 	}
 
@@ -135,34 +131,49 @@ public class ReindexSingleKind implements Runnable
 	 * ensuring that each Search document has a matching item in Storage. If it
 	 * doesn't, it must be delete from Search.
 	 */
-	private static void deleteSearchDocumentsThatAreNotInStorage(Kind kind, IndexDefinition definition)
+	private void deleteSearchDocumentsThatAreNotInStorage() throws Exception
 	{
+		//TODO 
 		//This was broken out so it'd be easy to iterate over searches with more than 10k results however
 		//We still need a solution for getting searches of over 10,000 obj, currently if you have over 10k results and try to start at any result that is above 10k it throws the following exception 
 		//Caused by: org.elasticsearch.search.query.QueryPhaseExecutionException: Result window is too large, from + size must be less than or equal to: [10000] but was [10001]. See the scroll api for a more efficient way to request large data sets. This limit can be set by changing the [index.max_result_window] index level setting.
 		StandardSearchRequest search_request = new StandardSearchRequest("*", MAX_ELASTIC_SEARCH_RESULTS, 0);
-		JSONServletResponse json_servlet_response = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(definition, search_request);
+		JSONServletResponse json_servlet_response = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(index_definition, search_request);
 		if (json_servlet_response instanceof SearchResponseOK)
 		{
-			deleteSearchDoc(kind, definition, (SearchResponseOK) json_servlet_response);
+			//We want to ensure that we never are deleting more than 10% of our search documents in order to match Storage
+			//If this happens we want to exit the process completely and send a signal about this failing.
+			List<OneSearchResult> results = ((SearchResponseOK) json_servlet_response).getSimpleResults();
+			int acceptable_unsyced_documents_threshold = (int) Math.round(results.size() * MAX_UNSYNCED_SEARCH_DOCUMENT_THRESHOLD);
+			int documents_to_delete = extractCountOfDeleteableDocuments(results);
+			int search_results_size_if_documents_deleted = results.size() - documents_to_delete;
+			
+			if(search_results_size_if_documents_deleted < acceptable_unsyced_documents_threshold)
+			{
+				throw new Exception("FATAL ERROR: the kind " + kind + " Storage and Search are more than 10% out of sync. Expected at least " + Math.round(results.size() * .9) + " search documents, but found " + search_results_size_if_documents_deleted);
+			}
+			
+			deleteUnsyncedSearchDocsForCurrentSearch(results);
 		}
 		else
 		{
 			logger.error("Invalid query given for Kind: " + kind + ". Unable to finish checking if deletion is need.");
 		}
 	}
+	
 
 	/**
 	 * For all the results given from our current search we will check Storage
 	 * to ensure each one has a matching file and delete from search if it does
 	 * not.
 	 */
-	private static void deleteSearchDoc(Kind kind, IndexDefinition definition, SearchResponseOK results)
+	private void deleteUnsyncedSearchDocsForCurrentSearch(List<OneSearchResult> results)
 	{
-		for (OneSearchResult result : results.getSimpleResults())
+		for (OneSearchResult result : results)
 		{
-			//Code Review: Thoughts on this?
-			//TODO This needs to be implemented long term otherwise we may have indices that don't have the object id set as id
+			//TODO Code Review: Thoughts on this?
+			//We can't rely on the Indexable.SearchDocumentId because according to the docs this value isn't always guaranteed be the ObjectId
+			//So this needs to be implemented long term otherwise we may have indices that don't have the object id set as id
 			String cur_object_id = result.getSimpleContents().getOrDefault(ObjectId.FIELD_OBJECT_ID.getSimpleFieldName(), null);
 			//Try catch fail here
 			ObjectId id = new ObjectId(cur_object_id);
@@ -173,11 +184,36 @@ public class ReindexSingleKind implements Runnable
 			if (!CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().exists(key, false))
 			{
 				logger.info("Key: " + key + " existed in search but not in storage for Kind " + kind + ". Deleting result from search.");
-				CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().deleteDocument(definition, new SearchDocumentId(id.getSimpleValue()));
+				CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().deleteDocument(index_definition, new SearchDocumentId(id.getSimpleValue()));
 			}
 		}
 	}
+	
+	/**
+	 * This will go through and get the count of documents that would be deleted
+	 * to make a given search index match Storage.
+	 */
+	private int extractCountOfDeleteableDocuments(List<OneSearchResult> results)
+	{
+		int deletable_count = 0;
+		for (OneSearchResult result : results)
+		{
+			String cur_object_id = result.getSimpleContents().getOrDefault(ObjectId.FIELD_OBJECT_ID.getSimpleFieldName(), null);
+			//Try catch fail here
+			ObjectId id = new ObjectId(cur_object_id);
 
+			StorageKey key = new ObjectIdStorageKey(kind, id, Storable.STORABLE_EXTENSION);
+
+			//If it doesn't exist in storage, we should remove it from search
+			if (!CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().exists(key, false))
+			{
+				deletable_count++;
+			}
+		}
+		
+		return deletable_count;
+	}
+	
 	/**
 	 * This is a simple class to handle deserializing any Kind's Object and
 	 * ensuring that the Kind's Object is both Indexable and Storable.
@@ -215,16 +251,6 @@ public class ReindexSingleKind implements Runnable
 		public T getObject()
 		{
 			return object;
-		}
-
-		public IndexDefinition getSimpleIndexDefinition()
-		{
-			return ((Indexable) object).getSimpleSearchIndexDefinition();
-		}
-
-		public Kind getSimpleKind()
-		{
-			return ((Storable) object).getSimpleKind();
 		}
 	}
 }

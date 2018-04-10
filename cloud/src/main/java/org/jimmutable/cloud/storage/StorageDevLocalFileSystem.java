@@ -164,6 +164,12 @@ public class StorageDevLocalFileSystem extends Storage
 		{
 			final File folder = new File(root.getAbsolutePath() + "/" + getSimpleKind().getSimpleValue());
 
+			if(!folder.exists())
+			{
+				System.err.println("File path does not exist for " + folder + ". Cannot walk file tree.");
+				return Result.ERROR;
+			}
+			
 			Files.walkFileTree(folder.toPath(), EnumSet.noneOf(FileVisitOption.class), 1, new Walker());
 
 			return shouldStop() ? Result.STOPPED : Result.SUCCESS;
