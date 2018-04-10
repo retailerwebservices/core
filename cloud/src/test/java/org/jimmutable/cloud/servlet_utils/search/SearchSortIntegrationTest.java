@@ -790,10 +790,7 @@ public class SearchSortIntegrationTest
 		@Override
 		public void writeSearchDocument(SearchDocumentWriter writer) 
 		{
-			FieldCollection<Float> collection = new FieldArrayList<>();
-			collection.add(value);
-			collection.add(value+value);
-			writer.writeFloatArray(SEARCH_FIELD_VALUE, collection);			
+			writer.writeFloat(FIELD_VALUE, value);	
 		}
 
 		@Override
@@ -1069,10 +1066,7 @@ public class SearchSortIntegrationTest
 		@Override
 		public void writeSearchDocument(SearchDocumentWriter writer) 
 		{
-			FieldCollection<Boolean> collection = new FieldArrayList<>();
-			collection.add(value);
-			collection.add(!value);
-			writer.writeBooleanArray(SEARCH_FIELD_VALUE, collection);			
+			writer.writeBoolean(FIELD_VALUE, value);
 		}
 
 		@Override
@@ -1143,7 +1137,7 @@ public class SearchSortIntegrationTest
 		
 		public static void doSearch()
 		{
-			SortBy sort_by = new SortBy(SearchSortObjectBoolean.SEARCH_FIELD_VALUE, SortDirection.DESCENDING);
+			SortBy sort_by = new SortBy(SearchSortObjectBoolean.SEARCH_FIELD_VALUE, SortDirection.ASCENDING);
 			List<OneSearchResultWithTyping> results = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(SearchSortObjectBoolean.INDEX_DEFINITION, 
 					new StandardSearchRequest(String.format("%s:%s", SEARCH_FIELD_VALUE.getSimpleFieldName().getSimpleName(), "*"), 10000, 0, new Sort(sort_by)), null);
 			
@@ -1336,10 +1330,7 @@ public class SearchSortIntegrationTest
 		@Override
 		public void writeSearchDocument(SearchDocumentWriter writer) 
 		{
-			FieldCollection<Day> collection = new FieldArrayList<>();
-			collection.add(value);
-			collection.add(value);
-			writer.writeDayArray(SEARCH_FIELD_VALUE, collection);			
+			writer.writeDay(FIELD_VALUE, value);		
 		}
 
 		@Override

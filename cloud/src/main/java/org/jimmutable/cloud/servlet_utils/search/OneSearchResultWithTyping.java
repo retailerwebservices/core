@@ -1,6 +1,8 @@
 package org.jimmutable.cloud.servlet_utils.search;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.jimmutable.core.fields.FieldHashMap;
@@ -153,7 +155,7 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
     }
     
     /**
-     * TODO Document this helper method
+     * Used when we expect an array of one value (readAsFoo)
      * @param name
      * @param default_value
      * @return
@@ -168,7 +170,7 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
     }
     
     /**
-     * TODO Document this helper method
+     * Get a representation of the array as a string array
      * @param name
      * @param default_value
      * @return
@@ -266,19 +268,25 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
     	
     	if ( value_as_string_array == null ) return default_value;
     	
-    	long[] ret = new long[value_as_string_array.length];
-    	
+    	List<Long> valid_values = new ArrayList<>();    	
     	for ( int i = 0; i < value_as_string_array.length; i++ )
     	{
     		try
     		{
-    			ret[i] = Long.parseLong(value_as_string_array[i]);
+    			valid_values.add(Long.parseLong(value_as_string_array[i]));
     		}
     		catch ( Exception e )
     		{
-    			e.printStackTrace();
     			continue;
     		}
+    	}
+    	
+    	long[] ret = new long[valid_values.size()];
+    	int i = 0;
+    	for ( Long value : valid_values )
+    	{
+    		ret[i] = value;
+    		i++;
     	}
     	
     	return ret;
@@ -320,19 +328,25 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
     	
     	if ( value_as_string_array == null ) return default_value;
     	
-    	float[] ret = new float[value_as_string_array.length];
-    	
+    	List<Float> valid_values = new ArrayList<>();    	
     	for ( int i = 0; i < value_as_string_array.length; i++ )
     	{
     		try
     		{
-    			ret[i] = Float.parseFloat(value_as_string_array[i]);
+    			valid_values.add(Float.parseFloat(value_as_string_array[i]));
     		}
     		catch ( Exception e )
     		{
-    			e.printStackTrace();
     			continue;
     		}
+    	}
+    	
+    	float[] ret = new float[valid_values.size()];
+    	int i = 0;
+    	for ( float value : valid_values )
+    	{
+    		ret[i] = value;
+    		i++;
     	}
     	
     	return ret;
@@ -374,19 +388,25 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
     	
     	if ( value_as_string_array == null ) return default_value;
     	
-    	boolean[] ret = new boolean[value_as_string_array.length];
-    	
+    	List<Boolean> valid_values = new ArrayList<>();    	
     	for ( int i = 0; i < value_as_string_array.length; i++ )
     	{
     		try
     		{
-    			ret[i] = Boolean.parseBoolean(value_as_string_array[i]);
+    			valid_values.add(Boolean.parseBoolean(value_as_string_array[i]));
     		}
     		catch ( Exception e )
     		{
-    			e.printStackTrace();
     			continue;
     		}
+    	}
+    	
+    	boolean[] ret = new boolean[valid_values.size()];
+    	int i = 0;
+    	for ( boolean value : valid_values )
+    	{
+    		ret[i] = value;
+    		i++;
     	}
     	
     	return ret;
@@ -429,23 +449,27 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
     	
     	if ( value_as_string_array == null ) return default_value;
     	
-    	Day[] ret = new Day[value_as_string_array.length];
-    	
+    	List<Day> valid_values = new ArrayList<>();    	
     	for ( int i = 0; i < value_as_string_array.length; i++ )
     	{
     		try
     		{
-    			Day day = getDayFromString(value_as_string_array[i], null);
-    			
+    			Day day = getDayFromString(value_as_string_array[i], null);    			
     			if ( day == null ) continue;
-    			
-    			ret[i] = day;
+    			valid_values.add(day);
     		}
     		catch ( Exception e )
     		{
-    			e.printStackTrace();
     			continue;
     		}
+    	}
+    	
+    	Day[] ret = new Day[valid_values.size()];
+    	int i = 0;
+    	for ( Day value : valid_values )
+    	{
+    		ret[i] = value;
+    		i++;
     	}
     	
     	return ret;
@@ -514,20 +538,27 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
     	
     	if ( value_as_string_array == null ) return default_value;
     	
-    	Instant[] ret = new Instant[value_as_string_array.length];
-    	
+    	List<Instant> valid_values = new ArrayList<>();    	
     	for ( int i = 0; i < value_as_string_array.length; i++ )
     	{
-    		System.out.println(value_as_string_array[i]);
     		try
     		{
-    			ret[i] = (Instant)StandardObject.deserialize(value_as_string_array[i]);
+    			Instant instant = (Instant)StandardObject.deserialize(value_as_string_array[i]);	
+    			if ( instant == null ) continue;
+    			valid_values.add(instant);
     		}
     		catch ( Exception e )
     		{
-    			e.printStackTrace();
     			continue;
     		}
+    	}
+    	
+    	Instant[] ret = new Instant[valid_values.size()];
+    	int i = 0;
+    	for ( Instant value : valid_values )
+    	{
+    		ret[i] = value;
+    		i++;
     	}
     	
     	return ret;
@@ -569,19 +600,27 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
     	
     	if ( value_as_string_array == null ) return default_value;
     	
-    	TimeOfDay[] ret = new TimeOfDay[value_as_string_array.length];
-    	
+    	List<TimeOfDay> valid_values = new ArrayList<>();    	
     	for ( int i = 0; i < value_as_string_array.length; i++ )
     	{
     		try
     		{
-    			ret[i] = (TimeOfDay)StandardObject.deserialize(value_as_string_array[i]);
+    			TimeOfDay instant = (TimeOfDay)StandardObject.deserialize(value_as_string_array[i]);	
+    			if ( instant == null ) continue;
+    			valid_values.add(instant);
     		}
     		catch ( Exception e )
     		{
-    			e.printStackTrace();
     			continue;
     		}
+    	}
+    	
+    	TimeOfDay[] ret = new TimeOfDay[valid_values.size()];
+    	int i = 0;
+    	for ( TimeOfDay value : valid_values )
+    	{
+    		ret[i] = value;
+    		i++;
     	}
     	
     	return ret;

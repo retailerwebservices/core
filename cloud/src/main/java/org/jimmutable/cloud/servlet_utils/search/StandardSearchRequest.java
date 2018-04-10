@@ -43,6 +43,7 @@ public class StandardSearchRequest extends StandardImmutableObject<StandardSearc
 		this.query_string = t.getString(FIELD_QUERY_STRING);
 		this.max_results = t.getInt(FIELD_MAX_RESULTS);
 		this.start_results_after = t.getInt(FIELD_START_RESULTS_AFTER);
+		this.sort = (Sort) t.getObject(FIELD_SORT);
 	}
 
 	public StandardSearchRequest( String query_string, int max_results, int start_results_after, Sort sort )
@@ -103,7 +104,7 @@ public class StandardSearchRequest extends StandardImmutableObject<StandardSearc
 		writer.writeString(FIELD_QUERY_STRING, getSimpleQueryString());
 		writer.writeInt(FIELD_MAX_RESULTS, getSimpleMaxResults());
 		writer.writeInt(FIELD_START_RESULTS_AFTER, getSimpleStartResultsAfter());
-		writer.writeObject(FIELD_SORT, getSimpleMaxResults());
+		writer.writeObject(FIELD_SORT, getSimpleSort());
 	}
 
 	@Override
