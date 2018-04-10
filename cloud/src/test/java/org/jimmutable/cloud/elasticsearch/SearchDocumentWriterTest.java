@@ -85,8 +85,12 @@ public class SearchDocumentWriterTest
 
 		expected.put("boolean", true);
 		expected.put("text1", "abc");
+		expected.put(ElasticSearch.getSortFieldNameText("text1"), "abc");
 		expected.put("text2", "abc ab a");
+		expected.put(ElasticSearch.getSortFieldNameText("text2"), "abc ab a");
+		
 		expected.put("text3", "abc a b c ab bc abc");
+		expected.put(ElasticSearch.getSortFieldNameText("text3"), "abc a b c ab bc abc");
 		expected.put("atom", "my atom");
 		expected.put("day", "1972-01-01");
 		expected.put("float", 0.1f);
