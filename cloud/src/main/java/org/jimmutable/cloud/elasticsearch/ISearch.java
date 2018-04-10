@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
+import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.supercsv.cellprocessor.ift.CellProcessor;
@@ -69,6 +70,8 @@ public interface ISearch
 	 * @return JSONServletResponse
 	 */
 	public JSONServletResponse search(IndexDefinition index, StandardSearchRequest request);
+	
+	public List<OneSearchResultWithTyping> search(IndexDefinition index, StandardSearchRequest request, List<OneSearchResultWithTyping> default_value);
 
 	/**
 	 * Test if the index exists or not

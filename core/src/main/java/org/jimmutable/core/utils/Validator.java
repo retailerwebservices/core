@@ -1,5 +1,6 @@
 package org.jimmutable.core.utils;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
@@ -422,6 +423,16 @@ public class Validator
 	{
 		containsOnlyInstancesOf(key, value, map, null);
 
+	}
+	
+	static public void containsOnlyInstancesOfValueStringArray(Class<?> key, Class<?> value, Map<?, String[]> map)
+	{
+		containsOnlyInstancesOf(key,map.keySet());
+		
+		for ( Object[] obj : map.values())
+		{
+			containsOnlyInstancesOf(value,Arrays.asList(obj));
+		}		
 	}
 
 	static public void containsOnlyInstancesOf( Class<?> key, Class<?> value, Map<?, ?> map, String label )

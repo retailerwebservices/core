@@ -1,7 +1,9 @@
 package org.jimmutable.cloud.elasticsearch;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -25,23 +27,28 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.WriteRequest.RefreshPolicy;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.io.stream.NotSerializableExceptionWrapper;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryShardException;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
+import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
+import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
+import org.jimmutable.cloud.servlet_utils.search.SortBy;
+import org.jimmutable.cloud.servlet_utils.search.SortDirection;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
+import org.jimmutable.core.objects.common.time.Instant;
+import org.jimmutable.core.objects.common.time.TimeOfDay;
 import org.jimmutable.core.serialization.FieldName;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.ICsvListWriter;
-import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -51,7 +58,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author trevorbox
  *
  */
-
 public class ElasticSearch implements ISearch
 {
 
@@ -60,6 +66,7 @@ public class ElasticSearch implements ISearch
 	private static final ExecutorService document_upsert_pool = (ExecutorService) new ThreadPoolExecutor(8, 8, 5, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
 
 	public static final String ELASTICSEARCH_DEFAULT_TYPE = "default";
+	public static final String SORT_FIELD_NAME_JIMMUTABLE = "jimmutable_sort_field";
 
 	private volatile TransportClient client;
 
@@ -356,7 +363,6 @@ public class ElasticSearch implements ISearch
 			SearchDocumentWriter writer = new SearchDocumentWriter();
 			object.writeSearchDocument(writer);
 			Map<String, Object> data = writer.getSimpleFieldsMap();
-
 			String index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
 			String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
 			IndexResponse response = client.prepareIndex(index_name, ELASTICSEARCH_DEFAULT_TYPE, document_name).setRefreshPolicy(RefreshPolicy.IMMEDIATE).setSource(data).get();
@@ -419,6 +425,15 @@ public class ElasticSearch implements ISearch
 			builder.setFrom(from);
 			builder.setSize(size);
 			builder.setQuery(QueryBuilders.queryStringQuery(request.getSimpleQueryString()));
+			
+			// Sorting
+			for ( SortBy sort_by : request.getSimpleSort().getSimpleSortOrder() )
+			{
+				FieldSortBuilder sort_builder = getSort(sort_by, null);
+				if ( sort_builder == null ) continue;
+				
+				builder.addSort(sort_builder);
+			}
 
 			SearchResponse response = builder.get();
 
@@ -475,6 +490,115 @@ public class ElasticSearch implements ISearch
 			}
 		}
 
+	}
+	
+	/**
+	 * Search an index with a query string and return a List of OneSearchResult 's.
+	 * 
+	 * @see <a href=
+	 *      "https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html">query-dsl-query-string-query</a>
+	 * 
+	 * @param index
+	 *            The IndexDefinition
+	 * @param request
+	 *            The StandardSearchRequest
+	 * @param default_value
+	 *            The default value should it fail
+	 * @return List<OneSearchResult>
+	 */
+	@Override
+	public List<OneSearchResultWithTyping> search(IndexDefinition index, StandardSearchRequest request, List<OneSearchResultWithTyping> default_value)
+	{
+		if (index == null || request == null)
+		{
+			logger.warn(String.format("Search failed: Null parameter(s) for %s", request));
+			return default_value;
+		}
+
+		try
+		{
+			String index_name = index.getSimpleValue();
+			int from = request.getSimpleStartResultsAfter();
+			int size = request.getSimpleMaxResults();
+
+			SearchRequestBuilder builder = client.prepareSearch(index_name);
+			builder.setTypes(ELASTICSEARCH_DEFAULT_TYPE);
+			builder.setFrom(from);
+			builder.setSize(size);
+			builder.setQuery(QueryBuilders.queryStringQuery(request.getSimpleQueryString()));
+			
+			// Sorting
+			for ( SortBy sort_by : request.getSimpleSort().getSimpleSortOrder() )
+			{
+				FieldSortBuilder sort_builder = getSort(sort_by, null);
+				if ( sort_builder == null ) continue;
+								
+				builder.addSort(sort_builder);
+			}
+
+			SearchResponse response = builder.get();
+
+			List<OneSearchResultWithTyping> results = new LinkedList<OneSearchResultWithTyping>();
+
+			response.getHits().forEach(hit ->
+			{
+				Map<FieldName, String[]> map = new HashMap<FieldName, String[]>();
+				hit.getSourceAsMap().forEach((k, v) ->
+				{
+					FieldName name = new FieldName(k);
+					String[] array_val = map.get(name);
+					
+					String[] new_array_val = null;
+					
+					if ( v instanceof ArrayList<?> )
+					{
+						List<Object> array_as_list = (ArrayList<Object>) v;						
+						new_array_val = new String[array_as_list.size()];
+						
+						for ( int i = 0; i < array_as_list.size(); i++ )
+						{
+							new_array_val[i] = String.valueOf(array_as_list.get(i));
+						}
+					}
+					else
+					{					
+						if ( array_val == null ) array_val = new String[0];
+						new_array_val = new String[] {String.valueOf(v)};
+					}
+					
+					if ( new_array_val != null ) map.put(name, new_array_val);
+				});
+				results.add(new OneSearchResultWithTyping(map));
+			});
+
+			int next_page = from + size;
+
+			boolean has_more_results = response.getHits().totalHits > next_page;
+
+			boolean has_previous_results = from != 0;
+
+			Level level;
+			switch (response.status())
+			{
+			case OK:
+				level = Level.INFO;
+				break;
+			default:
+				level = Level.WARN;
+				break;
+			}
+
+			logger.log(level, String.format("QUERY:%s INDEX:%s STATUS:%s HITS:%s TOTAL_HITS:%s MAX_RESULTS:%d START_RESULTS_AFTER:%d", request, index.getSimpleValue(), response.status(), results.size(), response.getHits().totalHits, request.getSimpleMaxResults(), request.getSimpleStartResultsAfter()));
+			logger.trace(String.format("FIRST_RESULT_IDX:%s HAS_MORE_RESULTS:%s HAS_PREVIOUS_RESULTS:%s START_OF_NEXT_PAGE_OF_RESULTS:%s START_OF_PREVIOUS_PAGE_OF_RESULTS:%s",from, has_more_results, has_previous_results, next_page, from));
+			logger.trace(results.toString());
+
+			return results;
+
+		} catch (Exception e)
+		{
+			logger.warn(String.format("Search failed for %s", request), e);
+			return default_value;
+		}
 	}
 
 	/**
@@ -564,7 +688,10 @@ public class ElasticSearch implements ISearch
 
 				new ObjectMapper().readTree(json).get(ELASTICSEARCH_DEFAULT_TYPE).get("properties").fields().forEachRemaining(fieldMapping ->
 				{
-					actual.put(fieldMapping.getKey(), fieldMapping.getValue().get("type").asText());
+					if ( !fieldMapping.getKey().contains(SORT_FIELD_NAME_JIMMUTABLE) ) // Skip our keyword fields
+					{
+						actual.put(fieldMapping.getKey(), fieldMapping.getValue().get("type").asText());
+					}
 				});
 
 				if (!expected.equals(actual))
@@ -623,6 +750,30 @@ public class ElasticSearch implements ISearch
 				/*	*/mappingBuilder.field("type", field.getSimpleType().getSimpleCode());
 				mappingBuilder.endObject();
 				// }
+				
+				// Create a keyword for every text field
+				if ( field.getSimpleType() == SearchIndexFieldType.TEXT )
+				{
+					mappingBuilder.startObject(getSortFieldNameText(field.getSimpleFieldName()));
+						mappingBuilder.field("type", SearchIndexFieldType.ATOM.getSimpleCode());
+					mappingBuilder.endObject();
+				}
+				
+				// Create a long field for every instant field
+				if ( field.getSimpleType() == SearchIndexFieldType.INSTANT )
+				{
+					mappingBuilder.startObject(getSortFieldNameInstant(field.getSimpleFieldName()));
+						mappingBuilder.field("type", SearchIndexFieldType.LONG.getSimpleCode());
+					mappingBuilder.endObject();
+				}
+				
+				// Create a long field for every timeofday field
+				if ( field.getSimpleType() == SearchIndexFieldType.TIMEOFDAY )
+				{
+					mappingBuilder.startObject(getSortFieldNameTimeOfDay(field.getSimpleFieldName()));
+						mappingBuilder.field("type", SearchIndexFieldType.LONG.getSimpleCode());
+					mappingBuilder.endObject();
+				}				
 			}
 			mappingBuilder.endObject().endObject().endObject();
 
@@ -751,5 +902,99 @@ public class ElasticSearch implements ISearch
 			return false;
 		}
 	}
+	
+	/**
+	 * Using a SortBy object, construct a SortBuilder used by ElasticSearch. This method handles the unique sorting cases for Text, Time of Day, and Instant.
+	 * 
+	 * @param sort_by
+	 * @param default_value
+	 * @return
+	 */
+	static private FieldSortBuilder getSort(SortBy sort_by, FieldSortBuilder default_value)
+	{
+		SortOrder order = null;
+		if ( sort_by.getSimpleDirection() == SortDirection.ASCENDING ) order = SortOrder.ASC;
+		if ( sort_by.getSimpleDirection() == SortDirection.DESCENDING ) order = SortOrder.DESC;
+		
+		if ( order == null ) return default_value;
+		
+		FieldName field_name = sort_by.getSimpleField().getSimpleFieldName();
+		String sort_on_string = field_name.getSimpleName();
+		
+		if ( sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.TEXT ) sort_on_string = getSortFieldNameText(sort_by.getSimpleField().getSimpleFieldName());
+		if ( sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.TIMEOFDAY ) sort_on_string = getSortFieldNameTimeOfDay(sort_by.getSimpleField().getSimpleFieldName());
+		if ( sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.INSTANT ) sort_on_string = getSortFieldNameInstant(sort_by.getSimpleField().getSimpleFieldName());
+		
+		return SortBuilders.fieldSort(sort_on_string).order(order).unmappedType(SearchIndexFieldType.ATOM.getSimpleCode());
+	}
 
+	/**
+	 * Sorting on text fields is impossible without enabling fielddata in ElasticSearch. To get around this, we instead use a keyword field for every text field written.
+	 * This solution is recommended by ElasticSearch over enabling fielddata. For more information, read here:
+	 * 
+	 * https://www.elastic.co/guide/en/elasticsearch/reference/5.4/fielddata.html#before-enabling-fielddata
+	 * https://www.elastic.co/blog/support-in-the-wild-my-biggest-elasticsearch-problem-at-scale
+	 * 
+	 * @param field
+	 * @return
+	 */
+	static public String getSortFieldNameText(FieldName field)
+	{
+		return getSortFieldNameText(field.getSimpleName());
+	}
+	
+	/**
+	 * Sorting on text fields is impossible without enabling fielddata in ElasticSearch. To get around this, we instead use a keyword field for every text field written.
+	 * This solution is recommended by ElasticSearch over enabling fielddata. For more information, read here:
+	 * 
+	 * https://www.elastic.co/guide/en/elasticsearch/reference/5.4/fielddata.html#before-enabling-fielddata
+	 * https://www.elastic.co/blog/support-in-the-wild-my-biggest-elasticsearch-problem-at-scale
+	 * 
+	 * @param field_name
+	 * @return
+	 */
+	static public String getSortFieldNameText(String field_name)
+	{
+		return field_name + "_" + SORT_FIELD_NAME_JIMMUTABLE + "_" + SearchIndexFieldType.ATOM.getSimpleCode();
+	}
+	
+	/**
+	 * In order to sort TimeOfDay objects, we need to look at the ms_from_midnight field from within. This method creates a consistent field name to sort by.
+	 * @param field
+	 * @return
+	 */
+	static public String getSortFieldNameTimeOfDay(FieldName field)
+	{
+		return getSortFieldNameTimeOfDay(field.getSimpleName());
+	}
+	
+	/**
+	 * In order to sort TimeOfDay objects, we need to look at the ms_from_midnight field from within. This method creates a consistent field name to sort by.
+	 * @param field_name
+	 * @return
+	 */
+	static public String getSortFieldNameTimeOfDay(String field_name)
+	{
+		return field_name + "_" + SORT_FIELD_NAME_JIMMUTABLE + "_" + TimeOfDay.FIELD_MS_FROM_MIDNIGHT.getSimpleFieldName().getSimpleName();
+	}
+	
+	/**
+	 * In order to sort Instant objects, we need to look at the ms_from_epoch field from within. This method creates a consistent field name to sort by.
+	 * @param field
+	 * @return
+	 */
+	static public String getSortFieldNameInstant(FieldName field)
+	{
+		return getSortFieldNameInstant(field.getSimpleName());
+	}
+	
+	/**
+	 * In order to sort Instant objects, we need to look at the ms_from_epoch field from within. This method creates a consistent field name to sort by.
+	 * @param field_name
+	 * @return
+	 */
+	static public String getSortFieldNameInstant(String field_name)
+	{
+		return field_name + "_" + SORT_FIELD_NAME_JIMMUTABLE + "_" + Instant.FIELD_MS_FROM_EPOCH.getSimpleFieldName().getSimpleName();
+	}
 }

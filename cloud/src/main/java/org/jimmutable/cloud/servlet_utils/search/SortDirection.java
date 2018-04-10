@@ -1,31 +1,25 @@
-package org.jimmutable.cloud.elasticsearch;
+package org.jimmutable.cloud.servlet_utils.search;
 
 import org.jimmutable.core.objects.StandardEnum;
 import org.jimmutable.core.utils.Normalizer;
 import org.jimmutable.core.utils.Validator;
 
 /**
- * Search index field datatypes
+ * The direction used for sorting search results (Ascending, Descending)
  * 
- * @author trevorbox
+ * @author jon.toy
  *
  */
-public enum SearchIndexFieldType implements StandardEnum
+public enum SortDirection implements StandardEnum
 {
-	ATOM("keyword"),
-	TEXT("text"),
-	LONG("long"),
-	BOOLEAN("boolean"),
-	FLOAT("float"),
-	DAY("date"),
-	INSTANT("text"),
-	TIMEOFDAY("text");
+	ASCENDING("ascending"),
+	DESCENDING("descending");
 
 	static public final MyConverter CONVERTER = new MyConverter();
 
 	private String code;
 
-	private SearchIndexFieldType(String code)
+	private SortDirection(String code)
 	{
 		Validator.notNull(code);
 		this.code = Normalizer.lowerCase(code);
@@ -48,19 +42,19 @@ public enum SearchIndexFieldType implements StandardEnum
 	}
 
 	/**
-	 * Used for converting Strings to SearchIndexFieldType
+	 * Used for converting Strings to SortDirection
 	 * 
-	 * @author trevorbox
+	 * @author jon.toy
 	 *
 	 */
-	static public class MyConverter extends StandardEnum.Converter<SearchIndexFieldType>
+	static public class MyConverter extends StandardEnum.Converter<SortDirection>
 	{
-		public SearchIndexFieldType fromCode(String code, SearchIndexFieldType default_value)
+		public SortDirection fromCode(String code, SortDirection default_value)
 		{
 			if (code == null)
 				return default_value;
 
-			for (SearchIndexFieldType t : SearchIndexFieldType.values())
+			for (SortDirection t : SortDirection.values())
 			{
 				if (t.getSimpleCode().equalsIgnoreCase(code))
 					return t;
