@@ -148,7 +148,7 @@ public class DoUpsertChangeLog extends HttpServlet
 
 			StandardChangeLogEntry new_entry = (StandardChangeLogEntry) b.create(null);
 
-//			logger.info(new_entry);
+			// logger.info(new_entry);
 
 			try
 			{
@@ -179,7 +179,7 @@ public class DoUpsertChangeLog extends HttpServlet
 			return;
 		} catch (Exception e)
 		{
-			logger.error(e);
+			logger.error("Unexpected Exception", e);
 			ServletUtil.writeSerializedResponse(response, new GeneralResponseError("Failed to upsert new changelog entry"), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			return;
 		}

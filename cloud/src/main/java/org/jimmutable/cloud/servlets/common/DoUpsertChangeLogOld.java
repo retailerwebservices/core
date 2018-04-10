@@ -31,6 +31,7 @@ import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.reader.HandReader;
 
+@Deprecated
 public class DoUpsertChangeLogOld extends HttpServlet
 {
 
