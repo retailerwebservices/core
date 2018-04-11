@@ -1,9 +1,9 @@
 package org.jimmutable.cloud;
 
 import org.jimmutable.cloud.attachments.AttachmentMetaData;
-import org.jimmutable.cloud.attachments.DownloadFileName;
 import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
+import org.jimmutable.cloud.logging.LogLevelMessageOnChange;
 import org.jimmutable.cloud.messaging.StandardMessageOnUpsert;
 import org.jimmutable.cloud.objects.StandardChangeLogEntry;
 import org.jimmutable.cloud.servlet_utils.common_objects.GeneralResponseError;
@@ -14,10 +14,13 @@ import org.jimmutable.cloud.servlet_utils.search.AdvancedSearchComboBoxChoice;
 import org.jimmutable.cloud.servlet_utils.search.AdvancedSearchField;
 import org.jimmutable.cloud.servlet_utils.search.IncludeFieldInView;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
+import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.RequestExportCSV;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.SearchUIData;
+import org.jimmutable.cloud.servlet_utils.search.Sort;
+import org.jimmutable.cloud.servlet_utils.search.SortBy;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.servlet_utils.upsert.UpsertResponseOK;
 import org.jimmutable.cloud.servlet_utils.upsert.UpsertResponseValidationError;
@@ -57,7 +60,10 @@ public class JimmutableCloudTypeNameRegister
 
 		ObjectParseTree.registerTypeName(StandardSearchRequest.class);
 		ObjectParseTree.registerTypeName(OneSearchResult.class);
-
+		ObjectParseTree.registerTypeName(OneSearchResultWithTyping.class);
+		ObjectParseTree.registerTypeName(Sort.class);
+		ObjectParseTree.registerTypeName(SortBy.class);
+		
 		ObjectParseTree.registerTypeName(SearchIndexFieldDefinition.class);
 		ObjectParseTree.registerTypeName(SearchIndexDefinition.class);
 
@@ -76,5 +82,6 @@ public class JimmutableCloudTypeNameRegister
 		ObjectParseTree.registerTypeName(TinyUrlResult.class);
 		
 		ObjectParseTree.registerTypeName(StandardMessageOnUpsert.class);
+		ObjectParseTree.registerTypeName(LogLevelMessageOnChange.class);
 	}
 }
