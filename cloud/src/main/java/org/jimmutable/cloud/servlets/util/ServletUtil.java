@@ -404,7 +404,8 @@ public class ServletUtil
 					{
 						field_name = VisitedPageDataElement.DEFAULT_FILE_ELEMENT;
 					}
-					logger.info("File field " + field_name + " with file name " + item.getName() + " detected.");
+				
+					logger.debug(String.format("%s %s detected.", field_name, item.getName()));
 					handler.handle(new VisitedPageDataElement(field_name, null, stream, file_name));
 				}
 				stream.close();
