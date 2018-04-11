@@ -47,9 +47,8 @@ import org.jimmutable.core.objects.common.Kind;
 public abstract class SearchSync
 {
 	private static final Logger logger = LogManager.getLogger(SearchSync.class);
-	static private Map<Kind, IndexDefinition> indexable_kinds = new ConcurrentHashMap<>();
+	static private Map<Kind, SearchIndexDefinition> indexable_kinds = new ConcurrentHashMap<>();
 
-	public static final int REINDEX_THREAD_POOL_SIZE = 5;
 	public static final int MAX_REINDEX_COMPLETION_TIME_MINUTES = 120;
 
 	//If this is being run with an idempotent script, you want this set to true in order for the execution environment to be setup properly
@@ -58,6 +57,15 @@ public abstract class SearchSync
 	//All the kinds in your application that need to be re-indexed
 	private Set<Kind> kinds;
 	
+	/**
+	 * @param kinds
+	 *            The Storable & Indexable Kinds that are to be re-indexed
+	 * 
+	 * @param should_setup_environment
+	 *            Set to true if you need the CloudExecutionEnvironment to be
+	 *            setup as well as the ObjectParseTree registers and Indexable
+	 *            Kind registers before starting the sync.
+	 */
 	public SearchSync(Set<Kind> kinds, boolean should_setup_environment)
 	{
 		this.kinds = kinds;
@@ -90,10 +98,18 @@ public abstract class SearchSync
 			//Need a method to collect all the possible types
 			setupRegisters();	
 		}
-
+		
 		long start = System.currentTimeMillis();
 		logger.info("Reindexing of all Kinds started...");
-		ExecutorService executor = Executors.newFixedThreadPool(REINDEX_THREAD_POOL_SIZE);
+		
+		//We want a single thread per kind
+		int executor_threads = getSimpleKinds().size();
+		if(executor_threads <= 0) 
+		{
+			executor_threads = 1;
+		}
+		
+		ExecutorService executor = Executors.newFixedThreadPool(executor_threads);
 		
 		//Log the kinds it is attempting to reindex
 		for(Kind kind : getSimpleKinds())
@@ -108,7 +124,6 @@ public abstract class SearchSync
 			}
 		}
 		executor.shutdown();
-		//TODO For code review: this was said to be a blocking call so we await for a long period of time. Thoughts?
 		try
 		{
 			executor.awaitTermination(MAX_REINDEX_COMPLETION_TIME_MINUTES, TimeUnit.MINUTES);
@@ -158,7 +173,7 @@ public abstract class SearchSync
 			Kind kind = (Kind)c.getField("KIND").get(null);
 			if ( kind == null ) throw new SerializeException("Unable to extract Kind from " + c);
 			
-			IndexDefinition index_definition = (IndexDefinition)c.getField("INDEX_DEFINITION").get(null);
+			SearchIndexDefinition index_definition = (SearchIndexDefinition)c.getField("INDEX_MAPPING").get(null);
 			if ( index_definition == null ) throw new SerializeException("Unable to extract IndexDefinition from " + c);
 			
 			indexable_kinds.put(kind, index_definition);
@@ -174,7 +189,7 @@ public abstract class SearchSync
 		return indexable_kinds.keySet();
 	}
 	
-	static public Map<Kind, IndexDefinition> getSimpleAllRegisteredIndexableKindsMap()
+	static public Map<Kind, SearchIndexDefinition> getSimpleAllRegisteredIndexableKindsMap()
 	{
 		return indexable_kinds;
 	}

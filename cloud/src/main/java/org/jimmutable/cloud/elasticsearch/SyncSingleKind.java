@@ -30,6 +30,11 @@ import org.jimmutable.core.objects.common.ObjectId;
  * 2.) Go through all of the Kind's search index and delete any search document
  * that doesn't have a matching version in Storage.
  * 
+ * This is our first pass at re-indexing, it's not perfect. In the near future
+ * we hope to take advantage of the protocol elasticsearch lays out here for
+ * re-indexing:
+ * https://www.elastic.co/guide/en/elasticsearch/guide/current/index-aliases.html
+ * 
  * @author avery.gonzales
  */
 public class SyncSingleKind implements Runnable
@@ -39,7 +44,7 @@ public class SyncSingleKind implements Runnable
 	private static final double MAX_UNSYNCED_SEARCH_DOCUMENT_THRESHOLD = .90; //Our search should be within 10% sync of our Storage
 
 	private Kind kind; //Required and must be both Indexable and Storable for any actions to be taken
-	private IndexDefinition index_definition;
+	private SearchIndexDefinition index_definition;
 
 	public SyncSingleKind(Kind kind) throws ValidationException
 	{
@@ -63,7 +68,6 @@ public class SyncSingleKind implements Runnable
 	{
 		logger.info("Reindexing of Kind " + kind + " started");
 		boolean success = syncSearchAndStorage();
-		//TODO code reviewer: should we attempt delete search documents if Storage finds nothing? I leaned towards no.
 		if (success)
 		{
 			try
@@ -135,12 +139,9 @@ public class SyncSingleKind implements Runnable
 	 */
 	private void deleteSearchDocumentsThatAreNotInStorage() throws Exception
 	{
-		//TODO 
-		//This was broken out so it'd be easy to iterate over searches with more than 10k results however
-		//We still need a solution for getting searches of over 10,000 obj, currently if you have over 10k results and try to start at any result that is above 10k it throws the following exception 
-		//Caused by: org.elasticsearch.search.query.QueryPhaseExecutionException: Result window is too large, from + size must be less than or equal to: [10000] but was [10001]. See the scroll api for a more efficient way to request large data sets. This limit can be set by changing the [index.max_result_window] index level setting.
+		//Known deficiency here with our current Search interface only allowing for first 10k results even when search window is smaller than 10k. We are aware and an iteration on Search is coming for it.
 		StandardSearchRequest search_request = new StandardSearchRequest("*", MAX_ELASTIC_SEARCH_RESULTS, 0);
-		JSONServletResponse json_servlet_response = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(index_definition, search_request);
+		JSONServletResponse json_servlet_response = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(index_definition.getSimpleIndex(), search_request);
 		if (json_servlet_response instanceof SearchResponseOK)
 		{
 			//We want to ensure that we never are deleting more than 10% of our search documents in order to match Storage
@@ -159,9 +160,9 @@ public class SyncSingleKind implements Runnable
 			for(String deletable_key : documents_to_delete)
 			{
 				logger.info("Key: " + deletable_key + " existed in search but not in storage for Kind " + kind + ". Deleting result from search.");
-				//TODO this is not in storage but only in search. We don't have a guarntee that this searchdocumentId will be the ObjectId in search
+				//TODO this is not in storage but only in search. We don't have a guarantee that this searchdocumentId will be the ObjectId in search
 				//However, we don't have another way to get it currently, ElasticSearch could be extended
-				CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().deleteDocument(index_definition, new SearchDocumentId(deletable_key));
+				CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().deleteDocument(index_definition.getSimpleIndex(), new SearchDocumentId(deletable_key));
 			}
 		}
 		else
@@ -180,7 +181,6 @@ public class SyncSingleKind implements Runnable
 		Set<String> deletable_keys = new HashSet<>();
 		for (OneSearchResult result : results)
 		{
-			//TODO Code Review: Thoughts on this?
 			//We can't rely on the Indexable.SearchDocumentId because according to the docs this value isn't always guaranteed be the ObjectId
 			//So this needs to be implemented long term otherwise we may have indices that don't have the object id set as id
 			String cur_object_id = result.getSimpleContents().getOrDefault(ObjectId.FIELD_OBJECT_ID.getSimpleFieldName(), null);
