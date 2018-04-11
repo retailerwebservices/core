@@ -35,6 +35,7 @@ import org.jimmutable.core.objects.common.ObjectReference;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.reader.HandReader;
 
+@Deprecated
 public class DoUploadAttachments extends HttpServlet
 {
 

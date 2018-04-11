@@ -31,6 +31,11 @@ import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.reader.HandReader;
 
+/**
+ * Not sure why this exists need to delete
+ * @author trevorbox
+ *
+ */
 @Deprecated
 public class DoUpsertChangeLogOld extends HttpServlet
 {

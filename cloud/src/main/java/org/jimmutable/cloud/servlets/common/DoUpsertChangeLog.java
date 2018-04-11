@@ -26,6 +26,14 @@ import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.reader.HandReader;
 
+/**
+ * Should use the simplified UpsertStandardChangeLog instead (attachments are
+ * handles separately)
+ * 
+ * @author trevorbox
+ *
+ */
+@Deprecated
 public class DoUpsertChangeLog extends HttpServlet
 {
 
