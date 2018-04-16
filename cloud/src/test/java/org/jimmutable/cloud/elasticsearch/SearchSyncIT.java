@@ -29,11 +29,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-
-
 public class SearchSyncIT extends IntegrationTest
 {
-	private static SearchIndexDefinition def;
 	private static TestLibraryPatron patron_in_storage_and_search;
 	private static TestLibraryPatron patron_in_only_search;
 	private static TestLibraryPatron patron_in_only_storage;

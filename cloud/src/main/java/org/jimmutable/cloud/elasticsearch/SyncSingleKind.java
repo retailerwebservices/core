@@ -163,7 +163,7 @@ public class SyncSingleKind implements Runnable
 				//this is not in storage but only in search.
 				
 				//Problem, we don't have a guarantee that this searchdocumentId will be the ObjectId in search but we need to have that guarantee to check against. However, we don't have another way to get it currently...
-				//Okay'd this issue with Jeff for now though since we will very likely be rewriting this logic once our Elasticsearch infastructure allows for re-indexing in a more properly fashion.				
+				//Okay'd this issue with Jeff for now though since we will very likely be rewriting this logic once our Elasticsearch infrastructure allows for re-indexing in a more properly fashion.				
 				CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().deleteDocument(index_definition.getSimpleIndex(), new SearchDocumentId(deletable_key));
 			}
 		}
