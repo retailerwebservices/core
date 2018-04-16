@@ -700,8 +700,27 @@ public class ElasticSearch implements ISearch
 					logger.info(String.format("Index: %s not properly configured", index.getSimpleIndex().getSimpleValue()));
 					logger.info(String.format("Expected fields=%s", expected));
 					logger.info(String.format("Actual   fields=%s", actual));
-					return false;
+					
+					if (expected.size() > actual.size())
+					{
+						logger.info("Issue lies in that an actual search field is missing from what is expected to be written");
+					}
+					else if(expected.size() < actual.size())
+					{
+						logger.info("Issue lies in that an expected search field is missing from what's actually being written");
+					}
+					for (String key : expected.keySet())
+					{
+						String expected_value = expected.get(key);
+						String actual_value = actual.get(key);
+						if (!expected_value.equals(actual_value))
+						{
+							logger.info(String.format("Issue lies in that for Field %s the expected field value is: %s", key, expected_value));
+							logger.info(String.format("However, currently for Field %s the actual field value is: %s", key, actual_value));
+						}
+					}
 
+					return false;
 				}
 
 				return true;
@@ -715,6 +734,7 @@ public class ElasticSearch implements ISearch
 		return false;
 
 	}
+
 
 	private boolean createIndex(SearchIndexDefinition index)
 	{
