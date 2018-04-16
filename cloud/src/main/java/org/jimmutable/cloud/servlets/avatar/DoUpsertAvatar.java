@@ -2,7 +2,9 @@ package org.jimmutable.cloud.servlets.avatar;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
@@ -10,7 +12,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
-import javax.servlet.MultipartConfigElement;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -100,6 +101,7 @@ public class DoUpsertAvatar extends HttpServlet
 
 		if (image_data == null)
 		{
+			logger.error("Null image_data");
 			return default_value;
 		}
 
@@ -111,66 +113,110 @@ public class DoUpsertAvatar extends HttpServlet
 
 		if (is == null)
 		{
+			logger.error("Null input stream");
 			return default_value;
 		}
 
-		ByteArrayOutputStream image_data_out = new ByteArrayOutputStream();
-
-		StorageKey key = default_value;
+		StorageKey new_png_key = null;
 
 		try
 		{
-			String type = "image/jpg";
-			try
-			{
-				type = Optional.getOptional(URLConnection.guessContentTypeFromStream(is), null, type);
-			} catch (IOException e)
-			{
-				logger.error(e);
-			}
+			new_png_key = new ObjectIdStorageKey(DoGetAvatar.KIND, ObjectId.createRandomId(), DoGetAvatar.EXTENSION);
+		} catch (Exception e)
+		{
+			logger.error("Failed to create a new storage key!");
+			return default_value;
+		}
 
-			if (ALLOWED_IMG_EXTENSIONS.contains(type.toLowerCase()))
-			{
+		StorageKey to_return = default_value;
 
-				BufferedImage image = ImageIO.read(is);
-
-				if (ImageIO.write(image, DoGetAvatar.EXTENSION.getSimpleValue().toLowerCase(), image_data_out))
-				{
-					image_data_out.flush();
-
-					StorageKey new_png_key = new ObjectIdStorageKey(DoGetAvatar.KIND, ObjectId.createRandomId(), DoGetAvatar.EXTENSION);
-					if (CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().upsert(new_png_key, image_data_out.toByteArray(), false))
-					{
-						key = new_png_key;
-					}
-
-				}
-			} else
-			{
-				logger.error(String.format("Unsupported image extension %s", type));
-			}
+		String type = "image/jpg";
+		try
+		{
+			type = Optional.getOptional(URLConnection.guessContentTypeFromStream(is), null, type);
 		} catch (IOException e)
 		{
 			logger.error(e);
-		} finally
+		}
+
+		if (type.equals("image/png"))
 		{
+			if (CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().upsertStreaming(new_png_key, is, false))
+			{
+				to_return = new_png_key;
+			} else
+			{
+				logger.error(String.format("Failed to upsert %s/%s.%s to storage!", new_png_key.getSimpleKind().getSimpleValue(), new_png_key.getSimpleName().getSimpleValue(), new_png_key.getSimpleExtension().getSimpleValue()));
+			}
+
+		} else if (ALLOWED_IMG_EXTENSIONS.contains(type.toLowerCase()))
+		{
+
+			FileOutputStream fos = null;
+			InputStream fis = null;
 			try
 			{
-				if (is != null)
+				File tmp_file = File.createTempFile(String.format("%s", System.currentTimeMillis()), "." + DoGetAvatar.EXTENSION.getSimpleValue(), null);
+				tmp_file.deleteOnExit();
+				fos = new FileOutputStream(tmp_file);
+				BufferedImage image = ImageIO.read(is);
+
+				if (ImageIO.write(image, DoGetAvatar.EXTENSION.getSimpleValue().toLowerCase(), fos))
 				{
-					is.close();
-				}
-				if (image_data_out != null)
+					fos.flush();
+
+					if (CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().upsertStreaming(new_png_key, new FileInputStream(tmp_file), false))
+					{
+						to_return = new_png_key;
+					} else
+					{
+						logger.error(String.format("Failed to upsert %s/%s.%s to storage!", new_png_key.getSimpleKind().getSimpleValue(), new_png_key.getSimpleName().getSimpleValue(), new_png_key.getSimpleExtension().getSimpleValue()));
+					}
+				} else
 				{
-					image_data_out.close();
+					logger.error(String.format("Failed to write png file %s/%s.%s!", new_png_key.getSimpleKind().getSimpleValue(), new_png_key.getSimpleName().getSimpleValue(), new_png_key.getSimpleExtension().getSimpleValue()));
 				}
 			} catch (IOException e)
 			{
-				logger.error(e);
+				logger.error("Unexpected error during image IO operations!", e);
+			} finally
+			{
+				if (fos != null)
+				{
+					try
+					{
+						fos.close();
+					} catch (IOException e)
+					{
+						logger.error("Unexpected IOException when closing file output stream!", e);
+					}
+				}
+				if (fis != null)
+				{
+					try
+					{
+						fis.close();
+					} catch (IOException e)
+					{
+						logger.error("Unexpected IOException when closing file input stream!", e);
+					}
+				}
 			}
+		} else
+		{
+			logger.error(String.format("Unsupported image extension %s", type));
 		}
 
-		return key;
+		try
+		{
+			is.close();
+		} catch (IOException e)
+		{
+			logger.error(e);
+		}
+
+		return to_return;
+
 	}
 
 }
