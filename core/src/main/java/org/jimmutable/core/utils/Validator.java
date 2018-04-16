@@ -157,8 +157,7 @@ public class Validator
 	 */
 	static public void minObject( Comparable value, Comparable minimum_valid_value )
 	{
-		//CODE REVIEW: I think this should pass a null at the end? Otherwise, it's calling itself. -PM
-		minObject(value, minimum_valid_value);
+		minObject(value, minimum_valid_value, null);
 	}
 
 	/**
@@ -549,7 +548,6 @@ public class Validator
 	 * @param allowed_characters
 	 * @return
 	 */
-	//CODEREVIEW: This one also needs to have label added. -PM
 	static public boolean containsOnlyValidCharactersQuiet( String str, ValidCharacters... allowed_characters )
 	{
 		if ( str == null )
@@ -577,13 +575,25 @@ public class Validator
 		return true;
 	}
 
-	//CODEREVIEW: This one also needs to have label added. -PM
 	static public void containsOnlyValidCharacters( String str, ValidCharacters... allowed_characters )
+	{
+		containsOnlyValidCharacters(str, null, allowed_characters);
+	}
+
+	static public void containsOnlyValidCharacters( String str, String label, ValidCharacters... allowed_characters )
 	{
 		if ( str == null )
 			return;
 
 		if ( !containsOnlyValidCharactersQuiet(str, allowed_characters) )
-			throw new ValidationException(String.format("Illegal character in string %s", str));
+		{
+			String error_message = String.format("Illegal character in string %s", str);
+			if ( label != null )
+			{
+				error_message += " for " + label;
+			}
+			throw new ValidationException(error_message);
+
+		}
 	}
 }
