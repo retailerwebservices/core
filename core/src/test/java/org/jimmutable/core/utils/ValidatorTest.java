@@ -36,12 +36,12 @@ public class ValidatorTest extends TestCase
 
 	public void testContainsOnlyValidCharacters()
 	{
-		testContainsOnlyValidChracters(true, "hello world", Validator.LOWERCASE_LETTERS, Validator.SPACE);
-		testContainsOnlyValidChracters(false, "Hello world", Validator.LOWERCASE_LETTERS, Validator.SPACE);
+		testContainsOnlyValidCharacters(true, "hello world", Validator.LOWERCASE_LETTERS, Validator.SPACE);
+		testContainsOnlyValidCharacters(false, "Hello world", Validator.LOWERCASE_LETTERS, Validator.SPACE);
 
-		testContainsOnlyValidChracters(true, "Hello 199 world", Validator.LETTERS, Validator.NUMBERS, Validator.SPACE);
-		testContainsOnlyValidChracters(false, "Hello 199 world", Validator.NUMBERS, Validator.SPACE);
-		testContainsOnlyValidChracters(false, "Hello 199 world", Validator.LETTERS, Validator.NUMBERS);
+		testContainsOnlyValidCharacters(true, "Hello 199 world", Validator.LETTERS, Validator.NUMBERS, Validator.SPACE);
+		testContainsOnlyValidCharacters(false, "Hello 199 world", Validator.NUMBERS, Validator.SPACE);
+		testContainsOnlyValidCharacters(false, "Hello 199 world", Validator.LETTERS, Validator.NUMBERS);
 	}
 
 	public void testReturnMessageForNotNull()
@@ -108,7 +108,7 @@ public class ValidatorTest extends TestCase
 		}
 	}
 
-	public void testReturnMessageFormax()
+	public void testReturnMessageForMax()
 	{// correct
 
 		try
@@ -207,7 +207,7 @@ public class ValidatorTest extends TestCase
 		{
 			assertEquals("Collection contains an object of the wrong type for Bad Math", e.getMessage());
 		}
-		HashMap<ObjectId, Day> maps = new HashMap();
+		HashMap<ObjectId, Day> maps = new HashMap<>();
 		maps.put(ObjectId.createRandomId(), new Day(1, 2, 3000));
 		try
 		{
@@ -236,7 +236,8 @@ public class ValidatorTest extends TestCase
 		}
 		catch ( Exception e )
 		{
-			assertEquals("Value (null) is not equal to value (null) for Bad Math", e.getMessage());
+			//CODEREVIEW: I changed this from 'not equal' to just 'equal'. -PM
+			assertEquals("Value (null) is equal to value (null) for Bad Math", e.getMessage());
 		}
 	}
 
@@ -256,7 +257,8 @@ public class ValidatorTest extends TestCase
 		testCharacterValidator(Validator.COLON, new char[] { ':' });
 	}
 
-	private void testContainsOnlyValidChracters( boolean should_be_valid, String str, ValidCharacters... allowed_characters )
+	//CODEREVIEW: This should be updated for Label. -PM
+	private void testContainsOnlyValidCharacters( boolean should_be_valid, String str, ValidCharacters... allowed_characters )
 	{
 		try
 		{
