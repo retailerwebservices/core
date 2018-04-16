@@ -36,12 +36,12 @@ public class ValidatorTest extends TestCase
 
 	public void testContainsOnlyValidCharacters()
 	{
-		testContainsOnlyValidChracters(true, "hello world", Validator.LOWERCASE_LETTERS, Validator.SPACE);
-		testContainsOnlyValidChracters(false, "Hello world", Validator.LOWERCASE_LETTERS, Validator.SPACE);
+		testContainsOnlyValidCharacters(true, "hello world", Validator.LOWERCASE_LETTERS, Validator.SPACE);
+		testContainsOnlyValidCharacters(false, "Hello world", Validator.LOWERCASE_LETTERS, Validator.SPACE);
 
-		testContainsOnlyValidChracters(true, "Hello 199 world", Validator.LETTERS, Validator.NUMBERS, Validator.SPACE);
-		testContainsOnlyValidChracters(false, "Hello 199 world", Validator.NUMBERS, Validator.SPACE);
-		testContainsOnlyValidChracters(false, "Hello 199 world", Validator.LETTERS, Validator.NUMBERS);
+		testContainsOnlyValidCharacters(true, "Hello 199 world", Validator.LETTERS, Validator.NUMBERS, Validator.SPACE);
+		testContainsOnlyValidCharacters(false, "Hello 199 world", Validator.NUMBERS, Validator.SPACE);
+		testContainsOnlyValidCharacters(false, "Hello 199 world", Validator.LETTERS, Validator.NUMBERS);
 	}
 
 	public void testReturnMessageForNotNull()
@@ -108,7 +108,7 @@ public class ValidatorTest extends TestCase
 		}
 	}
 
-	public void testReturnMessageFormax()
+	public void testReturnMessageForMax()
 	{// correct
 
 		try
@@ -149,7 +149,7 @@ public class ValidatorTest extends TestCase
 	{// correct
 		try
 		{
-			Validator.min((byte)3, (byte)4, "Bad Math");
+			Validator.min((byte) 3, (byte) 4, "Bad Math");
 		}
 		catch ( Exception e )
 		{
@@ -157,7 +157,7 @@ public class ValidatorTest extends TestCase
 		}
 		try
 		{
-			Validator.min((short)3, (short)4, "Bad Math");
+			Validator.min((short) 3, (short) 4, "Bad Math");
 		}
 		catch ( Exception e )
 		{
@@ -207,11 +207,11 @@ public class ValidatorTest extends TestCase
 		{
 			assertEquals("Collection contains an object of the wrong type for Bad Math", e.getMessage());
 		}
-		HashMap<ObjectId, Day> maps = new HashMap();
+		HashMap<ObjectId, Day> maps = new HashMap<>();
 		maps.put(ObjectId.createRandomId(), new Day(1, 2, 3000));
 		try
 		{
-			Validator.containsOnlyInstancesOf(ObjectId.class,Address.class, maps, "Bad Math");
+			Validator.containsOnlyInstancesOf(ObjectId.class, Address.class, maps, "Bad Math");
 		}
 		catch ( Exception e )
 		{
@@ -219,7 +219,7 @@ public class ValidatorTest extends TestCase
 		}
 		try
 		{
-			Validator.containsOnlyInstancesOf(Address.class,Day.class, maps, "Bad Math");
+			Validator.containsOnlyInstancesOf(Address.class, Day.class, maps, "Bad Math");
 		}
 		catch ( Exception e )
 		{
@@ -236,7 +236,7 @@ public class ValidatorTest extends TestCase
 		}
 		catch ( Exception e )
 		{
-			assertEquals("Value (null) is not equal to value (null) for Bad Math", e.getMessage());
+			assertEquals("Value (null) is equal to value (null) for Bad Math", e.getMessage());
 		}
 	}
 
@@ -256,11 +256,12 @@ public class ValidatorTest extends TestCase
 		testCharacterValidator(Validator.COLON, new char[] { ':' });
 	}
 
-	private void testContainsOnlyValidChracters( boolean should_be_valid, String str, ValidCharacters... allowed_characters )
+	// CODEREVIEW: This should be updated for Label. -PM
+	private void testContainsOnlyValidCharacters( boolean should_be_valid, String str, ValidCharacters... allowed_characters )
 	{
 		try
 		{
-			Validator.containsOnlyValidCharacters(str, allowed_characters);
+			Validator.containsOnlyValidCharacters(str, "label", allowed_characters);
 
 			if ( !should_be_valid )
 				fail();
@@ -268,7 +269,14 @@ public class ValidatorTest extends TestCase
 		catch ( Exception e )
 		{
 			if ( should_be_valid )
+			{
 				fail();
+			}
+			else
+			{
+				assertEquals("Illegal character in string "+str+" for label", e.getMessage());
+			}
+
 		}
 	}
 
