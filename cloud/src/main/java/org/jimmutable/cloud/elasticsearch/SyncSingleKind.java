@@ -94,7 +94,7 @@ public class SyncSingleKind implements Runnable
 	{
 		if (!CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().scan(kind, new UpsertDataHandler(), 10))
 		{
-			logger.error("Storage scanner for Kind " + kind + " was unable to successfully run. This Kind may not be fully re-indexed, or no entries may currently exist in Storage.");
+			logger.warn("Storage scanner for Kind " + kind + " was unable to successfully run. This Kind may not be fully re-indexed or there may currently not be any entries of Kind in Storage.");
 			return false;
 		}
 		return true;
@@ -160,8 +160,10 @@ public class SyncSingleKind implements Runnable
 			for(String deletable_key : documents_to_delete)
 			{
 				logger.info("Key: " + deletable_key + " existed in search but not in storage for Kind " + kind + ". Deleting result from search.");
-				//TODO this is not in storage but only in search. We don't have a guarantee that this searchdocumentId will be the ObjectId in search
-				//However, we don't have another way to get it currently, ElasticSearch could be extended
+				//this is not in storage but only in search.
+				
+				//Problem, we don't have a guarantee that this searchdocumentId will be the ObjectId in search but we need to have that guarantee to check against. However, we don't have another way to get it currently...
+				//Okay'd this issue with Jeff for now though since we will very likely be rewriting this logic once our Elasticsearch infastructure allows for re-indexing in a more properly fashion.				
 				CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().deleteDocument(index_definition.getSimpleIndex(), new SearchDocumentId(deletable_key));
 			}
 		}
