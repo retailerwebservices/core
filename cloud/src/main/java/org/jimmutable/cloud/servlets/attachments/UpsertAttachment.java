@@ -67,6 +67,7 @@ public class UpsertAttachment extends HttpServlet
 					{
 						String warning_message = String.format("Unable to parse extension from file name %s!", file_name);
 						logger.warn(warning_message, e);
+						// CODE REVIEW: Add call to onWarning for consistency. -PM
 					}
 
 					ObjectIdStorageKey key = null;
@@ -113,16 +114,19 @@ public class UpsertAttachment extends HttpServlet
 									ServletUtil.writeSerializedResponse(response, new UpsertResponseOK(String.format("Upserted %s", file_name), attachment_metadata), UpsertResponseOK.HTTP_STATUS_CODE_OK);
 								} else
 								{
+									// CODE REVIEW: Add log entry here. -PM
 									onError("Failed to upsert attachment metadata!");
 								}
 							}
 
 						} else
 						{
+							// CODE REVIEW: Add log entry here. -PM
 							onError(String.format("Failed to get Storage metadata for %s %s!", key.getSimpleKind().getSimpleValue(), key.getSimpleName().getSimpleValue()));
 						}
 					} else
 					{
+						// CODE REVIEW: Add log entry here. -PM
 						onError(String.format("Failed to upsert attachment file metadata for %s %s!", key.getSimpleKind().getSimpleValue(), key.getSimpleName().getSimpleValue()));
 					}
 					try
