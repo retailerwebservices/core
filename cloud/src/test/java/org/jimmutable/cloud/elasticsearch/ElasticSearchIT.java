@@ -9,6 +9,8 @@ import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
+import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.serialization.FieldName;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -16,7 +18,6 @@ import org.junit.Test;
 public class ElasticSearchIT extends IntegrationTest
 {
 
-	
 	@BeforeClass
 	public static void setup()
 	{
@@ -40,6 +41,28 @@ public class ElasticSearchIT extends IntegrationTest
 	}
 
 	@Test
+	public void putAllFieldMappings()
+	{
+		assertTrue(CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().putAllFieldMappings(MyIndexable.SEARCH_INDEX_DEFINITION));
+		
+		
+		Builder b = new Builder(MyIndexable.SEARCH_INDEX_DEFINITION);
+		
+		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("test1"), SearchIndexFieldType.TEXT));
+		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("test2"), SearchIndexFieldType.INSTANT));
+		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("test3"), SearchIndexFieldType.LONG));
+		
+		
+		SearchIndexDefinition def = (SearchIndexDefinition)b.create(null);
+		
+		assertTrue(CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().putAllFieldMappings(def));
+		
+		
+		assertTrue(CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexProperlyConfigured(def));
+		
+	}
+
+	@Test
 	public void testSearchPaginationFirstPage()
 	{
 
@@ -57,8 +80,7 @@ public class ElasticSearchIT extends IntegrationTest
 			assertEquals(ok.getSimpleHTTPResponseCode(), 200);
 			assertEquals(ok.getSimpleResults().size(), 10);
 			assertEquals(ok.getSimpleStartOfNextPageOfResults(), 10);
-			// TODO what is the point of this??
-			assertEquals(ok.getSimpleStartOfPreviousPageOfResults(), -1);
+			assertEquals(ok.getSimpleStartOfPreviousPageOfResults(), 0);
 
 		}
 
@@ -82,8 +104,7 @@ public class ElasticSearchIT extends IntegrationTest
 			assertEquals(200, ok.getSimpleHTTPResponseCode());
 			assertEquals(10, ok.getSimpleResults().size());
 			assertEquals(20, ok.getSimpleStartOfNextPageOfResults());
-			// TODO what is the point of this??
-			assertEquals(10, ok.getSimpleStartOfPreviousPageOfResults());
+			assertEquals(0, ok.getSimpleStartOfPreviousPageOfResults());
 
 		}
 
@@ -107,8 +128,7 @@ public class ElasticSearchIT extends IntegrationTest
 			assertEquals(200, ok.getSimpleHTTPResponseCode());
 			assertEquals(0, ok.getSimpleResults().size());
 			assertEquals(30, ok.getSimpleStartOfNextPageOfResults());
-			// TODO what is the point of this??
-			assertEquals(20, ok.getSimpleStartOfPreviousPageOfResults());
+			assertEquals(10, ok.getSimpleStartOfPreviousPageOfResults());
 		}
 
 	}
@@ -146,6 +166,8 @@ public class ElasticSearchIT extends IntegrationTest
 	public static void shutdown()
 	{
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().shutdownDocumentUpsertThreadPool(25);
+
+//		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().deleteIndex(MyIndexable.SEARCH_INDEX_DEFINITION);
 
 	}
 
