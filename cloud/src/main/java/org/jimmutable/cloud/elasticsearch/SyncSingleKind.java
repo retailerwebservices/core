@@ -56,8 +56,8 @@ public class SyncSingleKind implements Runnable
 	private void validate()
 	{
 		if(this.kind == null) throw new ValidationException("No Kind was passed in, kind is required");
-		if(!SearchSync.getSimpleAllRegisteredIndexableKinds().contains(kind)) throw new ValidationException("Kind %s was not registered with SearchSync.registerIndexableKind()");
-		if(this.index_definition == null) throw new ValidationException("No IndexDefinition was passed in, IndexDefinition is required");
+		if(!SearchSync.getSimpleAllRegisteredIndexableKinds().contains(kind)) throw new ValidationException("Kind " + kind + " was not registered with SearchSync.registerIndexableKind()");
+		if(this.index_definition == null) throw new ValidationException("No IndexDefinition was passed in for Kind " + kind + ", IndexDefinition is required");
 	}
 
 	/**
