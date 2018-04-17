@@ -36,19 +36,12 @@ public class ElasticSearchStressTestIT extends IntegrationTest
 		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(TestLibraryPatron.FIELD_EMAIL_ADDRESS.getSimpleFieldName(), SearchIndexFieldType.TEXT));
 		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(TestLibraryPatron.FIELD_SSN.getSimpleFieldName(), SearchIndexFieldType.TEXT));
 		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(TestLibraryPatron.FIELD_NUM_BOOKS.getSimpleFieldName(), SearchIndexFieldType.LONG));
-		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(TestLibraryPatron.FIELD_PICTURE.getSimpleFieldName(), SearchIndexFieldType.ATOM));
 
-		IndexDefinition index = new IndexDefinition("trevor:stressed:v1");
-
-		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, index);
-
-		def = (SearchIndexDefinition) b.create(null);
-
-		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertIndex(def);
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertIndex(TestLibraryPatron.INDEX_MAPPING);
 
 		for (int i = 1; i <= 1000000; i++)
 		{
-			TestLibraryPatron patron = new TestLibraryPatron(index, new ObjectId(i), "firstname" + i, "lastname" + i, "emailaddress" + i, "ssn" + 1, new Day(1, 24, 1990), 2, new ObjectIdStorageKey(new Kind("somekind"), new ObjectId(i), new StorageKeyExtension("storagekeyextension")));
+			TestLibraryPatron patron = new TestLibraryPatron(TestLibraryPatron.INDEX_DEFINITION, new ObjectId(i), "firstname" + i, "lastname" + i, "emailaddress" + i, "ssn" + 1, new Day(1, 24, 1990), 2, new ObjectIdStorageKey(new Kind("somekind"), new ObjectId(i), new StorageKeyExtension("storagekeyextension")));
 			CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocumentAsync(patron);
 		}
 
@@ -67,7 +60,7 @@ public class ElasticSearchStressTestIT extends IntegrationTest
 	{
 
 		StandardSearchRequest request = new StandardSearchRequest("email_address:emailaddress9999**", 1, 21);
-		JSONServletResponse r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(def.getSimpleIndex(), request);
+		JSONServletResponse r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(TestLibraryPatron.INDEX_DEFINITION, request);
 
 		assertTrue(r1 instanceof SearchResponseOK);
 		if (r1 instanceof SearchResponseOK)

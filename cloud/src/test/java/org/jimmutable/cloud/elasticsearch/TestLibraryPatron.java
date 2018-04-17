@@ -1,11 +1,13 @@
 package org.jimmutable.cloud.elasticsearch;
 
+import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.elasticsearch.IndexDefinition;
 import org.jimmutable.cloud.elasticsearch.Indexable;
 import org.jimmutable.cloud.elasticsearch.SearchDocumentId;
 import org.jimmutable.cloud.elasticsearch.SearchDocumentWriter;
 import org.jimmutable.cloud.storage.Storable;
 import org.jimmutable.cloud.storage.ObjectIdStorageKey;
+import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.objects.common.Day;
 import org.jimmutable.core.objects.common.Kind;
@@ -21,6 +23,8 @@ import org.jimmutable.core.utils.Validator;
 final public class TestLibraryPatron extends StandardImmutableObject<TestLibraryPatron> implements Indexable, Storable
 {
 	static public final TypeName TYPE_NAME = new TypeName("TestLibraryPatron");
+	static public final Kind KIND = new Kind("library-patron");
+	static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("reindex"), new IndexVersion("v1"));
 
 	static public final FieldDefinition.Stringable<ObjectId> FIELD_OBJECT_ID = new FieldDefinition.Stringable("id", null, ObjectId.CONVERTER);
 	static public final FieldDefinition.String FIELD_FIRST_NAME = new FieldDefinition.String("first_name", null);
@@ -28,15 +32,16 @@ final public class TestLibraryPatron extends StandardImmutableObject<TestLibrary
 	static public final FieldDefinition.Stringable<Day> FIELD_BIRTH_DATE = new FieldDefinition.Stringable("birth_date", null, Day.CONVERTER);
 	static public final FieldDefinition.String FIELD_EMAIL_ADDRESS = new FieldDefinition.String("email_address", null);
 	static public final FieldDefinition.String FIELD_SSN = new FieldDefinition.String("ssn", null);
-
 	static public final FieldDefinition.Integer FIELD_NUM_BOOKS = new FieldDefinition.Integer("number_of_books_checked_out", -1);
-	static public final FieldDefinition.Stringable<ObjectIdStorageKey> FIELD_PICTURE = new FieldDefinition.Stringable<ObjectIdStorageKey>("picture", null, ObjectIdStorageKey.CONVERTER);
 
-	// static public final FieldDefinition.Integer FIELD_NUM_PICTURES = new
-	// FieldDefinition.Integer("number_of_pictures", -1);
+	static public final SearchIndexFieldDefinition SEARCH_FIELD_OBJECT_ID = new SearchIndexFieldDefinition(FIELD_OBJECT_ID.getSimpleFieldName(), SearchIndexFieldType.ATOM);
+	static public final SearchIndexFieldDefinition SEARCH_FIELD_FIRST_NAME = new SearchIndexFieldDefinition(FIELD_FIRST_NAME.getSimpleFieldName(), SearchIndexFieldType.TEXT);
+	static public final SearchIndexFieldDefinition SEARCH_FIELD_LAST_NAME = new SearchIndexFieldDefinition(FIELD_LAST_NAME.getSimpleFieldName(), SearchIndexFieldType.TEXT);
+	static public final SearchIndexFieldDefinition SEARCH_FIELD_BIRTH_DATE = new SearchIndexFieldDefinition(FIELD_BIRTH_DATE.getSimpleFieldName(), SearchIndexFieldType.DAY);
+	static public final SearchIndexFieldDefinition SEARCH_FIELD_EMAIL_ADDRESS = new SearchIndexFieldDefinition(FIELD_EMAIL_ADDRESS.getSimpleFieldName(), SearchIndexFieldType.TEXT);
+	static public final SearchIndexFieldDefinition SEARCH_FIELD_SSN = new SearchIndexFieldDefinition(FIELD_SSN.getSimpleFieldName(), SearchIndexFieldType.ATOM);
+	static public final SearchIndexFieldDefinition SEARCH_FIELD_NUM_BOOKS = new SearchIndexFieldDefinition(FIELD_NUM_BOOKS.getSimpleFieldName(), SearchIndexFieldType.TEXT);
 
-	// static public final FieldDefinition.Integer FIELD_PICTURE = new
-	// FieldDefinition.StandardObject(field_name, unset_value);
 
 	private ObjectId id; // required
 	private String first_name; // required
@@ -48,12 +53,10 @@ final public class TestLibraryPatron extends StandardImmutableObject<TestLibrary
 	private Integer number_of_books_checked_out; // required and > 0
 	// private Integer number_of_pictures; // required and > 0
 
-	private ObjectIdStorageKey picture; // optional
 	private IndexDefinition index;
 
 	public TestLibraryPatron(IndexDefinition index, ObjectId id, String first_name, String last_name, String email_address, String ssn, Day birth_date, int number_of_books_checked_out, ObjectIdStorageKey picture)
 	{
-
 		this.index = index;
 		this.id = id;
 		this.first_name = first_name;
@@ -62,7 +65,6 @@ final public class TestLibraryPatron extends StandardImmutableObject<TestLibrary
 		this.ssn = ssn;
 		this.birth_date = birth_date;
 		this.number_of_books_checked_out = number_of_books_checked_out;
-		this.picture = picture;
 	}
 
 	public TestLibraryPatron(ObjectParseTree t)
@@ -74,6 +76,26 @@ final public class TestLibraryPatron extends StandardImmutableObject<TestLibrary
 		this.email_address = t.getString(FIELD_EMAIL_ADDRESS);
 		this.ssn = t.getString(FIELD_SSN);
 		this.number_of_books_checked_out = t.getInt(FIELD_NUM_BOOKS);
+	}
+	
+	static public final SearchIndexDefinition INDEX_MAPPING;
+
+	static
+	{
+
+		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+
+		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_OBJECT_ID);
+		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_FIRST_NAME);
+		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_LAST_NAME);
+		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_BIRTH_DATE);
+		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_EMAIL_ADDRESS);
+		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_SSN);
+		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_NUM_BOOKS);
+
+		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
+
+		INDEX_MAPPING = (SearchIndexDefinition) b.create(null);
 	}
 
 	@Override
@@ -177,11 +199,6 @@ final public class TestLibraryPatron extends StandardImmutableObject<TestLibrary
 		return number_of_books_checked_out;
 	}
 
-	public ObjectIdStorageKey getPicture()
-	{
-		return picture;
-	}
-
 	@Override
 	public String serialize(Format format)
 	{
@@ -191,7 +208,7 @@ final public class TestLibraryPatron extends StandardImmutableObject<TestLibrary
 	@Override
 	public IndexDefinition getSimpleSearchIndexDefinition()
 	{
-		return index;
+		return INDEX_DEFINITION;
 	}
 
 	@Override
@@ -210,7 +227,6 @@ final public class TestLibraryPatron extends StandardImmutableObject<TestLibrary
 		writer.writeTextWithSubstringMatchingSupport(FIELD_SSN.getSimpleFieldName(), ssn);
 		writer.writeDay(FIELD_BIRTH_DATE.getSimpleFieldName(), birth_date);
 		writer.writeLong(FIELD_NUM_BOOKS.getSimpleFieldName(), number_of_books_checked_out);
-		writer.writeAtom(FIELD_PICTURE.getSimpleFieldName(), picture.getSimpleValue());
 	}
 
 	@Override
@@ -225,7 +241,6 @@ final public class TestLibraryPatron extends StandardImmutableObject<TestLibrary
 		ret = Comparison.continueCompare(ret, getOptionalSsn(), other.getOptionalSsn());
 		ret = Comparison.continueCompare(ret, getOptionalBirth_date(), other.getOptionalBirth_date());
 		ret = Comparison.continueCompare(ret, getSimpleNumber_of_books_checked_out(), other.getSimpleNumber_of_books_checked_out());
-		ret = Comparison.continueCompare(ret, getPicture(), other.getPicture());
 
 		return ret;
 	}
@@ -246,8 +261,6 @@ final public class TestLibraryPatron extends StandardImmutableObject<TestLibrary
 		writer.writeString(FIELD_SSN.getSimpleFieldName(), ssn);
 		writer.writeStringable(FIELD_BIRTH_DATE, birth_date);
 		writer.writeInt(FIELD_NUM_BOOKS, number_of_books_checked_out);
-		// writer.writeLong(FIELD_NUM_BOOKS.getSimpleFieldName(), number_of_pictures);
-		writer.writeStringable(FIELD_PICTURE, picture);
 	}
 
 	@Override
@@ -268,13 +281,13 @@ final public class TestLibraryPatron extends StandardImmutableObject<TestLibrary
 	public void validate()
 	{
 		Validator.notNull(id, first_name, last_name, email_address, number_of_books_checked_out);
-		Validator.min(1, number_of_books_checked_out);
+		Validator.min(number_of_books_checked_out, 2);
 	}
 
 	@Override
 	public Kind getSimpleKind()
 	{
-		return new Kind("library-patron");
+		return KIND;
 	}
 
 	@Override
