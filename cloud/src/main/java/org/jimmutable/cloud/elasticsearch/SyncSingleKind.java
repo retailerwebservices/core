@@ -124,7 +124,7 @@ public class SyncSingleKind implements Runnable
 			}
 			catch (Exception e)
 			{
-				logger.error("This object was unable to be deserialized as a Storable and Indexable object...", e);
+				logger.error("This object from StorageKey " + key + " was unable to be deserialized as a Storable and Indexable object...", e);
 				return;
 			}
 			
@@ -203,8 +203,19 @@ public class SyncSingleKind implements Runnable
 			//If it doesn't exist in storage, we should remove it from search
 			if (!CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().exists(key, false))
 			{
+				logger.error("Had storage key " + key + " in Search but not in Storage. Deleting it Search.");
 				deletable_keys.add(id.getSimpleValue());
 			}
+			try
+			{
+				new GenericStorableAndIndexable(CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(key, null));
+			}
+			catch(Exception e)
+			{
+				logger.error("Could not extract expected Storable & Indexable obj from Storage, it may be corrupt. Deleting it Search. Storage key: " + key, e);
+				deletable_keys.add(id.getSimpleValue());
+			}
+
 		}
 		
 		return deletable_keys;
