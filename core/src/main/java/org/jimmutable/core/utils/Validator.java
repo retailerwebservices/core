@@ -158,7 +158,7 @@ public class Validator
 	 */
 	static public void minObject( Comparable value, Comparable minimum_valid_value )
 	{
-		minObject(value, minimum_valid_value);
+		minObject(value, minimum_valid_value, null);
 	}
 
 	/**
@@ -450,7 +450,7 @@ public class Validator
 	{
 		if ( one == two )
 		{
-			String error_message = "Value (" + one + ") is not equal to value (" + two + ")";
+			String error_message = "Value (" + one + ") is equal to value (" + two + ")";
 			if ( label != null )
 			{
 				error_message += " for " + label;
@@ -550,7 +550,7 @@ public class Validator
 	}
 
 	/**
-	 * This method is functionaly the same as the original 'void
+	 * This method is functionally the same as the original 'void
 	 * containsOnlyValidCharacters', but it doesn't throw an exception. This is
 	 * meant more as a general utility method, rather than something to be used
 	 * during object construction.
@@ -588,10 +588,23 @@ public class Validator
 
 	static public void containsOnlyValidCharacters( String str, ValidCharacters... allowed_characters )
 	{
+		containsOnlyValidCharacters(str, null, allowed_characters);
+	}
+
+	static public void containsOnlyValidCharacters( String str, String label, ValidCharacters... allowed_characters )
+	{
 		if ( str == null )
 			return;
 
 		if ( !containsOnlyValidCharactersQuiet(str, allowed_characters) )
-			throw new ValidationException(String.format("Illegal character in string %s", str));
+		{
+			String error_message = String.format("Illegal character in string %s", str);
+			if ( label != null )
+			{
+				error_message += " for " + label;
+			}
+			throw new ValidationException(error_message);
+
+		}
 	}
 }
