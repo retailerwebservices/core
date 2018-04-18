@@ -48,31 +48,7 @@ public abstract class SearchSync
 
 	public static final int MAX_REINDEX_COMPLETION_TIME_MINUTES = 120;
 	public static final String ALL_REGISTERED_KINDS = "ALL_REGISTERED_KINDS";
-
-	//If this is being run with an idempotent script, you want this set to true in order for the execution environment to be setup properly
-	//Ensure the class you create to extend this has the proper ApplicationId as well as all TypeNameRegisters needed.
-	private boolean should_setup_environment; 
-	//All the kinds in your application that need to be re-indexed
-	private Set<Kind> kinds;
 	
-	/**
-	 * @param kinds
-	 *            The Storable & Indexable Kinds that are to be re-indexed
-	 * 
-	 * @param should_setup_environment
-	 *            Set to true if you need the CloudExecutionEnvironment to be
-	 *            setup as well as the ObjectParseTree registers and Indexable
-	 *            Kind registers before starting the sync.
-	 */
-	public SearchSync(Set<Kind> kinds, boolean should_setup_environment)
-	{
-		//TODO remove once verified we don't want sorting by kinds
-		this.kinds = kinds;
-		//TODO remove once removed from startup, always should be run idempontent so this shouldn't be an option
-		//TODO add all options
-		this.should_setup_environment = should_setup_environment;
-		validate();
-	}
 	
 	/**
 	 * Constructor assumes we need to setup the environment as well as use only
@@ -80,14 +56,7 @@ public abstract class SearchSync
 	 */
 	public SearchSync()
 	{
-		this.kinds = indexable_kinds.keySet();
-		this.should_setup_environment = true;
-		validate();
-	}
-	
-	private void validate()
-	{
-		if(this.kinds == null) throw new ValidationException("Unable to build script, kinds is not set");
+		
 	}
 
 	/**
@@ -98,20 +67,15 @@ public abstract class SearchSync
 	 */
 	public void start() throws ValidationException
 	{
-		//TODO once verified we don't need, remove boolean check
-		if(shouldSetupEnvironment())
+		EnvironmentType environment_type = CloudExecutionEnvironment.getEnvironmentTypeFromSystemProperty(null);
+		if (environment_type == null)
 		{
-			EnvironmentType environment_type = CloudExecutionEnvironment.getEnvironmentTypeFromSystemProperty(null);
-			if(environment_type == null)
-			{
-				throw new ValidationException("Unable to run script, environment_type is not set in system properties");
-			}
-			//Need environment type and application id passed in, otherwise the environment won't be setup properly
-			CloudExecutionEnvironment.startup(getSimpleApplicationID(), environment_type);
-			//Need a method to collect all the possible types
-			setupRegisters();	
+			throw new ValidationException("Unable to run script, environment_type is not set in system properties");
 		}
-		
+		//Need environment type and application id passed in, otherwise the environment won't be setup properly
+		CloudExecutionEnvironment.startup(getSimpleApplicationID(), environment_type);
+		//Need a method to collect all the possible types
+		setupRegisters();
 		
 		long start = System.currentTimeMillis();
 		logger.info("Checking that all indices are properly configured...");
@@ -172,14 +136,9 @@ public abstract class SearchSync
 	 */
 	public abstract ApplicationId getSimpleApplicationID();
 	
-	private boolean shouldSetupEnvironment()
-	{
-		return should_setup_environment;
-	}
-	
 	private Set<Kind> getSimpleKinds()
 	{
-		return kinds;
+		return indexable_kinds.keySet();
 	}
 	
 	/**
