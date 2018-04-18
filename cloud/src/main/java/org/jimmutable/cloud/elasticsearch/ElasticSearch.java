@@ -5,28 +5,45 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.action.DocWriteResponse.Result;
+import org.elasticsearch.action.admin.cluster.state.ClusterStateRequest;
+import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
+import org.elasticsearch.action.admin.indices.alias.IndicesAliasesResponse;
+import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
+import org.elasticsearch.action.admin.indices.alias.get.GetAliasesResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
+import org.elasticsearch.action.admin.indices.stats.IndicesStatsRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.WriteRequest.RefreshPolicy;
+import org.elasticsearch.client.IndicesAdminClient;
+import org.elasticsearch.client.Requests;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.cluster.metadata.AliasMetaData;
+import org.elasticsearch.cluster.metadata.IndexMetaData;
+import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -35,21 +52,30 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
+import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
-import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
+import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.SortBy;
 import org.jimmutable.cloud.servlet_utils.search.SortDirection;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
+import org.jimmutable.cloud.storage.IStorage;
+import org.jimmutable.cloud.storage.Storable;
+import org.jimmutable.cloud.storage.StorageKey;
+import org.jimmutable.cloud.storage.StorageKeyHandler;
+import org.jimmutable.core.exceptions.ValidationException;
+import org.jimmutable.core.objects.StandardObject;
+import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.time.Instant;
 import org.jimmutable.core.objects.common.time.TimeOfDay;
 import org.jimmutable.core.serialization.FieldName;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.ICsvListWriter;
 
+import com.carrotsearch.hppc.ObjectLookupContainer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -1017,4 +1043,363 @@ public class ElasticSearch implements ISearch
 	{
 		return field_name + "_" + SORT_FIELD_NAME_JIMMUTABLE + "_" + Instant.FIELD_MS_FROM_EPOCH.getSimpleFieldName().getSimpleName();
 	}
+
+	@Override
+	public boolean reindex(IStorage storage, Kind kind)
+	{
+		if(storage == null)
+		{
+			logger.error("Null storage passed in for re-indexing");
+			return false;
+		}
+		
+		if(kind == null)
+		{
+			logger.error("Null kind passed in for re-indexing");
+			return false;
+		}
+		
+		SearchIndexDefinition index_definition = SearchSync.getSimpleAllRegisteredIndexableKindsMap().get(kind);
+		if(index_definition == null)
+		{
+			logger.error("Kind " + kind + " passed in for re-indexing is not registered with SearchSync.registerIndexableKind");
+			return false;
+		}
+		
+		String index_name = createTimestampIndex(index_definition, null);
+		if(index_name == null)
+		{
+			logger.error("Kind " + kind + " could not create a new index to reindex documents with");
+			return false;
+		}
+		
+		boolean success = syncSearchAndStorage(kind, index_name);
+		if(!success)
+		{
+			logger.error("Kind " + kind + " could not complete sync of storage and search, no swap made");
+			return false;
+		}
+		
+		//Swap alias 
+		success = updateAlias(index_definition, index_name);
+		if(!success)
+		{
+			logger.error("Kind " + kind + " could not complete alias swap");
+			return false;
+		}
+		
+		return true;
+	}
+	
+	private boolean updateAlias(SearchIndexDefinition definition, String index_name)
+	{
+		
+		Set<String> old_index = getCurrentIndiciesFromAliasName(definition.getSimpleIndex().getSimpleValue());
+		for(String index : old_index)
+		{
+			System.out.println(index);
+		}
+		IndicesAliasesResponse response = client.admin().indices().prepareAliases().addAlias(index_name, definition.getSimpleIndex().getSimpleValue()).execute().actionGet();
+
+		if (!response.isAcknowledged())
+		{
+			logger.fatal(String.format("Alias addition not acknowledged for index %s", index_name));
+			return false;
+		}
+
+		for(String old_alias : old_index)
+		{
+			if(old_alias.startsWith(definition.getSimpleIndex().getSimpleValue()) && !old_alias.equals(index_name))
+			{
+				DeleteIndexResponse deleteResponse = client.admin().indices().prepareDelete(old_alias).get();
+				//response = client.admin().indices().prepareAliases().removeAlias(old_alias, definition.getSimpleIndex().getSimpleValue()).execute().actionGet();
+				
+				if (!deleteResponse.isAcknowledged())
+				{
+					logger.fatal(String.format("Alias removal not acknowledged for index %s", index_name));
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+
+	public Set<String> findAliasForIndices(String... indices)
+	{
+		System.out.println(client.admin().indices().stats(new IndicesStatsRequest()).actionGet().getIndices().keySet());
+	    GetAliasesResponse getResponse = client.admin().indices().prepareGetAliases().get();
+
+		if (indices == null || indices.length == 0)
+		{
+			return new HashSet<>();
+		}
+		ClusterStateRequest clusterStateRequest = Requests.clusterStateRequest().routingTable(false).nodes(false).indices(indices);
+
+		ImmutableOpenMap<String, IndexMetaData> aliasMap = client.admin().cluster().state(clusterStateRequest).actionGet().getState().getMetaData().getIndices();
+
+		return StreamSupport.stream(aliasMap.spliterator(), false).flatMap((e) ->
+		{
+			Iterable<String> iterable = () -> e.value.getAliases().keysIt();
+			return StreamSupport.stream(iterable.spliterator(), false);
+		}).collect(Collectors.toSet());
+	}
+
+	
+	public Set<String> getCurrentIndiciesFromAliasName(String alias_name)
+	{
+		ImmutableOpenMap<String, List<AliasMetaData>> map = client.admin().indices().prepareGetAliases(alias_name).get().getAliases();
+		final Set<String> allIndices = new HashSet<>();
+		map.keysIt().forEachRemaining(allIndices::add);
+		return allIndices;
+	}
+	
+	private String createTimestampIndex(SearchIndexDefinition index, String default_value)
+	{
+		if (index == null)
+		{
+			logger.fatal("Cannot create a null Index");
+			return default_value;
+		}
+
+		try
+		{
+
+			XContentBuilder mappingBuilder = jsonBuilder();
+			mappingBuilder.startObject().startObject(ELASTICSEARCH_DEFAULT_TYPE).startObject("properties");
+			for (SearchIndexFieldDefinition field : index.getSimpleFields())
+			{
+				// if (field.getSimpleType().equals(SearchIndexFieldType.OBJECTID))
+				// {
+				// // EXPLICIT MAPPING FOR OBJECTID - does not rely on enum's simple code
+				// // https://www.elastic.co/blog/strings-are-dead-long-live-strings
+				// mappingBuilder.startObject(field.getSimpleFieldName().getSimpleName());
+				// /* */mappingBuilder.field("type", "text");
+				// /* */mappingBuilder.startObject("fields");
+				// /* */mappingBuilder.startObject("keyword");
+				// /* */mappingBuilder.field("type", "keyword");
+				// /* */mappingBuilder.field("ignore_above", 256);
+				// /* */mappingBuilder.endObject();
+				// /* */mappingBuilder.endObject();
+				// mappingBuilder.endObject();
+				// } else
+				// {
+				mappingBuilder.startObject(field.getSimpleFieldName().getSimpleName());
+				/*	*/mappingBuilder.field("type", field.getSimpleType().getSimpleCode());
+				mappingBuilder.endObject();
+				// }
+
+				// Create a keyword for every text field
+				if (field.getSimpleType() == SearchIndexFieldType.TEXT)
+				{
+					mappingBuilder.startObject(getSortFieldNameText(field.getSimpleFieldName()));
+					mappingBuilder.field("type", SearchIndexFieldType.ATOM.getSimpleCode());
+					mappingBuilder.endObject();
+				}
+
+				// Create a long field for every instant field
+				if (field.getSimpleType() == SearchIndexFieldType.INSTANT)
+				{
+					mappingBuilder.startObject(getSortFieldNameInstant(field.getSimpleFieldName()));
+					mappingBuilder.field("type", SearchIndexFieldType.LONG.getSimpleCode());
+					mappingBuilder.endObject();
+				}
+
+				// Create a long field for every timeofday field
+				if (field.getSimpleType() == SearchIndexFieldType.TIMEOFDAY)
+				{
+					mappingBuilder.startObject(getSortFieldNameTimeOfDay(field.getSimpleFieldName()));
+					mappingBuilder.field("type", SearchIndexFieldType.LONG.getSimpleCode());
+					mappingBuilder.endObject();
+				}
+			}
+			mappingBuilder.endObject().endObject().endObject();
+			String index_name = index.getSimpleIndex().getSimpleValue() + "_" + System.currentTimeMillis();
+			CreateIndexResponse createResponse = client.admin().indices().prepareCreate(index_name).addMapping(ELASTICSEARCH_DEFAULT_TYPE, mappingBuilder).get();
+
+			if (!createResponse.isAcknowledged())
+			{
+				logger.fatal(String.format("Index Creation not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
+				return default_value;
+			}
+
+			return index_name;
+
+		}
+		catch (Exception e)
+		{
+			logger.log(Level.FATAL, String.format("Failed to generate mapping json for index %s", index.getSimpleIndex().getSimpleValue()), e);
+			return default_value;
+		}
+	}
+	
+	private class UpsertDocumentRunnableTimestamp implements Runnable
+	{
+		private Indexable object;
+		private Map<String, Object> data;
+		private String index_name;
+
+		public UpsertDocumentRunnableTimestamp(Indexable object, Map<String, Object> data, String index_name)
+		{
+			this.object = object;
+			this.data = data;
+			this.index_name = index_name;
+		}
+
+		@Override
+		public void run()
+		{
+			try
+			{
+				String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
+				IndexResponse response = client.prepareIndex(index_name, ELASTICSEARCH_DEFAULT_TYPE, document_name).setSource(data).get();
+
+				Level level;
+				switch (response.getResult())
+				{
+				case CREATED:
+					level = Level.INFO;
+					break;
+				case UPDATED:
+					level = Level.INFO;
+					break;
+				default:
+					level = Level.FATAL;
+					break;
+				}
+
+				logger.log(level, String.format("%s %s/%s/%s %s", response.getResult().name(), index_name, ELASTICSEARCH_DEFAULT_TYPE, document_name, data));
+
+			} catch (Exception e)
+			{
+				logger.log(Level.FATAL, "Failure during upsert operation!", e);
+			}
+		}
+	}
+	
+	/**
+	 * This will scan all of Storage for the Kind passed in and for each item
+	 * found it will attempt to upsert its matching search document.
+	 * 
+	 * @return true on success
+	 */
+	private boolean syncSearchAndStorage(Kind kind, String index_name)
+	{
+		if (!CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().scan(kind, new UpsertDataHandler(index_name), 10))
+		{
+			logger.warn("Storage scanner for Kind " + kind + " was unable to successfully run. This Kind may not be fully re-indexed or there may currently not be any entries of Kind in Storage.");
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * This handles checking an individual file in Storage. It will check that
+	 * the item is able to be deserialized as a Storable and Indexable. If it is
+	 * we will set our Kind's Indexable to match that of the Object deserialized
+	 * if not yet set. Then attempt to upsert the single Object's search
+	 * document into Search.
+	 */
+	private class UpsertDataHandler implements StorageKeyHandler
+	{
+		private String index_name; 
+		
+		private UpsertDataHandler(String index_name)
+		{
+			this.index_name = index_name;
+		}
+		
+		@SuppressWarnings("rawtypes")
+		@Override
+		public void handle(StorageKey key)
+		{
+			byte[] bytes = CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(key, null);
+
+			GenericStorableAndIndexable<?> obj = null;
+			try
+			{
+				obj = new GenericStorableAndIndexable(bytes);
+			}
+			catch (Exception e)
+			{
+				logger.error("This object from StorageKey " + key + " was unable to be deserialized as a Storable and Indexable object...", e);
+				return;
+			}
+			
+			SearchDocumentWriter writer = new SearchDocumentWriter();
+			((Indexable) obj.getObject()).writeSearchDocument(writer);
+			Map<String, Object> data = writer.getSimpleFieldsMap();
+
+			//Not async so it's only finished once the whole scan does so
+			try
+			{
+				String document_name = ((Indexable) obj.getObject()).getSimpleSearchDocumentId().getSimpleValue();
+				IndexResponse response = client.prepareIndex(index_name, ELASTICSEARCH_DEFAULT_TYPE, document_name).setSource(data).get();
+
+				Level level;
+				switch (response.getResult())
+				{
+				case CREATED:
+					level = Level.INFO;
+					break;
+				case UPDATED:
+					level = Level.INFO;
+					break;
+				default:
+					level = Level.FATAL;
+					break;
+				}
+
+				logger.log(level, String.format("%s %s/%s/%s %s", response.getResult().name(), index_name, ELASTICSEARCH_DEFAULT_TYPE, document_name, data));
+
+			}
+			catch (Exception e)
+			{
+				logger.log(Level.FATAL, "Failure during upsert operation!", e);
+			}
+
+		}
+	}
+	
+	/**
+	 * This is a simple class to handle deserializing any Kind's Object and
+	 * ensuring that the Kind's Object is both Indexable and Storable.
+	 */
+	private static class GenericStorableAndIndexable<T>
+	{
+		private T object;
+
+		@SuppressWarnings("unchecked")
+		public GenericStorableAndIndexable(byte[] bytes) throws ValidationException
+		{
+			StandardObject<?> obj = null;
+			try
+			{
+				obj = StandardObject.deserialize(new String(bytes));
+			}
+			catch (Exception e)
+			{
+				throw new ValidationException("Unable to deserialize object", e);
+			}
+
+			//Broken out this way, rather than just deserializing T so that we know exactly what a
+			if (!(obj instanceof Storable))
+			{
+				throw new ValidationException("Object " + obj.getTypeName() + " is unable to be reindexed since it is not a Storable.");
+			}
+			if (!(obj instanceof Indexable))
+			{
+				throw new ValidationException("Object " + obj.getTypeName() + " is unable to be reindexed since it is not a Indexable.");
+			}
+
+			this.object = (T) obj;
+		}
+
+		public T getObject()
+		{
+			return object;
+		}
+	}
+	
+	
 }
