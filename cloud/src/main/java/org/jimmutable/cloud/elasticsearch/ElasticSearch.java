@@ -454,10 +454,10 @@ public class ElasticSearch implements ISearch
 
 			long total_hits = response.getHits().totalHits;
 
-			int next_page = from + size;
+			int start_of_next_page_of_results = from + size;
 			int previous_page = (from - size) < 0 ? 0 : (from - size);
 
-			boolean has_more_results = total_hits > next_page;
+			boolean has_more_results = total_hits > start_of_next_page_of_results;
 
 			boolean has_previous_results = from > 0;
 
@@ -472,7 +472,7 @@ public class ElasticSearch implements ISearch
 				break;
 			}
 
-			SearchResponseOK ok = new SearchResponseOK(request, results, from, has_more_results, has_previous_results, next_page, previous_page, total_hits);
+			SearchResponseOK ok = new SearchResponseOK(request, results, from, has_more_results, has_previous_results, start_of_next_page_of_results, previous_page, total_hits);
 
 			logger.log(level, String.format("QUERY:%s INDEX:%s STATUS:%s HITS:%s TOTAL_HITS:%s MAX_RESULTS:%d START_RESULTS_AFTER:%d", ok.getSimpleSearchRequest().getSimpleQueryString(), index.getSimpleValue(), response.status(), results.size(), ok.getSimpleTotalHits(), ok.getSimpleSearchRequest().getSimpleMaxResults(), ok.getSimpleSearchRequest().getSimpleStartResultsAfter()));
 			logger.trace(String.format("FIRST_RESULT_IDX:%s HAS_MORE_RESULTS:%s HAS_PREVIOUS_RESULTS:%s START_OF_NEXT_PAGE_OF_RESULTS:%s START_OF_PREVIOUS_PAGE_OF_RESULTS:%s", ok.getSimpleFirstResultIdx(), ok.getSimpleHasMoreResults(), ok.getSimpleHasMoreResults(), ok.getSimpleStartOfNextPageOfResults(), ok.getSimpleStartOfPreviousPageOfResults()));
