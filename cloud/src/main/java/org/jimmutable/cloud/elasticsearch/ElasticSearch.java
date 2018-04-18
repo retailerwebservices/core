@@ -1085,7 +1085,7 @@ public class ElasticSearch implements ISearch
 		String[] indices = old_index.toArray(new String[old_index.size()]);
 
 		//Has to be atomic so if it fails we don't add a new alias
-		IndicesAliasesResponse response = client.admin().indices().prepareAliases().removeAlias(indices, definition.getSimpleIndex().getSimpleValue()).addAlias(index_name, definition.getSimpleIndex().getSimpleValue()).execute().actionGet();
+		IndicesAliasesResponse response = client.admin().indices().prepareAliases().addAlias(index_name, definition.getSimpleIndex().getSimpleValue()).removeAlias(indices, definition.getSimpleIndex().getSimpleValue()).execute().actionGet();
 		if (!response.isAcknowledged())
 		{
 			logger.fatal(String.format("Alias addition not acknowledged for index %s", index_name));
