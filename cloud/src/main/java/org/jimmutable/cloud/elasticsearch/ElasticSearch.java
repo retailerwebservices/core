@@ -767,10 +767,11 @@ public class ElasticSearch implements ISearch
 			{
 				logger.log(Level.FATAL, String.format("Failed to get the index mapping for index %s", index.getSimpleIndex().getSimpleValue()), e);
 			}
+			
+			return true;
 		}
 
-		return true;
-
+		return false;
 	}
 
 
