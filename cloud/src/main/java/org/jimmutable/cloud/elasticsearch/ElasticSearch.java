@@ -1117,13 +1117,13 @@ public class ElasticSearch implements ISearch
 		Set<String> all_indicies_with_alias = new HashSet<>();
 
 		ClusterStateRequestBuilder builder = client.admin().cluster().prepareState();
-		for (IndexMetaData indexMetaData : builder.execute().actionGet().getState().metaData())
+		for (IndexMetaData index_meta_data : builder.execute().actionGet().getState().metaData())
 		{
-			for (ObjectCursor<String> cursor : indexMetaData.getAliases().keys())
+			for (ObjectCursor<String> cursor : index_meta_data.getAliases().keys())
 			{
 				if (cursor.value.equals(alias_name))
 				{
-					all_indicies_with_alias.add(indexMetaData.getIndex().getName());
+					all_indicies_with_alias.add(index_meta_data.getIndex().getName());
 					continue;
 				}
 			}
