@@ -167,7 +167,7 @@ public class ElasticSearch implements ISearch
 					list_writer.write(Arrays.asList(document), cell_processors);
 				} catch (IOException e)
 				{
-					logger.error(e);
+					logger.error("Failure while writing CSV", e);
 					return false;
 				}
 
@@ -456,13 +456,14 @@ public class ElasticSearch implements ISearch
 			builder.setFrom(from);
 			builder.setSize(size);
 			builder.setQuery(QueryBuilders.queryStringQuery(request.getSimpleQueryString()));
-			
+
 			// Sorting
-			for ( SortBy sort_by : request.getSimpleSort().getSimpleSortOrder() )
+			for (SortBy sort_by : request.getSimpleSort().getSimpleSortOrder())
 			{
 				FieldSortBuilder sort_builder = getSort(sort_by, null);
-				if ( sort_builder == null ) continue;
-				
+				if (sort_builder == null)
+					continue;
+
 				builder.addSort(sort_builder);
 			}
 
@@ -522,7 +523,7 @@ public class ElasticSearch implements ISearch
 		}
 
 	}
-	
+
 	/**
 	 * Search an index with a query string and return a List of OneSearchResult 's.
 	 * 
@@ -557,13 +558,14 @@ public class ElasticSearch implements ISearch
 			builder.setFrom(from);
 			builder.setSize(size);
 			builder.setQuery(QueryBuilders.queryStringQuery(request.getSimpleQueryString()));
-			
+
 			// Sorting
-			for ( SortBy sort_by : request.getSimpleSort().getSimpleSortOrder() )
+			for (SortBy sort_by : request.getSimpleSort().getSimpleSortOrder())
 			{
 				FieldSortBuilder sort_builder = getSort(sort_by, null);
-				if ( sort_builder == null ) continue;
-								
+				if (sort_builder == null)
+					continue;
+
 				builder.addSort(sort_builder);
 			}
 
@@ -622,7 +624,7 @@ public class ElasticSearch implements ISearch
 			}
 
 			logger.log(level, String.format("QUERY:%s INDEX:%s STATUS:%s HITS:%s TOTAL_HITS:%s MAX_RESULTS:%d START_RESULTS_AFTER:%d", request, index.getSimpleValue(), response.status(), results.size(), response.getHits().totalHits, request.getSimpleMaxResults(), request.getSimpleStartResultsAfter()));
-			logger.trace(String.format("FIRST_RESULT_IDX:%s HAS_MORE_RESULTS:%s HAS_PREVIOUS_RESULTS:%s START_OF_NEXT_PAGE_OF_RESULTS:%s START_OF_PREVIOUS_PAGE_OF_RESULTS:%s",from, has_more_results, has_previous_results, next_page, from));
+			logger.trace(String.format("FIRST_RESULT_IDX:%s HAS_MORE_RESULTS:%s HAS_PREVIOUS_RESULTS:%s START_OF_NEXT_PAGE_OF_RESULTS:%s START_OF_PREVIOUS_PAGE_OF_RESULTS:%s", from, has_more_results, has_previous_results, next_page, from));
 			logger.trace(results.toString());
 
 			return results;
@@ -708,7 +710,7 @@ public class ElasticSearch implements ISearch
 			{
 				expected.put(fields.getSimpleFieldName().getSimpleName(), fields.getSimpleType().getSimpleCode());
 			});
-			
+
 			try
 			{
 				GetMappingsResponse response = client.admin().indices().prepareGetMappings(index.getSimpleIndex().getSimpleValue()).get();
@@ -739,8 +741,7 @@ public class ElasticSearch implements ISearch
 						if (expected.size() > actual.size())
 						{
 							logger.warn("There are field missing in the current index.");
-						}
-						else if (expected.size() < actual.size())
+						} else if (expected.size() < actual.size())
 						{
 							logger.info("There are more fields than expected in the current index.");
 						}
@@ -762,18 +763,16 @@ public class ElasticSearch implements ISearch
 						return false;
 					}
 				}
-			}
-			catch (Exception e)
+			} catch (Exception e)
 			{
 				logger.log(Level.FATAL, String.format("Failed to get the index mapping for index %s", index.getSimpleIndex().getSimpleValue()), e);
 			}
-			
+
 			return true;
 		}
 
 		return false;
 	}
-
 
 	/**
 	 * Deletes an entire index
@@ -784,8 +783,10 @@ public class ElasticSearch implements ISearch
 	 */
 	public boolean deleteIndex(SearchIndexDefinition index)
 	{
-		//TODO This was instructed to not be refactored when we made the cutover to use aliases. Generally reindexing can be used over this.
-		//It will likely not work if the interface is ever updated to use deletion of indexes again.
+		// TODO This was instructed to not be refactored when we made the cutover to use
+		// aliases. Generally reindexing can be used over this.
+		// It will likely not work if the interface is ever updated to use deletion of
+		// indexes again.
 		if (index == null)
 		{
 			logger.fatal("Cannot delete a null Index");
@@ -803,7 +804,7 @@ public class ElasticSearch implements ISearch
 
 		} catch (Exception e)
 		{
-			logger.fatal(String.format("Index Deletion failed for index %s", index.getSimpleIndex().getSimpleValue()));
+			logger.fatal(String.format("Index Deletion failed for index %s", index.getSimpleIndex().getSimpleValue()), e);
 			return false;
 		}
 		logger.info(String.format("Deleted index %s", index.getSimpleIndex().getSimpleValue()));
@@ -834,14 +835,13 @@ public class ElasticSearch implements ISearch
 		{
 			logger.info(String.format("No upsert needed for index %s", index.getSimpleIndex().getSimpleValue()));
 			return true;
-		}
-		else
+		} else
 		{
 			// index is new
 			return createIndex(index);
 		}
 	}
-	
+
 	/**
 	 * Upsert the index and attach it to an alias
 	 * 
@@ -855,12 +855,12 @@ public class ElasticSearch implements ISearch
 			return false;
 		}
 		String timestamp_index_name = createTimestampIndex(index, null);
-		if(timestamp_index_name == null)
+		if (timestamp_index_name == null)
 		{
 			logger.fatal("Cannot create a timestamp Index for index " + index);
 			return false;
 		}
-		
+
 		IndicesAliasesResponse response = client.admin().indices().prepareAliases().addAlias(timestamp_index_name, index.getSimpleIndex().getSimpleValue()).execute().actionGet();
 		if (!response.isAcknowledged())
 		{
@@ -897,13 +897,14 @@ public class ElasticSearch implements ISearch
 			return response.getResult().equals(Result.DELETED);
 		} catch (Exception e)
 		{
-			logger.error(e);
+			logger.error("Failed to delete document!", e);
 			return false;
 		}
 	}
-	
+
 	/**
-	 * Using a SortBy object, construct a SortBuilder used by ElasticSearch. This method handles the unique sorting cases for Text, Time of Day, and Instant.
+	 * Using a SortBy object, construct a SortBuilder used by ElasticSearch. This
+	 * method handles the unique sorting cases for Text, Time of Day, and Instant.
 	 * 
 	 * @param sort_by
 	 * @param default_value
@@ -912,24 +913,32 @@ public class ElasticSearch implements ISearch
 	static private FieldSortBuilder getSort(SortBy sort_by, FieldSortBuilder default_value)
 	{
 		SortOrder order = null;
-		if ( sort_by.getSimpleDirection() == SortDirection.ASCENDING ) order = SortOrder.ASC;
-		if ( sort_by.getSimpleDirection() == SortDirection.DESCENDING ) order = SortOrder.DESC;
-		
-		if ( order == null ) return default_value;
-		
+		if (sort_by.getSimpleDirection() == SortDirection.ASCENDING)
+			order = SortOrder.ASC;
+		if (sort_by.getSimpleDirection() == SortDirection.DESCENDING)
+			order = SortOrder.DESC;
+
+		if (order == null)
+			return default_value;
+
 		FieldName field_name = sort_by.getSimpleField().getSimpleFieldName();
 		String sort_on_string = field_name.getSimpleName();
-		
-		if ( sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.TEXT ) sort_on_string = getSortFieldNameText(sort_by.getSimpleField().getSimpleFieldName());
-		if ( sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.TIMEOFDAY ) sort_on_string = getSortFieldNameTimeOfDay(sort_by.getSimpleField().getSimpleFieldName());
-		if ( sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.INSTANT ) sort_on_string = getSortFieldNameInstant(sort_by.getSimpleField().getSimpleFieldName());
-		
+
+		if (sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.TEXT)
+			sort_on_string = getSortFieldNameText(sort_by.getSimpleField().getSimpleFieldName());
+		if (sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.TIMEOFDAY)
+			sort_on_string = getSortFieldNameTimeOfDay(sort_by.getSimpleField().getSimpleFieldName());
+		if (sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.INSTANT)
+			sort_on_string = getSortFieldNameInstant(sort_by.getSimpleField().getSimpleFieldName());
+
 		return SortBuilders.fieldSort(sort_on_string).order(order).unmappedType(SearchIndexFieldType.ATOM.getSimpleCode());
 	}
 
 	/**
-	 * Sorting on text fields is impossible without enabling fielddata in ElasticSearch. To get around this, we instead use a keyword field for every text field written.
-	 * This solution is recommended by ElasticSearch over enabling fielddata. For more information, read here:
+	 * Sorting on text fields is impossible without enabling fielddata in
+	 * ElasticSearch. To get around this, we instead use a keyword field for every
+	 * text field written. This solution is recommended by ElasticSearch over
+	 * enabling fielddata. For more information, read here:
 	 * 
 	 * https://www.elastic.co/guide/en/elasticsearch/reference/5.4/fielddata.html#before-enabling-fielddata
 	 * https://www.elastic.co/blog/support-in-the-wild-my-biggest-elasticsearch-problem-at-scale
@@ -941,10 +950,12 @@ public class ElasticSearch implements ISearch
 	{
 		return getSortFieldNameText(field.getSimpleName());
 	}
-	
+
 	/**
-	 * Sorting on text fields is impossible without enabling fielddata in ElasticSearch. To get around this, we instead use a keyword field for every text field written.
-	 * This solution is recommended by ElasticSearch over enabling fielddata. For more information, read here:
+	 * Sorting on text fields is impossible without enabling fielddata in
+	 * ElasticSearch. To get around this, we instead use a keyword field for every
+	 * text field written. This solution is recommended by ElasticSearch over
+	 * enabling fielddata. For more information, read here:
 	 * 
 	 * https://www.elastic.co/guide/en/elasticsearch/reference/5.4/fielddata.html#before-enabling-fielddata
 	 * https://www.elastic.co/blog/support-in-the-wild-my-biggest-elasticsearch-problem-at-scale
@@ -956,9 +967,11 @@ public class ElasticSearch implements ISearch
 	{
 		return field_name + "_" + SORT_FIELD_NAME_JIMMUTABLE + "_" + SearchIndexFieldType.ATOM.getSimpleCode();
 	}
-	
+
 	/**
-	 * In order to sort TimeOfDay objects, we need to look at the ms_from_midnight field from within. This method creates a consistent field name to sort by.
+	 * In order to sort TimeOfDay objects, we need to look at the ms_from_midnight
+	 * field from within. This method creates a consistent field name to sort by.
+	 * 
 	 * @param field
 	 * @return
 	 */
@@ -966,9 +979,11 @@ public class ElasticSearch implements ISearch
 	{
 		return getSortFieldNameTimeOfDay(field.getSimpleName());
 	}
-	
+
 	/**
-	 * In order to sort TimeOfDay objects, we need to look at the ms_from_midnight field from within. This method creates a consistent field name to sort by.
+	 * In order to sort TimeOfDay objects, we need to look at the ms_from_midnight
+	 * field from within. This method creates a consistent field name to sort by.
+	 * 
 	 * @param field_name
 	 * @return
 	 */
@@ -976,9 +991,11 @@ public class ElasticSearch implements ISearch
 	{
 		return field_name + "_" + SORT_FIELD_NAME_JIMMUTABLE + "_" + TimeOfDay.FIELD_MS_FROM_MIDNIGHT.getSimpleFieldName().getSimpleName();
 	}
-	
+
 	/**
-	 * In order to sort Instant objects, we need to look at the ms_from_epoch field from within. This method creates a consistent field name to sort by.
+	 * In order to sort Instant objects, we need to look at the ms_from_epoch field
+	 * from within. This method creates a consistent field name to sort by.
+	 * 
 	 * @param field
 	 * @return
 	 */
@@ -986,9 +1003,11 @@ public class ElasticSearch implements ISearch
 	{
 		return getSortFieldNameInstant(field.getSimpleName());
 	}
-	
+
 	/**
-	 * In order to sort Instant objects, we need to look at the ms_from_epoch field from within. This method creates a consistent field name to sort by.
+	 * In order to sort Instant objects, we need to look at the ms_from_epoch field
+	 * from within. This method creates a consistent field name to sort by.
+	 * 
 	 * @param field_name
 	 * @return
 	 */
@@ -998,80 +1017,79 @@ public class ElasticSearch implements ISearch
 	}
 
 	/**
-	 * For all given kinds, this will go through and create a new unique index
-	 * for the kind, scan storage for all of the Kind's Indexable Storables and
-	 * upsert their respective search documents. After that is successfully done
-	 * this will find all the indices that currently reference the
-	 * alias(SearchIndexDefinition name). Once it has found all indices that
-	 * reference the alias it will prepare to atomically remove all the old
-	 * references and attach the single new index reference to the alias. After
-	 * that is successfully done, this will remove all indices that no longer
-	 * have a relation to the alias.
+	 * For all given kinds, this will go through and create a new unique index for
+	 * the kind, scan storage for all of the Kind's Indexable Storables and upsert
+	 * their respective search documents. After that is successfully done this will
+	 * find all the indices that currently reference the alias(SearchIndexDefinition
+	 * name). Once it has found all indices that reference the alias it will prepare
+	 * to atomically remove all the old references and attach the single new index
+	 * reference to the alias. After that is successfully done, this will remove all
+	 * indices that no longer have a relation to the alias.
 	 * 
 	 * @param storage
 	 *            The storage implementation your App is using
 	 * @param kinds
-	 *            The kinds that should be reindexed. All kinds passed in must
-	 *            be registered with SearchSync in order to be used here
+	 *            The kinds that should be reindexed. All kinds passed in must be
+	 *            registered with SearchSync in order to be used here
 	 * @return is_success
 	 */
 	@Override
 	public boolean reindex(IStorage storage, Kind... kinds)
 	{
-		if(storage == null)
+		if (storage == null)
 		{
 			logger.error("Null storage passed in for re-indexing");
 			return false;
 		}
-		
-		if(kinds == null)
+
+		if (kinds == null)
 		{
 			logger.error("Null kinds passed in for re-indexing");
 			return false;
 		}
-		
-		for(Kind kind : kinds)
+
+		for (Kind kind : kinds)
 		{
 			SearchIndexDefinition index_definition = SearchSync.getSimpleAllRegisteredIndexableKindsMap().get(kind);
-			if(index_definition == null)
+			if (index_definition == null)
 			{
 				logger.error("Kind " + kind + " passed in for re-indexing is not registered with SearchSync.registerIndexableKind");
 				return false;
 			}
-			
+
 			String index_name = createTimestampIndex(index_definition, null);
-			if(index_name == null)
+			if (index_name == null)
 			{
 				logger.error("Kind " + kind + " could not create a new index to reindex documents with");
 				return false;
 			}
 
 			boolean success = syncSearchAndStorage(kind, index_name);
-			if(!success)
+			if (!success)
 			{
 				logger.error("Kind " + kind + " could not complete sync of storage and search, no swap made");
 				return false;
 			}
 
-			//Swap alias 
+			// Swap alias
 			success = updateAlias(index_definition, index_name);
-			if(!success)
+			if (!success)
 			{
 				logger.error("Kind " + kind + " could not complete full alias swap");
 				return false;
 			}
 		}
-		
+
 		return true;
 	}
-	
+
 	/**
 	 * This will find all the indices that currently reference the
 	 * alias(SearchIndexDefinition name). Once it has found all indices that
 	 * reference the alias it will prepare to atomically remove all the old
-	 * references and attach the single new index reference to the alias. After
-	 * that is successfully done, this will remove all indices that no longer
-	 * have a relation to the alias.
+	 * references and attach the single new index reference to the alias. After that
+	 * is successfully done, this will remove all indices that no longer have a
+	 * relation to the alias.
 	 * 
 	 * @param definition
 	 *            The definition of the Kind that is being reindexed
@@ -1081,11 +1099,14 @@ public class ElasticSearch implements ISearch
 	 */
 	private boolean updateAlias(SearchIndexDefinition definition, String index_name)
 	{
-		
+
 		Set<String> old_index = getCurrentIndiciesFromAliasName(definition.getSimpleIndex().getSimpleValue());
+
+		logger.info(old_index);
+
 		String[] indices = old_index.toArray(new String[old_index.size()]);
 
-		//Has to be atomic so if it fails we don't add a new alias
+		// Has to be atomic so if it fails we don't add a new alias
 		IndicesAliasesResponse response = client.admin().indices().prepareAliases().addAlias(index_name, definition.getSimpleIndex().getSimpleValue()).removeAlias(indices, definition.getSimpleIndex().getSimpleValue()).execute().actionGet();
 		if (!response.isAcknowledged())
 		{
@@ -1093,15 +1114,18 @@ public class ElasticSearch implements ISearch
 			return false;
 		}
 
-		//Once we have confirmed the swap we no longer need the indices that we removed from the alias so we will delete them all
-		//This operation could be handled by a reaper thread in the future if we want to keep the job of deleting indices outside of the reindexer
+		// Once we have confirmed the swap we no longer need the indices that we removed
+		// from the alias so we will delete them all
+		// This operation could be handled by a reaper thread in the future if we want
+		// to keep the job of deleting indices outside of the reindexer
+
 		DeleteIndexResponse deleteResponse = client.admin().indices().prepareDelete(indices).get();
 		if (!deleteResponse.isAcknowledged())
 		{
 			logger.fatal(String.format("Alias removal not acknowledged for index %s", index_name));
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -1132,7 +1156,7 @@ public class ElasticSearch implements ISearch
 
 		return all_indicies_with_alias;
 	}
-	
+
 	/**
 	 * This will find all the indices that currently reference the
 	 * alias(SearchIndexDefinition name).
@@ -1163,15 +1187,13 @@ public class ElasticSearch implements ISearch
 			}
 
 			return index_name;
-		}
-		catch (Exception e)
+		} catch (Exception e)
 		{
 			logger.log(Level.FATAL, String.format("Failed to generate mapping json for index %s", index.getSimpleIndex().getSimpleValue()), e);
 			return default_value;
 		}
 	}
-	
-	
+
 	/**
 	 * This will build all the mapping fields for an index defintion
 	 * 
@@ -1232,8 +1254,7 @@ public class ElasticSearch implements ISearch
 
 			return mappingBuilder;
 
-		}
-		catch (Exception e)
+		} catch (Exception e)
 		{
 			logger.log(Level.FATAL, String.format("Failed to generate mapping json for index %s", index.getSimpleIndex().getSimpleValue()), e);
 			return default_value;
@@ -1284,10 +1305,10 @@ public class ElasticSearch implements ISearch
 		return true;
 
 	}
-	
+
 	/**
-	 * This will scan all of Storage for the Kind passed in and for each item
-	 * found it will attempt to upsert its matching search document.
+	 * This will scan all of Storage for the Kind passed in and for each item found
+	 * it will attempt to upsert its matching search document.
 	 * 
 	 * @return true on success
 	 */
@@ -1302,21 +1323,20 @@ public class ElasticSearch implements ISearch
 	}
 
 	/**
-	 * This handles checking an individual file in Storage. It will check that
-	 * the item is able to be deserialized as a Storable and Indexable. If it is
-	 * we will set our Kind's Indexable to match that of the Object deserialized
-	 * if not yet set. Then attempt to upsert the single Object's search
-	 * document into Search.
+	 * This handles checking an individual file in Storage. It will check that the
+	 * item is able to be deserialized as a Storable and Indexable. If it is we will
+	 * set our Kind's Indexable to match that of the Object deserialized if not yet
+	 * set. Then attempt to upsert the single Object's search document into Search.
 	 */
 	private class UpsertDataHandler implements StorageKeyHandler
 	{
-		private String index_name; 
-		
+		private String index_name;
+
 		private UpsertDataHandler(String index_name)
 		{
 			this.index_name = index_name;
 		}
-		
+
 		@SuppressWarnings("rawtypes")
 		@Override
 		public void handle(StorageKey key)
@@ -1327,18 +1347,17 @@ public class ElasticSearch implements ISearch
 			try
 			{
 				obj = new GenericStorableAndIndexable(bytes);
-			}
-			catch (Exception e)
+			} catch (Exception e)
 			{
 				logger.error("This object from StorageKey " + key + " was unable to be deserialized as a Storable and Indexable object...", e);
 				return;
 			}
-			
+
 			SearchDocumentWriter writer = new SearchDocumentWriter();
 			((Indexable) obj.getObject()).writeSearchDocument(writer);
 			Map<String, Object> data = writer.getSimpleFieldsMap();
 
-			//Not async so it's only finished once the whole scan does so
+			// Not async so it's only finished once the whole scan does so
 			try
 			{
 				String document_name = ((Indexable) obj.getObject()).getSimpleSearchDocumentId().getSimpleValue();
@@ -1360,18 +1379,17 @@ public class ElasticSearch implements ISearch
 
 				logger.log(level, String.format("%s %s/%s/%s %s", response.getResult().name(), index_name, ELASTICSEARCH_DEFAULT_TYPE, document_name, data));
 
-			}
-			catch (Exception e)
+			} catch (Exception e)
 			{
 				logger.log(Level.FATAL, "Failure during upsert operation!", e);
 			}
 
 		}
 	}
-	
+
 	/**
-	 * This is a simple class to handle deserializing any Kind's Object and
-	 * ensuring that the Kind's Object is both Indexable and Storable.
+	 * This is a simple class to handle deserializing any Kind's Object and ensuring
+	 * that the Kind's Object is both Indexable and Storable.
 	 */
 	private static class GenericStorableAndIndexable<T>
 	{
@@ -1384,13 +1402,13 @@ public class ElasticSearch implements ISearch
 			try
 			{
 				obj = StandardObject.deserialize(new String(bytes));
-			}
-			catch (Exception e)
+			} catch (Exception e)
 			{
 				throw new ValidationException("Unable to deserialize object", e);
 			}
 
-			//Broken out this way, rather than just deserializing T so that we know exactly what a
+			// Broken out this way, rather than just deserializing T so that we know exactly
+			// what a
 			if (!(obj instanceof Storable))
 			{
 				throw new ValidationException("Object " + obj.getTypeName() + " is unable to be reindexed since it is not a Storable.");
