@@ -2,6 +2,8 @@ package org.jimmutable.cloud.elasticsearch;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,12 +32,8 @@ import org.jimmutable.core.objects.common.Kind;
  * 
  * 1.) Go through every Object in Storage and upsert a matching search document.
  * 
- * 2.) Go through all of the Kind's search index and delete any search document
- * that doesn't have a matching version in Storage.
- * 
  * Once that is complete for all Kinds passed in the start() method will
  * complete.
- * 
  * 
  * Since each application that uses Jimmutable Cloud will have a different
  * application ID and TypeNameRegisters, it is required that you extend this
@@ -50,6 +48,7 @@ public abstract class SearchSync
 	static private Map<Kind, SearchIndexDefinition> indexable_kinds = new ConcurrentHashMap<>();
 
 	public static final int MAX_REINDEX_COMPLETION_TIME_MINUTES = 120;
+	public static final String ALL_REGISTERED_KINDS = "ALL_REGISTERED_KINDS";
 
 	//If this is being run with an idempotent script, you want this set to true in order for the execution environment to be setup properly
 	//Ensure the class you create to extend this has the proper ApplicationId as well as all TypeNameRegisters needed.
@@ -68,8 +67,22 @@ public abstract class SearchSync
 	 */
 	public SearchSync(Set<Kind> kinds, boolean should_setup_environment)
 	{
+		//TODO remove once verified we don't want sorting by kinds
 		this.kinds = kinds;
+		//TODO remove once removed from startup, always should be run idempontent so this shouldn't be an option
+		//TODO add all options
 		this.should_setup_environment = should_setup_environment;
+		validate();
+	}
+	
+	/**
+	 * Constructor assumes we need to setup the environment as well as use only
+	 * the kinds that are currently registered
+	 */
+	public SearchSync()
+	{
+		this.kinds = indexable_kinds.keySet();
+		this.should_setup_environment = true;
 		validate();
 	}
 	
@@ -86,6 +99,7 @@ public abstract class SearchSync
 	 */
 	public void start() throws ValidationException
 	{
+		//TODO once verified we don't need, remove boolean check
 		if(shouldSetupEnvironment())
 		{
 			EnvironmentType environment_type = CloudExecutionEnvironment.getEnvironmentTypeFromSystemProperty(null);

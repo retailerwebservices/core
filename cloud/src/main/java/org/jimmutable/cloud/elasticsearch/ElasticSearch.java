@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -25,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.action.DocWriteResponse.Result;
 import org.elasticsearch.action.admin.cluster.state.ClusterStateRequest;
+import org.elasticsearch.action.admin.cluster.state.ClusterStateRequestBuilder;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesResponse;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
@@ -32,6 +34,7 @@ import org.elasticsearch.action.admin.indices.alias.get.GetAliasesResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.admin.indices.stats.IndicesStatsRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -43,6 +46,7 @@ import org.elasticsearch.client.Requests;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.cluster.metadata.AliasMetaData;
 import org.elasticsearch.cluster.metadata.IndexMetaData;
+import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -76,6 +80,7 @@ import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.ICsvListWriter;
 
 import com.carrotsearch.hppc.ObjectLookupContainer;
+import com.carrotsearch.hppc.cursors.ObjectCursor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -467,7 +472,7 @@ public class ElasticSearch implements ISearch
 
 			response.getHits().forEach(hit ->
 			{
-				Map<FieldName, String> map = new HashMap<FieldName, String>();
+				Map<FieldName, String> map = new TreeMap<FieldName, String>();
 				hit.getSourceAsMap().forEach((k, v) ->
 				{
 					map.put(new FieldName(k), v.toString());
@@ -568,31 +573,33 @@ public class ElasticSearch implements ISearch
 
 			response.getHits().forEach(hit ->
 			{
-				Map<FieldName, String[]> map = new HashMap<FieldName, String[]>();
+				Map<FieldName, String[]> map = new TreeMap<FieldName, String[]>();
 				hit.getSourceAsMap().forEach((k, v) ->
 				{
 					FieldName name = new FieldName(k);
 					String[] array_val = map.get(name);
-					
+
 					String[] new_array_val = null;
-					
-					if ( v instanceof ArrayList<?> )
+
+					if (v instanceof ArrayList<?>)
 					{
-						List<Object> array_as_list = (ArrayList<Object>) v;						
+						List<Object> array_as_list = (ArrayList<Object>) v;
 						new_array_val = new String[array_as_list.size()];
-						
-						for ( int i = 0; i < array_as_list.size(); i++ )
+
+						for (int i = 0; i < array_as_list.size(); i++)
 						{
 							new_array_val[i] = String.valueOf(array_as_list.get(i));
 						}
+					} else
+					{
+						if (array_val == null)
+							array_val = new String[0];
+						new_array_val = new String[]
+						{ String.valueOf(v) };
 					}
-					else
-					{					
-						if ( array_val == null ) array_val = new String[0];
-						new_array_val = new String[] {String.valueOf(v)};
-					}
-					
-					if ( new_array_val != null ) map.put(name, new_array_val);
+
+					if (new_array_val != null)
+						map.put(name, new_array_val);
 				});
 				results.add(new OneSearchResultWithTyping(map));
 			});
@@ -688,7 +695,6 @@ public class ElasticSearch implements ISearch
 	@Override
 	public boolean indexProperlyConfigured(SearchIndexDefinition index)
 	{
-
 		if (index == null)
 		{
 			return false;
@@ -696,71 +702,76 @@ public class ElasticSearch implements ISearch
 
 		if (indexExists(index))
 		{
-
 			// compare the expected index fields to the actual index fields
-			Map<String, String> expected = new HashMap<String, String>();
+			Map<String, String> expected = new TreeMap<String, String>();
 			index.getSimpleFields().forEach(fields ->
 			{
 				expected.put(fields.getSimpleFieldName().getSimpleName(), fields.getSimpleType().getSimpleCode());
 			});
-
+			
 			try
 			{
 				GetMappingsResponse response = client.admin().indices().prepareGetMappings(index.getSimpleIndex().getSimpleValue()).get();
+				ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> response_map = response.getMappings();
 
-				String json = response.getMappings().get(index.getSimpleIndex().getSimpleValue()).get(ELASTICSEARCH_DEFAULT_TYPE).source().string();
-
-				Map<String, String> actual = new HashMap<String, String>();
-
-				new ObjectMapper().readTree(json).get(ELASTICSEARCH_DEFAULT_TYPE).get("properties").fields().forEachRemaining(fieldMapping ->
+				for (ObjectCursor<String> typeName : response_map.keys())
 				{
-					if ( !fieldMapping.getKey().contains(SORT_FIELD_NAME_JIMMUTABLE) ) // Skip our keyword fields
-					{
-						actual.put(fieldMapping.getKey(), fieldMapping.getValue().get("type").asText());
-					}
-				});
+					ImmutableOpenMap<String, MappingMetaData> typeMapping = response_map.get(typeName.value);
+					String json = response.getMappings().get(typeName.value).get(ELASTICSEARCH_DEFAULT_TYPE).source().string();
 
-				if (!expected.equals(actual))
-				{
+					Map<String, String> actual = new TreeMap<String, String>();
 
-					logger.info(String.format("Index: %s not properly configured", index.getSimpleIndex().getSimpleValue()));
-					logger.info(String.format("Expected fields=%s", expected));
-					logger.info(String.format("Actual   fields=%s", actual));
-					
-					if (expected.size() > actual.size())
+					new ObjectMapper().readTree(json).get(ELASTICSEARCH_DEFAULT_TYPE).get("properties").fields().forEachRemaining(fieldMapping ->
 					{
-						logger.info("Issue lies in that an actual search field is missing from what is expected to be written");
-					}
-					else if(expected.size() < actual.size())
-					{
-						logger.info("Issue lies in that an expected search field is missing from what's actually being written");
-					}
-					for (String key : expected.keySet())
-					{
-						String expected_value = expected.get(key);
-						String actual_value = actual.get(key);
-						if (!expected_value.equals(actual_value))
+						if (!fieldMapping.getKey().contains(SORT_FIELD_NAME_JIMMUTABLE)) // Skip our keyword fields
 						{
-							logger.info(String.format("Issue lies in that for Field %s the expected field value is: %s", key, expected_value));
-							logger.info(String.format("However, currently for Field %s the actual field value is: %s", key, actual_value));
+							actual.put(fieldMapping.getKey(), fieldMapping.getValue().get("type").asText());
 						}
+					});
+
+					if (!expected.equals(actual))
+					{
+
+						logger.warn(String.format("Index: %s not properly configured", index.getSimpleIndex().getSimpleValue()));
+						logger.warn(String.format("Expected fields=%s", expected));
+						logger.warn(String.format("Actual   fields=%s", actual));
+
+						if (expected.size() > actual.size())
+						{
+							logger.warn("There are field missing in the current index.");
+						}
+						else if (expected.size() < actual.size())
+						{
+							logger.info("There are more fields than expected in the current index.");
+						}
+						//
+						//
+						// for (String key : expected.keySet())
+						// {
+						// String expected_value = expected.get(key);
+						// String actual_value = actual.get(key);
+						// if (!expected_value.equals(actual_value))
+						// {
+						// logger.info(String.format("Issue lies in that for Field %s the expected field
+						// value is: %s", key, expected_value));
+						// logger.info(String.format("However, currently for Field %s the actual field
+						// value is: %s", key, actual_value));
+						// }
+						// }
+
+						return false;
 					}
-
-					return false;
 				}
-
-				return true;
-
-			} catch (Exception e)
+			}
+			catch (Exception e)
 			{
 				logger.log(Level.FATAL, String.format("Failed to get the index mapping for index %s", index.getSimpleIndex().getSimpleValue()), e);
 			}
 		}
 
-		return false;
+		return true;
 
 	}
-
 
 	private boolean createIndex(SearchIndexDefinition index)
 	{
@@ -769,71 +780,17 @@ public class ElasticSearch implements ISearch
 			logger.fatal("Cannot create a null Index");
 			return false;
 		}
-
-		try
+		String timestamp_index_name = createTimestampIndex(index, null);
+		if(timestamp_index_name == null)
 		{
-
-			XContentBuilder mappingBuilder = jsonBuilder();
-			mappingBuilder.startObject().startObject(ELASTICSEARCH_DEFAULT_TYPE).startObject("properties");
-			for (SearchIndexFieldDefinition field : index.getSimpleFields())
-			{
-				// if (field.getSimpleType().equals(SearchIndexFieldType.OBJECTID))
-				// {
-				// // EXPLICIT MAPPING FOR OBJECTID - does not rely on enum's simple code
-				// // https://www.elastic.co/blog/strings-are-dead-long-live-strings
-				// mappingBuilder.startObject(field.getSimpleFieldName().getSimpleName());
-				// /* */mappingBuilder.field("type", "text");
-				// /* */mappingBuilder.startObject("fields");
-				// /* */mappingBuilder.startObject("keyword");
-				// /* */mappingBuilder.field("type", "keyword");
-				// /* */mappingBuilder.field("ignore_above", 256);
-				// /* */mappingBuilder.endObject();
-				// /* */mappingBuilder.endObject();
-				// mappingBuilder.endObject();
-				// } else
-				// {
-				mappingBuilder.startObject(field.getSimpleFieldName().getSimpleName());
-				/*	*/mappingBuilder.field("type", field.getSimpleType().getSimpleCode());
-				mappingBuilder.endObject();
-				// }
-				
-				// Create a keyword for every text field
-				if ( field.getSimpleType() == SearchIndexFieldType.TEXT )
-				{
-					mappingBuilder.startObject(getSortFieldNameText(field.getSimpleFieldName()));
-						mappingBuilder.field("type", SearchIndexFieldType.ATOM.getSimpleCode());
-					mappingBuilder.endObject();
-				}
-				
-				// Create a long field for every instant field
-				if ( field.getSimpleType() == SearchIndexFieldType.INSTANT )
-				{
-					mappingBuilder.startObject(getSortFieldNameInstant(field.getSimpleFieldName()));
-						mappingBuilder.field("type", SearchIndexFieldType.LONG.getSimpleCode());
-					mappingBuilder.endObject();
-				}
-				
-				// Create a long field for every timeofday field
-				if ( field.getSimpleType() == SearchIndexFieldType.TIMEOFDAY )
-				{
-					mappingBuilder.startObject(getSortFieldNameTimeOfDay(field.getSimpleFieldName()));
-						mappingBuilder.field("type", SearchIndexFieldType.LONG.getSimpleCode());
-					mappingBuilder.endObject();
-				}				
-			}
-			mappingBuilder.endObject().endObject().endObject();
-
-			CreateIndexResponse createResponse = client.admin().indices().prepareCreate(index.getSimpleIndex().getSimpleValue()).addMapping(ELASTICSEARCH_DEFAULT_TYPE, mappingBuilder).get();
-
-			if (!createResponse.isAcknowledged())
-			{
-				logger.fatal(String.format("Index Creation not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
-				return false;
-			}
-
-		} catch (Exception e)
+			logger.fatal("Cannot create a timestamp Index for index " + index);
+			return false;
+		}
+		
+		IndicesAliasesResponse response = client.admin().indices().prepareAliases().addAlias(timestamp_index_name, index.getSimpleIndex().getSimpleValue()).execute().actionGet();
+		if (!response.isAcknowledged())
 		{
-			logger.log(Level.FATAL, String.format("Failed to generate mapping json for index %s", index.getSimpleIndex().getSimpleValue()), e);
+			logger.fatal(String.format("Alias Creation not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
 			return false;
 		}
 
@@ -850,6 +807,7 @@ public class ElasticSearch implements ISearch
 	 */
 	public boolean deleteIndex(SearchIndexDefinition index)
 	{
+		//TODO DELETE FOR NOW
 		if (index == null)
 		{
 			logger.fatal("Cannot delete a null Index");
@@ -887,7 +845,6 @@ public class ElasticSearch implements ISearch
 	@Override
 	public boolean upsertIndex(SearchIndexDefinition index)
 	{
-
 		if (index == null)
 		{
 			logger.fatal("Cannot upsert a null Index");
@@ -897,26 +854,14 @@ public class ElasticSearch implements ISearch
 		// if it exists and is not configured correctly delete and add
 		if (indexExists(index))
 		{
-			if (!indexProperlyConfigured(index))
-			{
-				if (deleteIndex(index))
-				{
-					return createIndex(index);
-				} else
-				{
-					// deletion failed
-					return false;
-				}
-			}
-		} else
+			logger.info(String.format("No upsert needed for index %s", index.getSimpleIndex().getSimpleValue()));
+			return true;
+		}
+		else
 		{
 			// index is new
 			return createIndex(index);
 		}
-
-		// index exists and already configured correctly
-		logger.info(String.format("No upsert needed for index %s", index.getSimpleIndex().getSimpleValue()));
-		return true;
 	}
 
 	/**
@@ -1044,8 +989,16 @@ public class ElasticSearch implements ISearch
 		return field_name + "_" + SORT_FIELD_NAME_JIMMUTABLE + "_" + Instant.FIELD_MS_FROM_EPOCH.getSimpleFieldName().getSimpleName();
 	}
 
+	/**
+	 * In order to sort Instant objects, we need to look at the ms_from_epoch
+	 * field from within. This method creates a consistent field name to sort
+	 * by.
+	 * 
+	 * @param field_name
+	 * @return
+	 */
 	@Override
-	public boolean reindex(IStorage storage, Kind kind)
+	public boolean reindex(IStorage storage, Kind... kinds)
 	{
 		if(storage == null)
 		{
@@ -1053,39 +1006,42 @@ public class ElasticSearch implements ISearch
 			return false;
 		}
 		
-		if(kind == null)
+		if(kinds == null)
 		{
-			logger.error("Null kind passed in for re-indexing");
+			logger.error("Null kinds passed in for re-indexing");
 			return false;
 		}
 		
-		SearchIndexDefinition index_definition = SearchSync.getSimpleAllRegisteredIndexableKindsMap().get(kind);
-		if(index_definition == null)
+		for(Kind kind : kinds)
 		{
-			logger.error("Kind " + kind + " passed in for re-indexing is not registered with SearchSync.registerIndexableKind");
-			return false;
-		}
-		
-		String index_name = createTimestampIndex(index_definition, null);
-		if(index_name == null)
-		{
-			logger.error("Kind " + kind + " could not create a new index to reindex documents with");
-			return false;
-		}
-		
-		boolean success = syncSearchAndStorage(kind, index_name);
-		if(!success)
-		{
-			logger.error("Kind " + kind + " could not complete sync of storage and search, no swap made");
-			return false;
-		}
-		
-		//Swap alias 
-		success = updateAlias(index_definition, index_name);
-		if(!success)
-		{
-			logger.error("Kind " + kind + " could not complete alias swap");
-			return false;
+			SearchIndexDefinition index_definition = SearchSync.getSimpleAllRegisteredIndexableKindsMap().get(kind);
+			if(index_definition == null)
+			{
+				logger.error("Kind " + kind + " passed in for re-indexing is not registered with SearchSync.registerIndexableKind");
+				return false;
+			}
+			
+			String index_name = createTimestampIndex(index_definition, null);
+			if(index_name == null)
+			{
+				logger.error("Kind " + kind + " could not create a new index to reindex documents with");
+				return false;
+			}
+
+			boolean success = syncSearchAndStorage(kind, index_name);
+			if(!success)
+			{
+				logger.error("Kind " + kind + " could not complete sync of storage and search, no swap made");
+				return false;
+			}
+
+			//Swap alias 
+			success = updateAlias(index_definition, index_name);
+			if(!success)
+			{
+				logger.error("Kind " + kind + " could not complete full alias swap");
+				return false;
+			}
 		}
 		
 		return true;
@@ -1095,63 +1051,46 @@ public class ElasticSearch implements ISearch
 	{
 		
 		Set<String> old_index = getCurrentIndiciesFromAliasName(definition.getSimpleIndex().getSimpleValue());
-		for(String index : old_index)
-		{
-			System.out.println(index);
-		}
-		IndicesAliasesResponse response = client.admin().indices().prepareAliases().addAlias(index_name, definition.getSimpleIndex().getSimpleValue()).execute().actionGet();
+		String[] indices = old_index.toArray(new String[old_index.size()]);
 
+		//Has to be atomic so if it fails we don't add a new alias
+		IndicesAliasesResponse response = client.admin().indices().prepareAliases().removeAlias(indices, definition.getSimpleIndex().getSimpleValue()).addAlias(index_name, definition.getSimpleIndex().getSimpleValue()).execute().actionGet();
 		if (!response.isAcknowledged())
 		{
 			logger.fatal(String.format("Alias addition not acknowledged for index %s", index_name));
 			return false;
 		}
 
-		for(String old_alias : old_index)
+		//Once we have confirmed the swap we no longer need the indices that we removed from the alias so we will delete them all
+		//This operation could be handled by a reaper thread in the future if we want to keep the job of deleting indices outside of the reindexer
+		DeleteIndexResponse deleteResponse = client.admin().indices().prepareDelete(indices).get();
+		if (!deleteResponse.isAcknowledged())
 		{
-			if(old_alias.startsWith(definition.getSimpleIndex().getSimpleValue()) && !old_alias.equals(index_name))
-			{
-				DeleteIndexResponse deleteResponse = client.admin().indices().prepareDelete(old_alias).get();
-				//response = client.admin().indices().prepareAliases().removeAlias(old_alias, definition.getSimpleIndex().getSimpleValue()).execute().actionGet();
-				
-				if (!deleteResponse.isAcknowledged())
-				{
-					logger.fatal(String.format("Alias removal not acknowledged for index %s", index_name));
-					return false;
-				}
-			}
+			logger.fatal(String.format("Alias removal not acknowledged for index %s", index_name));
+			return false;
 		}
 		
 		return true;
 	}
 
-	public Set<String> findAliasForIndices(String... indices)
-	{
-		System.out.println(client.admin().indices().stats(new IndicesStatsRequest()).actionGet().getIndices().keySet());
-	    GetAliasesResponse getResponse = client.admin().indices().prepareGetAliases().get();
-
-		if (indices == null || indices.length == 0)
-		{
-			return new HashSet<>();
-		}
-		ClusterStateRequest clusterStateRequest = Requests.clusterStateRequest().routingTable(false).nodes(false).indices(indices);
-
-		ImmutableOpenMap<String, IndexMetaData> aliasMap = client.admin().cluster().state(clusterStateRequest).actionGet().getState().getMetaData().getIndices();
-
-		return StreamSupport.stream(aliasMap.spliterator(), false).flatMap((e) ->
-		{
-			Iterable<String> iterable = () -> e.value.getAliases().keysIt();
-			return StreamSupport.stream(iterable.spliterator(), false);
-		}).collect(Collectors.toSet());
-	}
-
-	
 	public Set<String> getCurrentIndiciesFromAliasName(String alias_name)
 	{
-		ImmutableOpenMap<String, List<AliasMetaData>> map = client.admin().indices().prepareGetAliases(alias_name).get().getAliases();
-		final Set<String> allIndices = new HashSet<>();
-		map.keysIt().forEachRemaining(allIndices::add);
-		return allIndices;
+		Set<String> all_indicies_with_alias = new HashSet<>();
+
+		ClusterStateRequestBuilder builder = client.admin().cluster().prepareState();
+		for (IndexMetaData indexMetaData : builder.execute().actionGet().getState().metaData())
+		{
+			for (ObjectCursor<String> cursor : indexMetaData.getAliases().keys())
+			{
+				if (cursor.value.equals(alias_name))
+				{
+					all_indicies_with_alias.add(indexMetaData.getIndex().getName());
+					continue;
+				}
+			}
+		}
+
+		return all_indicies_with_alias;
 	}
 	
 	private String createTimestampIndex(SearchIndexDefinition index, String default_value)
@@ -1164,7 +1103,35 @@ public class ElasticSearch implements ISearch
 
 		try
 		{
+			String index_name = index.getSimpleIndex().getSimpleValue() + "_" + System.currentTimeMillis();
+			CreateIndexResponse createResponse = client.admin().indices().prepareCreate(index_name).addMapping(ELASTICSEARCH_DEFAULT_TYPE, getMappingBuilder(index, null)).get();
 
+			if (!createResponse.isAcknowledged())
+			{
+				logger.fatal(String.format("Index Creation not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
+				return default_value;
+			}
+
+			return index_name;
+		}
+		catch (Exception e)
+		{
+			logger.log(Level.FATAL, String.format("Failed to generate mapping json for index %s", index.getSimpleIndex().getSimpleValue()), e);
+			return default_value;
+		}
+	}
+	
+	
+	/**
+	 * This will scan all of Storage for the Kind passed in and for each item
+	 * found it will attempt to upsert its matching search document.
+	 * 
+	 * @return true on success
+	 */
+	private static XContentBuilder getMappingBuilder(SearchIndexDefinition index, XContentBuilder default_value)
+	{
+		try
+		{
 			XContentBuilder mappingBuilder = jsonBuilder();
 			mappingBuilder.startObject().startObject(ELASTICSEARCH_DEFAULT_TYPE).startObject("properties");
 			for (SearchIndexFieldDefinition field : index.getSimpleFields())
@@ -1214,67 +1181,59 @@ public class ElasticSearch implements ISearch
 				}
 			}
 			mappingBuilder.endObject().endObject().endObject();
-			String index_name = index.getSimpleIndex().getSimpleValue() + "_" + System.currentTimeMillis();
-			CreateIndexResponse createResponse = client.admin().indices().prepareCreate(index_name).addMapping(ELASTICSEARCH_DEFAULT_TYPE, mappingBuilder).get();
 
-			if (!createResponse.isAcknowledged())
-			{
-				logger.fatal(String.format("Index Creation not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
-				return default_value;
-			}
+			return mappingBuilder;
 
-			return index_name;
-
-		}
-		catch (Exception e)
+		} catch (Exception e)
 		{
 			logger.log(Level.FATAL, String.format("Failed to generate mapping json for index %s", index.getSimpleIndex().getSimpleValue()), e);
 			return default_value;
 		}
 	}
-	
-	private class UpsertDocumentRunnableTimestamp implements Runnable
+
+	/**
+	 * Puts all field mappings into an existing index. If the index doesn't already
+	 * exist or a field name with a different type already exists the operation will
+	 * fail.
+	 * 
+	 * @param index
+	 *            SearchIndexDefinition
+	 * @return if successful or not
+	 */
+	public boolean putAllFieldMappings(SearchIndexDefinition index)
 	{
-		private Indexable object;
-		private Map<String, Object> data;
-		private String index_name;
 
-		public UpsertDocumentRunnableTimestamp(Indexable object, Map<String, Object> data, String index_name)
+		if (index == null)
 		{
-			this.object = object;
-			this.data = data;
-			this.index_name = index_name;
+			logger.fatal("Null index");
+			return false;
 		}
 
-		@Override
-		public void run()
+		if (!indexExists(index))
 		{
-			try
+			logger.fatal(String.format("Index %s does not exist!", index.getSimpleIndex().getSimpleValue()));
+			return false;
+		}
+
+		try
+		{
+
+			PutMappingResponse put_response = client.admin().indices().preparePutMapping(index.getSimpleIndex().getSimpleValue()).setType(ELASTICSEARCH_DEFAULT_TYPE).setSource(getMappingBuilder(index, null)).get();
+
+			if (!put_response.isAcknowledged())
 			{
-				String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
-				IndexResponse response = client.prepareIndex(index_name, ELASTICSEARCH_DEFAULT_TYPE, document_name).setSource(data).get();
-
-				Level level;
-				switch (response.getResult())
-				{
-				case CREATED:
-					level = Level.INFO;
-					break;
-				case UPDATED:
-					level = Level.INFO;
-					break;
-				default:
-					level = Level.FATAL;
-					break;
-				}
-
-				logger.log(level, String.format("%s %s/%s/%s %s", response.getResult().name(), index_name, ELASTICSEARCH_DEFAULT_TYPE, document_name, data));
-
-			} catch (Exception e)
-			{
-				logger.log(Level.FATAL, "Failure during upsert operation!", e);
+				logger.fatal(String.format("Put Mappings result not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
+				return false;
 			}
+
+		} catch (Exception e)
+		{
+			logger.log(Level.FATAL, String.format("Failed to generate mapping json for index %s", index.getSimpleIndex().getSimpleValue()), e);
+			return false;
 		}
+
+		return true;
+
 	}
 	
 	/**
@@ -1400,6 +1359,4 @@ public class ElasticSearch implements ISearch
 			return object;
 		}
 	}
-	
-	
 }

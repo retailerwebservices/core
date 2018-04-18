@@ -86,6 +86,14 @@ public class SearchSyncIT extends IntegrationTest
 			fail();
 		}
 		
+		try
+		{
+			Thread.sleep(1000);
+		}
+		catch (InterruptedException e1)
+		{
+			e1.printStackTrace();
+		}
 		StandardSearchRequest search_request = new StandardSearchRequest("*", 10000, 0);
 		JSONServletResponse response = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(TestLibraryPatron.INDEX_DEFINITION, search_request);
 		boolean has_only_storage_result = false;

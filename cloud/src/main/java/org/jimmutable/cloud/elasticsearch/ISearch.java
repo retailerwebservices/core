@@ -115,7 +115,7 @@ public interface ISearch
 	 *            The kind to attempt to re-index on
 	 * @return boolean if the index was fully successfully re-indexed
 	 */
-	public boolean reindex(IStorage storage, Kind kind);
+	public boolean reindex(IStorage storage, Kind... kinds);
 	
 	/**
 	 * Upsert if the index doesn't exist or is not properly configured already

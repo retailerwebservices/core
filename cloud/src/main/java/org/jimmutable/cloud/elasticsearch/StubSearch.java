@@ -100,10 +100,9 @@ public class StubSearch implements ISearch
 	}
 
 	@Override
-	public boolean reindex(IStorage storage, Kind kind)
+	public boolean reindex(IStorage storage, Kind... kind)
 	{
-		// TODO Auto-generated method stub
-		return false;
+		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
 }

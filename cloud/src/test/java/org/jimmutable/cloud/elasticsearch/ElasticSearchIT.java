@@ -57,9 +57,6 @@ public class ElasticSearchIT extends IntegrationTest
 			assertEquals(ok.getSimpleHTTPResponseCode(), 200);
 			assertEquals(ok.getSimpleResults().size(), 10);
 			assertEquals(ok.getSimpleStartOfNextPageOfResults(), 10);
-			// TODO what is the point of this??
-			assertEquals(ok.getSimpleStartOfPreviousPageOfResults(), -1);
-
 		}
 
 	}
@@ -82,8 +79,6 @@ public class ElasticSearchIT extends IntegrationTest
 			assertEquals(200, ok.getSimpleHTTPResponseCode());
 			assertEquals(10, ok.getSimpleResults().size());
 			assertEquals(20, ok.getSimpleStartOfNextPageOfResults());
-			// TODO what is the point of this??
-			assertEquals(10, ok.getSimpleStartOfPreviousPageOfResults());
 
 		}
 
@@ -107,8 +102,6 @@ public class ElasticSearchIT extends IntegrationTest
 			assertEquals(200, ok.getSimpleHTTPResponseCode());
 			assertEquals(0, ok.getSimpleResults().size());
 			assertEquals(30, ok.getSimpleStartOfNextPageOfResults());
-			// TODO what is the point of this??
-			assertEquals(20, ok.getSimpleStartOfPreviousPageOfResults());
 		}
 
 	}
