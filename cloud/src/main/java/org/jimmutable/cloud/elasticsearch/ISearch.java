@@ -72,7 +72,7 @@ public interface ISearch
 	 * @return JSONServletResponse
 	 */
 	public JSONServletResponse search(IndexDefinition index, StandardSearchRequest request);
-	
+
 	public List<OneSearchResultWithTyping> search(IndexDefinition index, StandardSearchRequest request, List<OneSearchResultWithTyping> default_value);
 
 	/**
@@ -187,5 +187,16 @@ public interface ISearch
 	 * @return boolean - true if successfully deleted, else false
 	 */
 	public boolean deleteIndex(SearchIndexDefinition index);
+
+	/**
+	 * Puts all field mappings into an existing index. If the index doesn't already
+	 * exist or a field name with a different type already exists the operation will
+	 * fail.
+	 * 
+	 * @param index
+	 *            SearchIndexDefinition
+	 * @return if successful or not
+	 */
+	public boolean putAllFieldMappings(SearchIndexDefinition index);
 
 }
