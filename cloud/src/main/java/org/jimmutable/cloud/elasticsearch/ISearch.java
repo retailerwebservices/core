@@ -180,15 +180,6 @@ public interface ISearch
 	public SearchRequestBuilder getBuilder(IndexDefinition index);
 
 	/**
-	 * Deletes an entire index
-	 * 
-	 * @param index
-	 *            SearchIndexDefinition
-	 * @return boolean - true if successfully deleted, else false
-	 */
-	public boolean deleteIndex(SearchIndexDefinition index);
-
-	/**
 	 * Puts all field mappings into an existing index. If the index doesn't already
 	 * exist or a field name with a different type already exists the operation will
 	 * fail.

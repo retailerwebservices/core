@@ -2,8 +2,6 @@ package org.jimmutable.cloud.elasticsearch;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,6 +15,7 @@ import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.EnvironmentType;
 import org.jimmutable.cloud.storage.Storable;
+import org.jimmutable.cloud.utils.AppAdminUtil;
 import org.jimmutable.core.exceptions.SerializeException;
 import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.common.Kind;
@@ -113,9 +112,18 @@ public abstract class SearchSync
 			setupRegisters();	
 		}
 		
-		long start = System.currentTimeMillis();
-		logger.info("Reindexing of all Kinds started...");
 		
+		long start = System.currentTimeMillis();
+		logger.info("Checking that all indices are properly configured...");
+
+		boolean reindexing_allowed = AppAdminUtil.indicesProperlyConfigured();
+		if (!reindexing_allowed)
+		{
+			logger.fatal("Failed check out properly configured indices.. Exiting now...");
+			System.exit(1);
+		}
+		logger.info("Success checking that all indices are properly configured...");
+		logger.info("Reindexing of all Kinds started...");
 		//We want a single thread per kind
 		int executor_threads = getSimpleKinds().size();
 		if(executor_threads <= 0) 
@@ -124,7 +132,6 @@ public abstract class SearchSync
 		}
 		
 		ExecutorService executor = Executors.newFixedThreadPool(executor_threads);
-		
 		//Log the kinds it is attempting to reindex
 		for(Kind kind : getSimpleKinds())
 		{

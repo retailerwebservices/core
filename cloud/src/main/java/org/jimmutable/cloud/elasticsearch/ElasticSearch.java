@@ -773,30 +773,6 @@ public class ElasticSearch implements ISearch
 
 	}
 
-	private boolean createIndex(SearchIndexDefinition index)
-	{
-		if (index == null)
-		{
-			logger.fatal("Cannot create a null Index");
-			return false;
-		}
-		String timestamp_index_name = createTimestampIndex(index, null);
-		if(timestamp_index_name == null)
-		{
-			logger.fatal("Cannot create a timestamp Index for index " + index);
-			return false;
-		}
-		
-		IndicesAliasesResponse response = client.admin().indices().prepareAliases().addAlias(timestamp_index_name, index.getSimpleIndex().getSimpleValue()).execute().actionGet();
-		if (!response.isAcknowledged())
-		{
-			logger.fatal(String.format("Alias Creation not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
-			return false;
-		}
-
-		logger.info(String.format("Created index %s", index.getSimpleIndex().getSimpleValue()));
-		return true;
-	}
 
 	/**
 	 * Deletes an entire index
@@ -807,7 +783,8 @@ public class ElasticSearch implements ISearch
 	 */
 	public boolean deleteIndex(SearchIndexDefinition index)
 	{
-		//TODO DELETE FOR NOW
+		//TODO This was instructed to not be refactored when we made the cutover to use aliases. Generally reindexing can be used over this.
+		//It will likely not work if the interface is ever updated to use deletion of indexes again.
 		if (index == null)
 		{
 			logger.fatal("Cannot delete a null Index");
@@ -862,6 +839,36 @@ public class ElasticSearch implements ISearch
 			// index is new
 			return createIndex(index);
 		}
+	}
+	
+	/**
+	 * Upsert the index and attach it to an alias
+	 * 
+	 * @return boolean if the upsert was successful or not
+	 */
+	private boolean createIndex(SearchIndexDefinition index)
+	{
+		if (index == null)
+		{
+			logger.fatal("Cannot create a null Index");
+			return false;
+		}
+		String timestamp_index_name = createTimestampIndex(index, null);
+		if(timestamp_index_name == null)
+		{
+			logger.fatal("Cannot create a timestamp Index for index " + index);
+			return false;
+		}
+		
+		IndicesAliasesResponse response = client.admin().indices().prepareAliases().addAlias(timestamp_index_name, index.getSimpleIndex().getSimpleValue()).execute().actionGet();
+		if (!response.isAcknowledged())
+		{
+			logger.fatal(String.format("Alias Creation not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
+			return false;
+		}
+
+		logger.info(String.format("Created index %s", index.getSimpleIndex().getSimpleValue()));
+		return true;
 	}
 
 	/**
@@ -990,12 +997,22 @@ public class ElasticSearch implements ISearch
 	}
 
 	/**
-	 * In order to sort Instant objects, we need to look at the ms_from_epoch
-	 * field from within. This method creates a consistent field name to sort
-	 * by.
+	 * For all given kinds, this will go through and create a new unique index
+	 * for the kind, scan storage for all of the Kind's Indexable Storables and
+	 * upsert their respective search documents. After that is successfully done
+	 * this will find all the indices that currently reference the
+	 * alias(SearchIndexDefinition name). Once it has found all indices that
+	 * reference the alias it will prepare to atomically remove all the old
+	 * references and attach the single new index reference to the alias. After
+	 * that is successfully done, this will remove all indices that no longer
+	 * have a relation to the alias.
 	 * 
-	 * @param field_name
-	 * @return
+	 * @param storage
+	 *            The storage implementation your App is using
+	 * @param kinds
+	 *            The kinds that should be reindexed. All kinds passed in must
+	 *            be registered with SearchSync in order to be used here
+	 * @return is_success
 	 */
 	@Override
 	public boolean reindex(IStorage storage, Kind... kinds)
@@ -1047,6 +1064,20 @@ public class ElasticSearch implements ISearch
 		return true;
 	}
 	
+	/**
+	 * This will find all the indices that currently reference the
+	 * alias(SearchIndexDefinition name). Once it has found all indices that
+	 * reference the alias it will prepare to atomically remove all the old
+	 * references and attach the single new index reference to the alias. After
+	 * that is successfully done, this will remove all indices that no longer
+	 * have a relation to the alias.
+	 * 
+	 * @param definition
+	 *            The definition of the Kind that is being reindexed
+	 * @param index_name
+	 *            The unique index name that data was upserted to
+	 * @return is_success
+	 */
 	private boolean updateAlias(SearchIndexDefinition definition, String index_name)
 	{
 		
@@ -1073,6 +1104,14 @@ public class ElasticSearch implements ISearch
 		return true;
 	}
 
+	/**
+	 * This will find all the indices that currently reference the
+	 * alias(SearchIndexDefinition name).
+	 * 
+	 * @param alias_name
+	 *            The alias_name that all the indices are related to
+	 * @return the set of indices that have relation to the alias
+	 */
 	public Set<String> getCurrentIndiciesFromAliasName(String alias_name)
 	{
 		Set<String> all_indicies_with_alias = new HashSet<>();
@@ -1093,6 +1132,16 @@ public class ElasticSearch implements ISearch
 		return all_indicies_with_alias;
 	}
 	
+	/**
+	 * This will find all the indices that currently reference the
+	 * alias(SearchIndexDefinition name).
+	 * 
+	 * @param index
+	 *            The SearchIndexDefinition that the index will relate to
+	 * @param default_value
+	 *            value to return on failure
+	 * @return the new unique index name on success, default_value on failure
+	 */
 	private String createTimestampIndex(SearchIndexDefinition index, String default_value)
 	{
 		if (index == null)
@@ -1123,10 +1172,8 @@ public class ElasticSearch implements ISearch
 	
 	
 	/**
-	 * This will scan all of Storage for the Kind passed in and for each item
-	 * found it will attempt to upsert its matching search document.
+	 * This will build all the mapping fields for an index defintion
 	 * 
-	 * @return true on success
 	 */
 	private static XContentBuilder getMappingBuilder(SearchIndexDefinition index, XContentBuilder default_value)
 	{
@@ -1184,7 +1231,8 @@ public class ElasticSearch implements ISearch
 
 			return mappingBuilder;
 
-		} catch (Exception e)
+		}
+		catch (Exception e)
 		{
 			logger.log(Level.FATAL, String.format("Failed to generate mapping json for index %s", index.getSimpleIndex().getSimpleValue()), e);
 			return default_value;

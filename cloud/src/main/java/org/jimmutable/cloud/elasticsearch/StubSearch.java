@@ -94,12 +94,6 @@ public class StubSearch implements ISearch
 	}
 
 	@Override
-	public boolean deleteIndex(SearchIndexDefinition index)
-	{
-		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
-	}
-
-	@Override
 	public boolean reindex(IStorage storage, Kind... kind)
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
