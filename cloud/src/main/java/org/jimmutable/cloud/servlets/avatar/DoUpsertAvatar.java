@@ -96,6 +96,7 @@ public class DoUpsertAvatar extends HttpServlet
 
 	}
 
+	@Deprecated
 	static public StorageKey upsertAvatar(byte[] image_data, StorageKey default_value)
 	{
 
