@@ -7,6 +7,8 @@ import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
+import org.jimmutable.cloud.storage.IStorage;
+import org.jimmutable.core.objects.common.Kind;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.ICsvListWriter;
 
@@ -92,11 +94,11 @@ public class StubSearch implements ISearch
 	}
 
 	@Override
-	public boolean deleteIndex(SearchIndexDefinition index)
+	public boolean reindex(IStorage storage, Kind... kind)
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
-
+	
 	@Override
 	public boolean putAllFieldMappings(SearchIndexDefinition index)
 	{

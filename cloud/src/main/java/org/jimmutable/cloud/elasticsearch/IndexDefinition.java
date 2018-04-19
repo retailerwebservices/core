@@ -16,7 +16,7 @@ public class IndexDefinition extends Stringable
 
 	public static final MyConverter CONVERTER = new MyConverter();
 
-	private static final String SEPARATOR = ":";
+	private static final String SEPARATOR = "_";
 
 	private transient ApplicationId applicationId;
 	private transient IndexId indexId;
