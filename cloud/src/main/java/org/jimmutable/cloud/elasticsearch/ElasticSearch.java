@@ -795,7 +795,7 @@ public class ElasticSearch implements ISearch
 			logger.fatal("Cannot delete a null Index");
 			return false;
 		}
-				
+
 		try
 		{
 			DeleteIndexResponse deleteResponse = client.admin().indices().prepareDelete(index.getSimpleIndex().getSimpleValue()).get();
@@ -1111,13 +1111,22 @@ public class ElasticSearch implements ISearch
 	private boolean updateAlias(SearchIndexDefinition definition, String index_name)
 	{
 
-		Set<String> old_index = getCurrentIndiciesFromAliasName(definition.getSimpleIndex().getSimpleValue());
-		String[] indices = old_index.toArray(new String[old_index.size()]);
+		Set<String> old_indices = getCurrentIndiciesFromAliasName(definition.getSimpleIndex().getSimpleValue());
+		String[] indices_to_delete = old_indices.toArray(new String[old_indices.size()]);
 
 		// Has to be atomic so if it fails we don't add a new alias
 		try
 		{
-			IndicesAliasesResponse response = client.admin().indices().prepareAliases().addAlias(index_name, definition.getSimpleIndex().getSimpleValue()).removeAlias(indices, definition.getSimpleIndex().getSimpleValue()).execute().actionGet();
+			IndicesAliasesRequestBuilder builder = client.admin().indices().prepareAliases().addAlias(index_name, definition.getSimpleIndex().getSimpleValue());
+
+			// deletes old indices
+			for (String index : indices_to_delete)
+			{
+				builder.removeIndex(index);
+			}
+
+			IndicesAliasesResponse response = builder.execute().actionGet();
+
 			if (!response.isAcknowledged())
 			{
 				logger.fatal(String.format("Alias addition not acknowledged for index %s", index_name));
@@ -1127,18 +1136,6 @@ public class ElasticSearch implements ISearch
 		{
 			logger.error("Alias addition and removal failed", e);
 			return false;
-		}
-		
-		// Once we have confirmed the swap we no longer need the indices that we removed
-		// from the alias so we will delete them all
-		// This operation could be handled by a reaper thread in the future if we want
-		// to keep the job of deleting indices outside of the reindexer
-		for (String index : indices)
-		{
-			if (!deleteIndex(index))
-			{
-				logger.error("Left over index " + index + " removal failed, continuing so others can be attempted to remove.");
-			}
 		}
 
 		return true;
@@ -1154,8 +1151,7 @@ public class ElasticSearch implements ISearch
 				logger.fatal(String.format("Alias removal not acknowledged for index %s", index_name));
 				return false;
 			}
-		}
-		catch (InterruptedException | ExecutionException e)
+		} catch (InterruptedException | ExecutionException e)
 		{
 			logger.error("Alias removal failed", e);
 			return false;
