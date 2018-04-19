@@ -2,6 +2,7 @@ package org.jimmutable.cloud.elasticsearch;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,16 +48,25 @@ public abstract class SearchSync
 	static private Map<Kind, SearchIndexDefinition> indexable_kinds = new ConcurrentHashMap<>();
 
 	public static final int MAX_REINDEX_COMPLETION_TIME_MINUTES = 120;
-	public static final String ALL_REGISTERED_KINDS = "ALL_REGISTERED_KINDS";
 	
-	
+	private Set<Kind> kinds = new HashSet<>();
 	/**
 	 * Constructor assumes we need to setup the environment as well as use only
 	 * the kinds that are currently registered
 	 */
 	public SearchSync()
 	{
-		
+		this.kinds = indexable_kinds.keySet();
+	}
+	
+	/**
+	 * Constructor assumes we need to setup the environment as well as use only
+	 * the kinds that are currently registered. This allows for specific kinds
+	 * to be passed in.
+	 */
+	public SearchSync(Set<Kind> kinds)
+	{
+		if(kinds != null) this.kinds = kinds;
 	}
 
 	/**
@@ -138,7 +148,7 @@ public abstract class SearchSync
 	
 	private Set<Kind> getSimpleKinds()
 	{
-		return indexable_kinds.keySet();
+		return kinds;
 	}
 	
 	/**
