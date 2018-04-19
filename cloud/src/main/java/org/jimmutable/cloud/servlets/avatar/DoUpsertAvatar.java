@@ -96,7 +96,7 @@ public class DoUpsertAvatar extends HttpServlet
 
 	}
 
-	// CODE REVIEW: This method doesn't seem to be used anywhere. Shouldn't we remove it or at least deprecate it? -PM
+	@Deprecated
 	static public StorageKey upsertAvatar(byte[] image_data, StorageKey default_value)
 	{
 

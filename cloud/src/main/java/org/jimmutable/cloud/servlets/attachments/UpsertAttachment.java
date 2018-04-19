@@ -65,9 +65,7 @@ public class UpsertAttachment extends HttpServlet
 						extension = new StorageKeyExtension(file_name.substring(extension_delim).toLowerCase());
 					} catch (Exception e)
 					{
-						String warning_message = String.format("Unable to parse extension from file name %s!", file_name);
-						logger.warn(warning_message, e);
-						// CODE REVIEW: Add call to onWarning for consistency. -PM
+						onWarning(String.format("Unable to parse extension from file name %s!", file_name), e);
 					}
 
 					ObjectIdStorageKey key = null;
@@ -76,9 +74,7 @@ public class UpsertAttachment extends HttpServlet
 						key = new ObjectIdStorageKey(KIND, new_attachment_id, extension);
 					} catch (Exception e)
 					{
-						String error_message = String.format("Unable to create a storage key for file %s!", file_name);
-						logger.error(error_message, e);
-						onError(error_message);
+						onError(String.format("Unable to create a storage key for file %s!", file_name), e);
 					}
 
 					InputStream stream = page_data.getOptionalInputStream(null);
@@ -103,8 +99,7 @@ public class UpsertAttachment extends HttpServlet
 								attachment_metadata = b.create(null);
 							} catch (Exception e)
 							{
-								logger.error("Failed to create attachment metadata!", e);
-								onError("Failed to create attachment metadata!");
+								onError("Failed to create attachment metadata!", e);
 							}
 
 							if (attachment_metadata != null)
@@ -114,19 +109,16 @@ public class UpsertAttachment extends HttpServlet
 									ServletUtil.writeSerializedResponse(response, new UpsertResponseOK(String.format("Upserted %s", file_name), attachment_metadata), UpsertResponseOK.HTTP_STATUS_CODE_OK);
 								} else
 								{
-									// CODE REVIEW: Add log entry here. -PM
 									onError("Failed to upsert attachment metadata!");
 								}
 							}
 
 						} else
 						{
-							// CODE REVIEW: Add log entry here. -PM
 							onError(String.format("Failed to get Storage metadata for %s %s!", key.getSimpleKind().getSimpleValue(), key.getSimpleName().getSimpleValue()));
 						}
 					} else
 					{
-						// CODE REVIEW: Add log entry here. -PM
 						onError(String.format("Failed to upsert attachment file metadata for %s %s!", key.getSimpleKind().getSimpleValue(), key.getSimpleName().getSimpleValue()));
 					}
 					try
@@ -140,15 +132,27 @@ public class UpsertAttachment extends HttpServlet
 
 			}
 
+			public void onWarning(String message, Throwable e)
+			{
+				logger.warn(message, e);
+			}
+
 			@Override
 			public void onWarning(String message)
 			{
 				logger.warn(message);
 			}
 
+			public void onError(String message, Throwable e)
+			{
+				logger.error(message, e);
+				ServletUtil.writeSerializedResponse(response, new GeneralResponseError(message), GeneralResponseError.HTTP_STATUS_CODE_ERROR);
+			}
+
 			@Override
 			public void onError(String message)
 			{
+				logger.error(message);
 				ServletUtil.writeSerializedResponse(response, new GeneralResponseError(message), GeneralResponseError.HTTP_STATUS_CODE_ERROR);
 			}
 		});
