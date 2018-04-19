@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -32,6 +33,7 @@ import org.elasticsearch.action.admin.indices.alias.IndicesAliasesResponse;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
@@ -792,7 +794,9 @@ public class ElasticSearch implements ISearch
 			logger.fatal("Cannot delete a null Index");
 			return false;
 		}
-
+		
+		//CODE REVIEW Can we simply delete the alias and its indices in a single request? Seems safer to just code for this now. Should be quick since discovery is done. See my comment in updateAlias
+		
 		try
 		{
 			DeleteIndexResponse deleteResponse = client.admin().indices().prepareDelete(index.getSimpleIndex().getSimpleValue()).get();
@@ -1068,6 +1072,10 @@ public class ElasticSearch implements ISearch
 			if (!success)
 			{
 				logger.error("Kind " + kind + " could not complete sync of storage and search, no swap made");
+				if (!deleteIndex(index_name))
+				{
+					logger.error("Error removing index " + index_name + " on failure.");
+				}
 				return false;
 			}
 
@@ -1076,6 +1084,10 @@ public class ElasticSearch implements ISearch
 			if (!success)
 			{
 				logger.error("Kind " + kind + " could not complete full alias swap");
+				if (!deleteIndex(index_name))
+				{
+					logger.error("Error removing index " + index_name + " on failure.");
+				}
 				return false;
 			}
 		}
@@ -1101,28 +1113,55 @@ public class ElasticSearch implements ISearch
 	{
 
 		Set<String> old_index = getCurrentIndiciesFromAliasName(definition.getSimpleIndex().getSimpleValue());
-
-		logger.info(old_index);
-
 		String[] indices = old_index.toArray(new String[old_index.size()]);
 
 		// Has to be atomic so if it fails we don't add a new alias
-		IndicesAliasesResponse response = client.admin().indices().prepareAliases().addAlias(index_name, definition.getSimpleIndex().getSimpleValue()).removeAlias(indices, definition.getSimpleIndex().getSimpleValue()).execute().actionGet();
-		if (!response.isAcknowledged())
+		try
 		{
-			logger.fatal(String.format("Alias addition not acknowledged for index %s", index_name));
+			//CODE REVIEW add the remove index actions to the atomic request as well, something like IndicesAliasesResponse response = client.admin().indices().prepareAliases().addAlias(index_name, definition.getSimpleIndex().getSimpleValue()).removeAlias(indices, definition.getSimpleIndex().getSimpleValue()).removeIndex(index).execute().actionGet();
+			IndicesAliasesResponse response = client.admin().indices().prepareAliases().addAlias(index_name, definition.getSimpleIndex().getSimpleValue()).removeAlias(indices, definition.getSimpleIndex().getSimpleValue()).execute().actionGet();
+			if (!response.isAcknowledged())
+			{
+				logger.fatal(String.format("Alias addition not acknowledged for index %s", index_name));
+				return false;
+			}
+		} catch (Exception e)
+		{
+			logger.error("Alias addition and removal failed", e);
 			return false;
 		}
+		
+		//CODE REVIEW no need for this block if indices are already removed.
+		
 
 		// Once we have confirmed the swap we no longer need the indices that we removed
 		// from the alias so we will delete them all
 		// This operation could be handled by a reaper thread in the future if we want
 		// to keep the job of deleting indices outside of the reindexer
-
-		DeleteIndexResponse deleteResponse = client.admin().indices().prepareDelete(indices).get();
-		if (!deleteResponse.isAcknowledged())
+		for (String index : indices)
 		{
-			logger.fatal(String.format("Alias removal not acknowledged for index %s", index_name));
+			if (!deleteIndex(index))
+			{
+				logger.error("Left over index " + index + " removal failed, continuing so others can be attempted to remove.");
+			}
+		}
+
+		return true;
+	}
+
+	private boolean deleteIndex(String index_name)
+	{
+		try
+		{
+			DeleteIndexResponse deleteResponse = client.admin().indices().delete(new DeleteIndexRequest(index_name)).get();
+			if (!deleteResponse.isAcknowledged())
+			{
+				logger.fatal(String.format("Alias removal not acknowledged for index %s", index_name));
+				return false;
+			}
+		} catch (InterruptedException | ExecutionException e)
+		{
+			logger.error("Alias removal failed", e);
 			return false;
 		}
 
