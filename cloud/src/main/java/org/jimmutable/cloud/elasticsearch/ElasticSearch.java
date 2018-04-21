@@ -1347,7 +1347,7 @@ public class ElasticSearch implements ISearch
 	{
 		if (!CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().scan(kind, new UpsertDataHandler(index_name), 10))
 		{
-			logger.warn("Storage scanner for Kind " + kind + " was unable to successfully run. This Kind may not be fully re-indexed or there may currently not be any entries of Kind in Storage.");
+			logger.warn("Storage Scanner for Kind " + kind + " was unable to successfully run. This Kind may not be fully re-indexed or there may currently not be any entries of Kind in Storage. The index will not be swapped on the alias.");
 			return false;
 		}
 		return true;
