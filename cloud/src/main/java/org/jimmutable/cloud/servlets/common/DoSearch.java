@@ -13,9 +13,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.elasticsearch.IndexDefinition;
+import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
+import org.jimmutable.cloud.elasticsearch.SearchIndexFieldType;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
+import org.jimmutable.cloud.servlet_utils.search.Sort;
+import org.jimmutable.cloud.servlet_utils.search.SortBy;
+import org.jimmutable.cloud.servlet_utils.search.SortDirection;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.servlets.util.ServletUtil;
 
@@ -63,11 +68,14 @@ public abstract class DoSearch extends HttpServlet
 		{
 
 		}
+		
 		search_string = checkForTimes(search_string);
+		Sort sort = getSort(Sort.DEFAULT_SORT);
+		
 		StandardSearchRequest search_request = null;
 		try
 		{
-			search_request = new StandardSearchRequest(search_string, max_results, start_results_after);
+			search_request = new StandardSearchRequest(search_string, max_results, start_results_after, sort);
 		} catch (Exception e)
 		{
 			logger.error(e);
@@ -106,6 +114,11 @@ public abstract class DoSearch extends HttpServlet
 
 	protected void getAdditionalParameters(HttpServletRequest request) {
 		// Template method - intended to be overridden if necessary
+	}
+	
+	protected Sort getSort(Sort default_value)
+	{
+		return default_value;
 	}
 	
 	protected JSONServletResponse updateSearchResponse( JSONServletResponse search_response, StandardSearchRequest request ) 
