@@ -221,7 +221,7 @@ abstract public class OperationRunnable implements Runnable
 	 */
 	static public Result execute(OperationRunnable runnable, Result default_value)
 	{
-		Validator.notNull(runnable);
+		Validator.notNull(runnable, "runnable");
 		
 		try
 		{

@@ -27,16 +27,16 @@ public class IndexDefinitionTest
 
 		assertTrue(tester.isInvalid("12"));
 		
-		assertTrue(tester.isInvalid("foo:bar"));
-		assertTrue(tester.isInvalid("foo:bar:"));
-		assertTrue(tester.isInvalid("foo:bar:v"));
-		assertTrue(tester.isInvalid("foo:bar:2"));
+		assertTrue(tester.isInvalid("foo_bar"));
+		assertTrue(tester.isInvalid("foo_ba_"));
+		assertTrue(tester.isInvalid("foo_bar_v"));
+		assertTrue(tester.isInvalid("foo_bar_2"));
 	}
 
 	@Test
 	public void valid()
 	{
-		assertTrue(tester.isValid("foo:bar:v2", "foo:bar:v2"));
-		assertTrue(tester.isValid("FOO:BAR:V2", "foo:bar:v2"));
+		assertTrue(tester.isValid("foo_bar_v2", "foo_bar_v2"));
+		assertTrue(tester.isValid("FOO_BAR_V2", "foo_bar_v2"));
 	}
 }

@@ -2,6 +2,7 @@ package org.jimmutable.cloud.elasticsearch;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,6 +16,7 @@ import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.EnvironmentType;
 import org.jimmutable.cloud.storage.Storable;
+import org.jimmutable.cloud.utils.AppAdminUtil;
 import org.jimmutable.core.exceptions.SerializeException;
 import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.common.Kind;
@@ -30,12 +32,8 @@ import org.jimmutable.core.objects.common.Kind;
  * 
  * 1.) Go through every Object in Storage and upsert a matching search document.
  * 
- * 2.) Go through all of the Kind's search index and delete any search document
- * that doesn't have a matching version in Storage.
- * 
  * Once that is complete for all Kinds passed in the start() method will
  * complete.
- * 
  * 
  * Since each application that uses Jimmutable Cloud will have a different
  * application ID and TypeNameRegisters, it is required that you extend this
@@ -50,32 +48,25 @@ public abstract class SearchSync
 	static private Map<Kind, SearchIndexDefinition> indexable_kinds = new ConcurrentHashMap<>();
 
 	public static final int MAX_REINDEX_COMPLETION_TIME_MINUTES = 120;
-
-	//If this is being run with an idempotent script, you want this set to true in order for the execution environment to be setup properly
-	//Ensure the class you create to extend this has the proper ApplicationId as well as all TypeNameRegisters needed.
-	private boolean should_setup_environment; 
-	//All the kinds in your application that need to be re-indexed
-	private Set<Kind> kinds;
 	
+	private Set<Kind> kinds = new HashSet<>();
 	/**
-	 * @param kinds
-	 *            The Storable & Indexable Kinds that are to be re-indexed
-	 * 
-	 * @param should_setup_environment
-	 *            Set to true if you need the CloudExecutionEnvironment to be
-	 *            setup as well as the ObjectParseTree registers and Indexable
-	 *            Kind registers before starting the sync.
+	 * Constructor assumes we need to setup the environment as well as use only
+	 * the kinds that are currently registered
 	 */
-	public SearchSync(Set<Kind> kinds, boolean should_setup_environment)
+	public SearchSync()
 	{
-		this.kinds = kinds;
-		this.should_setup_environment = should_setup_environment;
-		validate();
+		this.kinds = indexable_kinds.keySet();
 	}
 	
-	private void validate()
+	/**
+	 * Constructor assumes we need to setup the environment as well as use only
+	 * the kinds that are currently registered. This allows for specific kinds
+	 * to be passed in.
+	 */
+	public SearchSync(Set<Kind> kinds)
 	{
-		if(this.kinds == null) throw new ValidationException("Unable to build script, kinds is not set");
+		if(kinds != null) this.kinds = kinds;
 	}
 
 	/**
@@ -86,22 +77,27 @@ public abstract class SearchSync
 	 */
 	public void start() throws ValidationException
 	{
-		if(shouldSetupEnvironment())
+		EnvironmentType environment_type = CloudExecutionEnvironment.getEnvironmentTypeFromSystemProperty(null);
+		if (environment_type == null)
 		{
-			EnvironmentType environment_type = CloudExecutionEnvironment.getEnvironmentTypeFromSystemProperty(null);
-			if(environment_type == null)
-			{
-				throw new ValidationException("Unable to run script, environment_type is not set in system properties");
-			}
-			//Need environment type and application id passed in, otherwise the environment won't be setup properly
-			CloudExecutionEnvironment.startup(getSimpleApplicationID(), environment_type);
-			//Need a method to collect all the possible types
-			setupRegisters();	
+			throw new ValidationException("Unable to run script, environment_type is not set in system properties");
 		}
+		//Need environment type and application id passed in, otherwise the environment won't be setup properly
+		CloudExecutionEnvironment.startup(getSimpleApplicationID(), environment_type);
+		//Need a method to collect all the possible types
+		setupRegisters();
 		
 		long start = System.currentTimeMillis();
+		logger.info("Checking that all indices are properly configured...");
+
+		boolean reindexing_allowed = AppAdminUtil.indicesProperlyConfigured();
+		if (!reindexing_allowed)
+		{
+			logger.fatal("Failed check out properly configured indices.. Exiting now...");
+			System.exit(1);
+		}
+		logger.info("Success checking that all indices are properly configured...");
 		logger.info("Reindexing of all Kinds started...");
-		
 		//We want a single thread per kind
 		int executor_threads = getSimpleKinds().size();
 		if(executor_threads <= 0) 
@@ -110,7 +106,6 @@ public abstract class SearchSync
 		}
 		
 		ExecutorService executor = Executors.newFixedThreadPool(executor_threads);
-		
 		//Log the kinds it is attempting to reindex
 		for(Kind kind : getSimpleKinds())
 		{
@@ -150,11 +145,6 @@ public abstract class SearchSync
 	 * ApplicationId when run normally.
 	 */
 	public abstract ApplicationId getSimpleApplicationID();
-	
-	private boolean shouldSetupEnvironment()
-	{
-		return should_setup_environment;
-	}
 	
 	private Set<Kind> getSimpleKinds()
 	{

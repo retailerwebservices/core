@@ -56,7 +56,7 @@ public class MyIndexable implements Indexable
 		b.add(SearchIndexDefinition.FIELD_FIELDS, theBooleanArray);
 		b.add(SearchIndexDefinition.FIELD_FIELDS, theTimestampArray);
 
-		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, new IndexDefinition("trevor:isawesome:v1"));
+		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, new IndexDefinition("trevor_isawesome_v1"));
 
 		SEARCH_INDEX_DEFINITION = (SearchIndexDefinition) b.create(null);
 	}
