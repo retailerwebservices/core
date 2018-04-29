@@ -170,25 +170,10 @@ public class CloudExecutionEnvironment
 			
 			logger.log(Level.INFO, "Starting production environment");
 			
-			TransportClient prod_client = null;
-			try
-			{
-				prod_client = new PreBuiltTransportClient(Settings.EMPTY).addTransportAddress(new TransportAddress(InetAddress.getByName(ElasticSearchEndpoint.CURRENT.getSimpleHost()), ElasticSearchEndpoint.CURRENT.getSimplePort()));
-			}
-			catch (UnknownHostException e)
-			{
-				logger.log(Level.FATAL, "Failed to instantiate the elasticsearch client!", e);
-			}
-			
-			if (prod_client == null)
-			{
-				throw new RuntimeException("Failed to instantiate the elasticsearch client!");
-			}
-
 	        StorageS3 storage = new StorageS3(RegionSpecificAmazonS3ClientFactory.defaultFactory(), APPLICATION_ID, false);
 	        storage.upsertBucketIfNeeded();
 	        
-			CURRENT = new CloudExecutionEnvironment(new ElasticSearch(prod_client), storage, new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID));
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearch.RESTClient(), storage, new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID));
 	        break;
 		case STUB:
 
