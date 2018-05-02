@@ -26,6 +26,14 @@ import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.reader.HandReader;
 
+/**
+ * Should use the simplified UpsertStandardChangeLog instead (attachments are
+ * handles separately)
+ * 
+ * @author trevorbox
+ *
+ */
+@Deprecated
 public class DoUpsertChangeLog extends HttpServlet
 {
 
@@ -148,7 +156,7 @@ public class DoUpsertChangeLog extends HttpServlet
 
 			StandardChangeLogEntry new_entry = (StandardChangeLogEntry) b.create(null);
 
-//			logger.info(new_entry);
+			// logger.info(new_entry);
 
 			try
 			{
@@ -179,7 +187,7 @@ public class DoUpsertChangeLog extends HttpServlet
 			return;
 		} catch (Exception e)
 		{
-			logger.error(e);
+			logger.error("Unexpected Exception", e);
 			ServletUtil.writeSerializedResponse(response, new GeneralResponseError("Failed to upsert new changelog entry"), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			return;
 		}

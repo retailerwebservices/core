@@ -6,8 +6,11 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
+import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
+import org.jimmutable.cloud.storage.IStorage;
+import org.jimmutable.core.objects.common.Kind;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.ICsvListWriter;
 
@@ -81,6 +84,8 @@ public interface ISearch
 	 */
 	public SearchResponse searchRaw(SearchRequest request);
 
+	public List<OneSearchResultWithTyping> search(IndexDefinition index, StandardSearchRequest request, List<OneSearchResultWithTyping> default_value);
+
 	/**
 	 * Test if the index exists or not
 	 * 
@@ -109,6 +114,20 @@ public interface ISearch
 	 */
 	public boolean indexProperlyConfigured(SearchIndexDefinition index);
 
+	/**
+	 * A re-index operation syncs a Storable and Indexable Kinds data from
+	 * Storage into Search. By the end of the operation Search for a Kind should
+	 * be as identical to current Storage for a Kind as possible.
+	 * 
+	 * @param IStorage
+	 *            The implementation of IStorage that is being used
+	 * 
+	 * @param Kind
+	 *            The kind to attempt to re-index on
+	 * @return boolean if the index was fully successfully re-indexed
+	 */
+	public boolean reindex(IStorage storage, Kind... kinds);
+	
 	/**
 	 * Upsert if the index doesn't exist or is not properly configured already
 	 * 
@@ -173,12 +192,14 @@ public interface ISearch
 	public SearchRequestBuilder getBuilder(IndexDefinition index);
 	
 	/**
-	 * Deletes an entire index
+	 * Puts all field mappings into an existing index. If the index doesn't already
+	 * exist or a field name with a different type already exists the operation will
+	 * fail.
 	 * 
 	 * @param index
 	 *            SearchIndexDefinition
-	 * @return boolean - true if successfully deleted, else false
+	 * @return if successful or not
 	 */
-	public boolean deleteIndex(SearchIndexDefinition index);
+	public boolean putAllFieldMappings(SearchIndexDefinition index);
 
 }

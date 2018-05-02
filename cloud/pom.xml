@@ -4,7 +4,7 @@
 
 	<groupId>org.jimmutable</groupId>
 	<artifactId>cloud</artifactId>
-	<version>0.1.0-SNAPSHOT</version>
+	<version>0.0.10-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>cloud</name>
@@ -67,7 +67,7 @@
 		<dependency>
 			<groupId>org.jimmutable</groupId>
 			<artifactId>core</artifactId>
-			<version>0.0.7-SNAPSHOT</version>
+			<version>0.0.8-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>

@@ -196,7 +196,7 @@ public abstract class Storage implements IStorage
         
         public Scanner(final Kind kind, final StorageKeyName prefix, final boolean only_object_ids)
         {
-            Validator.notNull(kind);
+            Validator.notNull(kind, "kind");
             
             this.kind = kind;
             this.prefix = prefix;

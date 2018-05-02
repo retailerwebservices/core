@@ -164,6 +164,12 @@ public class StorageDevLocalFileSystem extends Storage
 		{
 			final File folder = new File(root.getAbsolutePath() + "/" + getSimpleKind().getSimpleValue());
 
+			if(!folder.exists())
+			{
+				System.err.println("File path " + folder + "does not exist. Cannot walk file tree for Kind " + getSimpleKind());
+				return Result.ERROR;
+			}
+			
 			Files.walkFileTree(folder.toPath(), EnumSet.noneOf(FileVisitOption.class), 1, new Walker());
 
 			return shouldStop() ? Result.STOPPED : Result.SUCCESS;
@@ -220,5 +226,13 @@ public class StorageDevLocalFileSystem extends Storage
 	protected Storage.Scanner createScanner(Kind kind, StorageKeyName prefix, boolean only_object_ids)
 	{
 		return new Scanner(kind, prefix, only_object_ids);
+	}
+	
+	/**
+	 * @return the file path for where Storage lives
+	 */
+	public File getDevLocalFileSystemRoot()
+	{
+		return root;
 	}
 }

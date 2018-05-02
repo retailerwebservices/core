@@ -41,7 +41,7 @@ public class SearchIndexDefinitionTest
 		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("ffloat"), SearchIndexFieldType.FLOAT));
 		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("flong"), SearchIndexFieldType.LONG));
 
-		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, new IndexDefinition("foo:BAR:v4"));
+		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, new IndexDefinition("foo_bar_v4"));
 
 		SearchIndexDefinition def = (SearchIndexDefinition) b.create(null);
 
@@ -57,7 +57,7 @@ public class SearchIndexDefinitionTest
 		assertTrue(def.getSimpleFields().contains(new SearchIndexFieldDefinition(new FieldName("ffloat"), SearchIndexFieldType.FLOAT)));
 		assertTrue(def.getSimpleFields().contains(new SearchIndexFieldDefinition(new FieldName("flong"), SearchIndexFieldType.LONG)));
 
-		assertEquals("foo:bar:v4", def.getSimpleIndex().getSimpleValue());
+		assertEquals("foo_bar_v4", def.getSimpleIndex().getSimpleValue());
 
 	}
 
@@ -78,14 +78,14 @@ public class SearchIndexDefinitionTest
 
 		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
 
-		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, new IndexDefinition("foo:bar:v2"));
+		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, new IndexDefinition("foo_bar_v2"));
 
 		SearchIndexDefinition def = (SearchIndexDefinition) b.create(null);
 
 		assertNotNull(def);
 		assertEquals(0, def.getSimpleFields().size());
 
-		assertEquals("foo:bar:v2", def.getSimpleIndex().getSimpleValue());
+		assertEquals("foo_bar_v2", def.getSimpleIndex().getSimpleValue());
 
 	}
 
@@ -100,7 +100,7 @@ public class SearchIndexDefinitionTest
 
 		// Intentionally omitted
 		// b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, new
-		// IndexDefinition("foo:bar:v2"));
+		// IndexDefinition("foo_bar_v2"));
 
 		SearchIndexDefinition Index = (SearchIndexDefinition) b.create(null);
 
@@ -110,7 +110,7 @@ public class SearchIndexDefinitionTest
 	public void serialize()
 	{
 
-		String def_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s", "{", "  \"type_hint\" : \"org.jimmutable.cloud.elasticsearch.SearchIndexDefinition\",", "  \"index\" : \"foo:bar:v4\",", "  \"fields\" : [ {", "    \"type_hint\" : \"org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition\",", "    \"name\" : {", "      \"type_hint\" : \"jimmutable.FieldName\",", "      \"name\" : \"fboolean\"", "    },", "    \"type\" : \"boolean\"", "  }, {", "    \"type_hint\" : \"org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition\",", "    \"name\" : {", "      \"type_hint\" : \"jimmutable.FieldName\",", "      \"name\" : \"ftext\"", "    },", "    \"type\" : \"text\"", "  }, {", "    \"type_hint\" : \"org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition\",", "    \"name\" : {", "      \"type_hint\" : \"jimmutable.FieldName\",", "      \"name\" : \"fatom\"", "    },", "    \"type\" : \"keyword\"", "  }, {", "    \"type_hint\" : \"org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition\",", "    \"name\" : {", "      \"type_hint\" : \"jimmutable.FieldName\",", "      \"name\" : \"fday\"", "    },", "    \"type\" : \"date\"", "  }, {", "    \"type_hint\" : \"org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition\",", "    \"name\" : {", "      \"type_hint\" : \"jimmutable.FieldName\",", "      \"name\" : \"ffloat\"", "    },", "    \"type\" : \"float\"", "  }, {", "    \"type_hint\" : \"org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition\",", "    \"name\" : {", "      \"type_hint\" : \"jimmutable.FieldName\",", "      \"name\" : \"flong\"", "    },", "    \"type\" : \"long\"", "  } ]", "}");
+		String def_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s", "{", "  \"type_hint\" : \"org.jimmutable.cloud.elasticsearch.SearchIndexDefinition\",", "  \"index\" : \"foo_bar_v4\",", "  \"fields\" : [ {", "    \"type_hint\" : \"org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition\",", "    \"name\" : {", "      \"type_hint\" : \"jimmutable.FieldName\",", "      \"name\" : \"fboolean\"", "    },", "    \"type\" : \"boolean\"", "  }, {", "    \"type_hint\" : \"org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition\",", "    \"name\" : {", "      \"type_hint\" : \"jimmutable.FieldName\",", "      \"name\" : \"ftext\"", "    },", "    \"type\" : \"text\"", "  }, {", "    \"type_hint\" : \"org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition\",", "    \"name\" : {", "      \"type_hint\" : \"jimmutable.FieldName\",", "      \"name\" : \"fatom\"", "    },", "    \"type\" : \"keyword\"", "  }, {", "    \"type_hint\" : \"org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition\",", "    \"name\" : {", "      \"type_hint\" : \"jimmutable.FieldName\",", "      \"name\" : \"fday\"", "    },", "    \"type\" : \"date\"", "  }, {", "    \"type_hint\" : \"org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition\",", "    \"name\" : {", "      \"type_hint\" : \"jimmutable.FieldName\",", "      \"name\" : \"ffloat\"", "    },", "    \"type\" : \"float\"", "  }, {", "    \"type_hint\" : \"org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition\",", "    \"name\" : {", "      \"type_hint\" : \"jimmutable.FieldName\",", "      \"name\" : \"flong\"", "    },", "    \"type\" : \"long\"", "  } ]", "}");
 
 		SearchIndexDefinition obj = (SearchIndexDefinition) StandardObject.deserialize(def_string);
 		assertNotNull(obj);
@@ -120,7 +120,7 @@ public class SearchIndexDefinitionTest
 		assertTrue(obj.getSimpleFields().contains(new SearchIndexFieldDefinition(new FieldName("fday"), SearchIndexFieldType.DAY)));
 		assertTrue(obj.getSimpleFields().contains(new SearchIndexFieldDefinition(new FieldName("ffloat"), SearchIndexFieldType.FLOAT)));
 		assertTrue(obj.getSimpleFields().contains(new SearchIndexFieldDefinition(new FieldName("flong"), SearchIndexFieldType.LONG)));
-		assertEquals("foo:bar:v4", obj.getSimpleIndex().getSimpleValue());
+		assertEquals("foo_bar_v4", obj.getSimpleIndex().getSimpleValue());
 	}
 
 }

@@ -1,16 +1,17 @@
 package org.jimmutable.cloud.elasticsearch;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.fields.FieldCollection;
 import org.jimmutable.core.objects.common.Day;
+import org.jimmutable.core.objects.common.ObjectId;
+import org.jimmutable.core.objects.common.time.Instant;
+import org.jimmutable.core.objects.common.time.TimeOfDay;
 import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.utils.Validator;
-import org.jimmutable.core.objects.common.ObjectId;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Create a HashMap<String, Object> of fields for search document upsert
@@ -158,6 +159,8 @@ public class SearchDocumentWriter
 	}
 
 	/**
+	 * Deprecated in favor of Instant. Use writeInstantArray instead.
+	 * 
 	 * Add an array of Longs to a DAY field within the document.
 	 * 
 	 * @param search_index_definition
@@ -165,6 +168,7 @@ public class SearchDocumentWriter
 	 * @param elements
 	 *            The Long elements. Must not contain any null elements.
 	 */
+	@Deprecated
 	public void writeTimestampArray(SearchIndexFieldDefinition search_index_definition, FieldCollection<Long> elements)
 	{
 
@@ -260,6 +264,9 @@ public class SearchDocumentWriter
 			return;
 
 		fields.put(name.getSimpleName(), text);
+		
+		// Create a keyword for every text field
+		fields.put(ElasticSearch.getSortFieldNameText(name), text);
 	}
 
 	/**
@@ -417,6 +424,8 @@ public class SearchDocumentWriter
 	}
 
 	/**
+	 * Deprecated in favor of Instant. Use writeInstant() instead.
+	 * 
 	 * Writes a timestamp (unix epoch) of type long to a date field type.
 	 * 
 	 * If the field type is not set to DAY in the SearchIndexFieldDefinition a
@@ -442,6 +451,7 @@ public class SearchDocumentWriter
 	 * @param value
 	 *
 	 */
+	@Deprecated
 	public void writeTimestamp(SearchIndexFieldDefinition search_index_definition, long value)
 	{
 
@@ -593,6 +603,39 @@ public class SearchDocumentWriter
 		}
 
 		writeDay(search_index_definition.getSimpleFieldName(), day);
+	}
+	
+	/**
+	 * Add an array of Days to a DAY field within the document.
+	 * 
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
+	 * @param elements
+	 *            The Day elements. Must not contain any null elements.
+	 */
+	public void writeDayArray(SearchIndexFieldDefinition search_index_definition, FieldCollection<Day> elements)
+	{
+		Validator.notNull(search_index_definition);
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.DAY))
+		{
+			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.DAY, search_index_definition.getSimpleFieldName()));
+		}
+		Validator.notNull(elements);
+		Validator.containsNoNulls(elements);
+
+		if (elements == null)
+			return;
+		if (elements.size() == 0)
+			return;
+		
+		FieldCollection<String> elements_as_string = new FieldArrayList<>();
+		
+		for ( Day day : elements )
+		{
+			elements_as_string.add(String.format("%d-%02d-%02d", day.getSimpleYear(), day.getSimpleMonthOfYear(), day.getSimpleDayOfMonth()));
+		}
+
+		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements_as_string);
 	}
 
 	/**
@@ -847,6 +890,169 @@ public class SearchDocumentWriter
 	{
 		Validator.notNull(field_definition);
 		writeTextWithSubstringMatchingSupport(field_definition.getSimpleFieldName(), text);
+	}
+
+	/**
+	 * Add an Instant to a document
+	 * 
+	 * @param name
+	 *            The name of the field
+	 * @param value
+	 *            the Instant value
+	 */
+	public void writeInstant(FieldName name, Instant value)
+	{
+		Validator.notNull(name);
+		fields.put(name.getSimpleName(), value);
+		
+		// Create a sort field for every Instant field
+		fields.put(ElasticSearch.getSortFieldNameInstant(name), value.getSimpleMillisecondsFromEpoch());
+	}
+
+	/**
+	 * Add an Instant to a document
+	 * 
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
+	 * @param value
+	 *            the Instant value
+	 */
+	public void writeInstant(SearchIndexFieldDefinition search_index_definition, Instant value)
+	{
+		Validator.notNull(search_index_definition);
+
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.INSTANT))
+		{
+			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.INSTANT));
+		}
+
+		writeInstant(search_index_definition.getSimpleFieldName(), value);
+	}
+
+	/**
+	 * Add an Instant to a document
+	 * 
+	 * @param field_definition
+	 *            The FieldDefinition
+	 * @param value
+	 *            the Instant value
+	 */
+	public void writeInstant(FieldDefinition<?> field_definition, Instant value)
+	{
+		Validator.notNull(field_definition);
+		writeInstant(field_definition.getSimpleFieldName(), value);
+	}
+	
+	/**
+	 * Add an array of Instants to an INSTANT field within the document.
+	 * 
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
+	 * @param elements
+	 *            The Instant elements. Must not contain any null elements.
+	 */
+	public void writeInstantArray(SearchIndexFieldDefinition search_index_definition, FieldCollection<Instant> elements)
+	{
+
+		Validator.notNull(search_index_definition);
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.INSTANT))
+		{
+			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.INSTANT, search_index_definition.getSimpleFieldName()));
+		}
+		Validator.notNull(elements);
+		Validator.containsNoNulls(elements);
+
+		if (elements == null)
+			return;
+		if (elements.size() == 0)
+			return;
+
+		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements);
+	}
+	
+	/**
+	 * Add an TimeOfDay to a document
+	 * 
+	 * @param name
+	 *            The name of the field
+	 * @param value
+	 *            the TimeOfDay value
+	 */
+	public void writeTimeOfDay(FieldName name, TimeOfDay value)
+	{
+		Validator.notNull(name);
+		fields.put(name.getSimpleName(), value);
+		
+		// Create a sort field for every TimeOfDay field
+		fields.put(ElasticSearch.getSortFieldNameTimeOfDay(name), value.getSimpleMillisecondsFromMidnight());
+	}
+
+	/**
+	 * Add an TimeOfDay to a document
+	 * 
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
+	 * @param value
+	 *            the TimeOfDay value
+	 */
+	public void writeTimeOfDay(SearchIndexFieldDefinition search_index_definition, TimeOfDay value)
+	{
+		Validator.notNull(search_index_definition);
+
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.TIMEOFDAY))
+		{
+			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.TIMEOFDAY));
+		}
+
+		writeTimeOfDay(search_index_definition.getSimpleFieldName(), value);
+	}
+
+	/**
+	 * Add an TimeOfDay to a document
+	 * 
+	 * @param field_definition
+	 *            The FieldDefinition
+	 * @param value
+	 *            the TimeOfDay values
+	 */
+	public void writeTimeOfDay(FieldDefinition<?> field_definition, TimeOfDay value)
+	{
+		Validator.notNull(field_definition);
+		writeTimeOfDay(field_definition.getSimpleFieldName(), value);
+	}
+	
+	/**
+	 * Add an array of TimeOfDays to an TIMEOFDAY field within the document.
+	 * 
+	 * @param search_index_definition
+	 *            The SearchIndexFieldDefinition
+	 * @param elements
+	 *            The TimeOfDay elements. Must not contain any null elements.
+	 */
+	public void writeTimeOfDayArray(SearchIndexFieldDefinition search_index_definition, FieldCollection<TimeOfDay> elements)
+	{
+
+		Validator.notNull(search_index_definition);
+		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.TIMEOFDAY))
+		{
+			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.TIMEOFDAY, search_index_definition.getSimpleFieldName()));
+		}
+		Validator.notNull(elements);
+		Validator.containsNoNulls(elements);
+
+		if (elements == null)
+			return;
+		if (elements.size() == 0)
+			return;
+		
+//		FieldCollection<Long> converted_elements = new FieldArrayList<>();
+//		
+//		for ( TimeOfDay time_of_day : elements )
+//		{
+//			converted_elements.add(time_of_day.getSimpleMillisecondsFromMidnight());
+//		}
+
+		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements);
 	}
 
 	/**

@@ -120,7 +120,6 @@ public class ServletUtil
 		}
 	}
 
-	
 	/**
 	 * Parse the int from a string (http parameter). If it fails just return the
 	 * default value
@@ -279,12 +278,6 @@ public class ServletUtil
 		return page_data;
 	}
 
-	/*
-	 * CODEREVIEW Is there not a generic version of this somewhere? If not, then
-	 * "read all bytes from inputstream" should totally be in an internal library
-	 * somewhere. It will come up all the time. -JMD Alternatively, we could use a
-	 * pre-existing one like Apache Commons IOUtils.toByteArray. -PM
-	 */
 	private static byte[] getBytesFromInputStream(InputStream is, byte[] default_value)
 	{
 		try
@@ -312,6 +305,96 @@ public class ServletUtil
 		}
 
 		return page_data;
+	}
+
+	/**
+	 * Extracts the data from the request and returns it in a RequestPageData
+	 * object.
+	 * 
+	 * @param request
+	 *            HttpServletRequest
+	 * @param default_value
+	 *            Default string if reading fails
+	 * @return RequestPageData
+	 */
+	public static void handlePageDataFromPost(HttpServletRequest request, PageDataHandler handler)
+	{
+		if (ServletFileUpload.isMultipartContent(request))
+		{
+			request.setAttribute(Request.__MULTIPART_CONFIG_ELEMENT, MULTI_PART_CONFIG);
+			parseDataFromMultipartFormWithHandler(request, handler);
+		} else
+		{
+			parseJSONFromRequestBodyWithHandler(request, handler);
+		}
+
+	}
+
+	private static void parseJSONFromRequestBodyWithHandler(HttpServletRequest request, PageDataHandler handler)
+	{
+		String raw_json = "";
+
+		try
+		{
+			raw_json = request.getReader().lines().collect(Collectors.joining());
+			handler.handle(new VisitedPageDataElement(VisitedPageDataElement.DEFAULT_JSON_ELEMENT, raw_json));
+		} catch (Exception e)
+		{
+			logger.error(e);
+			handler.onError("Default JSON not found in request");
+		}
+	}
+
+	private static void parseDataFromMultipartFormWithHandler(HttpServletRequest request, PageDataHandler handler)
+	{
+		String file_name = null;
+		String raw_json = "";
+
+		// Create a new file upload handler
+		ServletFileUpload upload = new ServletFileUpload();
+
+		// Parse the request
+
+		InputStream stream = null;
+		try
+		{
+
+			FileItemIterator iter = upload.getItemIterator(request);
+
+			while (iter.hasNext())
+			{
+				FileItemStream item = iter.next();
+
+				String field_name = item.getFieldName();
+				file_name = item.getName();
+				stream = item.openStream();
+				if (item.isFormField())
+				{
+					// JSON data
+					if (field_name == null || field_name == "")
+					{
+						field_name = VisitedPageDataElement.DEFAULT_JSON_ELEMENT;
+					}
+					raw_json = new String(getBytesFromInputStream(stream, new byte[0]), StandardCharsets.UTF_8);
+					handler.handle(new VisitedPageDataElement(field_name, raw_json));
+				} else
+				{
+					// File data
+					if (field_name == null || field_name == "")
+					{
+						field_name = VisitedPageDataElement.DEFAULT_FILE_ELEMENT;
+					}
+
+					logger.debug(String.format("%s %s detected.", field_name, item.getName()));
+					handler.handle(new VisitedPageDataElement(field_name, null, stream, file_name));
+				}
+				stream.close();
+			}
+		} catch (FileUploadException | IOException e)
+		{
+			logger.error(e);
+		}
+
 	}
 
 	public static boolean upsertStorableIndexable(StandardImmutableObject<?> obj)

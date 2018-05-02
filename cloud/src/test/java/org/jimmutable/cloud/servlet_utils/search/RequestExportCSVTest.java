@@ -30,14 +30,14 @@ public class RequestExportCSVTest extends StubTest
 		set.add(SEARCH_FIELD_ID);
 		set.add(SEARCH_FIELD_ID_ATOM);
 
-		RequestExportCSV export = new RequestExportCSV(new IndexDefinition("dev:dev:v1"), false, "blaa", set);
+		RequestExportCSV export = new RequestExportCSV(new IndexDefinition("dev_dev_v1"), false, "blaa", set);
 
 		//System.out.println(export.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 
 		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s"
 			     , "{"
 			     , "  \"type_hint\" : \"request_export_csv\","
-			     , "  \"index\" : \"dev:dev:v1\","
+			     , "  \"index\" : \"dev_dev_v1\","
 			     , "  \"export_all_documents\" : false,"
 			     , "  \"field_to_include_in_export\" : [ \"id\", \"id_atom\" ],"
 			     , "  \"query_string\" : \"blaa\""
@@ -67,14 +67,14 @@ public class RequestExportCSVTest extends StubTest
 	@Test
 	public void deserializeEmptyCollection()
 	{
-		RequestExportCSV export = new RequestExportCSV(new IndexDefinition("dev:dev:v1"), false, "blaa", null);
+		RequestExportCSV export = new RequestExportCSV(new IndexDefinition("dev_dev_v1"), false, "blaa", null);
 
 		//System.out.println(export.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 
 		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s"
 			     , "{"
 			     , "  \"type_hint\" : \"request_export_csv\","
-			     , "  \"index\" : \"dev:dev:v1\","
+			     , "  \"index\" : \"dev_dev_v1\","
 			     , "  \"export_all_documents\" : false,"
 			     , "  \"field_to_include_in_export\" : [ ],"
 			     , "  \"query_string\" : \"blaa\""
