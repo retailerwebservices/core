@@ -1,6 +1,7 @@
 package org.jimmutable.cloud.elasticsearch;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,23 +16,26 @@ import java.util.concurrent.TimeUnit;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.elasticsearch.action.ActionFuture;
 import org.elasticsearch.action.DocWriteResponse.Result;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
-import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.WriteRequest.RefreshPolicy;
+import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -54,6 +58,8 @@ import org.jimmutable.core.serialization.FieldName;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.ICsvListWriter;
 
+import com.amazonaws.services.cloudtrail.model.UnsupportedOperationException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -65,7 +71,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ElasticSearch implements ISearch
 {
-
 	private static final Logger logger = LogManager.getLogger(ElasticSearch.class);
 
 	private static final ExecutorService document_upsert_pool = (ExecutorService) new ThreadPoolExecutor(8, 8, 5, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
@@ -207,12 +212,10 @@ public class ElasticSearch implements ISearch
 	private class UpsertDocumentRunnable implements Runnable
 	{
 		private Indexable object;
-		private Map<String, Object> data;
 
-		public UpsertDocumentRunnable(Indexable object, Map<String, Object> data)
+		public UpsertDocumentRunnable(Indexable object)
 		{
 			this.object = object;
-			this.data = data;
 		}
 
 		@Override
@@ -220,27 +223,9 @@ public class ElasticSearch implements ISearch
 		{
 			try
 			{
-				String index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
-				String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
-				IndexResponse response = client.prepareIndex(index_name, ELASTICSEARCH_DEFAULT_TYPE, document_name).setSource(data).get();
-
-				Level level;
-				switch (response.getResult())
-				{
-				case CREATED:
-					level = Level.INFO;
-					break;
-				case UPDATED:
-					level = Level.INFO;
-					break;
-				default:
-					level = Level.FATAL;
-					break;
-				}
-
-				logger.log(level, String.format("%s %s/%s/%s %s", response.getResult().name(), index_name, ELASTICSEARCH_DEFAULT_TYPE, document_name, data));
-
-			} catch (Exception e)
+				upsertDocument(object);
+			}
+			catch (Exception e)
 			{
 				logger.log(Level.FATAL, "Failure during upsert operation!", e);
 			}
@@ -326,20 +311,15 @@ public class ElasticSearch implements ISearch
 	@Override
 	public boolean upsertDocumentAsync(Indexable object)
 	{
-
 		if (object == null)
 		{
 			logger.error("Null object!");
 			return false;
 		}
 
-		SearchDocumentWriter writer = new SearchDocumentWriter();
-		object.writeSearchDocument(writer);
-		Map<String, Object> data = writer.getSimpleFieldsMap();
-
 		try
 		{
-			document_upsert_pool.execute(new UpsertDocumentRunnable(object, data));
+			document_upsert_pool.execute(new UpsertDocumentRunnable(object));
 		} catch (Exception e)
 		{
 			logger.log(Level.FATAL, "Failure during thread pool execution!", e);
@@ -437,48 +417,10 @@ public class ElasticSearch implements ISearch
 			builder.setQuery(QueryBuilders.queryStringQuery(request.getSimpleQueryString()));
 
 			SearchResponse response = builder.get();
-
-			List<OneSearchResult> results = new LinkedList<OneSearchResult>();
-
-			response.getHits().forEach(hit ->
-			{
-				Map<FieldName, String> map = new HashMap<FieldName, String>();
-				hit.getSourceAsMap().forEach((k, v) ->
-				{
-					map.put(new FieldName(k), v.toString());
-				});
-				results.add(new OneSearchResult(map));
-			});
-
-			long total_hits = response.getHits().totalHits;
-
-			int next_page = from + size;
-			int previous_page = (from - size) < 0 ? 0 : (from - size);
-
-			boolean has_more_results = total_hits > next_page;
-
-			boolean has_previous_results = from > 0;
-
-			Level level;
-			switch (response.status())
-			{
-			case OK:
-				level = Level.INFO;
-				break;
-			default:
-				level = Level.WARN;
-				break;
-			}
-
-			SearchResponseOK ok = new SearchResponseOK(request, results, from, has_more_results, has_previous_results, next_page, previous_page, total_hits);
-
-			logger.log(level, String.format("QUERY:%s INDEX:%s STATUS:%s HITS:%s TOTAL_HITS:%s MAX_RESULTS:%d START_RESULTS_AFTER:%d", ok.getSimpleSearchRequest().getSimpleQueryString(), index.getSimpleValue(), response.status(), results.size(), ok.getSimpleTotalHits(), ok.getSimpleSearchRequest().getSimpleMaxResults(), ok.getSimpleSearchRequest().getSimpleStartResultsAfter()));
-			logger.trace(String.format("FIRST_RESULT_IDX:%s HAS_MORE_RESULTS:%s HAS_PREVIOUS_RESULTS:%s START_OF_NEXT_PAGE_OF_RESULTS:%s START_OF_PREVIOUS_PAGE_OF_RESULTS:%s", ok.getSimpleFirstResultIdx(), ok.getSimpleHasMoreResults(), ok.getSimpleHasMoreResults(), ok.getSimpleStartOfNextPageOfResults(), ok.getSimpleStartOfPreviousPageOfResults()));
-			logger.trace(ok.getSimpleResults().toString());
-
-			return ok;
-
-		} catch (Exception e)
+			
+			return processResponse(index, request, from, size, response);
+		}
+		catch (Exception e)
 		{
 			if (e.getCause() instanceof QueryShardException)
 			{
@@ -490,7 +432,72 @@ public class ElasticSearch implements ISearch
 				return new SearchResponseError(request, e.getMessage());
 			}
 		}
+	}
+	
+	@Override
+	public SearchResponse searchRaw(SearchRequest request)
+	{
+		if (request == null)
+		{
+			throw new NullPointerException();
+		}
 
+		try
+		{
+			ActionFuture<SearchResponse> resp_raw = client.search(request);
+			SearchResponse resp = resp_raw.get();
+
+			return resp;
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+	private JSONServletResponse processResponse(IndexDefinition index, StandardSearchRequest request, int from, int size, SearchResponse response)
+	{
+		List<OneSearchResult> results = new LinkedList<OneSearchResult>();
+
+		response.getHits().forEach(hit ->
+		{
+			Map<FieldName, String> map = new HashMap<FieldName, String>();
+			hit.getSourceAsMap().forEach((k, v) ->
+			{
+				map.put(new FieldName(k), v.toString());
+			});
+			results.add(new OneSearchResult(map));
+		});
+
+		long total_hits = response.getHits().totalHits;
+
+		int next_page = from + size;
+		int previous_page = (from - size) < 0 ? 0 : (from - size);
+
+		boolean has_more_results = total_hits > next_page;
+
+		boolean has_previous_results = from > 0;
+
+		Level level;
+		switch (response.status())
+		{
+		case OK:
+			level = Level.INFO;
+			break;
+		default:
+			level = Level.WARN;
+			break;
+		}
+
+		SearchResponseOK ok = new SearchResponseOK(request, results, from, has_more_results, has_previous_results, next_page, previous_page, total_hits);
+
+		logger.log(level, String.format("QUERY:%s INDEX:%s STATUS:%s HITS:%s TOTAL_HITS:%s MAX_RESULTS:%d START_RESULTS_AFTER:%d", ok.getSimpleSearchRequest().getSimpleQueryString(), index.getSimpleValue(), response.status(), results.size(), ok.getSimpleTotalHits(), ok.getSimpleSearchRequest().getSimpleMaxResults(), ok.getSimpleSearchRequest().getSimpleStartResultsAfter()));
+		logger.trace(String.format("FIRST_RESULT_IDX:%s HAS_MORE_RESULTS:%s HAS_PREVIOUS_RESULTS:%s START_OF_NEXT_PAGE_OF_RESULTS:%s START_OF_PREVIOUS_PAGE_OF_RESULTS:%s", ok.getSimpleFirstResultIdx(), ok.getSimpleHasMoreResults(), ok.getSimpleHasMoreResults(), ok.getSimpleStartOfNextPageOfResults(), ok.getSimpleStartOfPreviousPageOfResults()));
+		logger.trace(ok.getSimpleResults().toString());
+
+		return ok;
 	}
 
 	/**
@@ -605,7 +612,12 @@ public class ElasticSearch implements ISearch
 
 	}
 
-	private boolean createIndex(SearchIndexDefinition index)
+	/**
+	 * Create an index, given an index definition. It's protected to allow child classes to override the method, but it should never be called outside of the class.
+	 * @param index
+	 * @return
+	 */
+	protected boolean createIndex(SearchIndexDefinition index)
 	{
 		if (index == null)
 		{
@@ -615,7 +627,6 @@ public class ElasticSearch implements ISearch
 
 		try
 		{
-
 			XContentBuilder mappingBuilder = jsonBuilder();
 			mappingBuilder.startObject().startObject(ELASTICSEARCH_DEFAULT_TYPE).startObject("properties");
 			for (SearchIndexFieldDefinition field : index.getSimpleFields())
@@ -796,7 +807,7 @@ public class ElasticSearch implements ISearch
 			high_level_rest_client = new RestHighLevelClient(builder);
 		}
 		
-		public boolean createIndex(SearchIndexDefinition index)
+		protected boolean createIndex(SearchIndexDefinition index)
 		{
 			if (index == null)
 			{
@@ -897,18 +908,18 @@ public class ElasticSearch implements ISearch
 			
 			try
 			{
-				DeleteRequest del = new DeleteRequest(index.getSimpleIndex().getSimpleValue());
-				DeleteResponse response = high_level_rest_client.delete(del);
+				DeleteIndexRequest del = new DeleteIndexRequest(index.getSimpleIndex().getSimpleValue());
+				DeleteIndexResponse response = high_level_rest_client.indices().delete(del);
 
-				if (!response.getResult().equals(Result.DELETED))
-				{
-					logger.info("couldn't delete index: " + index.getSimpleIndex().getSimpleValue());
-					return false;
-				}
-				else
+				if (response.isAcknowledged())
 				{
 					logger.info("successfully deleted: " + index.getSimpleIndex().getSimpleValue());
 					return true;
+				}
+				else
+				{
+					logger.info("couldn't delete index: " + index.getSimpleIndex().getSimpleValue());
+					return false;
 				}
 			}
 			catch(Exception e)
@@ -975,45 +986,10 @@ public class ElasticSearch implements ISearch
 			}
 		}
 		
-		/**
-		 * Useful to call custom searches from the builder class when simple text search
-		 * is not enough. NOTE: Be sure to set the TYPE. For example
-		 * builder.setTypes(ElasticSearch.ELASTICSEARCH_DEFAULT_TYPE); This method will
-		 * not set anything for you in the builder. </br>
-		 * Example: </br>
-		 * SearchRequestBuilder builder =
-		 * CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().getBuilder(index_name);</br>
-		 * builder.setTypes(ElasticSearch.ELASTICSEARCH_DEFAULT_TYPE);</br>
-		 * builder.setSize(size); builder.set String my_field_name =
-		 * "the_field_name";</br>
-		 * //get the max value from a field</br>
-		 * builder.addAggregation(AggregationBuilders.max(my_field_name)); </br>
-		 * //order the results ascending by field </br>
-		 * builder.addSort(SortBuilders.fieldSort(my_field_name).order(SortOrder.ASC));</br>
-		 * builder.setQuery(QueryBuilders.queryStringQuery("search string"));</br>
-		 * </br>
-		 */
 		@Override
 		public SearchRequestBuilder getBuilder(IndexDefinition index)
 		{
-			if (index == null)
-			{
-				throw new RuntimeException("Null IndexDefinition");
-			}
-			
-//			SearchRequestBuil
-			
-//			high_level_rest_client.p
-			
-//			SearchRequestBuilder builder = rest_client.
-			
-//			return high_level_rest_client.
-			
-//			high_level_rest_client.sear
-			
-//			return high_level_rest_client.prepareSearch(index.getSimpleValue());
-			
-			return null;
+			throw new UnsupportedOperationException("The ElasticSearch REST client doesn't support SearchRequestBuilder in it's implementation. Please use @");
 		}
 		
 		/**
@@ -1033,14 +1009,33 @@ public class ElasticSearch implements ISearch
 			}
 			try
 			{
-				GetRequest get_request = new GetRequest(index.getSimpleValue());
-				return high_level_rest_client.exists(get_request);
+				Response resp = high_level_rest_client.getLowLevelClient().performRequest("GET", "/" + index.getSimpleValue());
+				
+				if (resp.getStatusLine().getStatusCode() != 200)
+				{
+					return false;
+				}
+				else
+				{
+					return true;
+				}
 			}
 			catch (Exception e)
 			{
-				logger.log(Level.FATAL, "Failed to check if index exists", e);
+				// index exists checks throw an exception when not found. It's a pretty dumb way to handle exists checks, but I couldn't find a quieter way to do it with 
+				// the high level client 6.2.4
 				return false;
 			}
+		}
+		
+		public static void main(String[] args) throws IOException
+		{
+			ElasticSearch.RESTClient elastic_search = new ElasticSearch.RESTClient(); 
+			
+			 Response resp = elastic_search.high_level_rest_client.getLowLevelClient().performRequest("GET", "/trevor:isawesome:v1");
+			 String response_body = EntityUtils.toString(resp.getEntity()); 
+			 
+			 System.out.println("response body: " + response_body);
 		}
 		
 		/**
@@ -1075,58 +1070,40 @@ public class ElasticSearch implements ISearch
 
 				// compare the expected index fields to the actual index fields
 				Map<String, String> expected = new HashMap<String, String>();
-				index.getSimpleFields().forEach(fields ->
-				{
+				index.getSimpleFields().forEach(fields -> {
 					expected.put(fields.getSimpleFieldName().getSimpleName(), fields.getSimpleType().getSimpleCode());
 				});
 
 				try
 				{
-//					GetMappingsRequest request = new GetMappingsRequest()
-//							.indices(index.getSimpleIndex().getSimpleValue())
-//							.
-//							;
-					
-					GetRequest request = new GetRequest(index.getSimpleIndex().getSimpleValue())
-							// TODO finish this
-//							.prob use indices options... something here needs to be fixed
-							;
-					
-					
-//					GetRequestBuilder test = new GetRBuil
-					
-//					GetMappingsResponse response = client.admin().indices().prepareGetMappings(index.getSimpleIndex().getSimpleValue()).get();
+					Response resp = high_level_rest_client.getLowLevelClient().performRequest("GET", "/" + index.getSimpleIndex().getSimpleValue());
+					String response_body = EntityUtils.toString(resp.getEntity());
 
-//					GetMappingsResponse response = high_level_rest_client.bulk(null);
-					
-					String json = high_level_rest_client.get(null).getSourceAsString();
-					
-//					String json = response.getMappings().get(index.getSimpleIndex().getSimpleValue()).get(ELASTICSEARCH_DEFAULT_TYPE).source().string();
+					JsonNode node = new ObjectMapper().readTree(response_body).findValue("mappings").findValue("default").findValue("properties");
 
 					Map<String, String> actual = new HashMap<String, String>();
 
-					new ObjectMapper().readTree(json).get(ELASTICSEARCH_DEFAULT_TYPE).get("properties").fields().forEachRemaining(fieldMapping ->
-					{
+					node.fields().forEachRemaining(fieldMapping -> {
 						actual.put(fieldMapping.getKey(), fieldMapping.getValue().get("type").asText());
 					});
 
 					if (!expected.equals(actual))
 					{
-
 						logger.info(String.format("Index: %s not properly configured", index.getSimpleIndex().getSimpleValue()));
 						logger.info(String.format("Expected fields=%s", expected));
 						logger.info(String.format("Actual   fields=%s", actual));
 						return false;
-
 					}
 
 					return true;
 
-				} catch (Exception e)
+				}
+				catch (Exception e)
 				{
 					logger.log(Level.FATAL, String.format("Failed to get the index mapping for index %s", index.getSimpleIndex().getSimpleValue()), e);
 				}
 			}
+			
 			return false;
 		}
 		
@@ -1182,7 +1159,7 @@ public class ElasticSearch implements ISearch
 				long total_hits = response.getHits().totalHits;
 
 				int next_page = from + size;
-				int previous_page = (from - size) < 0 ? 0 : (from - size);
+				int previous_page = (from - size) < 0 ? -1 : (from - size);
 
 				boolean has_more_results = total_hits > next_page;
 
@@ -1191,12 +1168,12 @@ public class ElasticSearch implements ISearch
 				Level level;
 				switch (response.status())
 				{
-				case OK:
-					level = Level.INFO;
-					break;
-				default:
-					level = Level.WARN;
-					break;
+					case OK:
+						level = Level.INFO;
+						break;
+					default:
+						level = Level.WARN;
+						break;
 				}
 
 				SearchResponseOK ok = new SearchResponseOK(request, results, from, has_more_results, has_previous_results, next_page, previous_page, total_hits);
@@ -1220,6 +1197,26 @@ public class ElasticSearch implements ISearch
 					return new SearchResponseError(request, e.getMessage());
 				}
 			}
+		}
+		
+		@Override
+		public SearchResponse searchRaw(SearchRequest request)
+		{
+			if (request == null)
+			{
+				throw new NullPointerException();
+			}
+
+			try
+			{
+				return high_level_rest_client.search(request);
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+
+			return null;
 		}
 		
 		public boolean writeAllToCSV(IndexDefinition index, String query_string, List<SearchFieldId> sorted_header, ICsvListWriter list_writer, CellProcessor[] cell_processors)
