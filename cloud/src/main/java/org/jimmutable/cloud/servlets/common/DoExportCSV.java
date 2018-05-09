@@ -53,12 +53,14 @@ public abstract class DoExportCSV extends HttpServlet
 		File temp_file = new File(String.format("%s/csv-export/%s.csv", System.getProperty("user.home"), System.currentTimeMillis()));
 		try
 		{
+			temp_file.getParentFile().mkdirs();
 			temp_file.createNewFile();
 		}
 		catch ( IOException e )
 		{
 			logger.error(e);
 			ServletUtil.writeSerializedResponse(response, new GeneralResponseError(e.getMessage()), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			return;
 		}
 		if (CSVExport.exportCSV(request_csv, temp_file))
 		{

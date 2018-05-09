@@ -2,7 +2,9 @@ package org.jimmutable.cloud.elasticsearch;
 
 import java.util.List;
 
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
@@ -34,7 +36,7 @@ public class StubSearch implements ISearch
 	}
 	
 	@Override
-	public List<OneSearchResultWithTyping> search(IndexDefinition index, StandardSearchRequest request, List<OneSearchResultWithTyping> default_value)
+	public SearchResponse searchRaw(SearchRequest request)
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
@@ -105,4 +107,9 @@ public class StubSearch implements ISearch
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
+	@Override
+	public List<OneSearchResultWithTyping> search(IndexDefinition index, StandardSearchRequest request, List<OneSearchResultWithTyping> default_value)
+	{
+		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
+	}
 }

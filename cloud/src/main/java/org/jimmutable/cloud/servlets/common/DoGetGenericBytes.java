@@ -38,7 +38,7 @@ public abstract class DoGetGenericBytes extends HttpServlet
 
 		String id = request.getParameter(getId());
 
-		if (id == null || id.equals(""))
+		if (id == null || id.equals("")||id.equals("undefined"))
 		{
 			idNotFound(request, response);
 			return;

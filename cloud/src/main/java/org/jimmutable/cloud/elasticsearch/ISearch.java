@@ -2,7 +2,9 @@ package org.jimmutable.cloud.elasticsearch;
 
 import java.util.List;
 
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
@@ -72,6 +74,15 @@ public interface ISearch
 	 * @return JSONServletResponse
 	 */
 	public JSONServletResponse search(IndexDefinition index, StandardSearchRequest request);
+	
+	/**
+	 * Uses ElasticSearch's {@link org.elasticsearch.action.search.SearchRequest} to prepare and send out a search. This method is useful for complex queries, that require
+	 * more than a simple text search.
+	 * @param index 
+	 * @param request The request to send directly to ElasticSearch. For examples on creating the request, look at {@link ISearch#search(IndexDefinition index, SearchRequest request)}
+	 * @return SearchResponse with all matching searches
+	 */
+	public SearchResponse searchRaw(SearchRequest request);
 
 	public List<OneSearchResultWithTyping> search(IndexDefinition index, StandardSearchRequest request, List<OneSearchResultWithTyping> default_value);
 
@@ -176,9 +187,10 @@ public interface ISearch
 	 * @param index
 	 *            The IndexDefinition
 	 * @return SearchRequestBuilder
+	 * @deprecated This is no longer supported in the REST client of ElasticSearch. Please use {@link ISearch#searchRaw(SearchRequest request)}
 	 */
 	public SearchRequestBuilder getBuilder(IndexDefinition index);
-
+	
 	/**
 	 * Puts all field mappings into an existing index. If the index doesn't already
 	 * exist or a field name with a different type already exists the operation will
