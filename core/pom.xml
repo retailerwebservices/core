@@ -53,11 +53,12 @@
 
 
 	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<!-- Version and scope defined in parent pom -->
-		</dependency>
+		<!-- <dependency> -->
+		<!-- <groupId>junit</groupId> -->
+		<!-- <artifactId>junit</artifactId> -->
+		<!-- <version>4.12</version> -->
+		<!-- <scope>test</scope> -->
+		<!-- </dependency> -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
@@ -114,83 +115,71 @@
 				<!-- </execution> -->
 				<!-- </executions> -->
 			</plugin>
-			<!-- I (Jim Kane) commented this out becuase it was messing up builds on EC2... Is this needed?
-			 <plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-gpg-plugin</artifactId>
-				<version>1.5</version>
-				<configuration>
-					<skip>true</skip>
-				</configuration>
-				<executions>
-					<execution>
-						<id>sign-artifacts</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>sign</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>-->
-<!-- 			<plugin> -->
-<!-- 				<groupId>org.sonatype.plugins</groupId> -->
-<!-- 				<artifactId>nexus-staging-maven-plugin</artifactId> -->
-<!-- 				<version>1.6.7</version> -->
-<!-- 				<extensions>true</extensions> -->
-<!-- 				<configuration> -->
-<!-- 					<serverId>ossrh</serverId> -->
-<!-- 					<nexusUrl>https://oss.sonatype.org/</nexusUrl> -->
-<!-- 					<autoReleaseAfterClose>true</autoReleaseAfterClose> -->
-<!-- 				</configuration> -->
-<!-- 			</plugin> -->
-<!-- 			<plugin> -->
-<!-- 				<artifactId>maven-jar-plugin</artifactId> -->
-<!-- 				<version>2.4</version> -->
+			<!-- I (Jim Kane) commented this out becuase it was messing up builds 
+				on EC2... Is this needed? <plugin> <groupId>org.apache.maven.plugins</groupId> 
+				<artifactId>maven-gpg-plugin</artifactId> <version>1.5</version> <configuration> 
+				<skip>true</skip> </configuration> <executions> <execution> <id>sign-artifacts</id> 
+				<phase>verify</phase> <goals> <goal>sign</goal> </goals> </execution> </executions> 
+				</plugin> -->
+			<!-- <plugin> -->
+			<!-- <groupId>org.sonatype.plugins</groupId> -->
+			<!-- <artifactId>nexus-staging-maven-plugin</artifactId> -->
+			<!-- <version>1.6.7</version> -->
+			<!-- <extensions>true</extensions> -->
+			<!-- <configuration> -->
+			<!-- <serverId>ossrh</serverId> -->
+			<!-- <nexusUrl>https://oss.sonatype.org/</nexusUrl> -->
+			<!-- <autoReleaseAfterClose>true</autoReleaseAfterClose> -->
+			<!-- </configuration> -->
+			<!-- </plugin> -->
+			<!-- <plugin> -->
+			<!-- <artifactId>maven-jar-plugin</artifactId> -->
+			<!-- <version>2.4</version> -->
 
-<!-- 				<configuration> -->
-<!-- 					<archive> -->
-<!-- 						<manifest> -->
-<!-- 							<mainClass>org.jimmutable.core.examples.product_data.OldSpecXMLConverter</mainClass> -->
-<!-- 						</manifest> -->
-<!-- 					</archive> -->
-<!-- 				</configuration> -->
+			<!-- <configuration> -->
+			<!-- <archive> -->
+			<!-- <manifest> -->
+			<!-- <mainClass>org.jimmutable.core.examples.product_data.OldSpecXMLConverter</mainClass> -->
+			<!-- </manifest> -->
+			<!-- </archive> -->
+			<!-- </configuration> -->
 
-<!-- 				<executions> -->
-<!-- 					<execution> -->
-<!-- 						<id>default-jar</id> -->
-<!-- 						<phase>package</phase> -->
-<!-- 						<goals> -->
-<!-- 							<goal>jar</goal> -->
-<!-- 						</goals> -->
-<!-- 					</execution> -->
-<!-- 				</executions> -->
-<!-- 			</plugin> -->
+			<!-- <executions> -->
+			<!-- <execution> -->
+			<!-- <id>default-jar</id> -->
+			<!-- <phase>package</phase> -->
+			<!-- <goals> -->
+			<!-- <goal>jar</goal> -->
+			<!-- </goals> -->
+			<!-- </execution> -->
+			<!-- </executions> -->
+			<!-- </plugin> -->
 
-<!-- 			<plugin> -->
-<!-- 				<groupId>org.apache.maven.plugins</groupId> -->
-<!-- 				<artifactId>maven-assembly-plugin</artifactId> -->
-<!-- 				<configuration> -->
+			<!-- <plugin> -->
+			<!-- <groupId>org.apache.maven.plugins</groupId> -->
+			<!-- <artifactId>maven-assembly-plugin</artifactId> -->
+			<!-- <configuration> -->
 
-<!-- 					<descriptorRefs> -->
-<!-- 						<descriptorRef>jar-with-dependencies</descriptorRef> -->
-<!-- 					</descriptorRefs> -->
+			<!-- <descriptorRefs> -->
+			<!-- <descriptorRef>jar-with-dependencies</descriptorRef> -->
+			<!-- </descriptorRefs> -->
 
-<!-- 					<archive> -->
-<!-- 						<manifest> -->
-<!-- 							<mainClass>org.kane.base.io.benchmark.IOBenchmark</mainClass> -->
-<!-- 						</manifest> -->
-<!-- 					</archive> -->
-<!-- 				</configuration> -->
-<!-- 				<executions> -->
-<!-- 					<execution> -->
-<!-- 						<id>make-assembly</id> this is used for inheritance merges -->
-<!-- 						<phase>package</phase> bind to the packaging phase -->
-<!-- 						<goals> -->
-<!-- 							<goal>single</goal> -->
-<!-- 						</goals> -->
-<!-- 					</execution> -->
-<!-- 				</executions> -->
-<!-- 			</plugin> -->
+			<!-- <archive> -->
+			<!-- <manifest> -->
+			<!-- <mainClass>org.kane.base.io.benchmark.IOBenchmark</mainClass> -->
+			<!-- </manifest> -->
+			<!-- </archive> -->
+			<!-- </configuration> -->
+			<!-- <executions> -->
+			<!-- <execution> -->
+			<!-- <id>make-assembly</id> this is used for inheritance merges -->
+			<!-- <phase>package</phase> bind to the packaging phase -->
+			<!-- <goals> -->
+			<!-- <goal>single</goal> -->
+			<!-- </goals> -->
+			<!-- </execution> -->
+			<!-- </executions> -->
+			<!-- </plugin> -->
 
 
 			<plugin>

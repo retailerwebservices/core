@@ -60,7 +60,8 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<!-- Version and scope defined in parent pom -->
+			<version>4.12</version>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>
