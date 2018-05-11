@@ -36,6 +36,21 @@
 		</snapshotRepository>
 	</distributionManagement>
 
+	<!-- download artifacts from this repo -->
+	<repositories>
+	    <repository>
+	        <id>nexus</id>
+	        <name>nexus</name>
+	        <url>http://nexus.rwsgateway.com:8081/repository/maven-public/</url>
+	        <releases>
+	            <enabled>true</enabled>
+	        </releases>
+	        <snapshots>
+	            <enabled>true</enabled>
+	        </snapshots>
+	    </repository>
+	</repositories>
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -44,8 +59,8 @@
 				<version>4.12</version>
 			</dependency>
 		</dependencies>
-	</dependencyManagement>	
-
+	</dependencyManagement>
+	
 	<build>
 		<plugins>
 			<!-- Note: integration tests are found by the failsafe plugin via the 
