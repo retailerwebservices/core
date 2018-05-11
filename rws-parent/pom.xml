@@ -3,7 +3,7 @@
 
 	<groupId>com.rws</groupId>
 	<artifactId>rws-parent</artifactId>
-	<version>0.0.6</version>
+	<version>0.0.7-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>RWS Parent POM</name>
@@ -13,7 +13,7 @@
 		<url>https://github.com/jimmutable/core.git</url>
 		<connection>scm:git:https://github.com/jimmutable/core.git</connection>
 		<developerConnection>scm:git:https://github.com/jimmutable/core.git</developerConnection>
-		<tag>rws-parent-0.0.6</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<properties>
