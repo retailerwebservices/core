@@ -18,6 +18,13 @@
 		<relativePath></relativePath>
 	</parent>
 
+	<scm>
+		<url>https://github.com/jimmutable/core.git</url>
+		<connection>scm:git:https://github.com/jimmutable/core.git</connection>
+		<developerConnection>scm:git:https://github.com/jimmutable/core.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+
 	<licenses>
 		<license>
 			<name>Apache License, Version 2.0</name>
@@ -40,12 +47,6 @@
 			<timezone>+1</timezone>
 		</developer>
 	</developers>
-
-	<scm>
-		<url>https://github.com/jim-kane/jimmutable</url>
-		<connection>scm:git:git://github.com/jim-kane/jimmutable.git</connection>
-		<developerConnection>scm:git:git@github.com:jim-kane/jimmutable.git</developerConnection>
-	</scm>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -163,7 +164,7 @@
 			<version>1.4</version>
 		</dependency>
 	</dependencies>
-	
+
 	<profiles>
 		<profile>
 			<id>java8-doclint-disabled</id>
