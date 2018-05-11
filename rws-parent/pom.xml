@@ -9,12 +9,12 @@
 
 	<name>RWS Parent POM</name>
 	<url>https://retailerwebservices.com/</url>
-	
+
 	<scm>
 		<url>https://github.com/jimmutable/core.git</url>
 		<connection>scm:git:https://github.com/jimmutable/core.git</connection>
 		<developerConnection>scm:git:https://github.com/jimmutable/core.git</developerConnection>
-	</scm>	
+	</scm>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -38,17 +38,17 @@
 
 	<!-- download artifacts from this repo -->
 	<repositories>
-	    <repository>
-	        <id>nexus</id>
-	        <name>nexus</name>
-	        <url>http://nexus.rwsgateway.com:8081/repository/maven-public/</url>
-	        <releases>
-	            <enabled>true</enabled>
-	        </releases>
-	        <snapshots>
-	            <enabled>true</enabled>
-	        </snapshots>
-	    </repository>
+		<repository>
+			<id>nexus</id>
+			<name>nexus</name>
+			<url>http://nexus.rwsgateway.com:8081/repository/maven-public/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
 	</repositories>
 
 	<dependencyManagement>
@@ -60,9 +60,19 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-	
+
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.5.3</version>
+				<configuration>
+					<!-- <tagNameFormat>v@{project.version}</tagNameFormat> -->
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+					<releaseProfiles>releases</releaseProfiles>
+				</configuration>
+			</plugin>
 			<!-- Note: integration tests are found by the failsafe plugin via the 
 				naming convention "IT" at the end of the class, for example "MyIntegrationStuffToRunIT" 
 				within src/test/java -->
@@ -108,4 +118,32 @@
 			</plugin>
 		</plugins>
 	</build>
+	<profiles>
+	   <profile>
+	      <id>releases</id>
+	      <build>
+	         <plugins>
+	            <plugin>
+	               <groupId>org.sonatype.plugins</groupId>
+	               <artifactId>nexus-staging-maven-plugin</artifactId>
+	               <version>1.6.8</version>
+	               <executions>
+	                  <execution>
+	                     <id>default-deploy</id>
+	                     <phase>deploy</phase>
+	                     <goals>
+	                        <goal>deploy</goal>
+	                     </goals>
+	                  </execution>
+	               </executions>
+	               <configuration>
+	                  <serverId>nexus-releases</serverId>
+	                  <nexusUrl>http://nexus.rwsgateway.com:8081/repository/maven-releases</nexusUrl>
+	                  <skipStaging>true</skipStaging>
+	               </configuration>
+	            </plugin>
+	         </plugins>
+	      </build>
+	   </profile>
+	</profiles>
 </project>
