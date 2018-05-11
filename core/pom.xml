@@ -1,10 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.jimmutable</groupId>
 	<artifactId>core</artifactId>
-	<version>0.0.8-SNAPSHOT</version>
+	<version>0.0.8</version>
 	<packaging>jar</packaging>
 
 	<name>jimmutable core</name>
@@ -15,14 +14,14 @@
 		<groupId>com.rws</groupId>
 		<artifactId>rws-parent</artifactId>
 		<version>0.0.6</version>
-		<relativePath></relativePath>
+		<relativePath />
 	</parent>
 
 	<scm>
 		<url>https://github.com/jimmutable/core.git</url>
 		<connection>scm:git:https://github.com/jimmutable/core.git</connection>
 		<developerConnection>scm:git:https://github.com/jimmutable/core.git</developerConnection>
-		<tag>HEAD</tag>
+		<tag>core-0.0.8</tag>
 	</scm>
 
 
