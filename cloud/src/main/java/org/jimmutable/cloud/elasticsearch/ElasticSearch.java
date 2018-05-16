@@ -1256,7 +1256,9 @@ public class ElasticSearch implements ISearch
 		try
 		{
 			XContentBuilder mappingBuilder = jsonBuilder();
-			mappingBuilder.startObject().startObject(ELASTICSEARCH_DEFAULT_TYPE).startObject("properties");
+			mappingBuilder.startObject().startObject(ELASTICSEARCH_DEFAULT_TYPE);
+			mappingBuilder.field("dynamic", "strict");
+			mappingBuilder.startObject("properties");
 			for (SearchIndexFieldDefinition field : index.getSimpleFields())
 			{
 				// if (field.getSimpleType().equals(SearchIndexFieldType.OBJECTID))
