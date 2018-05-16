@@ -12,23 +12,26 @@ import org.jimmutable.core.utils.Validator;
  */
 public enum SearchIndexFieldType implements StandardEnum
 {
-	ATOM("keyword"),
-	TEXT("text"),
-	LONG("long"),
-	BOOLEAN("boolean"),
-	FLOAT("float"),
-	DAY("date"),
-	INSTANT("text"),
-	TIMEOFDAY("text");
+	ATOM("atom", "keyword"),
+	TEXT("text", "text"),
+	LONG("long", "long"),
+	BOOLEAN("boolean", "boolean"),
+	FLOAT("float", "float"),
+	DAY("day", "date"),
+	INSTANT("instant", "text"),
+	TIMEOFDAY("timeofday", "text");
 
 	static public final MyConverter CONVERTER = new MyConverter();
 
 	private String code;
+	private String search_type;
 
-	private SearchIndexFieldType(String code)
+	private SearchIndexFieldType(String code, String search_type)
 	{
 		Validator.notNull(code);
+		Validator.notNull(search_type);
 		this.code = Normalizer.lowerCase(code);
+		this.search_type = Normalizer.lowerCase(search_type);
 	}
 
 	/**
@@ -45,6 +48,11 @@ public enum SearchIndexFieldType implements StandardEnum
 	public String toString()
 	{
 		return code;
+	}
+	
+	public String getSimpleSearchType()
+	{
+		return search_type;
 	}
 
 	/**
@@ -63,6 +71,8 @@ public enum SearchIndexFieldType implements StandardEnum
 			for (SearchIndexFieldType t : SearchIndexFieldType.values())
 			{
 				if (t.getSimpleCode().equalsIgnoreCase(code))
+					return t;
+				if (t.getSimpleSearchType().equalsIgnoreCase(code))
 					return t;
 			}
 

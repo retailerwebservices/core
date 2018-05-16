@@ -734,7 +734,7 @@ public class ElasticSearch implements ISearch
 			Map<String, String> expected = new TreeMap<String, String>();
 			index.getSimpleFields().forEach(fields ->
 			{
-				expected.put(fields.getSimpleFieldName().getSimpleName(), fields.getSimpleType().getSimpleCode());
+				expected.put(fields.getSimpleFieldName().getSimpleName(), fields.getSimpleType().getSimpleSearchType());
 			});
 
 			try
@@ -957,7 +957,7 @@ public class ElasticSearch implements ISearch
 		if (sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.INSTANT)
 			sort_on_string = getSortFieldNameInstant(sort_by.getSimpleField().getSimpleFieldName());
 
-		return SortBuilders.fieldSort(sort_on_string).order(order).unmappedType(SearchIndexFieldType.ATOM.getSimpleCode());
+		return SortBuilders.fieldSort(sort_on_string).order(order).unmappedType(SearchIndexFieldType.ATOM.getSimpleSearchType());
 	}
 
 	/**
@@ -991,7 +991,7 @@ public class ElasticSearch implements ISearch
 	 */
 	static public String getSortFieldNameText(String field_name)
 	{
-		return field_name + "_" + SORT_FIELD_NAME_JIMMUTABLE + "_" + SearchIndexFieldType.ATOM.getSimpleCode();
+		return field_name + "_" + SORT_FIELD_NAME_JIMMUTABLE + "_" + SearchIndexFieldType.ATOM.getSimpleSearchType();
 	}
 	/**
 	 * In order to sort TimeOfDay objects, we need to look at the ms_from_midnight
@@ -1248,7 +1248,7 @@ public class ElasticSearch implements ISearch
 	}
 
 	/**
-	 * This will build all the mapping fields for an index defintion
+	 * This will build all the mapping fields for an index definition
 	 * 
 	 */
 	private static XContentBuilder getMappingBuilder(SearchIndexDefinition index, XContentBuilder default_value)
@@ -1257,7 +1257,9 @@ public class ElasticSearch implements ISearch
 		{
 			XContentBuilder mappingBuilder = jsonBuilder();
 			mappingBuilder.startObject().startObject(ELASTICSEARCH_DEFAULT_TYPE);
-			mappingBuilder.field("dynamic", "strict");
+			// 'Dynamic':'strict' - Prevents adding field automatically when a new field (not in the mapping) 
+			// is in the search document being updated
+			mappingBuilder.field("dynamic", "strict"); 
 			mappingBuilder.startObject("properties");
 			for (SearchIndexFieldDefinition field : index.getSimpleFields())
 			{
@@ -1277,7 +1279,7 @@ public class ElasticSearch implements ISearch
 				// } else
 				// {
 				mappingBuilder.startObject(field.getSimpleFieldName().getSimpleName());
-				/*	*/mappingBuilder.field("type", field.getSimpleType().getSimpleCode());
+				/*	*/mappingBuilder.field("type", field.getSimpleType().getSimpleSearchType());
 				mappingBuilder.endObject();
 				// }
 
@@ -1285,7 +1287,7 @@ public class ElasticSearch implements ISearch
 				if (field.getSimpleType() == SearchIndexFieldType.TEXT)
 				{
 					mappingBuilder.startObject(getSortFieldNameText(field.getSimpleFieldName()));
-					mappingBuilder.field("type", SearchIndexFieldType.ATOM.getSimpleCode());
+					mappingBuilder.field("type", SearchIndexFieldType.ATOM.getSimpleSearchType());
 					mappingBuilder.endObject();
 				}
 
@@ -1293,7 +1295,7 @@ public class ElasticSearch implements ISearch
 				if (field.getSimpleType() == SearchIndexFieldType.INSTANT)
 				{
 					mappingBuilder.startObject(getSortFieldNameInstant(field.getSimpleFieldName()));
-					mappingBuilder.field("type", SearchIndexFieldType.LONG.getSimpleCode());
+					mappingBuilder.field("type", SearchIndexFieldType.LONG.getSimpleSearchType());
 					mappingBuilder.endObject();
 				}
 
@@ -1301,7 +1303,7 @@ public class ElasticSearch implements ISearch
 				if (field.getSimpleType() == SearchIndexFieldType.TIMEOFDAY)
 				{
 					mappingBuilder.startObject(getSortFieldNameTimeOfDay(field.getSimpleFieldName()));
-					mappingBuilder.field("type", SearchIndexFieldType.LONG.getSimpleCode());
+					mappingBuilder.field("type", SearchIndexFieldType.LONG.getSimpleSearchType());
 					mappingBuilder.endObject();
 				}
 			}
@@ -1526,7 +1528,7 @@ public class ElasticSearch implements ISearch
 				{
 					mappingBuilder.startObject(field.getSimpleFieldName().getSimpleName());
 					{
-						mappingBuilder.field("type", field.getSimpleType().getSimpleCode());
+						mappingBuilder.field("type", field.getSimpleType().getSimpleSearchType());
 					}
 					mappingBuilder.endObject();
 					
@@ -1774,7 +1776,7 @@ public class ElasticSearch implements ISearch
 				// compare the expected index fields to the actual index fields
 				Map<String, String> expected = new HashMap<String, String>();
 				index.getSimpleFields().forEach(fields -> {
-					expected.put(fields.getSimpleFieldName().getSimpleName(), fields.getSimpleType().getSimpleCode());
+					expected.put(fields.getSimpleFieldName().getSimpleName(), fields.getSimpleType().getSimpleSearchType());
 				});
 
 				try
