@@ -503,7 +503,7 @@ public class ElasticSearch implements ISearch
 			return resp;
 		} catch (Exception e)
 		{
-			e.printStackTrace();
+			logger.error("Failed to search!", e);
 		}
 
 		return null;
@@ -525,7 +525,7 @@ public class ElasticSearch implements ISearch
 			return resp;
 		} catch (Exception e)
 		{
-			e.printStackTrace();
+			logger.error("Failed to search scroll!", e);
 		}
 
 		return null;
@@ -1956,10 +1956,51 @@ public class ElasticSearch implements ISearch
 				return high_level_rest_client.search(request);
 			} catch (Exception e)
 			{
-				e.printStackTrace();
+				logger.error("Failed to search!", e);
 			}
 
 			return null;
+		}
+
+		@Override
+		public SearchResponse searchScrollRaw(SearchScrollRequest request)
+		{
+			if (request == null)
+			{
+				throw new NullPointerException();
+			}
+
+			try
+			{
+				return high_level_rest_client.searchScroll(request);
+
+			} catch (Exception e)
+			{
+				logger.error("Failed to search scroll!", e);
+			}
+
+			return null;
+		}
+
+		@Override
+		public boolean clearScrollRaw(ClearScrollRequest request)
+		{
+			if (request == null)
+			{
+				throw new NullPointerException();
+			}
+
+			try
+			{
+				ClearScrollResponse resp_raw = high_level_rest_client.clearScroll(request);
+
+				return resp_raw.isSucceeded();
+			} catch (Exception e)
+			{
+				logger.error("Failed to clear the scroll context!", e);
+			}
+
+			return false;
 		}
 
 		public boolean writeAllToCSV(IndexDefinition index, String query_string, List<SearchFieldId> sorted_header, ICsvListWriter list_writer, CellProcessor[] cell_processors)
