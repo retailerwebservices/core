@@ -231,9 +231,7 @@ public class CloudExecutionEnvironment
 		if (env_level == null) env_level = System.getProperty(ENV_TYPE_VARIABLE_NAME.toLowerCase());
 		
 		if (env_level != null)
-		{
-			logger.info("starting environment with type: " + env_level);
-			
+		{			
 			EnvironmentType tmp_type = null;
 			try
 			{
