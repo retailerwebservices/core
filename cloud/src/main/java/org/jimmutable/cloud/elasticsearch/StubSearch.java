@@ -2,9 +2,11 @@ package org.jimmutable.cloud.elasticsearch;
 
 import java.util.List;
 
+import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchScrollRequest;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
@@ -34,9 +36,21 @@ public class StubSearch implements ISearch
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
-	
+
 	@Override
 	public SearchResponse searchRaw(SearchRequest request)
+	{
+		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
+	}
+
+	@Override
+	public SearchResponse searchScrollRaw(SearchScrollRequest request)
+	{
+		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
+	}
+
+	@Override
+	public boolean clearScrollRaw(ClearScrollRequest request)
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
@@ -100,7 +114,7 @@ public class StubSearch implements ISearch
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
-	
+
 	@Override
 	public boolean putAllFieldMappings(SearchIndexDefinition index)
 	{
@@ -112,4 +126,5 @@ public class StubSearch implements ISearch
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
+
 }
