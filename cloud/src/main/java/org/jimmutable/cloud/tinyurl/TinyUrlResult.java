@@ -162,10 +162,9 @@ public class TinyUrlResult extends StandardImmutableObject<TinyUrlResult> implem
 	@Override
 	public void writeSearchDocument( SearchDocumentWriter writer )
 	{
-		writer.writeText(FIELD_ID.getSimpleFieldName(), getSimpleObjectId().getSimpleValue());
-		writer.writeText(FIELD_URL.getSimpleFieldName(), getSimpleUrl());
-		writer.writeText(FIELD_TINY_URL.getSimpleFieldName(), getSimpleTinyUrl());
-
+		writer.writeText(SEARCH_FIELD_ID, getSimpleObjectId().getSimpleValue());
+		writer.writeText(SEARCH_FIELD_URL, getSimpleUrl());
+		writer.writeText(SEARCH_FIELD_TINY_URL, getSimpleTinyUrl());
 	}
 
 	@Override

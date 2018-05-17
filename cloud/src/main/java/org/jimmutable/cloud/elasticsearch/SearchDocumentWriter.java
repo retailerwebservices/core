@@ -581,7 +581,10 @@ public class SearchDocumentWriter
 	 *            The FieldDefinition
 	 * @param value
 	 *            the float value
+	 * @deprecated
+	 * 			Use writeFloat(SearchIndexFieldDefinition search_index_definition, float value) instead.
 	 */
+	@Deprecated
 	public void writeFloat(FieldDefinition<?> field_definition, float value)
 	{
 		Validator.notNull(field_definition);
