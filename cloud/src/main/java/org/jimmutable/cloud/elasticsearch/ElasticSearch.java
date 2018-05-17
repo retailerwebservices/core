@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.action.ActionFuture;
+import org.elasticsearch.action.ActionRequest;
 import org.elasticsearch.action.DocWriteResponse.Result;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.cluster.state.ClusterStateRequest;
@@ -49,9 +50,12 @@ import org.elasticsearch.action.admin.indices.stats.IndicesStatsRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.ClearScrollRequest;
+import org.elasticsearch.action.search.ClearScrollResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.action.support.WriteRequest.RefreshPolicy;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
@@ -101,6 +105,7 @@ import com.amazonaws.services.cloudtrail.model.UnsupportedOperationException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.carrotsearch.hppc.ObjectLookupContainer;
 import com.carrotsearch.hppc.cursors.ObjectCursor;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -152,7 +157,7 @@ public class ElasticSearch implements ISearch
 	{
 		// Do nothing, needed to create a hook for the Production client
 	}
-	
+
 	public ElasticSearch(TransportClient client)
 	{
 		this.client = client;
@@ -265,8 +270,7 @@ public class ElasticSearch implements ISearch
 			try
 			{
 				upsertDocument(object);
-			}
-			catch (Exception e)
+			} catch (Exception e)
 			{
 				logger.log(Level.FATAL, "Failure during upsert operation!", e);
 			}
@@ -467,10 +471,9 @@ public class ElasticSearch implements ISearch
 			}
 
 			SearchResponse response = builder.get();
-			
+
 			return processResponse(index, request, from, size, response);
-		}
-		catch (Exception e)
+		} catch (Exception e)
 		{
 			if (e.getCause() instanceof QueryShardException)
 			{
@@ -483,7 +486,7 @@ public class ElasticSearch implements ISearch
 			}
 		}
 	}
-	
+
 	@Override
 	public SearchResponse searchRaw(SearchRequest request)
 	{
@@ -498,13 +501,55 @@ public class ElasticSearch implements ISearch
 			SearchResponse resp = resp_raw.get();
 
 			return resp;
-		}
-		catch (Exception e)
+		} catch (Exception e)
 		{
-			e.printStackTrace();
+			logger.error("Failed to search!", e);
 		}
 
 		return null;
+	}
+
+	@Override
+	public SearchResponse searchScrollRaw(SearchScrollRequest request)
+	{
+		if (request == null)
+		{
+			throw new NullPointerException();
+		}
+
+		try
+		{
+			ActionFuture<SearchResponse> resp_raw = client.searchScroll(request);
+			SearchResponse resp = resp_raw.get();
+
+			return resp;
+		} catch (Exception e)
+		{
+			logger.error("Failed to search scroll!", e);
+		}
+
+		return null;
+	}
+
+	@Override
+	public boolean clearScrollRaw(ClearScrollRequest request)
+	{
+		if (request == null)
+		{
+			throw new NullPointerException();
+		}
+
+		try
+		{
+			ClearScrollResponse resp_raw = client.clearScroll(request).get();
+
+			return resp_raw.isSucceeded();
+		} catch (Exception e)
+		{
+			logger.error("Failed to clear the scroll context!", e);
+		}
+
+		return false;
 	}
 
 	private JSONServletResponse processResponse(IndexDefinition index, StandardSearchRequest request, int from, int size, SearchResponse response)
@@ -513,7 +558,7 @@ public class ElasticSearch implements ISearch
 
 		response.getHits().forEach(hit ->
 		{
-				Map<FieldName, String> map = new TreeMap<FieldName, String>();
+			Map<FieldName, String> map = new TreeMap<FieldName, String>();
 			hit.getSourceAsMap().forEach((k, v) ->
 			{
 				map.put(new FieldName(k), v.toString());
@@ -523,10 +568,10 @@ public class ElasticSearch implements ISearch
 
 		long total_hits = response.getHits().totalHits;
 
-			int start_of_next_page_of_results = from + size;
+		int start_of_next_page_of_results = from + size;
 		int previous_page = (from - size) < 0 ? 0 : (from - size);
 
-			boolean has_more_results = total_hits > start_of_next_page_of_results;
+		boolean has_more_results = total_hits > start_of_next_page_of_results;
 
 		boolean has_previous_results = from > 0;
 
@@ -541,7 +586,7 @@ public class ElasticSearch implements ISearch
 			break;
 		}
 
-			SearchResponseOK ok = new SearchResponseOK(request, results, from, has_more_results, has_previous_results, start_of_next_page_of_results, previous_page, total_hits);
+		SearchResponseOK ok = new SearchResponseOK(request, results, from, has_more_results, has_previous_results, start_of_next_page_of_results, previous_page, total_hits);
 
 		logger.log(level, String.format("QUERY:%s INDEX:%s STATUS:%s HITS:%s TOTAL_HITS:%s MAX_RESULTS:%d START_RESULTS_AFTER:%d", ok.getSimpleSearchRequest().getSimpleQueryString(), index.getSimpleValue(), response.status(), results.size(), ok.getSimpleTotalHits(), ok.getSimpleSearchRequest().getSimpleMaxResults(), ok.getSimpleSearchRequest().getSimpleStartResultsAfter()));
 		logger.trace(String.format("FIRST_RESULT_IDX:%s HAS_MORE_RESULTS:%s HAS_PREVIOUS_RESULTS:%s START_OF_NEXT_PAGE_OF_RESULTS:%s START_OF_PREVIOUS_PAGE_OF_RESULTS:%s", ok.getSimpleFirstResultIdx(), ok.getSimpleHasMoreResults(), ok.getSimpleHasMoreResults(), ok.getSimpleStartOfNextPageOfResults(), ok.getSimpleStartOfPreviousPageOfResults()));
@@ -734,7 +779,7 @@ public class ElasticSearch implements ISearch
 			Map<String, String> expected = new TreeMap<String, String>();
 			index.getSimpleFields().forEach(fields ->
 			{
-				expected.put(fields.getSimpleFieldName().getSimpleName(), fields.getSimpleType().getSimpleSearchType());
+				expected.put(fields.getSimpleFieldName().getSimpleName(), fields.getSimpleType().getSimpleCode());
 			});
 
 			try
@@ -869,7 +914,10 @@ public class ElasticSearch implements ISearch
 	}
 
 	/**
-	 * Create an index, given an index definition. It's protected to allow child classes to override the method, but it should never be called outside of the class.
+	 * Create an index, given an index definition. It's protected to allow child
+	 * classes to override the method, but it should never be called outside of the
+	 * class.
+	 * 
 	 * @param index
 	 * @return
 	 */
@@ -957,7 +1005,7 @@ public class ElasticSearch implements ISearch
 		if (sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.INSTANT)
 			sort_on_string = getSortFieldNameInstant(sort_by.getSimpleField().getSimpleFieldName());
 
-		return SortBuilders.fieldSort(sort_on_string).order(order).unmappedType(SearchIndexFieldType.ATOM.getSimpleSearchType());
+		return SortBuilders.fieldSort(sort_on_string).order(order).unmappedType(SearchIndexFieldType.ATOM.getSimpleCode());
 	}
 
 	/**
@@ -991,8 +1039,9 @@ public class ElasticSearch implements ISearch
 	 */
 	static public String getSortFieldNameText(String field_name)
 	{
-		return field_name + "_" + SORT_FIELD_NAME_JIMMUTABLE + "_" + SearchIndexFieldType.ATOM.getSimpleSearchType();
+		return field_name + "_" + SORT_FIELD_NAME_JIMMUTABLE + "_" + SearchIndexFieldType.ATOM.getSimpleCode();
 	}
+
 	/**
 	 * In order to sort TimeOfDay objects, we need to look at the ms_from_midnight
 	 * field from within. This method creates a consistent field name to sort by.
@@ -1248,7 +1297,7 @@ public class ElasticSearch implements ISearch
 	}
 
 	/**
-	 * This will build all the mapping fields for an index definition
+	 * This will build all the mapping fields for an index defintion
 	 * 
 	 */
 	private static XContentBuilder getMappingBuilder(SearchIndexDefinition index, XContentBuilder default_value)
@@ -1256,11 +1305,7 @@ public class ElasticSearch implements ISearch
 		try
 		{
 			XContentBuilder mappingBuilder = jsonBuilder();
-			mappingBuilder.startObject().startObject(ELASTICSEARCH_DEFAULT_TYPE);
-			// 'Dynamic':'strict' - Prevents adding field automatically when a new field (not in the mapping) 
-			// is in the search document being updated
-			mappingBuilder.field("dynamic", "strict"); 
-			mappingBuilder.startObject("properties");
+			mappingBuilder.startObject().startObject(ELASTICSEARCH_DEFAULT_TYPE).startObject("properties");
 			for (SearchIndexFieldDefinition field : index.getSimpleFields())
 			{
 				// if (field.getSimpleType().equals(SearchIndexFieldType.OBJECTID))
@@ -1279,7 +1324,7 @@ public class ElasticSearch implements ISearch
 				// } else
 				// {
 				mappingBuilder.startObject(field.getSimpleFieldName().getSimpleName());
-				/*	*/mappingBuilder.field("type", field.getSimpleType().getSimpleSearchType());
+				/*	*/mappingBuilder.field("type", field.getSimpleType().getSimpleCode());
 				mappingBuilder.endObject();
 				// }
 
@@ -1287,7 +1332,7 @@ public class ElasticSearch implements ISearch
 				if (field.getSimpleType() == SearchIndexFieldType.TEXT)
 				{
 					mappingBuilder.startObject(getSortFieldNameText(field.getSimpleFieldName()));
-					mappingBuilder.field("type", SearchIndexFieldType.ATOM.getSimpleSearchType());
+					mappingBuilder.field("type", SearchIndexFieldType.ATOM.getSimpleCode());
 					mappingBuilder.endObject();
 				}
 
@@ -1295,7 +1340,7 @@ public class ElasticSearch implements ISearch
 				if (field.getSimpleType() == SearchIndexFieldType.INSTANT)
 				{
 					mappingBuilder.startObject(getSortFieldNameInstant(field.getSimpleFieldName()));
-					mappingBuilder.field("type", SearchIndexFieldType.LONG.getSimpleSearchType());
+					mappingBuilder.field("type", SearchIndexFieldType.LONG.getSimpleCode());
 					mappingBuilder.endObject();
 				}
 
@@ -1303,7 +1348,7 @@ public class ElasticSearch implements ISearch
 				if (field.getSimpleType() == SearchIndexFieldType.TIMEOFDAY)
 				{
 					mappingBuilder.startObject(getSortFieldNameTimeOfDay(field.getSimpleFieldName()));
-					mappingBuilder.field("type", SearchIndexFieldType.LONG.getSimpleSearchType());
+					mappingBuilder.field("type", SearchIndexFieldType.LONG.getSimpleCode());
 					mappingBuilder.endObject();
 				}
 			}
@@ -1483,35 +1528,40 @@ public class ElasticSearch implements ISearch
 			return object;
 		}
 	}
-	
+
 	/**
-	 * TODO Once we're ready to fully deprecate the TransportClient used in Dev, the methods in this class can replace the methods in the standard ElasticSearch
+	 * TODO Once we're ready to fully deprecate the TransportClient used in Dev, the
+	 * methods in this class can replace the methods in the standard ElasticSearch
+	 * 
 	 * @author salvador.salazar
 	 *
 	 */
 	public static class RESTClient extends ElasticSearch
 	{
 		/**
-		 * The RestClient replaces the TransportClient that we used previously. The RestClient is more robust, and it doesn't strictly require us to have the same
-		 * version on client/server.
+		 * The RestClient replaces the TransportClient that we used previously. The
+		 * RestClient is more robust, and it doesn't strictly require us to have the
+		 * same version on client/server.
 		 */
 		private volatile RestHighLevelClient high_level_rest_client;
 
 		private final BasicHeader HEADER_BASIC_AUTH = new BasicHeader("Authorization", "Basic ZWxhc3RpYzpQOGVHdjdBVXQwRzNhelI0YzBiZEFVQVE=");
 		private final BasicHeader HEADER_CONTENT_TYPE = new BasicHeader("Content-Type", "application/json");
-		
+
 		private String PRODUCTION_ELASTICSEARCH_HOST = "f8bfe258266ee6bd44cece0dde4326d5.us-west-2.aws.found.io";
 		private int PRODUCTION_ELASTICSEARCH_PORT = 9243;
-		
+
 		public RESTClient()
 		{
-			// Once we deprecate the TransportClient in dev, we can simply add a RestClientBuilder in construction, that will swap between dev and prod
+			// Once we deprecate the TransportClient in dev, we can simply add a
+			// RestClientBuilder in construction, that will swap between dev and prod
 			RestClientBuilder builder = RestClient.builder(new HttpHost(PRODUCTION_ELASTICSEARCH_HOST, PRODUCTION_ELASTICSEARCH_PORT, "https"));
-			builder.setDefaultHeaders(new Header[] { HEADER_BASIC_AUTH, HEADER_CONTENT_TYPE });
-			
+			builder.setDefaultHeaders(new Header[]
+			{ HEADER_BASIC_AUTH, HEADER_CONTENT_TYPE });
+
 			high_level_rest_client = new RestHighLevelClient(builder);
 		}
-		
+
 		protected boolean createIndex(SearchIndexDefinition index)
 		{
 			if (index == null)
@@ -1528,16 +1578,16 @@ public class ElasticSearch implements ISearch
 				{
 					mappingBuilder.startObject(field.getSimpleFieldName().getSimpleName());
 					{
-						mappingBuilder.field("type", field.getSimpleType().getSimpleSearchType());
+						mappingBuilder.field("type", field.getSimpleType().getSimpleCode());
 					}
 					mappingBuilder.endObject();
-					
+
 				}
 				mappingBuilder.endObject().endObject().endObject();
 
 				CreateIndexRequest request = new CreateIndexRequest(index.getSimpleIndex().getSimpleValue()).mapping(ELASTICSEARCH_DEFAULT_TYPE, mappingBuilder);
 				CreateIndexResponse createResponse = high_level_rest_client.indices().create(request);
-				
+
 				if (!createResponse.isAcknowledged())
 				{
 					logger.fatal(String.format("Index Creation not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
@@ -1572,30 +1622,28 @@ public class ElasticSearch implements ISearch
 			try
 			{
 				String delete_request = "/" + index.getSimpleValue() + "/" + document_id.getTypeName().getSimpleName() + "/" + document_id.getSimpleValue();
-				
+
 				DeleteRequest del = new DeleteRequest(index.getSimpleValue(), ELASTICSEARCH_DEFAULT_TYPE, document_id.getSimpleValue()).setRefreshPolicy(RefreshPolicy.IMMEDIATE);
 				DeleteResponse response = high_level_rest_client.delete(del);
 
 				boolean successfully_deleted = response.getResult().equals(Result.DELETED);
-				
+
 				if (!successfully_deleted)
 				{
 					logger.error("delete unsuccessful for: " + delete_request);
-				}
-				else
+				} else
 				{
 					logger.info("successful delete for: " + delete_request);
 				}
-				
+
 				return successfully_deleted;
-			}
-			catch (Exception e)
+			} catch (Exception e)
 			{
 				logger.error(e);
 				return false;
 			}
 		}
-		
+
 		/**
 		 * Deletes an entire index
 		 * 
@@ -1610,7 +1658,7 @@ public class ElasticSearch implements ISearch
 				logger.fatal("Cannot delete a null Index");
 				return false;
 			}
-			
+
 			try
 			{
 				DeleteIndexRequest del = new DeleteIndexRequest(index.getSimpleIndex().getSimpleValue());
@@ -1620,20 +1668,18 @@ public class ElasticSearch implements ISearch
 				{
 					logger.info("successfully deleted: " + index.getSimpleIndex().getSimpleValue());
 					return true;
-				}
-				else
+				} else
 				{
 					logger.info("couldn't delete index: " + index.getSimpleIndex().getSimpleValue());
 					return false;
 				}
-			}
-			catch(Exception e)
+			} catch (Exception e)
 			{
 				e.printStackTrace();
 				return false;
 			}
 		}
-		
+
 		/**
 		 * Upsert a document to a search index
 		 * 
@@ -1654,49 +1700,48 @@ public class ElasticSearch implements ISearch
 				SearchDocumentWriter writer = new SearchDocumentWriter();
 				object.writeSearchDocument(writer);
 				Map<String, Object> data = writer.getSimpleFieldsMap();
-				
+
 				String index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
 				String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
-				
+
 				String request_str = "/" + index_name + "/" + ElasticSearch.ELASTICSEARCH_DEFAULT_TYPE + "/" + document_name;
-				
+
 				IndexRequest request = new IndexRequest(index_name, ELASTICSEARCH_DEFAULT_TYPE, document_name).source(data).setRefreshPolicy(RefreshPolicy.IMMEDIATE);
 				IndexResponse response = high_level_rest_client.index(request);
 
 				switch (response.getResult())
 				{
-					case CREATED:
-					{
-						logger.info("document updated: " + request_str);
-						break;
-					}
-					case UPDATED:
-					{
-						logger.info("document updated: " + request_str);
-						break;
-					}
-					default:
-					{
-						logger.error("failed to upsert document: " + request_str);
-					}
+				case CREATED:
+				{
+					logger.info("document updated: " + request_str);
+					break;
+				}
+				case UPDATED:
+				{
+					logger.info("document updated: " + request_str);
+					break;
+				}
+				default:
+				{
+					logger.error("failed to upsert document: " + request_str);
+				}
 				}
 
 				boolean success = response.getResult().equals(Result.CREATED) || response.getResult().equals(Result.UPDATED);
 				return success;
-			}
-			catch (Exception e)
+			} catch (Exception e)
 			{
 				e.printStackTrace();
 				return false;
 			}
 		}
-		
+
 		@Override
 		public SearchRequestBuilder getBuilder(IndexDefinition index)
 		{
 			throw new UnsupportedOperationException("The ElasticSearch REST client doesn't support SearchRequestBuilder in it's implementation. Please use @");
 		}
-		
+
 		/**
 		 * Test if the index exists or not
 		 * 
@@ -1715,34 +1760,33 @@ public class ElasticSearch implements ISearch
 			try
 			{
 				Response resp = high_level_rest_client.getLowLevelClient().performRequest("GET", "/" + index.getSimpleValue());
-				
+
 				if (resp.getStatusLine().getStatusCode() != 200)
 				{
 					return false;
-				}
-				else
+				} else
 				{
 					return true;
 				}
-			}
-			catch (Exception e)
+			} catch (Exception e)
 			{
-				// index exists checks throw an exception when not found. It's a pretty dumb way to handle exists checks, but I couldn't find a quieter way to do it with 
+				// index exists checks throw an exception when not found. It's a pretty dumb way
+				// to handle exists checks, but I couldn't find a quieter way to do it with
 				// the high level client 6.2.4
 				return false;
 			}
 		}
-		
+
 		public static void main(String[] args) throws IOException
 		{
-			ElasticSearch.RESTClient elastic_search = new ElasticSearch.RESTClient(); 
-			
-			 Response resp = elastic_search.high_level_rest_client.getLowLevelClient().performRequest("GET", "/trevor:isawesome:v1");
-			 String response_body = EntityUtils.toString(resp.getEntity()); 
-			 
-			 System.out.println("response body: " + response_body);
+			ElasticSearch.RESTClient elastic_search = new ElasticSearch.RESTClient();
+
+			Response resp = elastic_search.high_level_rest_client.getLowLevelClient().performRequest("GET", "/trevor:isawesome:v1");
+			String response_body = EntityUtils.toString(resp.getEntity());
+
+			System.out.println("response body: " + response_body);
 		}
-		
+
 		/**
 		 * Test if the index exists or not
 		 * 
@@ -1761,7 +1805,7 @@ public class ElasticSearch implements ISearch
 
 			return indexExists(index.getSimpleIndex());
 		}
-		
+
 		public boolean indexProperlyConfigured(SearchIndexDefinition index)
 		{
 
@@ -1775,8 +1819,9 @@ public class ElasticSearch implements ISearch
 
 				// compare the expected index fields to the actual index fields
 				Map<String, String> expected = new HashMap<String, String>();
-				index.getSimpleFields().forEach(fields -> {
-					expected.put(fields.getSimpleFieldName().getSimpleName(), fields.getSimpleType().getSimpleSearchType());
+				index.getSimpleFields().forEach(fields ->
+				{
+					expected.put(fields.getSimpleFieldName().getSimpleName(), fields.getSimpleType().getSimpleCode());
 				});
 
 				try
@@ -1788,7 +1833,8 @@ public class ElasticSearch implements ISearch
 
 					Map<String, String> actual = new HashMap<String, String>();
 
-					node.fields().forEachRemaining(fieldMapping -> {
+					node.fields().forEachRemaining(fieldMapping ->
+					{
 						actual.put(fieldMapping.getKey(), fieldMapping.getValue().get("type").asText());
 					});
 
@@ -1802,16 +1848,15 @@ public class ElasticSearch implements ISearch
 
 					return true;
 
-				}
-				catch (Exception e)
+				} catch (Exception e)
 				{
 					logger.log(Level.FATAL, String.format("Failed to get the index mapping for index %s", index.getSimpleIndex().getSimpleValue()), e);
 				}
 			}
-			
+
 			return false;
 		}
-		
+
 		/**
 		 * Search an index with a query string.
 		 * 
@@ -1838,14 +1883,9 @@ public class ElasticSearch implements ISearch
 				int from = request.getSimpleStartResultsAfter();
 				int size = request.getSimpleMaxResults();
 
-				SearchSourceBuilder query_builder = new SearchSourceBuilder()
-						.from(from)
-						.size(size)
-						.query(QueryBuilders.queryStringQuery(request.getSimpleQueryString()));
-				
-				SearchRequest ext_request = new SearchRequest(index_name)
-						.types(ELASTICSEARCH_DEFAULT_TYPE)
-						.source(query_builder);
+				SearchSourceBuilder query_builder = new SearchSourceBuilder().from(from).size(size).query(QueryBuilders.queryStringQuery(request.getSimpleQueryString()));
+
+				SearchRequest ext_request = new SearchRequest(index_name).types(ELASTICSEARCH_DEFAULT_TYPE).source(query_builder);
 
 				SearchResponse response = high_level_rest_client.search(ext_request);
 
@@ -1873,12 +1913,12 @@ public class ElasticSearch implements ISearch
 				Level level;
 				switch (response.status())
 				{
-					case OK:
-						level = Level.INFO;
-						break;
-					default:
-						level = Level.WARN;
-						break;
+				case OK:
+					level = Level.INFO;
+					break;
+				default:
+					level = Level.WARN;
+					break;
 				}
 
 				SearchResponseOK ok = new SearchResponseOK(request, results, from, has_more_results, has_previous_results, next_page, previous_page, total_hits);
@@ -1889,8 +1929,7 @@ public class ElasticSearch implements ISearch
 
 				return ok;
 
-			}
-			catch (Exception e)
+			} catch (Exception e)
 			{
 				if (e.getCause() instanceof QueryShardException)
 				{
@@ -1903,7 +1942,7 @@ public class ElasticSearch implements ISearch
 				}
 			}
 		}
-		
+
 		@Override
 		public SearchResponse searchRaw(SearchRequest request)
 		{
@@ -1915,15 +1954,55 @@ public class ElasticSearch implements ISearch
 			try
 			{
 				return high_level_rest_client.search(request);
-			}
-			catch (Exception e)
+			} catch (Exception e)
 			{
-				e.printStackTrace();
+				logger.error("Failed to search!", e);
 			}
 
 			return null;
 		}
-		
+
+		@Override
+		public SearchResponse searchScrollRaw(SearchScrollRequest request)
+		{
+			if (request == null)
+			{
+				throw new NullPointerException();
+			}
+
+			try
+			{
+				return high_level_rest_client.searchScroll(request);
+
+			} catch (Exception e)
+			{
+				logger.error("Failed to search scroll!", e);
+			}
+
+			return null;
+		}
+
+		@Override
+		public boolean clearScrollRaw(ClearScrollRequest request)
+		{
+			if (request == null)
+			{
+				throw new NullPointerException();
+			}
+
+			try
+			{
+				ClearScrollResponse resp_raw = high_level_rest_client.clearScroll(request);
+
+				return resp_raw.isSucceeded();
+			} catch (Exception e)
+			{
+				logger.error("Failed to clear the scroll context!", e);
+			}
+
+			return false;
+		}
+
 		public boolean writeAllToCSV(IndexDefinition index, String query_string, List<SearchFieldId> sorted_header, ICsvListWriter list_writer, CellProcessor[] cell_processors)
 		{
 			if (index == null || query_string == null)
@@ -1933,18 +2012,10 @@ public class ElasticSearch implements ISearch
 
 			String index_name = index.getSimpleValue();
 
-			SearchSourceBuilder query_builder = new SearchSourceBuilder()
-					.query(QueryBuilders.queryStringQuery(query_string))
-					.sort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC)
-					.size(1_000)
-					;
-			
-			SearchRequest ext_request = new SearchRequest(index_name)
-					.types(ELASTICSEARCH_DEFAULT_TYPE)
-					.scroll(TimeValue.timeValueMinutes(1))
-					.source(query_builder)
-					;
-			
+			SearchSourceBuilder query_builder = new SearchSourceBuilder().query(QueryBuilders.queryStringQuery(query_string)).sort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC).size(1_000);
+
+			SearchRequest ext_request = new SearchRequest(index_name).types(ELASTICSEARCH_DEFAULT_TYPE).scroll(TimeValue.timeValueMinutes(1)).source(query_builder);
+
 			try
 			{
 				SearchResponse scrollResp = high_level_rest_client.search(ext_request);
@@ -1954,7 +2025,7 @@ public class ElasticSearch implements ISearch
 					String[] document;
 					for (SearchHit hit : scrollResp.getHits().getHits())
 					{
-
+						logger.info(scrollResp.getHits().totalHits);
 						document = new String[sorted_header.size()];
 
 						Map<String, Object> resultMap = hit.getSourceAsMap();
@@ -1970,8 +2041,7 @@ public class ElasticSearch implements ISearch
 						try
 						{
 							list_writer.write(Arrays.asList(document), cell_processors);
-						}
-						catch (IOException e)
+						} catch (IOException e)
 						{
 							logger.error(e);
 							return false;
@@ -1979,12 +2049,11 @@ public class ElasticSearch implements ISearch
 					}
 
 					scrollResp.scrollId(scrollResp.getScrollId());
-				}
-				while (scrollResp.getHits().getHits().length != 0); // Zero hits mark the end of the scroll and the while
+				} while (scrollResp.getHits().getHits().length != 0); // Zero hits mark the end of the scroll and the
+																		// while
 																		// loop.
 				return true;
-			}
-			catch (Exception e)
+			} catch (Exception e)
 			{
 				e.printStackTrace();
 				return false;

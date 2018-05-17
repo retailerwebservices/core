@@ -2,9 +2,11 @@ package org.jimmutable.cloud.elasticsearch;
 
 import java.util.List;
 
+import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchScrollRequest;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
@@ -201,5 +203,10 @@ public interface ISearch
 	 * @return if successful or not
 	 */
 	public boolean putAllFieldMappings(SearchIndexDefinition index);
+
+	
+	public SearchResponse searchScrollRaw(SearchScrollRequest request);
+
+	boolean clearScrollRaw(ClearScrollRequest request);
 
 }

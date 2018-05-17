@@ -18,6 +18,7 @@ public class StorageKeyExtension extends Stringable
 	public static final StorageKeyExtension JPEG = new StorageKeyExtension("jpeg");
 	public static final StorageKeyExtension MOV = new StorageKeyExtension("mov");
 	public static final StorageKeyExtension PDF = new StorageKeyExtension("pdf");
+	public static final StorageKeyExtension CSV = new StorageKeyExtension("csv");
 
 	public StorageKeyExtension(String value)
 	{

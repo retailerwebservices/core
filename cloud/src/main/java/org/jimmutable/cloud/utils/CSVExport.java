@@ -12,7 +12,9 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.elasticsearch.action.search.SearchRequest;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
+import org.jimmutable.cloud.elasticsearch.ElasticSearch;
 import org.jimmutable.cloud.elasticsearch.IndexDefinition;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
@@ -29,7 +31,7 @@ import org.supercsv.prefs.CsvPreference;
 public class CSVExport
 {
 
-	static private final int SEARCH_MAX = 10000;
+	// static private final int SEARCH_MAX = 10000;
 	static private final CsvPreference CSV_PREFERENCE = CsvPreference.STANDARD_PREFERENCE;
 
 	static private final Logger logger = LogManager.getLogger(CSVExport.class);
@@ -40,66 +42,66 @@ public class CSVExport
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().writeAllToCSV(index, query_string, sorted_header, list_writer, cell_processors);
 	}
 
-	private static void getDocuments(List<SearchFieldId> sorted_header, IndexDefinition index, String query_string, ICsvListWriter list_writer, CellProcessor[] cell_processors, boolean export_all, int nextStart)
-	{
-
-		JSONServletResponse response = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(index, new StandardSearchRequest(query_string, SEARCH_MAX, nextStart));
-
-		if (response instanceof SearchResponseOK)
-		{
-
-			SearchResponseOK ok = (SearchResponseOK) response;
-
-			String[] document;
-
-			for (OneSearchResult result : ok.getSimpleResults())
-			{
-				document = new String[sorted_header.size()];
-
-				Map<String, String> map = new HashMap<>();
-				
-
-				result.getSimpleContents().forEach((key, value)->{
-					
-					map.put(key.getSimpleName(), value);
-					
-				});
-				
-								
-				
-				for (SearchFieldId field_name : sorted_header)
-				{
-					if (map.containsKey(field_name.getSimpleValue()))
-					{
-						document[sorted_header.indexOf(field_name)] = map.get(field_name.getSimpleValue());
-					}
-				}
-
-				try
-				{
-					list_writer.write(Arrays.asList(document), cell_processors);
-				} catch (IOException e)
-				{
-					logger.error(e);
-					return;
-				}
-			}
-
-			if (ok.getSimpleHasMoreResults() && export_all)
-			{
-
-				getDocuments(sorted_header, index, query_string, list_writer, cell_processors, export_all, ok.getSimpleStartOfNextPageOfResults());
-			} else
-			{
-				return;
-			}
-
-		} else
-		{
-			return;
-		}
-
-	}
+	// private static void getDocuments(List<SearchFieldId> sorted_header,
+	// IndexDefinition index, String query_string, ICsvListWriter list_writer,
+	// CellProcessor[] cell_processors, int nextStart)
+	// {
+	//
+	// logger.info("query:" + query_string + "nextStart:" + nextStart);
+	// JSONServletResponse response =
+	// CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(index,
+	// new StandardSearchRequest(query_string, SEARCH_MAX, nextStart));
+	//
+	// if (response instanceof SearchResponseOK)
+	// {
+	//
+	// SearchResponseOK ok = (SearchResponseOK) response;
+	//
+	// String[] document;
+	//
+	// for (OneSearchResult result : ok.getSimpleResults())
+	// {
+	// document = new String[sorted_header.size()];
+	//
+	// Map<String, String> map = new HashMap<>();
+	//
+	// result.getSimpleContents().forEach((key, value) ->
+	// {
+	//
+	// map.put(key.getSimpleName(), value);
+	//
+	// });
+	//
+	// for (SearchFieldId field_name : sorted_header)
+	// {
+	// if (map.containsKey(field_name.getSimpleValue()))
+	// {
+	// document[sorted_header.indexOf(field_name)] =
+	// map.get(field_name.getSimpleValue());
+	// }
+	// }
+	//
+	// try
+	// {
+	// list_writer.write(Arrays.asList(document), cell_processors);
+	// } catch (IOException e)
+	// {
+	// logger.error(e);
+	// return;
+	// }
+	// }
+	//
+	// // It is not possible to get any further documents after 10000 (SEARCH_MAX)
+	// // without using Search After,
+	//
+	// return;
+	//
+	// } else
+	// {
+	// return;
+	// }
+	//
+	// }
 
 	/**
 	 * Write the search
@@ -157,10 +159,14 @@ public class CSVExport
 
 			if (request.getSimpleExportAllDocuments())
 			{
-				writeAllToCSV(sorted_fields, request.getSimpleIndex(), request.getSimpleQueryString(), list_writer, cell_processors);
+				// writeAllToCSV(sorted_fields, request.getSimpleIndex(),
+				// request.getSimpleQueryString(), list_writer, cell_processors);
+				writeAllToCSV(sorted_fields, request.getSimpleIndex(), "*", list_writer, cell_processors);
 			} else
 			{
-				getDocuments(sorted_fields, request.getSimpleIndex(), request.getSimpleQueryString(), list_writer, cell_processors, request.getSimpleExportAllDocuments(), 0);
+				// getDocuments(sorted_fields, request.getSimpleIndex(),
+				// request.getSimpleQueryString(), list_writer, cell_processors, 0);
+				writeAllToCSV(sorted_fields, request.getSimpleIndex(), request.getSimpleQueryString(), list_writer, cell_processors);
 			}
 
 		} catch (IOException e)
