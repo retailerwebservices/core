@@ -1469,10 +1469,10 @@ public class ElasticSearch implements ISearch
 				switch (response.getResult())
 				{
 				case CREATED:
-					level = Level.INFO;
+					level = Level.DEBUG;
 					break;
 				case UPDATED:
-					level = Level.INFO;
+					level = Level.DEBUG;
 					break;
 				default:
 					level = Level.FATAL;
