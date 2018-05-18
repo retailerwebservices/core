@@ -39,8 +39,8 @@ final public class TestLibraryPatron extends StandardImmutableObject<TestLibrary
 	static public final SearchIndexFieldDefinition SEARCH_FIELD_LAST_NAME = new SearchIndexFieldDefinition(FIELD_LAST_NAME.getSimpleFieldName(), SearchIndexFieldType.TEXT);
 	static public final SearchIndexFieldDefinition SEARCH_FIELD_BIRTH_DATE = new SearchIndexFieldDefinition(FIELD_BIRTH_DATE.getSimpleFieldName(), SearchIndexFieldType.DAY);
 	static public final SearchIndexFieldDefinition SEARCH_FIELD_EMAIL_ADDRESS = new SearchIndexFieldDefinition(FIELD_EMAIL_ADDRESS.getSimpleFieldName(), SearchIndexFieldType.TEXT);
-	static public final SearchIndexFieldDefinition SEARCH_FIELD_SSN = new SearchIndexFieldDefinition(FIELD_SSN.getSimpleFieldName(), SearchIndexFieldType.ATOM);
-	static public final SearchIndexFieldDefinition SEARCH_FIELD_NUM_BOOKS = new SearchIndexFieldDefinition(FIELD_NUM_BOOKS.getSimpleFieldName(), SearchIndexFieldType.TEXT);
+	static public final SearchIndexFieldDefinition SEARCH_FIELD_SSN = new SearchIndexFieldDefinition(FIELD_SSN.getSimpleFieldName(), SearchIndexFieldType.TEXT);
+	static public final SearchIndexFieldDefinition SEARCH_FIELD_NUM_BOOKS = new SearchIndexFieldDefinition(FIELD_NUM_BOOKS.getSimpleFieldName(), SearchIndexFieldType.LONG);
 
 
 	private ObjectId id; // required
@@ -220,13 +220,13 @@ final public class TestLibraryPatron extends StandardImmutableObject<TestLibrary
 	@Override
 	public void writeSearchDocument(SearchDocumentWriter writer)
 	{
-		writer.writeAtom(FIELD_OBJECT_ID.getSimpleFieldName(), id.getSimpleValue());
-		writer.writeText(FIELD_FIRST_NAME.getSimpleFieldName(), first_name);
-		writer.writeText(FIELD_LAST_NAME.getSimpleFieldName(), last_name);
-		writer.writeText(FIELD_EMAIL_ADDRESS.getSimpleFieldName(), email_address);
-		writer.writeTextWithSubstringMatchingSupport(FIELD_SSN.getSimpleFieldName(), ssn);
-		writer.writeDay(FIELD_BIRTH_DATE.getSimpleFieldName(), birth_date);
-		writer.writeLong(FIELD_NUM_BOOKS.getSimpleFieldName(), number_of_books_checked_out);
+		writer.writeAtom(SEARCH_FIELD_OBJECT_ID, id.getSimpleValue());
+		writer.writeText(SEARCH_FIELD_FIRST_NAME, first_name);
+		writer.writeText(SEARCH_FIELD_LAST_NAME, last_name);
+		writer.writeText(SEARCH_FIELD_EMAIL_ADDRESS, email_address);
+		writer.writeTextWithSubstringMatchingSupport(SEARCH_FIELD_SSN, ssn);
+		writer.writeDay(SEARCH_FIELD_BIRTH_DATE, birth_date);
+		writer.writeLong(SEARCH_FIELD_NUM_BOOKS, number_of_books_checked_out);
 	}
 
 	@Override

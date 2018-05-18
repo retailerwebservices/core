@@ -159,14 +159,14 @@ public class SearchDocumentWriter
 	}
 
 	/**
-	 * Deprecated in favor of Instant. Use writeInstantArray instead.
-	 * 
 	 * Add an array of Longs to a DAY field within the document.
 	 * 
 	 * @param search_index_definition
 	 *            The SearchIndexFieldDefinition
 	 * @param elements
 	 *            The Long elements. Must not contain any null elements.
+	 * @deprecated
+	 * 			  Use writeInstantArray instead.
 	 */
 	@Deprecated
 	public void writeTimestampArray(SearchIndexFieldDefinition search_index_definition, FieldCollection<Long> elements)
@@ -252,6 +252,7 @@ public class SearchDocumentWriter
 	 * @param text
 	 *            The text of the field. Nulls and blanks are ignored.
 	 */
+	@Deprecated
 	public void writeText(FieldName name, String text)
 	{
 
@@ -300,7 +301,10 @@ public class SearchDocumentWriter
 	 *            The FieldDefinition
 	 * @param text
 	 *            The text of the field. Nulls and blanks are ignored.
+	 * @deprecated
+	 * 			Use writeText(SearchIndexFieldDefinition search_index_definition, String text) instead.
 	 */
+	@Deprecated
 	public void writeText(FieldDefinition<?> field_definition, String text)
 	{
 		Validator.notNull(field_definition.getSimpleFieldName());
@@ -308,6 +312,8 @@ public class SearchDocumentWriter
 	}
 
 	/**
+	 * Deprecated in favor of writeAtom(SearchIndexFieldDefinition search_index_definition, String text).
+	 * 
 	 * A field to index structured content such as email addresses, hostnames,
 	 * status codes, zip codes or tags. They are typically used for filtering (Find
 	 * me all blog posts where status is published), for sorting, and for
@@ -321,6 +327,7 @@ public class SearchDocumentWriter
 	 * @param text
 	 *            The (atomic) text. Nulls and blanks are ignored.
 	 */
+	@Deprecated
 	public void writeAtom(FieldName name, String text)
 	{
 		Validator.notNull(name);
@@ -358,6 +365,8 @@ public class SearchDocumentWriter
 	}
 
 	/**
+	 * Deprecated. Use writeAtom(SearchIndexFieldDefinition search_index_definition, String text) instead.
+	 * 
 	 * A field to index structured content such as email addresses, hostnames,
 	 * status codes, zip codes or tags. They are typically used for filtering (Find
 	 * me all blog posts where status is published), for sorting, and for
@@ -371,6 +380,7 @@ public class SearchDocumentWriter
 	 * @param text
 	 *            The (atomic) text. Nulls and blanks are ignored.
 	 */
+	@Deprecated
 	public void writeAtom(FieldDefinition<?> field_definition, String text)
 	{
 		Validator.notNull(field_definition.getSimpleFieldName());
@@ -378,6 +388,7 @@ public class SearchDocumentWriter
 	}
 
 	/**
+	 * 
 	 * Add a true or false datatype to a document
 	 * 
 	 * @param name
@@ -385,6 +396,7 @@ public class SearchDocumentWriter
 	 * @param value
 	 *            true or false
 	 */
+	@Deprecated
 	public void writeBoolean(FieldName name, boolean value)
 	{
 		Validator.notNull(name);
@@ -417,6 +429,7 @@ public class SearchDocumentWriter
 	 * @param value
 	 *            true or false
 	 */
+	@Deprecated
 	public void writeBoolean(FieldDefinition<?> field_definition, boolean value)
 	{
 		Validator.notNull(field_definition);
@@ -464,6 +477,8 @@ public class SearchDocumentWriter
 	}
 
 	/**
+	 * Deprecated. Use writeLong(SearchIndexFieldDefinition search_index_definition, long value).
+	 * 
 	 * Add a signed 64-bit integer with a minimum value of -2^63 and a maximum value
 	 * of 2^63-1 to a document.
 	 * 
@@ -474,6 +489,7 @@ public class SearchDocumentWriter
 	 * @param value
 	 *            the long
 	 */
+	@Deprecated
 	public void writeLong(FieldName name, long value)
 	{
 		Validator.notNull(name);
@@ -502,6 +518,8 @@ public class SearchDocumentWriter
 	}
 
 	/**
+	 * Deprecated. Use writeLong(SearchIndexFieldDefinition search_index_definition, long value) instead.
+	 * 
 	 * Add a signed 64-bit integer with a minimum value of -2^63 and a maximum value
 	 * of 2^63-1 to a document.
 	 * 
@@ -512,6 +530,7 @@ public class SearchDocumentWriter
 	 * @param value
 	 *            the long
 	 */
+	@Deprecated
 	public void writeLong(FieldDefinition<?> field_definition, long value)
 	{
 		Validator.notNull(field_definition);
@@ -519,6 +538,8 @@ public class SearchDocumentWriter
 	}
 
 	/**
+	 * Deprecated: Use writeFloat(SearchIndexFieldDefinition search_index_definition, float value) instead.
+	 * 
 	 * Add a a single-precision 32-bit IEEE 754 floating point number to a document
 	 * 
 	 * @param name
@@ -526,6 +547,7 @@ public class SearchDocumentWriter
 	 * @param value
 	 *            the float value
 	 */
+	@Deprecated
 	public void writeFloat(FieldName name, float value)
 	{
 		Validator.notNull(name);
@@ -559,7 +581,10 @@ public class SearchDocumentWriter
 	 *            The FieldDefinition
 	 * @param value
 	 *            the float value
+	 * @deprecated
+	 * 			Use writeFloat(SearchIndexFieldDefinition search_index_definition, float value) instead.
 	 */
+	@Deprecated
 	public void writeFloat(FieldDefinition<?> field_definition, float value)
 	{
 		Validator.notNull(field_definition);
@@ -574,6 +599,7 @@ public class SearchDocumentWriter
 	 * @param day
 	 *            the Day value
 	 */
+	@Deprecated
 	public void writeDay(FieldName name, Day day)
 	{
 		Validator.notNull(name);
@@ -646,6 +672,7 @@ public class SearchDocumentWriter
 	 * @param day
 	 *            the Day value
 	 */
+	@Deprecated
 	public void writeDay(FieldDefinition<?> field_definition, Day day)
 	{
 		Validator.notNull(field_definition);
@@ -741,6 +768,7 @@ public class SearchDocumentWriter
 	 *            The text to write. Limited to 50 characters. Nulls and blanks are
 	 *            simply ignored.
 	 */
+	@Deprecated
 	public void writeTextWithPrefixMatchingSupport(FieldName name, String text)
 	{
 		Validator.notNull(name);
@@ -803,6 +831,7 @@ public class SearchDocumentWriter
 	 *            The text to write. Limited to 50 characters. Nulls and blanks are
 	 *            simply ignored.
 	 */
+	@Deprecated
 	public void writeTextWithPrefixMatchingSupport(FieldDefinition<?> field_definition, String text)
 	{
 		Validator.notNull(field_definition);
@@ -824,7 +853,10 @@ public class SearchDocumentWriter
 	 * @param text
 	 *            The text to write. Limited to 50 characters. Nulls and blanks are
 	 *            simply ignored.
+	 * @deprecated
+	 * 			Use writeTextWithPrefixMatchingSupport(SearchIndexFieldDefinition search_index_definition, String text) instead.
 	 */
+	@Deprecated
 	public void writeTextWithSubstringMatchingSupport(FieldName name, String text)
 	{
 		Validator.notNull(name);
@@ -885,7 +917,10 @@ public class SearchDocumentWriter
 	 * @param text
 	 *            The text to write. Limited to 50 characters. Nulls and blanks are
 	 *            simply ignored.
+	 *            
+	 * @deprecated - Use writeTextWithSubstringMatchingSupport(SearchIndexFieldDefinition search_index_definition, String text) instead.
 	 */
+	@Deprecated
 	public void writeTextWithSubstringMatchingSupport(FieldDefinition<?> field_definition, String text)
 	{
 		Validator.notNull(field_definition);
@@ -899,7 +934,10 @@ public class SearchDocumentWriter
 	 *            The name of the field
 	 * @param value
 	 *            the Instant value
+	 *            
+	 * @deprecated Use writeInstant(SearchIndexFieldDefinition search_index_definition, Instant value) instead.
 	 */
+	@Deprecated
 	public void writeInstant(FieldName name, Instant value)
 	{
 		Validator.notNull(name);
@@ -936,7 +974,10 @@ public class SearchDocumentWriter
 	 *            The FieldDefinition
 	 * @param value
 	 *            the Instant value
+	 * @deprecated
+	 * 			  Use writeInstant(SearchIndexFieldDefinition search_index_definition, Instant value) instead.
 	 */
+	@Deprecated
 	public void writeInstant(FieldDefinition<?> field_definition, Instant value)
 	{
 		Validator.notNull(field_definition);
@@ -977,7 +1018,10 @@ public class SearchDocumentWriter
 	 *            The name of the field
 	 * @param value
 	 *            the TimeOfDay value
+	 * @deprecated
+	 * 			Use writeTimeOfDay(SearchIndexFieldDefinition search_index_definition, TimeOfDay value) instead.
 	 */
+	@Deprecated
 	public void writeTimeOfDay(FieldName name, TimeOfDay value)
 	{
 		Validator.notNull(name);
@@ -1014,7 +1058,10 @@ public class SearchDocumentWriter
 	 *            The FieldDefinition
 	 * @param value
 	 *            the TimeOfDay values
+	 * @deprecated
+	 * 		Use writeTimeOfDay(SearchIndexFieldDefinition search_index_definition, TimeOfDay value) instead.
 	 */
+	@Deprecated
 	public void writeTimeOfDay(FieldDefinition<?> field_definition, TimeOfDay value)
 	{
 		Validator.notNull(field_definition);

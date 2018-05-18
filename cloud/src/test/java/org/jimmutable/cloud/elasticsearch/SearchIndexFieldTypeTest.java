@@ -10,7 +10,7 @@ public class SearchIndexFieldTypeTest
 	public void testAtom()
 	{
 		assertEquals(SearchIndexFieldType.ATOM, SearchIndexFieldType.CONVERTER.fromCode("KEYWORD", null));
-		assertEquals("keyword", SearchIndexFieldType.CONVERTER.fromCode("keyword", null).getSimpleCode());
+		assertEquals("atom", SearchIndexFieldType.CONVERTER.fromCode("keyword", null).getSimpleCode());
 	}
 
 	@Test
@@ -24,7 +24,7 @@ public class SearchIndexFieldTypeTest
 	public void testDay()
 	{
 		assertEquals(SearchIndexFieldType.DAY, SearchIndexFieldType.CONVERTER.fromCode("date", null));
-		assertEquals("date", SearchIndexFieldType.CONVERTER.fromCode("Date", null).getSimpleCode());
+		assertEquals("day", SearchIndexFieldType.CONVERTER.fromCode("Date", null).getSimpleCode());
 	}
 
 	@Test

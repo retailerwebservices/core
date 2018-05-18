@@ -77,12 +77,12 @@ public class MyIndexable implements Indexable
 	public void writeSearchDocument(SearchDocumentWriter writer)
 	{
 
-		writer.writeBoolean(theBoolean.getSimpleFieldName(), true);
-		writer.writeText(theText.getSimpleFieldName(), "abc");
-		writer.writeAtom(theAtom.getSimpleFieldName(), "my atom");
-		writer.writeDay(theDay.getSimpleFieldName(), new Day(new DateTime("1972-1-1")));
-		writer.writeFloat(theFloat.getSimpleFieldName(), 0.1f);
-		writer.writeLong(theLong.getSimpleFieldName(), 100L);
+		writer.writeBoolean(theBoolean, true);
+		writer.writeText(theText, "abc");
+		writer.writeAtom(theAtom, "my atom");
+		writer.writeDay(theDay, new Day(new DateTime("1972-1-1")));
+		writer.writeFloat(theFloat, 0.1f);
+		writer.writeLong(theLong, 100L);
 
 		writer.writeTimestamp(theTimestamp, 1420070400001L);
 

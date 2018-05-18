@@ -790,7 +790,7 @@ public class SearchSortIntegrationTest
 		@Override
 		public void writeSearchDocument(SearchDocumentWriter writer) 
 		{
-			writer.writeFloat(FIELD_VALUE, value);	
+			writer.writeFloat(SEARCH_FIELD_VALUE, value);	
 		}
 
 		@Override
@@ -1066,7 +1066,7 @@ public class SearchSortIntegrationTest
 		@Override
 		public void writeSearchDocument(SearchDocumentWriter writer) 
 		{
-			writer.writeBoolean(FIELD_VALUE, value);
+			writer.writeBoolean(SEARCH_FIELD_VALUE, value);
 		}
 
 		@Override
@@ -1330,7 +1330,7 @@ public class SearchSortIntegrationTest
 		@Override
 		public void writeSearchDocument(SearchDocumentWriter writer) 
 		{
-			writer.writeDay(FIELD_VALUE, value);		
+			writer.writeDay(SEARCH_FIELD_VALUE, value);		
 		}
 
 		@Override
