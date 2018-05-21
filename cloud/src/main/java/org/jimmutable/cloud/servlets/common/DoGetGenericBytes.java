@@ -38,7 +38,7 @@ public abstract class DoGetGenericBytes extends HttpServlet
 
 		String id = request.getParameter(getId());
 
-		if (id == null || id.equals("")||id.equals("undefined"))
+		if (id == null || id.equals("") || id.equals("undefined"))
 		{
 			idNotFound(request, response);
 			return;
@@ -47,20 +47,12 @@ public abstract class DoGetGenericBytes extends HttpServlet
 		try
 		{
 			StorageKey storage_key = new ObjectIdStorageKey(getKind(), new ObjectId(id), getExtension());
-			byte[] bytes = CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(storage_key, null);
-			response.setContentType(storage_key.getSimpleExtension().getSimpleMimeType());
-
-			if (bytes == null)
-			{
-				bytesNotFound(request, response);
-				return;
-			}
 
 			OutputStream out = null;
 			try
 			{
 				out = response.getOutputStream();
-				out.write(bytes);
+				CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersionStreaming(storage_key, out);
 				out.flush();
 			} catch (EofException e)
 			{
