@@ -18,7 +18,7 @@ public class StorageUtils
 	 * object out of storage. If anything fails on retrieving from storage this will
 	 * return the default_value.
 	 */
-	private static StandardObject<?> getOptionalFromStorage( Kind kind, ObjectId id, StandardObject<?> default_value )
+	public static StandardObject<?> getOptionalFromStorage( Kind kind, ObjectId id, StandardObject<?> default_value )
 	{
 		StandardObject<?> obj = null;
 		try
@@ -31,7 +31,7 @@ public class StorageUtils
 		}
 		catch ( Exception e )
 		{
-			LOGGER.error("Could not retrieve StandardObject from Storage", e);
+			LOGGER.error("Could not retrieve StandardObject " + id + " of Kind " + kind + " from Storage", e);
 			return default_value;
 		}
 		return obj;
