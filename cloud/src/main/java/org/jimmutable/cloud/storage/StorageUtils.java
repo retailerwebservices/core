@@ -20,6 +20,18 @@ public class StorageUtils
 	 */
 	public static StandardObject<?> getOptionalFromStorage( Kind kind, ObjectId id, StandardObject<?> default_value )
 	{
+		if(kind == null)
+		{
+			//This will allow us to know if id was also null
+			LOGGER.error("Could not retrieve StandardObject for id " + id + " because Kind was null");
+			return default_value;
+		}
+		if(id == null)
+		{
+			LOGGER.error("Could not retrieve StandardObject for Kind " + kind + " because id was null");
+			return default_value;
+		}
+		
 		StandardObject<?> obj = null;
 		try
 		{
