@@ -3,6 +3,7 @@ package org.jimmutable.cloud;
 import org.jimmutable.cloud.attachments.AttachmentMetaData;
 import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
+import org.jimmutable.cloud.email.Email;
 import org.jimmutable.cloud.logging.LogLevelMessageOnChange;
 import org.jimmutable.cloud.messaging.StandardMessageOnUpsert;
 import org.jimmutable.cloud.objects.StandardChangeLogEntry;
@@ -63,25 +64,26 @@ public class JimmutableCloudTypeNameRegister
 		ObjectParseTree.registerTypeName(OneSearchResultWithTyping.class);
 		ObjectParseTree.registerTypeName(Sort.class);
 		ObjectParseTree.registerTypeName(SortBy.class);
-		
+
 		ObjectParseTree.registerTypeName(SearchIndexFieldDefinition.class);
 		ObjectParseTree.registerTypeName(SearchIndexDefinition.class);
-
 
 		ObjectParseTree.registerTypeName(SearchUIData.class);
 		ObjectParseTree.registerTypeName(AdvancedSearchField.class);
 		ObjectParseTree.registerTypeName(AdvancedSearchComboBoxChoice.class);
-		
+
 		ObjectParseTree.registerTypeName(IncludeFieldInView.class);
 		ObjectParseTree.registerTypeName(RequestExportCSV.class);
-		
+
 		ObjectParseTree.registerTypeName(StorageMetadata.class);
-		
+
 		ObjectParseTree.registerTypeName(StandardChangeLogEntry.class);
 		ObjectParseTree.registerTypeName(AttachmentMetaData.class);
 		ObjectParseTree.registerTypeName(TinyUrlResult.class);
-		
+
 		ObjectParseTree.registerTypeName(StandardMessageOnUpsert.class);
 		ObjectParseTree.registerTypeName(LogLevelMessageOnChange.class);
+
+		ObjectParseTree.registerTypeName(Email.class);
 	}
 }

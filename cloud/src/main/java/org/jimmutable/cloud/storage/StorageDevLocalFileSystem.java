@@ -14,9 +14,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
 import java.util.EnumSet;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jimmutable.cloud.ApplicationId;
+import org.jimmutable.cloud.elasticsearch.ElasticSearch;
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.utils.IOUtils;
@@ -29,6 +33,7 @@ public class StorageDevLocalFileSystem extends Storage
 	 * on our local machine.
 	 */
 	private File root;
+	private static final Logger logger = LogManager.getLogger(StorageDevLocalFileSystem.class);
 
 	public StorageDevLocalFileSystem(boolean is_readonly, ApplicationId applicationId)
 	{
@@ -164,12 +169,12 @@ public class StorageDevLocalFileSystem extends Storage
 		{
 			final File folder = new File(root.getAbsolutePath() + "/" + getSimpleKind().getSimpleValue());
 
-			if(!folder.exists())
+			if (!folder.exists())
 			{
 				System.err.println("File path " + folder + "does not exist. Cannot walk file tree for Kind " + getSimpleKind());
 				return Result.ERROR;
 			}
-			
+
 			Files.walkFileTree(folder.toPath(), EnumSet.noneOf(FileVisitOption.class), 1, new Walker());
 
 			return shouldStop() ? Result.STOPPED : Result.SUCCESS;
@@ -194,7 +199,14 @@ public class StorageDevLocalFileSystem extends Storage
 					return FileVisitResult.CONTINUE;
 				}
 
-				StorageKeyName name = new StorageKeyName(file_name_and_ext[0]);
+				StorageKeyName name = null;
+				try
+				{
+					name = new StorageKeyName(file_name_and_ext[0]);
+				} catch (Exception e)
+				{
+					logger.error(String.format("Failed to create StorageKeyName from '%s' in list %s", file_name_and_ext[0], Arrays.asList(file_name_and_ext).toString()), e);
+				}
 
 				if (hasPrefix())
 				{
@@ -227,7 +239,7 @@ public class StorageDevLocalFileSystem extends Storage
 	{
 		return new Scanner(kind, prefix, only_object_ids);
 	}
-	
+
 	/**
 	 * @return the file path for where Storage lives
 	 */

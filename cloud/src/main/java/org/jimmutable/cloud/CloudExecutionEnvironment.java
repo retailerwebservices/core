@@ -14,6 +14,9 @@ import org.jimmutable.cloud.elasticsearch.ElasticSearch;
 import org.jimmutable.cloud.elasticsearch.ElasticSearchEndpoint;
 import org.jimmutable.cloud.elasticsearch.ISearch;
 import org.jimmutable.cloud.elasticsearch.StubSearch;
+import org.jimmutable.cloud.email.EmailStub;
+import org.jimmutable.cloud.email.IEmail;
+import org.jimmutable.cloud.email.SESClient;
 import org.jimmutable.cloud.logging.Log4jUtil;
 import org.jimmutable.cloud.messaging.queue.IQueue;
 import org.jimmutable.cloud.messaging.queue.QueueRedis;
@@ -45,7 +48,8 @@ public class CloudExecutionEnvironment
 	private IStorage storage;
 	private IQueue queue_service;
 	private ISignal signal_service;
-	
+	private IEmail email_service;
+
 	// System properties
 	private static final String ENV_TYPE_VARIABLE_NAME = "JIMMUTABLE_ENV_TYPE";
 	private static final String ENV_LOGGING_LEVEL = "JIMMUTABLE_LOGGING_LEVEL";
@@ -56,12 +60,13 @@ public class CloudExecutionEnvironment
 	private static ApplicationId APPLICATION_ID;
 	private static StandardImmutableObjectCache STANDARD_IMMUTABLE_OBJECT_CACHE;
 
-	private CloudExecutionEnvironment(ISearch search, IStorage storage, IQueue queue_service, ISignal signal_service)
+	private CloudExecutionEnvironment(ISearch search, IStorage storage, IQueue queue_service, ISignal signal_service, IEmail email_service)
 	{
 		this.search = search;
 		this.storage = storage;
 		this.queue_service = queue_service;
 		this.signal_service = signal_service;
+		this.email_service = email_service;
 	}
 
 	public EnvironmentType getSimpleEnvironmentType()
@@ -98,10 +103,15 @@ public class CloudExecutionEnvironment
 	{
 		return queue_service;
 	}
-	
+
 	public ISignal getSimpleSignalService()
 	{
 		return signal_service;
+	}
+
+	public IEmail getSimpleEmailService()
+	{
+		return email_service;
 	}
 
 	/**
@@ -144,15 +154,14 @@ public class CloudExecutionEnvironment
 			Level level = Level.toLevel(System.getProperty(ENV_LOGGING_LEVEL), DEFAULT_LEVEL);
 			Log4jUtil.setAllLoggerLevels(level);
 			logger.trace(String.format("Logging level: %s", level));
-			
+
 			checkOs();
 
 			TransportClient client = null;
 			try
 			{
 				client = new PreBuiltTransportClient(Settings.EMPTY).addTransportAddress(new TransportAddress(InetAddress.getByName(ElasticSearchEndpoint.CURRENT.getSimpleHost()), ElasticSearchEndpoint.CURRENT.getSimplePort()));
-			}
-			catch (UnknownHostException e)
+			} catch (UnknownHostException e)
 			{
 				logger.log(Level.FATAL, "Failed to instantiate the elasticsearch client!", e);
 			}
@@ -162,23 +171,43 @@ public class CloudExecutionEnvironment
 				throw new RuntimeException("Failed to instantiate the elasticsearch client!");
 			}
 
-			CURRENT = new CloudExecutionEnvironment(new ElasticSearch(client), new StorageDevLocalFileSystem(false, APPLICATION_ID), new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID));
-			
+			SESClient ses_client = null;
+			try
+			{
+				ses_client = new SESClient(SESClient.getClient());
+			} catch (Exception e)
+			{
+				logger.error("Failed to created email client!", e);
+				throw new RuntimeException("Failed to created email client!");
+			}
+
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearch(client), new StorageDevLocalFileSystem(false, APPLICATION_ID), new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), ses_client);
+
 			break;
 		case PRODUCTION:
 			checkOs();
-			
+
 			logger.log(Level.INFO, "Starting production environment");
-			
-	        StorageS3 storage = new StorageS3(RegionSpecificAmazonS3ClientFactory.defaultFactory(), APPLICATION_ID, false);
-	        storage.upsertBucketIfNeeded();
-	        
-			CURRENT = new CloudExecutionEnvironment(new ElasticSearch.RESTClient(), storage, new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID));
-	        break;
+
+			StorageS3 storage = new StorageS3(RegionSpecificAmazonS3ClientFactory.defaultFactory(), APPLICATION_ID, false);
+			storage.upsertBucketIfNeeded();
+
+			SESClient email_client = null;
+			try
+			{
+				email_client = new SESClient(SESClient.getClient());
+			} catch (Exception e)
+			{
+				logger.error("Failed to created email client!", e);
+				throw new RuntimeException("Failed to created email client!");
+			}
+
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearch.RESTClient(), storage, new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), email_client);
+			break;
 		case STUB:
 
 			checkOs();
-			CURRENT = new CloudExecutionEnvironment(new StubSearch(), new StubStorage(), new QueueStub(), new SignalStub());
+			CURRENT = new CloudExecutionEnvironment(new StubSearch(), new StubStorage(), new QueueStub(), new SignalStub(), new EmailStub());
 			break;
 
 		default:
@@ -228,10 +257,11 @@ public class CloudExecutionEnvironment
 	public static EnvironmentType getEnvironmentTypeFromSystemProperty(EnvironmentType default_value)
 	{
 		String env_level = System.getProperty(ENV_TYPE_VARIABLE_NAME);
-		if (env_level == null) env_level = System.getProperty(ENV_TYPE_VARIABLE_NAME.toLowerCase());
-		
+		if (env_level == null)
+			env_level = System.getProperty(ENV_TYPE_VARIABLE_NAME.toLowerCase());
+
 		if (env_level != null)
-		{			
+		{
 			EnvironmentType tmp_type = null;
 			try
 			{
