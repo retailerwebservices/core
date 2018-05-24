@@ -114,6 +114,20 @@ public class CloudExecutionEnvironment
 		return email_service;
 	}
 
+	private static SESClient getSESClient()
+	{
+		try
+		{
+			// aws.accessKeyId and aws.secretKey - you can also use
+			// SystemPropertiesCredentialsProvider
+			return new SESClient(SESClient.getStaticCredentialsClient(System.getProperty("aws.accessKeyId"), System.getProperty("aws.secretKey")));
+		} catch (Exception e)
+		{
+			logger.error("Failed to created email client!", e);
+			throw new RuntimeException("Failed to created email client!");
+		}
+	}
+
 	/**
 	 *
 	 * ONLY CALL THIS METHOD ONCE
@@ -171,17 +185,7 @@ public class CloudExecutionEnvironment
 				throw new RuntimeException("Failed to instantiate the elasticsearch client!");
 			}
 
-			SESClient ses_client = null;
-			try
-			{
-				ses_client = new SESClient(SESClient.getClient());
-			} catch (Exception e)
-			{
-				logger.error("Failed to created email client!", e);
-				throw new RuntimeException("Failed to created email client!");
-			}
-
-			CURRENT = new CloudExecutionEnvironment(new ElasticSearch(client), new StorageDevLocalFileSystem(false, APPLICATION_ID), new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), ses_client);
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearch(client), new StorageDevLocalFileSystem(false, APPLICATION_ID), new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient());
 
 			break;
 		case PRODUCTION:
@@ -192,17 +196,7 @@ public class CloudExecutionEnvironment
 			StorageS3 storage = new StorageS3(RegionSpecificAmazonS3ClientFactory.defaultFactory(), APPLICATION_ID, false);
 			storage.upsertBucketIfNeeded();
 
-			SESClient email_client = null;
-			try
-			{
-				email_client = new SESClient(SESClient.getClient());
-			} catch (Exception e)
-			{
-				logger.error("Failed to created email client!", e);
-				throw new RuntimeException("Failed to created email client!");
-			}
-
-			CURRENT = new CloudExecutionEnvironment(new ElasticSearch.RESTClient(), storage, new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), email_client);
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearch.RESTClient(), storage, new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient());
 			break;
 		case STUB:
 
