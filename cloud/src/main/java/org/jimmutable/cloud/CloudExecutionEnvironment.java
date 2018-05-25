@@ -120,7 +120,7 @@ public class CloudExecutionEnvironment
 		{
 			// aws.accessKeyId and aws.secretKey - you can also use
 			// SystemPropertiesCredentialsProvider
-			return new SESClient(SESClient.getStaticCredentialsClient(System.getProperty("aws.accessKeyId"), System.getProperty("aws.secretKey")));
+			return new SESClient(SESClient.getStaticCredentialsClient(System.getProperty("aws.accessKeyId") == null ? "" : System.getProperty("aws.accessKeyId"), System.getProperty("aws.secretKey") == null ? "" : System.getProperty("aws.secretKey")));
 		} catch (Exception e)
 		{
 			logger.error("Failed to created email client!", e);

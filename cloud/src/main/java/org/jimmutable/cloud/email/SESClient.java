@@ -19,7 +19,7 @@ import com.amazonaws.services.simpleemail.model.SendEmailRequest;
 import com.amazonaws.services.simpleemail.model.SendEmailResult;
 
 /**
- * AWS SES Email Service
+ * AWS Simple Email Service
  * 
  * @author trevorbox
  *
