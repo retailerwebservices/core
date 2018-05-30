@@ -65,6 +65,11 @@ public class StandardSearchRequest extends StandardImmutableObject<StandardSearc
 	{
 		this(query_string, DEFAULT_MAX_RESULTS, DEFAULT_START_RESULTS_AFTER, Sort.DEFAULT_SORT);
 	}
+	
+	public StandardSearchRequest( String query_string , Sort sort)
+	{
+		this(query_string, DEFAULT_MAX_RESULTS, DEFAULT_START_RESULTS_AFTER, sort);
+	}
 
 	public String getSimpleQueryString()
 	{

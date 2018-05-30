@@ -104,7 +104,7 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
 	 * 
 	 * @return
 	 */
-	private FieldMap<FieldName, String[]> getSimpleContents()
+	public FieldMap<FieldName, String[]> getSimpleContents()
 	{
 		return result;
 	}
