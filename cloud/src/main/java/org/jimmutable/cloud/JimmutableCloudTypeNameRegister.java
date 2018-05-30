@@ -85,5 +85,6 @@ public class JimmutableCloudTypeNameRegister
 		ObjectParseTree.registerTypeName(LogLevelMessageOnChange.class);
 
 		ObjectParseTree.registerTypeName(Email.class);
+		
 	}
 }

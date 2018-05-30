@@ -22,30 +22,29 @@ public class EmailTest extends StubTest
 		b.set(Email.FIELD_FROM, new EmailAddress("someone@retailerwebservices.com"));
 		b.set(Email.FIELD_SUBJECT, "subject");
 		b.add(Email.FIELD_TO, new EmailAddress("someone.else@retailerwebservices.com"));
+		b.set(Email.FIELD_HTML_BODY, "<p>body</p>");
 		base_email = b.create(null);
 	}
 
 	@Test
 	public void required()
 	{
-		//System.out.println(email.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
-		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s"
+		//System.out.println(base_email.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
+		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s"
 			     , "{"
 			     , "  \"type_hint\" : \"email\","
 			     , "  \"from\" : \"someone@retailerwebservices.com\","
 			     , "  \"from_name\" : \"Someone\","
 			     , "  \"subject\" : \"subject\","
 			     , "  \"to\" : [ \"someone.else@retailerwebservices.com\" ],"
-			     , "  \"bcc\" : [ ],"
-			     , "  \"cc\" : [ ],"
-			     , "  \"reply_to\" : [ ]"
+			     , "  \"html_body\" : \"<p>body</p>\""
 			     , "}"
 			);
 
 			
 		Email obj = (Email)StandardObject.deserialize(obj_string);
 		assertEquals(obj,base_email);
-		assertFalse(base_email.hasBcc() && base_email.hasCc() && base_email.hasHtmlBody() && base_email.hasReplyTo() && base_email.hasTextBody());
+		assertFalse(base_email.hasBcc() && base_email.hasCc() && base_email.hasReplyTo() && base_email.hasTextBody());
 	}
 	
 	@Test
@@ -55,14 +54,12 @@ public class EmailTest extends StubTest
 		b.add(Email.FIELD_BCC, "bcc@retailerwebservices.com");
 		b.add(Email.FIELD_CC, "cc@retailerwebservices.com");
 		b.add(Email.FIELD_REPLY_TO, "reply_to@retailerwebservices.com");
-		b.set(Email.FIELD_TEXT_BODY, "body");
-		b.set(Email.FIELD_HTML_BODY, "<p>body</p>");
 		
 		Email email = b.create(null);
 		
 		//System.out.println(email.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 		
-		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s"
+		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s"
 			     , "{"
 			     , "  \"type_hint\" : \"email\","
 			     , "  \"from\" : \"someone@retailerwebservices.com\","
@@ -72,14 +69,13 @@ public class EmailTest extends StubTest
 			     , "  \"bcc\" : [ \"bcc@retailerwebservices.com\" ],"
 			     , "  \"cc\" : [ \"cc@retailerwebservices.com\" ],"
 			     , "  \"reply_to\" : [ \"reply_to@retailerwebservices.com\" ],"
-			     , "  \"html_body\" : \"<p>body</p>\","
-			     , "  \"text_body\" : \"body\""
+			     , "  \"html_body\" : \"<p>body</p>\""
 			     , "}"
 			);
 
 		Email obj = (Email)StandardObject.deserialize(obj_string);
 		assertEquals(obj,email);
-		assertTrue(email.hasBcc() && email.hasCc() && email.hasHtmlBody() && email.hasReplyTo() && email.hasTextBody());
+		assertTrue(email.hasBcc() && email.hasCc() && email.hasHtmlBody() && email.hasReplyTo());
 	}
 
 }

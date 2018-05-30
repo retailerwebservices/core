@@ -6,8 +6,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jimmutable.core.utils.Validator;
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder;
@@ -32,23 +30,18 @@ public class SESClient implements IEmail
 	private AmazonSimpleEmailService client;
 
 	/**
-	 * aws.accessKeyId and aws.secretKey - you can also use
-	 * SystemPropertiesCredentialsProvider, but not implemented yet
+	 * Just set the -Daws.accessKeyId and -Daws.secretKey properties when running
+	 * the JVM to pass the id and secret for the client to work.
 	 * 
-	 * @param access_key
-	 * @param secret_key
+	 * @see <a href=
+	 *      "https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html">Working
+	 *      with AWS Credentials</a>
+	 * 
 	 * @return
 	 */
-	public static AmazonSimpleEmailService getStaticCredentialsClient(String access_key, String secret_key)
+	public static AmazonSimpleEmailService getClient()
 	{
-
-		return AmazonSimpleEmailServiceClientBuilder.standard()
-				// static credentials - there are other options as well
-				// https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html
-				.withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(access_key, secret_key)))
-				// US West (Oregon)
-				.withRegion(Regions.US_WEST_2).build();
-
+		return AmazonSimpleEmailServiceClientBuilder.standard().withRegion(Regions.US_WEST_2).build();
 	}
 
 	public SESClient(AmazonSimpleEmailService client)

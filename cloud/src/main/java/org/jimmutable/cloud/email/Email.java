@@ -32,12 +32,12 @@ public class Email extends StandardObject<Email>
 	private EmailAddress from; // required
 	private String from_name; // required
 	private String subject; // required
-	private Set<EmailAddress> to; // required, atleast 1
+	private Set<EmailAddress> to; // required, at least 1
 	private Set<EmailAddress> cc; // optional
 	private Set<EmailAddress> bcc; // optional
 	private Set<EmailAddress> reply_to; // optional
-	private String text_body; // optional
-	private String html_body; // optional
+	private String text_body; // optional, if html_body is set
+	private String html_body; // optional, if text_body is set
 
 	public Email(ObjectParseTree t)
 	{
@@ -126,6 +126,7 @@ public class Email extends StandardObject<Email>
 		Validator.notNull(getSimpleTo(), "To");
 		Validator.containsNoNulls(getSimpleTo(), "To");
 		Validator.min(getSimpleTo().size(), 1, "To");
+		Validator.isTrue((hasHtmlBody() && !hasTextBody()) || (!hasHtmlBody() && hasTextBody()), "Has only text or html body");
 	}
 
 	@Override
