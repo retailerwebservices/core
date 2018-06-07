@@ -694,16 +694,26 @@ public class ElasticSearch implements ISearch
 				break;
 			}
 
-			logger.log(level, String.format("QUERY:%s INDEX:%s STATUS:%s HITS:%s TOTAL_HITS:%s MAX_RESULTS:%d START_RESULTS_AFTER:%d", request, index.getSimpleValue(), response.status(), results.size(), response.getHits().totalHits, request.getSimpleMaxResults(), request.getSimpleStartResultsAfter()));
-			logger.trace(String.format("FIRST_RESULT_IDX:%s HAS_MORE_RESULTS:%s HAS_PREVIOUS_RESULTS:%s START_OF_NEXT_PAGE_OF_RESULTS:%s START_OF_PREVIOUS_PAGE_OF_RESULTS:%s", from, has_more_results, has_previous_results, next_page, from));
+			logger.log(level, String.format("QUERY:%s INDEX:%s STATUS:%s HITS:%s TOTAL_HITS:%s MAX_RESULTS:%d START_RESULTS_AFTER:%d", request.getSimpleQueryString(), index.getSimpleValue(), response.status(), results.size(), response.getHits().totalHits, request.getSimpleMaxResults(), request.getSimpleStartResultsAfter()));
+			logger.trace(String.format("SORT:%s FIRST_RESULT_IDX:%s HAS_MORE_RESULTS:%s HAS_PREVIOUS_RESULTS:%s START_OF_NEXT_PAGE_OF_RESULTS:%s START_OF_PREVIOUS_PAGE_OF_RESULTS:%s", request.getSimpleSort().getSimpleSortOrder().stream().map(e ->
+			{
+				return String.format("%s:%s", e.getSimpleField().getSimpleFieldName().getSimpleName(), e.getSimpleDirection().getSimpleCode());
+			}).collect(Collectors.toList()), from, has_more_results, has_previous_results, next_page, from));
 			logger.trace(results.toString());
 
 			return results;
 
 		} catch (Exception e)
 		{
-			logger.warn(String.format("Search failed for %s", request), e);
-			return default_value;
+			if (e.getCause() instanceof QueryShardException)
+			{
+				logger.warn(String.format("%s on index %s", e.getCause().getMessage(), index.getSimpleValue()));
+				return default_value;
+			} else
+			{
+				logger.error(String.format("Search failed for %s on index %s", request.getSimpleQueryString(), index.getSimpleValue()), e);
+				return default_value;
+			}
 		}
 	}
 
@@ -1041,6 +1051,7 @@ public class ElasticSearch implements ISearch
 	{
 		return field_name + "_" + SORT_FIELD_NAME_JIMMUTABLE + "_" + SearchIndexFieldType.ATOM.getSimpleSearchType();
 	}
+
 	/**
 	 * In order to sort TimeOfDay objects, we need to look at the ms_from_midnight
 	 * field from within. This method creates a consistent field name to sort by.
@@ -1305,9 +1316,10 @@ public class ElasticSearch implements ISearch
 		{
 			XContentBuilder mappingBuilder = jsonBuilder();
 			mappingBuilder.startObject().startObject(ELASTICSEARCH_DEFAULT_TYPE);
-			// 'Dynamic':'strict' - Prevents adding field automatically when a new field (not in the mapping) 
+			// 'Dynamic':'strict' - Prevents adding field automatically when a new field
+			// (not in the mapping)
 			// is in the search document being updated
-			mappingBuilder.field("dynamic", "strict"); 
+			mappingBuilder.field("dynamic", "strict");
 			mappingBuilder.startObject("properties");
 			for (SearchIndexFieldDefinition field : index.getSimpleFields())
 			{
@@ -1584,13 +1596,13 @@ public class ElasticSearch implements ISearch
 						mappingBuilder.field("type", field.getSimpleType().getSimpleSearchType());
 					}
 					mappingBuilder.endObject();
-					
+
 				}
 				mappingBuilder.endObject().endObject().endObject();
 
 				CreateIndexRequest request = new CreateIndexRequest(index.getSimpleIndex().getSimpleValue()).mapping(ELASTICSEARCH_DEFAULT_TYPE, mappingBuilder);
 				CreateIndexResponse createResponse = high_level_rest_client.indices().create(request);
-				
+
 				if (!createResponse.isAcknowledged())
 				{
 					logger.fatal(String.format("Index Creation not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
@@ -1822,7 +1834,8 @@ public class ElasticSearch implements ISearch
 
 				// compare the expected index fields to the actual index fields
 				Map<String, String> expected = new HashMap<String, String>();
-				index.getSimpleFields().forEach(fields -> {
+				index.getSimpleFields().forEach(fields ->
+				{
 					expected.put(fields.getSimpleFieldName().getSimpleName(), fields.getSimpleType().getSimpleSearchType());
 				});
 
