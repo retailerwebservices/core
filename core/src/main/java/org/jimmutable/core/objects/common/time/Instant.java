@@ -27,6 +27,12 @@ public class Instant extends StandardImmutableObject<Instant>
 	 * 
 	 * @param ms_from_epoch
 	 */
+	public Instant()
+	{
+		//Quality of Life Thing. 
+		this.ms_from_epoch = System.currentTimeMillis();
+	}
+	
 	public Instant(long ms_from_epoch)
 	{
 		this.ms_from_epoch = ms_from_epoch;
