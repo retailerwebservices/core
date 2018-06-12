@@ -122,12 +122,12 @@ abstract public class WriteAs
 		{
 			if ( obj == null ) { writer.writeBoolean(field_name, false); }
 			
-			if ( obj instanceof Boolean ) { writer.writeBoolean(field_name, (Boolean)obj); }
+			if ( obj instanceof Boolean ) { writer.writeBoolean(field_name, (Boolean)obj); return;}
 			
-			if ( obj instanceof Byte ) { writer.writeBoolean(field_name, (Byte)obj != 0); }
-			if ( obj instanceof Short ) { writer.writeBoolean(field_name, (Short)obj != 0); }
-			if ( obj instanceof Integer ) { writer.writeBoolean(field_name, (Integer)obj != 0); }
-			if ( obj instanceof Long ) { writer.writeBoolean(field_name, (Long)obj != 0); }
+			if ( obj instanceof Byte ) { writer.writeBoolean(field_name, (Byte)obj != 0); return ;}
+			if ( obj instanceof Short ) { writer.writeBoolean(field_name, (Short)obj != 0); return;}
+			if ( obj instanceof Integer ) { writer.writeBoolean(field_name, (Integer)obj != 0); return;}
+			if ( obj instanceof Long ) { writer.writeBoolean(field_name, (Long)obj != 0); return;}
 			
 			
 			throw new SerializeException(String.format("Unable to write %s as a boolean", obj.getClass().getSimpleName()));
