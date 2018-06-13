@@ -120,7 +120,7 @@ abstract public class WriteAs
 	{
 		public void writeObject(ObjectWriter writer, FieldName field_name, Object obj)
 		{
-			if ( obj == null ) { writer.writeBoolean(field_name, false); }
+			if ( obj == null ) { writer.writeBoolean(field_name, false); return;}
 			
 			if ( obj instanceof Boolean ) { writer.writeBoolean(field_name, (Boolean)obj); return;}
 			
