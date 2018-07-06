@@ -193,19 +193,14 @@ public class StorageDevLocalFileSystem extends Storage
 
 				String[] file_name_and_ext = file.getFileName().toString().split("\\.");
 
-				if (file_name_and_ext.length < 2)
-				{
-					System.err.println("Scanner error with file: " + file);
-					return FileVisitResult.CONTINUE;
-				}
-
 				StorageKeyName name = null;
 				try
 				{
 					name = new StorageKeyName(file_name_and_ext[0]);
 				} catch (Exception e)
 				{
-					logger.error(String.format("Failed to create StorageKeyName from '%s' in list %s", file_name_and_ext[0], Arrays.asList(file_name_and_ext).toString()), e);
+					logger.error(String.format("Failed to create StorageKeyName from '%s'", file.toAbsolutePath()), e);
+					return FileVisitResult.CONTINUE;
 				}
 
 				if (hasPrefix())

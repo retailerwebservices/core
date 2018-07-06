@@ -208,13 +208,20 @@ public class ElasticSearch implements ISearch
 	}
 
 	/**
-	 * Gracefully shutdown the running threads. Note: the TransportClient should be
-	 * closed where instantiated. This is not handles by this.
+	 * Blocks until all tasks have completed execution after a shutdown request, or
+	 * the timeout occurs, or the current thread is interrupted, whichever happens
+	 * first.
+	 * 
+	 * After timeout is reached shutdown now is called.
+	 * 
+	 * @param timeout_seconds
+	 *            int seconds to await graceful termination of threads
 	 * 
 	 * @return boolean if shutdown correctly or not
+	 * 
 	 */
 	@Override
-	public boolean shutdownDocumentUpsertThreadPool(int seconds)
+	public boolean shutdownDocumentUpsertThreadPool(int timeout_seconds)
 	{
 
 		long start = System.currentTimeMillis();
@@ -225,7 +232,7 @@ public class ElasticSearch implements ISearch
 
 		try
 		{
-			terminated = document_upsert_pool.awaitTermination(seconds, TimeUnit.SECONDS);
+			terminated = document_upsert_pool.awaitTermination(timeout_seconds, TimeUnit.SECONDS);
 		} catch (InterruptedException e)
 		{
 			logger.log(Level.FATAL, "Shutdown of runnable pool was interrupted!", e);
@@ -233,7 +240,7 @@ public class ElasticSearch implements ISearch
 
 		if (!terminated)
 		{
-			logger.error("Failed to terminate in %s seconds. Calling shutdownNow...", seconds);
+			logger.error(String.format("Failed to terminate in %s seconds. Calling shutdownNow...", timeout_seconds));
 			document_upsert_pool.shutdownNow();
 		}
 
@@ -399,16 +406,16 @@ public class ElasticSearch implements ISearch
 			Map<String, Object> data = writer.getSimpleFieldsMap();
 			String index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
 			String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
-			IndexResponse response = client.prepareIndex(index_name, ELASTICSEARCH_DEFAULT_TYPE, document_name).setRefreshPolicy(RefreshPolicy.IMMEDIATE).setSource(data).get();
+			IndexResponse response = client.prepareIndex(index_name, ELASTICSEARCH_DEFAULT_TYPE, document_name).setRefreshPolicy(RefreshPolicy.WAIT_UNTIL).setSource(data).get();
 
 			Level level;
 			switch (response.getResult())
 			{
 			case CREATED:
-				level = Level.INFO;
+				level = Level.DEBUG;
 				break;
 			case UPDATED:
-				level = Level.INFO;
+				level = Level.DEBUG;
 				break;
 			default:
 				level = Level.FATAL;
@@ -1471,13 +1478,15 @@ public class ElasticSearch implements ISearch
 			}
 
 			SearchDocumentWriter writer = new SearchDocumentWriter();
-			((Indexable) obj.getObject()).writeSearchDocument(writer);
+
+			Indexable indexable = (Indexable) obj.getObject();
+			indexable.writeSearchDocument(writer);
 			Map<String, Object> data = writer.getSimpleFieldsMap();
 
 			// Not async so it's only finished once the whole scan does so
 			try
 			{
-				String document_name = ((Indexable) obj.getObject()).getSimpleSearchDocumentId().getSimpleValue();
+				String document_name = indexable.getSimpleSearchDocumentId().getSimpleValue();
 				IndexResponse response = client.prepareIndex(index_name, ELASTICSEARCH_DEFAULT_TYPE, document_name).setSource(data).get();
 
 				Level level;
@@ -1498,9 +1507,8 @@ public class ElasticSearch implements ISearch
 
 			} catch (Exception e)
 			{
-				logger.log(Level.FATAL, "Failure during upsert operation!", e);
+				logger.log(Level.FATAL, String.format("Failure during upsert operation of Document id:%s on Index:%s", indexable.getSimpleSearchDocumentId().getSimpleValue(), indexable.getSimpleSearchIndexDefinition().getSimpleValue()), e);
 			}
-
 		}
 	}
 

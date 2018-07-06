@@ -26,12 +26,19 @@ public interface ISearch
 {
 
 	/**
-	 * Gracefully shutdown the running threads. Note: the TransportClient should be
-	 * closed where instantiated. This is not handles by this.
+	 * Blocks until all tasks have completed execution after a shutdown request, or
+	 * the timeout occurs, or the current thread is interrupted, whichever happens
+	 * first.
+	 * 
+	 * After timeout is reached shutdown now is called.
+	 * 
+	 * @param timeout_seconds
+	 *            int seconds to await graceful termination of threads
 	 * 
 	 * @return boolean if shutdown correctly or not
+	 * 
 	 */
-	public boolean shutdownDocumentUpsertThreadPool(int seconds);
+	public boolean shutdownDocumentUpsertThreadPool(int timeout_seconds);
 
 	/**
 	 * Upsert a document to a search index asynchronously
@@ -76,12 +83,17 @@ public interface ISearch
 	 * @return JSONServletResponse
 	 */
 	public JSONServletResponse search(IndexDefinition index, StandardSearchRequest request);
-	
+
 	/**
-	 * Uses ElasticSearch's {@link org.elasticsearch.action.search.SearchRequest} to prepare and send out a search. This method is useful for complex queries, that require
-	 * more than a simple text search.
-	 * @param index 
-	 * @param request The request to send directly to ElasticSearch. For examples on creating the request, look at {@link ISearch#search(IndexDefinition index, SearchRequest request)}
+	 * Uses ElasticSearch's {@link org.elasticsearch.action.search.SearchRequest} to
+	 * prepare and send out a search. This method is useful for complex queries,
+	 * that require more than a simple text search.
+	 * 
+	 * @param index
+	 * @param request
+	 *            The request to send directly to ElasticSearch. For examples on
+	 *            creating the request, look at
+	 *            {@link ISearch#search(IndexDefinition index, SearchRequest request)}
 	 * @return SearchResponse with all matching searches
 	 */
 	public SearchResponse searchRaw(SearchRequest request);
@@ -117,9 +129,9 @@ public interface ISearch
 	public boolean indexProperlyConfigured(SearchIndexDefinition index);
 
 	/**
-	 * A re-index operation syncs a Storable and Indexable Kinds data from
-	 * Storage into Search. By the end of the operation Search for a Kind should
-	 * be as identical to current Storage for a Kind as possible.
+	 * A re-index operation syncs a Storable and Indexable Kinds data from Storage
+	 * into Search. By the end of the operation Search for a Kind should be as
+	 * identical to current Storage for a Kind as possible.
 	 * 
 	 * @param IStorage
 	 *            The implementation of IStorage that is being used
@@ -129,7 +141,7 @@ public interface ISearch
 	 * @return boolean if the index was fully successfully re-indexed
 	 */
 	public boolean reindex(IStorage storage, Kind... kinds);
-	
+
 	/**
 	 * Upsert if the index doesn't exist or is not properly configured already
 	 * 
@@ -189,10 +201,11 @@ public interface ISearch
 	 * @param index
 	 *            The IndexDefinition
 	 * @return SearchRequestBuilder
-	 * @deprecated This is no longer supported in the REST client of ElasticSearch. Please use {@link ISearch#searchRaw(SearchRequest request)}
+	 * @deprecated This is no longer supported in the REST client of ElasticSearch.
+	 *             Please use {@link ISearch#searchRaw(SearchRequest request)}
 	 */
 	public SearchRequestBuilder getBuilder(IndexDefinition index);
-	
+
 	/**
 	 * Puts all field mappings into an existing index. If the index doesn't already
 	 * exist or a field name with a different type already exists the operation will
@@ -204,7 +217,6 @@ public interface ISearch
 	 */
 	public boolean putAllFieldMappings(SearchIndexDefinition index);
 
-	
 	public SearchResponse searchScrollRaw(SearchScrollRequest request);
 
 	boolean clearScrollRaw(ClearScrollRequest request);
