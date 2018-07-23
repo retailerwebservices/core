@@ -14,7 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.action.search.SearchRequest;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
-import org.jimmutable.cloud.elasticsearch.ElasticSearch;
+import org.jimmutable.cloud.elasticsearch.ElasticSearchTransportClient;
 import org.jimmutable.cloud.elasticsearch.IndexDefinition;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;

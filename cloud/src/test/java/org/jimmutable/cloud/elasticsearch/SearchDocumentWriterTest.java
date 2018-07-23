@@ -102,18 +102,18 @@ public class SearchDocumentWriterTest
 
 		expected.put("boolean", true);
 		expected.put("text1", "abc");
-		expected.put(ElasticSearch.getSortFieldNameText("text1"), "abc");
+		expected.put(ElasticSearchCommon.getSortFieldNameText("text1"), "abc");
 		expected.put("text2", "abc ab a");
-		expected.put(ElasticSearch.getSortFieldNameText("text2"), "abc ab a");
+		expected.put(ElasticSearchCommon.getSortFieldNameText("text2"), "abc ab a");
 		
 		expected.put("text3", "abc a b c ab bc abc");
-		expected.put(ElasticSearch.getSortFieldNameText("text3"), "abc a b c ab bc abc");
+		expected.put(ElasticSearchCommon.getSortFieldNameText("text3"), "abc a b c ab bc abc");
 		expected.put("atom", "my atom");
 		expected.put("day", "1972-01-01");
 		expected.put("float", 0.1f);
 		expected.put("long", 100L);
 		expected.put("instant", new Instant(1420070400001L));
-		expected.put(ElasticSearch.getSortFieldNameInstant("instant"), 1420070400001L);
+		expected.put(ElasticSearchCommon.getSortFieldNameInstant("instant"), 1420070400001L);
 //		expected.put("timestamp", 1420070400001L);
 
 		expected.put("text_array", list);

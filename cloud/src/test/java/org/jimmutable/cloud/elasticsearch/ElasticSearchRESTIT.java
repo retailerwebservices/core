@@ -1,14 +1,26 @@
 package org.jimmutable.cloud.elasticsearch;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.IntegrationTest;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
+import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
+import org.jimmutable.cloud.storage.ObjectIdStorageKey;
+import org.jimmutable.cloud.storage.StorageKeyExtension;
+import org.jimmutable.core.fields.FieldMap;
+import org.jimmutable.core.objects.common.Day;
+import org.jimmutable.core.objects.common.Kind;
+import org.jimmutable.core.objects.common.ObjectId;
+import org.jimmutable.core.serialization.FieldName;
+import org.jimmutable.core.serialization.Format;
+import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -20,14 +32,14 @@ import org.junit.Test;
  */
 public class ElasticSearchRESTIT extends IntegrationTest
 {
-	private static ElasticSearch elastic_search;
+	private static ElasticSearchRESTClient elastic_search;
 	
 	@BeforeClass
 	public static void setup()
 	{
 		setupEnvironment();
 		
-		elastic_search = new ElasticSearch.RESTClient(); 
+		elastic_search = new ElasticSearchRESTClient(); 
 		elastic_search.upsertIndex(MyIndexable.SEARCH_INDEX_DEFINITION);
 		
 		for (int i = 0; i < 20; i++)
@@ -38,25 +50,86 @@ public class ElasticSearchRESTIT extends IntegrationTest
 		try { Thread.sleep(5_000); } catch (InterruptedException e) { e.printStackTrace(); }
 	}
 
+
+	private static TestLibraryPatron patron_in_storage_and_search;
+	private static TestLibraryPatron patron_in_only_search;
+	private static TestLibraryPatron patron_in_only_storage;
+	
 	@Test
-	public void testSearchPaginationFirstPage()
+	public void testReindex()
 	{
-		StandardSearchRequest request = new StandardSearchRequest("day:>1970-01-01", 10, 0);
-		JSONServletResponse r1 = elastic_search.search(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex(), request);
+		ObjectParseTree.registerTypeName(TestLibraryPatron.class);
+		SearchSync.registerIndexableKind(TestLibraryPatron.class);
+		
+		//Setup new index if needed
+		elastic_search.upsertIndex(TestLibraryPatron.INDEX_MAPPING);
 
-		assertTrue(r1 instanceof SearchResponseOK);
-		if (r1 instanceof SearchResponseOK)
+		patron_in_storage_and_search = new TestLibraryPatron(TestLibraryPatron.INDEX_DEFINITION, new ObjectId(0), "firstname1", "lastname1", "emailaddress1", "ssn1", new Day(1, 24, 1990), 2, new ObjectIdStorageKey(new Kind("testss"), new ObjectId(23), StorageKeyExtension.JSON));
+		elastic_search.upsertDocumentAsync(patron_in_storage_and_search);
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().upsert(patron_in_storage_and_search, Format.JSON_PRETTY_PRINT);
+
+		patron_in_only_search = new TestLibraryPatron(TestLibraryPatron.INDEX_DEFINITION, new ObjectId(1), "firstname2", "lastname2", "emailaddress2", "ssn2", new Day(1, 24, 1990), 2, new ObjectIdStorageKey(new Kind("testss"), new ObjectId(231), StorageKeyExtension.JSON));
+		elastic_search.upsertDocumentAsync(patron_in_storage_and_search);
+
+		patron_in_only_storage = new TestLibraryPatron(TestLibraryPatron.INDEX_DEFINITION, new ObjectId(2), "firstname3", "lastname3", "emailaddress3", "ssn3", new Day(1, 24, 1990), 2, new ObjectIdStorageKey(new Kind("testss"), new ObjectId(3211), StorageKeyExtension.JSON));
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().upsert(patron_in_only_storage, Format.JSON_PRETTY_PRINT);
+
+		elastic_search.reindex(CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage(), TestLibraryPatron.KIND);
+		
+		try
 		{
-			SearchResponseOK ok = (SearchResponseOK) r1;
-
-			assertEquals(ok.getSimpleFirstResultIdx(), 0);
-			assertEquals(ok.getSimpleHasMoreResults(), true);
-			assertEquals(ok.getSimpleHasPreviousResults(), false);
-			assertEquals(ok.getSimpleHTTPResponseCode(), 200);
-			assertEquals(ok.getSimpleResults().size(), 10);
-			assertEquals(ok.getSimpleStartOfNextPageOfResults(), 10);
-			assertEquals(ok.getSimpleStartOfPreviousPageOfResults(), -1);
+			Thread.sleep(1000);
 		}
+		catch (InterruptedException e1)
+		{
+			e1.printStackTrace();
+		}
+		
+		StandardSearchRequest search_request = new StandardSearchRequest("*", 10000, 0);
+		JSONServletResponse response = elastic_search.search(TestLibraryPatron.INDEX_DEFINITION, search_request);
+		boolean has_only_storage_result = false;
+		boolean has_search_only_result = false;
+		if(response instanceof SearchResponseOK)
+		{
+			try
+			{
+				for(OneSearchResult entry : ((SearchResponseOK) response).getSimpleResults())
+				{
+					FieldMap<FieldName, String> map = entry.getSimpleContents();
+					
+					ObjectId cur_id = new ObjectId(map.get(TestLibraryPatron.FIELD_OBJECT_ID.getSimpleFieldName()));
+					
+					if(patron_in_only_storage.getSimpleObjectId().equals(cur_id))
+					{
+						has_only_storage_result = true;
+					}
+					
+					if(patron_in_only_search.getSimpleObjectId().equals(cur_id))
+					{
+						//We don't want this to happen since this should have been deleted since we don't have it in storage
+						has_search_only_result = true;
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+				fail();
+			}
+		}
+		else
+		{
+			fail();
+		}
+		
+		//This says our entry that was only in storage made it to search with the script
+		assertTrue(has_only_storage_result);
+		
+		//This says our entry that was only in search was deleted by our script when it was not found in storage
+		assertFalse(has_search_only_result);
+		
+		assertTrue(elastic_search.deleteDocument(TestLibraryPatron.INDEX_DEFINITION, patron_in_only_storage.getSimpleSearchDocumentId()));
+		assertTrue(elastic_search.deleteDocument(TestLibraryPatron.INDEX_DEFINITION, patron_in_storage_and_search.getSimpleSearchDocumentId()));
 	}
 
 	@Test
@@ -129,14 +202,39 @@ public class ElasticSearchRESTIT extends IntegrationTest
 	{
 		assertTrue(elastic_search.indexExists(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex()));
 	}
+	
+	@Test
+	public void testSearchPaginationFirstPage()
+	{
+		StandardSearchRequest request = new StandardSearchRequest("day:>1970-01-01", 10, 0);
+		JSONServletResponse r1 = elastic_search.search(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex(), request);
 
+		assertTrue(r1 instanceof SearchResponseOK);
+		if (r1 instanceof SearchResponseOK)
+		{
+			SearchResponseOK ok = (SearchResponseOK) r1;
+
+			assertEquals(ok.getSimpleFirstResultIdx(), 0);
+			assertEquals(ok.getSimpleHasMoreResults(), true);
+			assertEquals(ok.getSimpleHasPreviousResults(), false);
+			assertEquals(ok.getSimpleHTTPResponseCode(), 200);
+			assertEquals(ok.getSimpleResults().size(), 10);
+			assertEquals(ok.getSimpleStartOfNextPageOfResults(), 10);
+			assertEquals(ok.getSimpleStartOfPreviousPageOfResults(), -1);
+		}
+	}
+	
 	@AfterClass
 	public static void shutdown()
 	{
-		elastic_search.deleteIndex(MyIndexable.SEARCH_INDEX_DEFINITION);
+		for (int i = 0; i < 20; i++)
+		{
+			elastic_search.deleteDocument(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex(), new SearchDocumentId(String.format("doc%s", i)));
+		}
+
+		try { Thread.sleep(2_000); } catch (InterruptedException e) { e.printStackTrace(); }
 		
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().shutdownDocumentUpsertThreadPool(3);
 		elastic_search.shutdownDocumentUpsertThreadPool(3);
 	}
-
 }
