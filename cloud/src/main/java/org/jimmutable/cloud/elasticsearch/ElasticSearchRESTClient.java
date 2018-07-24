@@ -142,7 +142,7 @@ public class ElasticSearchRESTClient implements ISearch
 		}
 	}
 
-	protected boolean createIndex( SearchIndexDefinition index )
+	private boolean createIndex( SearchIndexDefinition index )
 	{
 		if ( index == null )
 		{
@@ -276,7 +276,7 @@ public class ElasticSearchRESTClient implements ISearch
 	 * @return boolean - true if successfully deleted, else false
 	 */
 
-	public boolean deleteIndex( SearchIndexDefinition index )
+	private boolean deleteIndex( SearchIndexDefinition index )
 	{
 		if ( index == null )
 		{
@@ -332,25 +332,24 @@ public class ElasticSearchRESTClient implements ISearch
 			String index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
 			String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
 
-			String request_str = "/" + index_name + "/" + ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE + "/" + document_name;
-
 			IndexRequest request = new IndexRequest(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).source(data).setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
 			IndexResponse response = high_level_rest_client.index(request);
 
+			Level level;
 			switch ( response.getResult() )
 			{
-			case CREATED: {
-				logger.info("document updated: " + request_str);
+			case CREATED:
+				level = Level.DEBUG;
+				break;
+			case UPDATED:
+				level = Level.DEBUG;
+				break;
+			default:
+				level = Level.FATAL;
 				break;
 			}
-			case UPDATED: {
-				logger.info("document updated: " + request_str);
-				break;
-			}
-			default: {
-				logger.error("failed to upsert document: " + request_str);
-			}
-			}
+
+			logger.log(level, String.format("%s %s/%s/%s %s", response.getResult().name(), index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name, data));
 
 			boolean success = response.getResult().equals(Result.CREATED) || response.getResult().equals(Result.UPDATED);
 			return success;
@@ -436,9 +435,9 @@ public class ElasticSearchRESTClient implements ISearch
 			request.addAliasAction(add_alias_action);
 
 			// deletes old indices for (String index : indices_to_delete) { AliasActions
-			AliasActions delete_alias_action = new AliasActions(AliasActions.Type.REMOVE_INDEX);
 			for ( String old_index : old_indices )
 			{
+				AliasActions delete_alias_action = new AliasActions(AliasActions.Type.REMOVE_INDEX);
 				delete_alias_action.index(old_index);
 				request.addAliasAction(delete_alias_action);
 			}
@@ -469,7 +468,7 @@ public class ElasticSearchRESTClient implements ISearch
 	 *            The alias_name that all the indices are related to
 	 * @return the set of indices that have relation to the alias
 	 */
-	public Set<String> getCurrentIndiciesFromAliasName( String alias_name )
+	private Set<String> getCurrentIndiciesFromAliasName( String alias_name )
 	{
 		Set<String> all_indicies_with_alias = new HashSet<>();
 		try
@@ -1016,26 +1015,25 @@ public class ElasticSearchRESTClient implements ISearch
 			try
 			{
 				String document_name = indexable.getSimpleSearchDocumentId().getSimpleValue();
-
-				String request_str = "/" + index_name + "/" + ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE + "/" + document_name;
-
+				
 				IndexRequest request = new IndexRequest(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).source(data);
 				IndexResponse response = high_level_rest_client.index(request);
 
+				Level level;
 				switch ( response.getResult() )
 				{
-				case CREATED: {
-					logger.info("document updated: " + request_str);
+				case CREATED:
+					level = Level.DEBUG;
+					break;
+				case UPDATED:
+					level = Level.DEBUG;
+					break;
+				default:
+					level = Level.FATAL;
 					break;
 				}
-				case UPDATED: {
-					logger.info("document updated: " + request_str);
-					break;
-				}
-				default: {
-					logger.error("failed to upsert document: " + request_str);
-				}
-				}
+				
+				logger.log(level, String.format("%s %s/%s/%s %s", response.getResult().name(), index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name, data));
 
 			}
 			catch ( Exception e )

@@ -15,6 +15,7 @@ import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.storage.ObjectIdStorageKey;
 import org.jimmutable.cloud.storage.StorageKeyExtension;
 import org.jimmutable.core.fields.FieldMap;
+import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.common.Day;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
@@ -152,6 +153,27 @@ public class ElasticSearchRESTIT extends IntegrationTest
 			assertEquals(0, ok.getSimpleStartOfPreviousPageOfResults());
 		}
 	}
+	
+	@Test
+	public void putAllFieldMappings()
+	{
+		assertTrue(elastic_search.putAllFieldMappings(MyIndexable.SEARCH_INDEX_DEFINITION));
+	
+		Builder b = new Builder(MyIndexable.SEARCH_INDEX_DEFINITION);
+		
+		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("test1"), SearchIndexFieldType.TEXT));
+		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("test2"), SearchIndexFieldType.INSTANT));
+		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("test3"), SearchIndexFieldType.LONG));
+		
+		
+		SearchIndexDefinition def = (SearchIndexDefinition)b.create(null);
+		
+		assertTrue(elastic_search.putAllFieldMappings(def));
+		
+		
+		assertTrue(elastic_search.indexProperlyConfigured(def));
+		
+	}
 
 	@Test
 	public void testSearchPaginationNone()
@@ -183,12 +205,6 @@ public class ElasticSearchRESTIT extends IntegrationTest
 		JSONServletResponse r1 = elastic_search.search(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex(), request);
 
 		assertTrue(r1 instanceof SearchResponseError);
-	}
-
-	@Test
-	public void IndexProperlyConfigured()
-	{
-		assertTrue(elastic_search.indexProperlyConfigured(MyIndexable.SEARCH_INDEX_DEFINITION));
 	}
 
 	@Test
