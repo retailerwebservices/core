@@ -10,8 +10,9 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
-import org.jimmutable.cloud.elasticsearch.ElasticSearch;
+import org.jimmutable.cloud.elasticsearch.ElasticSearchTransportClient;
 import org.jimmutable.cloud.elasticsearch.ElasticSearchEndpoint;
+import org.jimmutable.cloud.elasticsearch.ElasticSearchRESTClient;
 import org.jimmutable.cloud.elasticsearch.ISearch;
 import org.jimmutable.cloud.elasticsearch.StubSearch;
 import org.jimmutable.cloud.email.EmailStub;
@@ -183,7 +184,7 @@ public class CloudExecutionEnvironment
 				throw new RuntimeException("Failed to instantiate the elasticsearch client!");
 			}
 
-			CURRENT = new CloudExecutionEnvironment(new ElasticSearch(client), new StorageDevLocalFileSystem(false, APPLICATION_ID), new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient());
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearchTransportClient(client), new StorageDevLocalFileSystem(false, APPLICATION_ID), new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient());
 
 			break;
 		case PRODUCTION:
@@ -194,7 +195,7 @@ public class CloudExecutionEnvironment
 			StorageS3 storage = new StorageS3(RegionSpecificAmazonS3ClientFactory.defaultFactory(), APPLICATION_ID, false);
 			storage.upsertBucketIfNeeded();
 
-			CURRENT = new CloudExecutionEnvironment(new ElasticSearch.RESTClient(), storage, new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient());
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), storage, new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient());
 			break;
 		case STUB:
 

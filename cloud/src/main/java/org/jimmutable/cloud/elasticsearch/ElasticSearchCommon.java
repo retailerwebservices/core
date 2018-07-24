@@ -189,11 +189,11 @@ public class ElasticSearchCommon
 		String sort_on_string = field_name.getSimpleName();
 
 		if (sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.TEXT)
-			sort_on_string = getSortFieldNameText(sort_by.getSimpleField().getSimpleFieldName());
+			sort_on_string = getSortFieldNameText(sort_by.getSimpleField().getSimpleFieldName()) + "." + SearchIndexFieldType.ATOM.getSimpleSearchType();
 		if (sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.TIMEOFDAY)
-			sort_on_string = getSortFieldNameTimeOfDay(sort_by.getSimpleField().getSimpleFieldName());
+			sort_on_string = getSortFieldNameTimeOfDay(sort_by.getSimpleField().getSimpleFieldName()) + "." + SearchIndexFieldType.TIMEOFDAY.getSimpleSearchType();;
 		if (sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.INSTANT)
-			sort_on_string = getSortFieldNameInstant(sort_by.getSimpleField().getSimpleFieldName());
+			sort_on_string = getSortFieldNameInstant(sort_by.getSimpleField().getSimpleFieldName()) + "." + SearchIndexFieldType.INSTANT.getSimpleSearchType();;
 
 		return SortBuilders.fieldSort(sort_on_string).order(order).unmappedType(SearchIndexFieldType.ATOM.getSimpleSearchType());
 	}
