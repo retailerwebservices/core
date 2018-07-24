@@ -189,11 +189,18 @@ public class ElasticSearchCommon
 		String sort_on_string = field_name.getSimpleName();
 
 		if (sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.TEXT)
+		{
+			//Reference getSortFieldNameText for logic on calling ATOM search type here
 			sort_on_string = getSortFieldNameText(sort_by.getSimpleField().getSimpleFieldName()) + "." + SearchIndexFieldType.ATOM.getSimpleSearchType();
+		}
 		if (sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.TIMEOFDAY)
-			sort_on_string = getSortFieldNameTimeOfDay(sort_by.getSimpleField().getSimpleFieldName()) + "." + SearchIndexFieldType.TIMEOFDAY.getSimpleSearchType();;
+		{
+			sort_on_string = getSortFieldNameTimeOfDay(sort_by.getSimpleField().getSimpleFieldName());
+		}
 		if (sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.INSTANT)
-			sort_on_string = getSortFieldNameInstant(sort_by.getSimpleField().getSimpleFieldName()) + "." + SearchIndexFieldType.INSTANT.getSimpleSearchType();;
+		{
+			sort_on_string = getSortFieldNameInstant(sort_by.getSimpleField().getSimpleFieldName());
+		}
 
 		return SortBuilders.fieldSort(sort_on_string).order(order).unmappedType(SearchIndexFieldType.ATOM.getSimpleSearchType());
 	}

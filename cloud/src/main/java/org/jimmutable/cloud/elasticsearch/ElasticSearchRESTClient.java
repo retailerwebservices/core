@@ -92,7 +92,7 @@ public class ElasticSearchRESTClient implements ISearch
 	 */
 	protected volatile RestHighLevelClient high_level_rest_client;
 
-	// Base64 encoded user:pass
+	//This value is the Base64 encoded user:pass. If someone changes the authentication this will break.
 	private final BasicHeader HEADER_BASIC_AUTH = new BasicHeader("Authorization", "Basic ZWxhc3RpYzpnVWM2clZNa1Z0MUdEeXBneHV4ZTdaalI=");
 	private final BasicHeader HEADER_CONTENT_TYPE = new BasicHeader("Content-Type", "application/json");
 
@@ -100,6 +100,7 @@ public class ElasticSearchRESTClient implements ISearch
 	private int PRODUCTION_ELASTICSEARCH_PORT = 9243;
 
 	private String DEV_ELASTICSEARCH_HOST = ElasticSearchEndpoint.CURRENT.getSimpleHost();
+	//This is the default dev REST port, there isn't a way to get this through the API as far as I can tell for now
 	private int DEV_ELASTICSEARCH_PORT = 9200;
 
 	public ElasticSearchRESTClient()
@@ -116,10 +117,8 @@ public class ElasticSearchRESTClient implements ISearch
 		else
 		{
 			RestClientBuilder builder = RestClient.builder(new HttpHost(DEV_ELASTICSEARCH_HOST, DEV_ELASTICSEARCH_PORT, "http"));
-
 			high_level_rest_client = new RestHighLevelClient(builder);
 		}
-
 	}
 
 	public boolean upsertIndex( SearchIndexDefinition index )
@@ -1020,7 +1019,7 @@ public class ElasticSearchRESTClient implements ISearch
 
 				String request_str = "/" + index_name + "/" + ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE + "/" + document_name;
 
-				IndexRequest request = new IndexRequest(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).source(data).setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
+				IndexRequest request = new IndexRequest(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).source(data);
 				IndexResponse response = high_level_rest_client.index(request);
 
 				switch ( response.getResult() )
