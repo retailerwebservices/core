@@ -112,7 +112,7 @@ public class SearchDocumentWriterTest
 		expected.put("day", "1972-01-01");
 		expected.put("float", 0.1f);
 		expected.put("long", 100L);
-		expected.put("instant", new Instant(1420070400001L));
+		expected.put("instant", new Instant(1420070400001L).toString());
 		expected.put(ElasticSearchCommon.getSortFieldNameInstant("instant"), 1420070400001L);
 //		expected.put("timestamp", 1420070400001L);
 
