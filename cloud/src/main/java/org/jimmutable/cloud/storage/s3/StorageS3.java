@@ -348,10 +348,23 @@ public class StorageS3 extends Storage
 				for (S3ObjectSummary summary : object_listing.getObjectSummaries())
 				{
 					final String key = summary.getKey(); // The full S3 key, also the StorageKey
-					final String key_name = key.substring(root.length()); // The "filename"
-
-					String[] key_name_and_ext = key_name.split("\\.");
-					StorageKeyName name = new StorageKeyName(key_name_and_ext[0]);
+					final String full_key_name = key.substring(root.length() + 1); // The "filename" without the backslash
+					//This would be the folder of the Kind we are looking at
+					if(full_key_name.isEmpty()) continue; 
+					
+					String[] key_name_and_ext = full_key_name.split("\\.");
+					String key_name = key_name_and_ext[0];
+					
+					StorageKeyName name = null;
+					try
+					{
+						name = new StorageKeyName(key_name);
+					}
+					catch(Exception e)
+					{
+						LOGGER.error("[StorageS3.performOperation] could not create StorageKeyName for key " + key, e);
+						continue;
+					}
 
 					if (name.isObjectId())
 					{
