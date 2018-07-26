@@ -53,6 +53,43 @@ public class StorageUtils
 	}
 
 	/**
+	 * Generic method to take the error handling out of hand when trying to get an
+	 * object out of storage. If anything fails on retrieving from storage this will
+	 * return the default_value.
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T extends StandardObject<T>> T getOptional(Kind kind, ObjectId id, T default_value)
+	{
+		if (kind == null)
+		{
+			// This will allow us to know if id was also null
+			logger.error("Could not retrieve StandardObject for id " + id + " because Kind was null");
+			return default_value;
+		}
+		if (id == null)
+		{
+			logger.error("Could not retrieve StandardObject for Kind " + kind + " because id was null");
+			return default_value;
+		}
+
+		T obj = null;
+		try
+		{
+			obj = (T) StandardObject.deserialize(new String(CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(new ObjectIdStorageKey(kind, id, StorageKeyExtension.JSON), null), CHARSET_NAME));
+			if (obj == null)
+			{
+				return default_value;
+			}
+		} catch (Exception e)
+		{
+			logger.error("Could not retrieve StandardObject " + id + " of Kind " + kind + " from Storage", e);
+			return default_value;
+		}
+
+		return obj;
+	}
+
+	/**
 	 * Writes an object to a temporary file and returns the file
 	 * 
 	 * @param key
