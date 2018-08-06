@@ -267,7 +267,7 @@ public class SearchDocumentWriter
 		fields.put(name.getSimpleName(), text);
 		
 		// Create a keyword for every text field
-		fields.put(ElasticSearch.getSortFieldNameText(name), text);
+		fields.put(ElasticSearchCommon.getSortFieldNameText(name), text);
 	}
 
 	/**
@@ -941,10 +941,11 @@ public class SearchDocumentWriter
 	public void writeInstant(FieldName name, Instant value)
 	{
 		Validator.notNull(name);
-		fields.put(name.getSimpleName(), value);
+		//TODO is this data really needed in search?
+		fields.put(name.getSimpleName(), value.toString());
 		
 		// Create a sort field for every Instant field
-		fields.put(ElasticSearch.getSortFieldNameInstant(name), value.getSimpleMillisecondsFromEpoch());
+		fields.put(ElasticSearchCommon.getSortFieldNameInstant(name), value.getSimpleMillisecondsFromEpoch());
 	}
 
 	/**
@@ -1025,10 +1026,11 @@ public class SearchDocumentWriter
 	public void writeTimeOfDay(FieldName name, TimeOfDay value)
 	{
 		Validator.notNull(name);
-		fields.put(name.getSimpleName(), value);
+		//TODO is this data really needed in search?
+		fields.put(name.getSimpleName(), value.toString());
 		
 		// Create a sort field for every TimeOfDay field
-		fields.put(ElasticSearch.getSortFieldNameTimeOfDay(name), value.getSimpleMillisecondsFromMidnight());
+		fields.put(ElasticSearchCommon.getSortFieldNameTimeOfDay(name), value.getSimpleMillisecondsFromMidnight());
 	}
 
 	/**

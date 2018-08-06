@@ -20,7 +20,7 @@ import java.util.EnumSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jimmutable.cloud.ApplicationId;
-import org.jimmutable.cloud.elasticsearch.ElasticSearch;
+import org.jimmutable.cloud.elasticsearch.ElasticSearchTransportClient;
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.utils.IOUtils;
