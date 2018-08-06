@@ -189,6 +189,9 @@ public class CloudExecutionEnvironment
 			break;
 		case PRODUCTION:
 			checkOs();
+			Level prod_level = Level.toLevel(System.getProperty(ENV_LOGGING_LEVEL), DEFAULT_LEVEL);
+			Log4jUtil.setAllLoggerLevels(prod_level);
+			logger.trace(String.format("Logging level: %s", prod_level));
 
 			logger.log(Level.INFO, "Starting production environment");
 
