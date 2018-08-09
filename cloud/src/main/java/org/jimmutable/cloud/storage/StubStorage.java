@@ -106,4 +106,10 @@ public class StubStorage implements IStorage
 		throw new RuntimeException(ERROR_MESSAGE);
 	}
 
+	@Override
+	public boolean getThreadedCurrentVersionStreaming(StorageKey storage_key, OutputStream out)
+	{
+		throw new RuntimeException(ERROR_MESSAGE);
+	}
+
 }

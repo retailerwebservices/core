@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
@@ -87,12 +86,6 @@ public class StubSearch implements ISearch
 
 	@Override
 	public boolean deleteDocument(IndexDefinition index, SearchDocumentId document_id)
-	{
-		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
-	}
-
-	@Override
-	public SearchRequestBuilder getBuilder(IndexDefinition index)
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}

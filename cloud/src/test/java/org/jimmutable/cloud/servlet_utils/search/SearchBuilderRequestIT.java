@@ -1,13 +1,10 @@
 package org.jimmutable.cloud.servlet_utils.search;
 
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.IntegrationTest;
 import org.jimmutable.cloud.elasticsearch.MyIndexable;
 import org.jimmutable.cloud.elasticsearch.SearchDocumentId;
 import org.junit.BeforeClass;
-import org.junit.Test;
 
 public class SearchBuilderRequestIT extends IntegrationTest
 {
@@ -31,19 +28,6 @@ public class SearchBuilderRequestIT extends IntegrationTest
 		{
 
 		}
-
-	}
-
-	@Test
-	public void testInstantiation()
-	{
-
-		SearchRequestBuilder builder = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().getBuilder(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex());
-		builder.addAggregation(AggregationBuilders.max(MyIndexable.theDay.getSimpleFieldName().getSimpleName()));
-		
-		
-		
-		SearchBuilderRequest request = new SearchBuilderRequest(builder);
 
 	}
 

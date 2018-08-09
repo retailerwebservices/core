@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
@@ -178,33 +177,6 @@ public interface ISearch
 	 * @return
 	 */
 	public boolean deleteDocument(IndexDefinition index, SearchDocumentId document_id);
-
-	/**
-	 * Useful to call custom searches from the builder class when simple text search
-	 * is not enough. NOTE: Be sure to set the TYPE. For example
-	 * builder.setTypes(ElasticSearch.ELASTICSEARCH_DEFAULT_TYPE); This method will
-	 * not set anything for you in the builder. </br>
-	 * Example: </br>
-	 * SearchRequestBuilder builder =
-	 * CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().getBuilder(index_name);</br>
-	 * builder.setTypes(ElasticSearch.ELASTICSEARCH_DEFAULT_TYPE);</br>
-	 * builder.setSize(size); builder.set String my_field_name =
-	 * "the_field_name";</br>
-	 * //get the max value from a field</br>
-	 * builder.addAggregation(AggregationBuilders.max(my_field_name)); </br>
-	 * //order the results ascending by field </br>
-	 * builder.addSort(SortBuilders.fieldSort(my_field_name).order(SortOrder.ASC));</br>
-	 * builder.setQuery(QueryBuilders.queryStringQuery("search string"));</br>
-	 * </br>
-	 * 
-	 * 
-	 * @param index
-	 *            The IndexDefinition
-	 * @return SearchRequestBuilder
-	 * @deprecated This is no longer supported in the REST client of ElasticSearch.
-	 *             Please use {@link ISearch#searchRaw(SearchRequest request)}
-	 */
-	public SearchRequestBuilder getBuilder(IndexDefinition index);
 
 	/**
 	 * Puts all field mappings into an existing index. If the index doesn't already

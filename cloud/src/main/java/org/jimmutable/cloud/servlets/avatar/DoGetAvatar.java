@@ -58,20 +58,32 @@ public class DoGetAvatar extends DoGetGenericBytes
 	}
 
 	@Override
-	protected void idNotFound( HttpServletRequest request, HttpServletResponse response )
+	protected HttpServletResponse setHeader(HttpServletRequest request, HttpServletResponse response)
 	{
-		getDefaultImage(request, response);
+		response.setContentType("image/png");
+
+		String fileName = String.format("%s.%s", request.getParameter(getId()) == null ? "default-image-avatar" : request.getParameter(getId()), getExtension().getSimpleValue());
+
+		response.setHeader("Content-Disposition", "inline; filename=" + fileName + ";");
+		return response;
 	}
-	
+
 	@Override
-	protected void bytesNotFound( HttpServletRequest request, HttpServletResponse response )
+	protected void idNotFound(HttpServletRequest request, HttpServletResponse response)
 	{
 		getDefaultImage(request, response);
 	}
-	
-	private void getDefaultImage(HttpServletRequest request, HttpServletResponse response) {
+
+	@Override
+	protected void bytesNotFound(HttpServletRequest request, HttpServletResponse response)
+	{
+		getDefaultImage(request, response);
+	}
+
+	private void getDefaultImage(HttpServletRequest request, HttpServletResponse response)
+	{
 		String default_image = request.getParameter("default-image");
-		if ( default_image == null ||default_image.equals(""))
+		if (default_image == null || default_image.equals(""))
 		{
 			logger.error("Missing required parameter default_image");
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -83,6 +95,9 @@ public class DoGetAvatar extends DoGetGenericBytes
 
 		try
 		{
+
+			response = setHeader(request, response);
+
 			os = response.getOutputStream();
 
 			URL url = new URL(default_image);
@@ -96,35 +111,32 @@ public class DoGetAvatar extends DoGetGenericBytes
 			byte[] buffer = new byte[4096];
 			int n;
 
-			while ( (n = is.read(buffer)) > 0 )
+			while ((n = is.read(buffer)) > 0)
 			{
 				os.write(buffer, 0, n);
 			}
 
 			os.flush();
 
-		}
-		catch ( Exception e )
+		} catch (Exception e)
 		{
 			logger.error(e);
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			return;
-		}
-		finally
+		} finally
 		{
 
 			try
 			{
-				if ( is != null )
+				if (is != null)
 				{
 					is.close();
 				}
-				if ( os != null )
+				if (os != null)
 				{
 					os.close();
 				}
-			}
-			catch ( IOException e )
+			} catch (IOException e)
 			{
 				logger.error(e);
 			}
@@ -132,6 +144,12 @@ public class DoGetAvatar extends DoGetGenericBytes
 		}
 		return;
 
+	}
+
+	@Override
+	protected boolean isLarge()
+	{
+		return false;
 	}
 
 }

@@ -198,4 +198,24 @@ public interface IStorage
 	public boolean delete(Storable obj);
 
 	public boolean isReadOnly();
+
+	/**
+	 * <b>***Use this for downloading large files***</b>
+	 * <br>
+	 * <br>
+	 * Get the current version of {@code key} if the file is expected to be greater than 100MB.
+	 * There is no limit on the size of the object to be retrieved. {@code sink}
+	 * will be {@link OutputStream#flush() flushed} but not
+	 * {@link OutputStream#close() closed}.
+	 * 
+	 * @param key
+	 *            key associated with Stored Object you want to retrieve the current
+	 *            version of.
+	 * @param sink
+	 *            The {@link OutputStream} where the bytes of the object will be
+	 *            written
+	 * @return Byte array of Stored object if Object was found, otherwise
+	 *         default_value
+	 */
+	public boolean getThreadedCurrentVersionStreaming(StorageKey storage_key, OutputStream out);
 }

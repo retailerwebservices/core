@@ -51,8 +51,17 @@ public abstract class DoGetGenericBytes extends HttpServlet
 			OutputStream out = null;
 			try
 			{
+				response = setHeader(request, response);// to set filename, content type, etc.
 				out = response.getOutputStream();
-				CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersionStreaming(storage_key, out);
+
+				if (isLarge())
+				{
+					CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getThreadedCurrentVersionStreaming(storage_key, out);
+				} else
+				{
+					CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersionStreaming(storage_key, out);
+				}
+				
 				out.flush();
 			} catch (EofException e)
 			{
@@ -87,10 +96,31 @@ public abstract class DoGetGenericBytes extends HttpServlet
 
 	}
 
+	/**
+	 * If a file is expected to large, getThreadedCurrentVersionStreaming will be
+	 * called instead of getCurrentVersionStreaming
+	 * 
+	 * @return if the file is expected to be large or not
+	 */
+	abstract protected boolean isLarge();
+
 	protected String getId()
 	{
 		return "id";
 	}
+
+	/**
+	 * Allows you to set the header to control the content type, length, filename in
+	 * the response header.
+	 * 
+	 * response.setContentType("video/mp4"); String fileName="myVideo.mp4";
+	 * response.setHeader("Content-Disposition", "inline; filename="+ fileName
+	 * +";");
+	 * 
+	 * @param response
+	 * @return
+	 */
+	abstract protected HttpServletResponse setHeader(HttpServletRequest request, HttpServletResponse response);
 
 	abstract protected Logger getLogger();
 

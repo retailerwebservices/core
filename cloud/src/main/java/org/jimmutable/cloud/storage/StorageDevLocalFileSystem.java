@@ -14,13 +14,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Arrays;
 import java.util.EnumSet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jimmutable.cloud.ApplicationId;
-import org.jimmutable.cloud.elasticsearch.ElasticSearchTransportClient;
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.utils.IOUtils;
@@ -241,5 +239,15 @@ public class StorageDevLocalFileSystem extends Storage
 	public File getDevLocalFileSystemRoot()
 	{
 		return root;
+	}
+
+	//TODO maybe implement as truly threaded if needed, probably not needed anytime soon though.
+	/**
+	 * probably don't need to implement for dev environment.
+	 */
+	@Override
+	public boolean getThreadedCurrentVersionStreaming(StorageKey storage_key, OutputStream out)
+	{
+		return getCurrentVersionStreaming(storage_key,  out);
 	}
 }

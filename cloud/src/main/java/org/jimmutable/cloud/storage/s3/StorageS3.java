@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -21,12 +22,16 @@ import org.jimmutable.cloud.storage.StorageKeyName;
 import org.jimmutable.cloud.storage.StorageMetadata;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.utils.IOUtils;
+//import org.jimmutable.core.utils.IOUtils;
 import org.jimmutable.core.utils.Validator;
 
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.CreateBucketRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -60,24 +65,24 @@ public class StorageS3 extends Storage
 
 		Validator.notNull(client_factory);
 		client = client_factory.create();
+
 		transfer_manager = TransferManagerBuilder.standard().withS3Client(client).build();
 	}
-	
+
 	public void upsertBucketIfNeeded()
 	{
 		if (!client.doesBucketExist(bucket_name))
 		{
 			LOGGER.info("creating bucket: " + bucket_name);
-			
-	        CreateBucketRequest request = new CreateBucketRequest(bucket_name, RegionSpecificAmazonS3ClientFactory.DEFAULT_REGION);
-	        client.createBucket(request);
-		}
-		else
+
+			CreateBucketRequest request = new CreateBucketRequest(bucket_name, RegionSpecificAmazonS3ClientFactory.DEFAULT_REGION);
+			client.createBucket(request);
+		} else
 		{
 			LOGGER.info("using storage bucket: " + bucket_name);
 		}
 	}
-	
+
 	public String getSimpleBucketName()
 	{
 		return bucket_name;
@@ -115,8 +120,7 @@ public class StorageS3 extends Storage
 
 			client.putObject(bucket_name, key.toString(), bin, metadata);
 			return true;
-		}
-		catch (Exception e)
+		} catch (Exception e)
 		{
 			LOGGER.catching(e);
 			return false;
@@ -185,33 +189,98 @@ public class StorageS3 extends Storage
 		return false;
 	}
 
+	/**
+	 * Similar to getCurrentVerionStreaming, except there is a maximum byte range.
+	 * 
+	 * @param key
+	 * @param default_value
+	 * @return
+	 */
 	@Override
-	public byte[] getCurrentVersion(StorageKey key, byte[] default_value)
+	public byte[] getCurrentVersion(final StorageKey key, byte[] default_value)
 	{
-		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-		try (OutputStream bout = new IOUtils.LimitBytesOutputStream(bytes, MAX_TRANSFER_BYTES_IN_BYTES))
+
+		Validator.notNull(key, "StorageKey");
+
+		S3Object s3_obj = null;
+		try
 		{
-			
-			
-			try (S3Object s3_obj = client.getObject(bucket_name, key.toString()))
-			{
-				try (InputStream s3in = s3_obj.getObjectContent())
-				{
-					IOUtils.transferAllBytes(s3in, bout);
-				}
-			}
+			s3_obj = client.getObject(new GetObjectRequest(bucket_name, key.toString()).withRange(0, MAX_TRANSFER_BYTES_IN_BYTES));
+			return org.apache.commons.io.IOUtils.toByteArray(s3_obj.getObjectContent());
 		} catch (Exception e)
 		{
-			LOGGER.catching(e);
-			return default_value;
+			LOGGER.error(String.format("Failed to retrieve %s from S3!", key.toString()), e);
+		} finally
+		{
+			if (s3_obj != null)
+			{
+				try
+				{
+					s3_obj.close();
+				} catch (IOException e)
+				{
+					LOGGER.error(String.format("Failed to close S3Object when reading %s!", key.toString()), e);
+				}
+			}
 		}
-
-		return bytes.toByteArray();
+		return default_value;
 	}
 
+	/**
+	 * Note: calling getObject always returns a stream anyways
+	 * 
+	 * @param key
+	 * @param default_value
+	 * @return
+	 */
 	@Override
 	public boolean getCurrentVersionStreaming(final StorageKey key, final OutputStream sink)
 	{
+
+		long start = System.currentTimeMillis();
+
+		Validator.notNull(key, "StorageKey");
+
+		S3Object s3_obj = null;
+		try
+		{
+			s3_obj = client.getObject(new GetObjectRequest(bucket_name, key.toString()));
+
+			org.apache.commons.io.IOUtils.copy(s3_obj.getObjectContent(), sink);
+			LOGGER.debug(String.format("Took %d millis", System.currentTimeMillis() - start));
+			return true;
+		} catch (Exception e)
+		{
+			LOGGER.error(String.format("Failed to retrieve %s from S3!", key.toString()), e);
+		} finally
+		{
+			if (s3_obj != null)
+			{
+				try
+				{
+					s3_obj.close();
+				} catch (IOException e)
+				{
+					LOGGER.error(String.format("Failed to close S3Object when reading %s!", key.toString()), e);
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * old getCurrentVersionStreaming method. This method takes longer and may not
+	 * be needed for now. We may need to
+	 * 
+	 * @param key
+	 * @param sink
+	 * @return
+	 */
+	@Override
+	public boolean getThreadedCurrentVersionStreaming(final StorageKey key, final OutputStream sink)
+	{
+
+		long start = System.currentTimeMillis();
 		Validator.notNull(key, sink);
 
 		final String log_prefix = "[getCurrentVersion(" + key + ")] ";
@@ -227,7 +296,7 @@ public class StorageS3 extends Storage
 			{
 				download = transfer_manager.download(bucket_name, s3_key, temp);
 
-				LOGGER.info(log_prefix + "Download: " + download.getDescription());
+				LOGGER.debug(log_prefix + "Download: " + download.getDescription());
 
 				while (!download.isDone())
 				{
@@ -240,7 +309,7 @@ public class StorageS3 extends Storage
 					} // give progress updates every .5 sec
 				}
 
-				LOGGER.debug(log_prefix + "Progress: " + download.getProgress().getPercentTransferred()); // give the
+				LOGGER.info(log_prefix + "Progress: " + download.getProgress().getPercentTransferred()); // give the
 																											// 100
 																											// percent
 																											// before
@@ -257,8 +326,11 @@ public class StorageS3 extends Storage
 			{
 				IOUtils.transferAllBytes(fin, sink);
 			}
+			boolean completed = TransferState.Completed == download.getState();
 
-			return TransferState.Completed == download.getState();
+			LOGGER.debug(String.format("Took %d millis", System.currentTimeMillis() - start));
+
+			return completed;
 		} catch (Exception e)
 		{
 			LOGGER.catching(e);
@@ -348,19 +420,20 @@ public class StorageS3 extends Storage
 				for (S3ObjectSummary summary : object_listing.getObjectSummaries())
 				{
 					final String key = summary.getKey(); // The full S3 key, also the StorageKey
-					final String full_key_name = key.substring(root.length() + 1); // The "filename" without the backslash
-					//This would be the folder of the Kind we are looking at
-					if(full_key_name.isEmpty()) continue; 
-					
+					final String full_key_name = key.substring(root.length() + 1); // The "filename" without the
+																					// backslash
+					// This would be the folder of the Kind we are looking at
+					if (full_key_name.isEmpty())
+						continue;
+
 					String[] key_name_and_ext = full_key_name.split("\\.");
 					String key_name = key_name_and_ext[0];
-					
+
 					StorageKeyName name = null;
 					try
 					{
 						name = new StorageKeyName(key_name);
-					}
-					catch(Exception e)
+					} catch (Exception e)
 					{
 						LOGGER.error("[StorageS3.performOperation] could not create StorageKeyName for key " + key, e);
 						continue;

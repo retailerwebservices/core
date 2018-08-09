@@ -79,47 +79,19 @@ public class ElasticSearchTransportClient implements ISearch
 
 	private volatile TransportClient client;
 
-	/**
-	 * Useful to call custom searches from the builder class when simple text search
-	 * is not enough. NOTE: Be sure to set the TYPE. For example
-	 * builder.setTypes(ElasticSearch.ELASTICSEARCH_DEFAULT_TYPE); This method will
-	 * not set anything for you in the builder. </br>
-	 * Example: </br>
-	 * SearchRequestBuilder builder =
-	 * CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().getBuilder(index_name);</br>
-	 * builder.setTypes(ElasticSearch.ELASTICSEARCH_DEFAULT_TYPE);</br>
-	 * builder.setSize(size); builder.set String my_field_name =
-	 * "the_field_name";</br>
-	 * //get the max value from a field</br>
-	 * builder.addAggregation(AggregationBuilders.max(my_field_name)); </br>
-	 * //order the results ascending by field </br>
-	 * builder.addSort(SortBuilders.fieldSort(my_field_name).order(SortOrder.ASC));</br>
-	 * builder.setQuery(QueryBuilders.queryStringQuery("search string"));</br>
-	 * </br>
-	 */
-	@Override
-	public SearchRequestBuilder getBuilder( IndexDefinition index )
-	{
-		if ( index == null )
-		{
-			throw new RuntimeException("Null IndexDefinition");
-		}
-		return client.prepareSearch(index.getSimpleValue());
-	}
-
 	public ElasticSearchTransportClient()
 	{
 		// Do nothing, needed to create a hook for the Production client
 	}
 
-	public ElasticSearchTransportClient( TransportClient client )
+	public ElasticSearchTransportClient(TransportClient client)
 	{
 		this.client = client;
 	}
 
-	public boolean writeAllToCSV( IndexDefinition index, String query_string, List<SearchFieldId> sorted_header, ICsvListWriter list_writer, CellProcessor[] cell_processors )
+	public boolean writeAllToCSV(IndexDefinition index, String query_string, List<SearchFieldId> sorted_header, ICsvListWriter list_writer, CellProcessor[] cell_processors)
 	{
-		if ( index == null || query_string == null )
+		if (index == null || query_string == null)
 		{
 			return false;
 		}
@@ -130,16 +102,16 @@ public class ElasticSearchTransportClient implements ISearch
 		{
 
 			String[] document;
-			for ( SearchHit hit : scrollResp.getHits().getHits() )
+			for (SearchHit hit : scrollResp.getHits().getHits())
 			{
 
 				document = new String[sorted_header.size()];
 
 				Map<String, Object> resultMap = hit.getSourceAsMap();
 
-				for ( int i = 0; i < sorted_header.size(); i++ )
+				for (int i = 0; i < sorted_header.size(); i++)
 				{
-					if ( resultMap.containsKey(sorted_header.get(i).getSimpleValue()) )
+					if (resultMap.containsKey(sorted_header.get(i).getSimpleValue()))
 					{
 						document[i] = resultMap.get(sorted_header.get(i).getSimpleValue()).toString();
 					}
@@ -148,8 +120,7 @@ public class ElasticSearchTransportClient implements ISearch
 				try
 				{
 					list_writer.write(Arrays.asList(document), cell_processors);
-				}
-				catch ( IOException e )
+				} catch (IOException e)
 				{
 					logger.error("Failure while writing CSV", e);
 					return false;
@@ -157,8 +128,7 @@ public class ElasticSearchTransportClient implements ISearch
 
 			}
 			scrollResp = client.prepareSearchScroll(scrollResp.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
-		}
-		while ( scrollResp.getHits().getHits().length != 0 ); // Zero hits mark the end of the scroll and the while
+		} while (scrollResp.getHits().getHits().length != 0); // Zero hits mark the end of the scroll and the while
 																// loop.
 		return true;
 	}
@@ -177,7 +147,7 @@ public class ElasticSearchTransportClient implements ISearch
 	 * 
 	 */
 	@Override
-	public boolean shutdownDocumentUpsertThreadPool( int timeout_seconds )
+	public boolean shutdownDocumentUpsertThreadPool(int timeout_seconds)
 	{
 		return ElasticSearchCommon.shutdownDocumentUpsertThreadPool(timeout_seconds);
 	}
@@ -192,7 +162,7 @@ public class ElasticSearchTransportClient implements ISearch
 	{
 		private Indexable object;
 
-		public UpsertDocumentRunnable( Indexable object )
+		public UpsertDocumentRunnable(Indexable object)
 		{
 			this.object = object;
 		}
@@ -203,8 +173,7 @@ public class ElasticSearchTransportClient implements ISearch
 			try
 			{
 				upsertDocument(object);
-			}
-			catch ( Exception e )
+			} catch (Exception e)
 			{
 				logger.log(Level.FATAL, "Failure during upsert operation!", e);
 			}
@@ -222,7 +191,7 @@ public class ElasticSearchTransportClient implements ISearch
 		private Indexable object;
 		private Map<String, Object> data;
 
-		public UpsertQuietDocumentRunnable( Indexable object, Map<String, Object> data )
+		public UpsertQuietDocumentRunnable(Indexable object, Map<String, Object> data)
 		{
 			this.object = object;
 			this.data = data;
@@ -237,8 +206,7 @@ public class ElasticSearchTransportClient implements ISearch
 				String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
 				client.prepareIndex(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).setSource(data).get();
 
-			}
-			catch ( Exception e )
+			} catch (Exception e)
 			{
 				logger.log(Level.FATAL, "Failure during upsert operation!", e);
 			}
@@ -255,10 +223,10 @@ public class ElasticSearchTransportClient implements ISearch
 	 * @return boolean If successful or not
 	 */
 	@Override
-	public boolean upsertQuietDocumentAsync( Indexable object )
+	public boolean upsertQuietDocumentAsync(Indexable object)
 	{
 
-		if ( object == null )
+		if (object == null)
 		{
 			logger.error("Null object!");
 			return false;
@@ -271,8 +239,7 @@ public class ElasticSearchTransportClient implements ISearch
 		try
 		{
 			ElasticSearchCommon.document_upsert_pool.execute(new UpsertQuietDocumentRunnable(object, data));
-		}
-		catch ( Exception e )
+		} catch (Exception e)
 		{
 			logger.log(Level.FATAL, "Failure during thread pool execution!", e);
 			return false;
@@ -290,9 +257,9 @@ public class ElasticSearchTransportClient implements ISearch
 	 * @return boolean If successful or not
 	 */
 	@Override
-	public boolean upsertDocumentAsync( Indexable object )
+	public boolean upsertDocumentAsync(Indexable object)
 	{
-		if ( object == null )
+		if (object == null)
 		{
 			logger.error("Null object!");
 			return false;
@@ -301,8 +268,7 @@ public class ElasticSearchTransportClient implements ISearch
 		try
 		{
 			ElasticSearchCommon.document_upsert_pool.execute(new UpsertDocumentRunnable(object));
-		}
-		catch ( Exception e )
+		} catch (Exception e)
 		{
 			logger.log(Level.FATAL, "Failure during thread pool execution!", e);
 			return false;
@@ -319,10 +285,10 @@ public class ElasticSearchTransportClient implements ISearch
 	 * @return boolean If successful or not
 	 */
 	@Override
-	public boolean upsertDocument( Indexable object )
+	public boolean upsertDocument(Indexable object)
 	{
 
-		if ( object == null )
+		if (object == null)
 		{
 			logger.error("Null object!");
 			return false;
@@ -339,7 +305,7 @@ public class ElasticSearchTransportClient implements ISearch
 			IndexResponse response = client.prepareIndex(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).setRefreshPolicy(RefreshPolicy.WAIT_UNTIL).setSource(data).get();
 
 			Level level;
-			switch ( response.getResult() )
+			switch (response.getResult())
 			{
 			case CREATED:
 				level = Level.DEBUG;
@@ -354,8 +320,7 @@ public class ElasticSearchTransportClient implements ISearch
 
 			logger.log(level, String.format("%s %s/%s/%s %s", response.getResult().name(), index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name, data));
 
-		}
-		catch ( Exception e )
+		} catch (Exception e)
 		{
 			logger.log(Level.FATAL, String.format("Failure during upsert operation of Document id:%s on Index:%s", object.getSimpleSearchDocumentId().getSimpleValue(), object.getSimpleSearchIndexDefinition().getSimpleValue()), e);
 			return false;
@@ -377,10 +342,10 @@ public class ElasticSearchTransportClient implements ISearch
 	 * @return JSONServletResponse
 	 */
 	@Override
-	public JSONServletResponse search( IndexDefinition index, StandardSearchRequest request )
+	public JSONServletResponse search(IndexDefinition index, StandardSearchRequest request)
 	{
 
-		if ( index == null || request == null )
+		if (index == null || request == null)
 		{
 			return new SearchResponseError(request, "Null parameter(s)!");
 		}
@@ -399,10 +364,10 @@ public class ElasticSearchTransportClient implements ISearch
 			builder.setQuery(QueryBuilders.queryStringQuery(request.getSimpleQueryString()));
 
 			// Sorting
-			for ( SortBy sort_by : request.getSimpleSort().getSimpleSortOrder() )
+			for (SortBy sort_by : request.getSimpleSort().getSimpleSortOrder())
 			{
 				FieldSortBuilder sort_builder = ElasticSearchCommon.getSort(sort_by, null);
-				if ( sort_builder == null )
+				if (sort_builder == null)
 					continue;
 
 				builder.addSort(sort_builder);
@@ -411,15 +376,13 @@ public class ElasticSearchTransportClient implements ISearch
 			SearchResponse response = builder.get();
 
 			return processResponse(index, request, from, size, response);
-		}
-		catch ( Exception e )
+		} catch (Exception e)
 		{
-			if ( e.getCause() instanceof QueryShardException )
+			if (e.getCause() instanceof QueryShardException)
 			{
 				logger.warn(String.format("%s on index %s", e.getCause().getMessage(), index.getSimpleValue()));
 				return new SearchResponseError(request, e.getCause().getMessage());
-			}
-			else
+			} else
 			{
 				logger.error(String.format("Search failed for %s on index %s", request.getSimpleQueryString(), index.getSimpleValue()), e);
 				return new SearchResponseError(request, e.getMessage());
@@ -428,9 +391,9 @@ public class ElasticSearchTransportClient implements ISearch
 	}
 
 	@Override
-	public SearchResponse searchRaw( SearchRequest request )
+	public SearchResponse searchRaw(SearchRequest request)
 	{
-		if ( request == null )
+		if (request == null)
 		{
 			throw new NullPointerException();
 		}
@@ -441,8 +404,7 @@ public class ElasticSearchTransportClient implements ISearch
 			SearchResponse resp = resp_raw.get();
 
 			return resp;
-		}
-		catch ( Exception e )
+		} catch (Exception e)
 		{
 			logger.error("Failed to search!", e);
 		}
@@ -451,9 +413,9 @@ public class ElasticSearchTransportClient implements ISearch
 	}
 
 	@Override
-	public SearchResponse searchScrollRaw( SearchScrollRequest request )
+	public SearchResponse searchScrollRaw(SearchScrollRequest request)
 	{
-		if ( request == null )
+		if (request == null)
 		{
 			throw new NullPointerException();
 		}
@@ -464,8 +426,7 @@ public class ElasticSearchTransportClient implements ISearch
 			SearchResponse resp = resp_raw.get();
 
 			return resp;
-		}
-		catch ( Exception e )
+		} catch (Exception e)
 		{
 			logger.error("Failed to search scroll!", e);
 		}
@@ -474,9 +435,9 @@ public class ElasticSearchTransportClient implements ISearch
 	}
 
 	@Override
-	public boolean clearScrollRaw( ClearScrollRequest request )
+	public boolean clearScrollRaw(ClearScrollRequest request)
 	{
-		if ( request == null )
+		if (request == null)
 		{
 			throw new NullPointerException();
 		}
@@ -486,8 +447,7 @@ public class ElasticSearchTransportClient implements ISearch
 			ClearScrollResponse resp_raw = client.clearScroll(request).get();
 
 			return resp_raw.isSucceeded();
-		}
-		catch ( Exception e )
+		} catch (Exception e)
 		{
 			logger.error("Failed to clear the scroll context!", e);
 		}
@@ -495,14 +455,14 @@ public class ElasticSearchTransportClient implements ISearch
 		return false;
 	}
 
-	private JSONServletResponse processResponse( IndexDefinition index, StandardSearchRequest request, int from, int size, SearchResponse response )
+	private JSONServletResponse processResponse(IndexDefinition index, StandardSearchRequest request, int from, int size, SearchResponse response)
 	{
 		List<OneSearchResult> results = new LinkedList<OneSearchResult>();
 
 		response.getHits().forEach(hit ->
 		{
 			Map<FieldName, String> map = new TreeMap<FieldName, String>();
-			hit.getSourceAsMap().forEach(( k, v ) ->
+			hit.getSourceAsMap().forEach((k, v) ->
 			{
 				map.put(new FieldName(k), v.toString());
 			});
@@ -519,7 +479,7 @@ public class ElasticSearchTransportClient implements ISearch
 		boolean has_previous_results = from > 0;
 
 		Level level;
-		switch ( response.status() )
+		switch (response.status())
 		{
 		case OK:
 			level = Level.INFO;
@@ -553,9 +513,9 @@ public class ElasticSearchTransportClient implements ISearch
 	 * @return List<OneSearchResult>
 	 */
 	@Override
-	public List<OneSearchResultWithTyping> search( IndexDefinition index, StandardSearchRequest request, List<OneSearchResultWithTyping> default_value )
+	public List<OneSearchResultWithTyping> search(IndexDefinition index, StandardSearchRequest request, List<OneSearchResultWithTyping> default_value)
 	{
-		if ( index == null || request == null )
+		if (index == null || request == null)
 		{
 			logger.warn(String.format("Search failed: Null parameter(s) for %s", request));
 			return default_value;
@@ -574,10 +534,10 @@ public class ElasticSearchTransportClient implements ISearch
 			builder.setQuery(QueryBuilders.queryStringQuery(request.getSimpleQueryString()));
 
 			// Sorting
-			for ( SortBy sort_by : request.getSimpleSort().getSimpleSortOrder() )
+			for (SortBy sort_by : request.getSimpleSort().getSimpleSortOrder())
 			{
 				FieldSortBuilder sort_builder = ElasticSearchCommon.getSort(sort_by, null);
-				if ( sort_builder == null )
+				if (sort_builder == null)
 					continue;
 
 				builder.addSort(sort_builder);
@@ -590,31 +550,31 @@ public class ElasticSearchTransportClient implements ISearch
 			response.getHits().forEach(hit ->
 			{
 				Map<FieldName, String[]> map = new TreeMap<FieldName, String[]>();
-				hit.getSourceAsMap().forEach(( k, v ) ->
+				hit.getSourceAsMap().forEach((k, v) ->
 				{
 					FieldName name = new FieldName(k);
 					String[] array_val = map.get(name);
 
 					String[] new_array_val = null;
 
-					if ( v instanceof ArrayList<?> )
+					if (v instanceof ArrayList<?>)
 					{
 						List<Object> array_as_list = (ArrayList<Object>) v;
 						new_array_val = new String[array_as_list.size()];
 
-						for ( int i = 0; i < array_as_list.size(); i++ )
+						for (int i = 0; i < array_as_list.size(); i++)
 						{
 							new_array_val[i] = String.valueOf(array_as_list.get(i));
 						}
-					}
-					else
+					} else
 					{
-						if ( array_val == null )
+						if (array_val == null)
 							array_val = new String[0];
-						new_array_val = new String[] { String.valueOf(v) };
+						new_array_val = new String[]
+						{ String.valueOf(v) };
 					}
 
-					if ( new_array_val != null )
+					if (new_array_val != null)
 						map.put(name, new_array_val);
 				});
 				results.add(new OneSearchResultWithTyping(map));
@@ -627,7 +587,7 @@ public class ElasticSearchTransportClient implements ISearch
 			boolean has_previous_results = from != 0;
 
 			Level level;
-			switch ( response.status() )
+			switch (response.status())
 			{
 			case OK:
 				level = Level.INFO;
@@ -646,15 +606,13 @@ public class ElasticSearchTransportClient implements ISearch
 
 			return results;
 
-		}
-		catch ( Exception e )
+		} catch (Exception e)
 		{
-			if ( e.getCause() instanceof QueryShardException )
+			if (e.getCause() instanceof QueryShardException)
 			{
 				logger.warn(String.format("%s on index %s", e.getCause().getMessage(), index.getSimpleValue()));
 				return default_value;
-			}
-			else
+			} else
 			{
 				logger.error(String.format("Search failed for %s on index %s", request.getSimpleQueryString(), index.getSimpleValue()), e);
 				return default_value;
@@ -670,9 +628,9 @@ public class ElasticSearchTransportClient implements ISearch
 	 * @return boolean if the index exists or not
 	 */
 	@Override
-	public boolean indexExists( IndexDefinition index )
+	public boolean indexExists(IndexDefinition index)
 	{
-		if ( index == null )
+		if (index == null)
 		{
 			logger.fatal("Cannot check the existence of a null Index");
 			return false;
@@ -680,8 +638,7 @@ public class ElasticSearchTransportClient implements ISearch
 		try
 		{
 			return client.admin().indices().prepareExists(index.getSimpleValue()).get().isExists();
-		}
-		catch ( Exception e )
+		} catch (Exception e)
 		{
 			logger.log(Level.FATAL, "Failed to check if index exists", e);
 			return false;
@@ -696,9 +653,9 @@ public class ElasticSearchTransportClient implements ISearch
 	 * @return boolean if the index exists or not
 	 */
 	@Override
-	public boolean indexExists( SearchIndexDefinition index )
+	public boolean indexExists(SearchIndexDefinition index)
 	{
-		if ( index == null )
+		if (index == null)
 		{
 			logger.fatal("Cannot check the existence of a null Index");
 			return false;
@@ -706,8 +663,7 @@ public class ElasticSearchTransportClient implements ISearch
 		try
 		{
 			return client.admin().indices().prepareExists(index.getSimpleIndex().getSimpleValue()).get().isExists();
-		}
-		catch ( Exception e )
+		} catch (Exception e)
 		{
 			logger.log(Level.FATAL, "Failed to check if index exists", e);
 			return false;
@@ -723,14 +679,14 @@ public class ElasticSearchTransportClient implements ISearch
 	 * @return boolean if the index is properly configured or not
 	 */
 	@Override
-	public boolean indexProperlyConfigured( SearchIndexDefinition index )
+	public boolean indexProperlyConfigured(SearchIndexDefinition index)
 	{
-		if ( index == null )
+		if (index == null)
 		{
 			return false;
 		}
 
-		if ( indexExists(index) )
+		if (indexExists(index))
 		{
 			// compare the expected index fields to the actual index fields
 			Map<String, String> expected = new TreeMap<String, String>();
@@ -744,7 +700,7 @@ public class ElasticSearchTransportClient implements ISearch
 				GetMappingsResponse response = client.admin().indices().prepareGetMappings(index.getSimpleIndex().getSimpleValue()).get();
 				ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> response_map = response.getMappings();
 
-				for ( ObjectCursor<String> typeName : response_map.keys() )
+				for (ObjectCursor<String> typeName : response_map.keys())
 				{
 					ImmutableOpenMap<String, MappingMetaData> typeMapping = response_map.get(typeName.value);
 					String json = response.getMappings().get(typeName.value).get(ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE).source().string();
@@ -753,24 +709,25 @@ public class ElasticSearchTransportClient implements ISearch
 
 					new ObjectMapper().readTree(json).get(ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE).get("properties").fields().forEachRemaining(fieldMapping ->
 					{
-						if ( !fieldMapping.getKey().contains(ElasticSearchCommon.SORT_FIELD_NAME_JIMMUTABLE) ) // Skip our keyword fields
+						if (!fieldMapping.getKey().contains(ElasticSearchCommon.SORT_FIELD_NAME_JIMMUTABLE)) // Skip our
+																												// keyword
+																												// fields
 						{
 							actual.put(fieldMapping.getKey(), fieldMapping.getValue().get("type").asText());
 						}
 					});
 
-					if ( !expected.equals(actual) )
+					if (!expected.equals(actual))
 					{
 
 						logger.warn(String.format("Index: %s not properly configured", index.getSimpleIndex().getSimpleValue()));
 						logger.warn(String.format("Expected fields=%s", expected));
 						logger.warn(String.format("Actual   fields=%s", actual));
 
-						if ( expected.size() > actual.size() )
+						if (expected.size() > actual.size())
 						{
 							logger.warn("There are field missing in the current index.");
-						}
-						else if ( expected.size() < actual.size() )
+						} else if (expected.size() < actual.size())
 						{
 							logger.info("There are more fields than expected in the current index.");
 						}
@@ -792,8 +749,7 @@ public class ElasticSearchTransportClient implements ISearch
 						return false;
 					}
 				}
-			}
-			catch ( Exception e )
+			} catch (Exception e)
 			{
 				logger.log(Level.FATAL, String.format("Failed to get the index mapping for index %s", index.getSimpleIndex().getSimpleValue()), e);
 			}
@@ -811,13 +767,13 @@ public class ElasticSearchTransportClient implements ISearch
 	 *            SearchIndexDefinition
 	 * @return boolean - true if successfully deleted, else false
 	 */
-	public boolean deleteIndex( SearchIndexDefinition index )
+	public boolean deleteIndex(SearchIndexDefinition index)
 	{
 		// TODO This was instructed to not be refactored when we made the cutover to use
 		// aliases. Generally reindexing can be used over this.
 		// It will likely not work if the interface is ever updated to use deletion of
 		// indexes again.
-		if ( index == null )
+		if (index == null)
 		{
 			logger.fatal("Cannot delete a null Index");
 			return false;
@@ -827,14 +783,13 @@ public class ElasticSearchTransportClient implements ISearch
 		{
 
 			DeleteIndexResponse deleteResponse = client.admin().indices().prepareDelete(index.getSimpleIndex().getSimpleValue()).get();
-			if ( !deleteResponse.isAcknowledged() )
+			if (!deleteResponse.isAcknowledged())
 			{
 				logger.fatal(String.format("Index Deletion not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
 				return false;
 			}
 
-		}
-		catch ( Exception e )
+		} catch (Exception e)
 		{
 			logger.fatal(String.format("Index Deletion failed for index %s", index.getSimpleIndex().getSimpleValue()), e);
 			return false;
@@ -854,21 +809,20 @@ public class ElasticSearchTransportClient implements ISearch
 	 * @return boolean if the upsert was successful or not
 	 */
 	@Override
-	public boolean upsertIndex( SearchIndexDefinition index )
+	public boolean upsertIndex(SearchIndexDefinition index)
 	{
-		if ( index == null )
+		if (index == null)
 		{
 			logger.fatal("Cannot upsert a null Index");
 			return false;
 		}
 
 		// if it exists and is not configured correctly delete and add
-		if ( indexExists(index) )
+		if (indexExists(index))
 		{
 			logger.info(String.format("No upsert needed for index %s", index.getSimpleIndex().getSimpleValue()));
 			return true;
-		}
-		else
+		} else
 		{
 			// index is new
 			return createIndex(index);
@@ -883,22 +837,22 @@ public class ElasticSearchTransportClient implements ISearch
 	 * @param index
 	 * @return
 	 */
-	protected boolean createIndex( SearchIndexDefinition index )
+	protected boolean createIndex(SearchIndexDefinition index)
 	{
-		if ( index == null )
+		if (index == null)
 		{
 			logger.fatal("Cannot create a null Index");
 			return false;
 		}
 		String timestamp_index_name = createTimestampIndex(index, null);
-		if ( timestamp_index_name == null )
+		if (timestamp_index_name == null)
 		{
 			logger.fatal("Cannot create a timestamp Index for index " + index);
 			return false;
 		}
 
 		IndicesAliasesResponse response = client.admin().indices().prepareAliases().addAlias(timestamp_index_name, index.getSimpleIndex().getSimpleValue()).execute().actionGet();
-		if ( !response.isAcknowledged() )
+		if (!response.isAcknowledged())
 		{
 			logger.fatal(String.format("Alias Creation not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
 			return false;
@@ -915,10 +869,10 @@ public class ElasticSearchTransportClient implements ISearch
 	 * @param document_id
 	 * @return
 	 */
-	public boolean deleteDocument( IndexDefinition index, SearchDocumentId document_id )
+	public boolean deleteDocument(IndexDefinition index, SearchDocumentId document_id)
 	{
 
-		if ( index == null || document_id == null )
+		if (index == null || document_id == null)
 		{
 			logger.fatal("Null index or document id");
 			return false;
@@ -931,8 +885,7 @@ public class ElasticSearchTransportClient implements ISearch
 			logger.info(String.format("Result:%s SearchDocumentId:%s IndexDefinition:%s", response.getResult(), response.getId(), response.getIndex()));
 
 			return response.getResult().equals(Result.DELETED);
-		}
-		catch ( Exception e )
+		} catch (Exception e)
 		{
 			logger.error("Failed to delete document!", e);
 			return false;
@@ -957,41 +910,41 @@ public class ElasticSearchTransportClient implements ISearch
 	 * @return is_success
 	 */
 	@Override
-	public boolean reindex( IStorage storage, Kind... kinds )
+	public boolean reindex(IStorage storage, Kind... kinds)
 	{
-		if ( storage == null )
+		if (storage == null)
 		{
 			logger.error("Null storage passed in for re-indexing");
 			return false;
 		}
 
-		if ( kinds == null )
+		if (kinds == null)
 		{
 			logger.error("Null kinds passed in for re-indexing");
 			return false;
 		}
 
-		for ( Kind kind : kinds )
+		for (Kind kind : kinds)
 		{
 			SearchIndexDefinition index_definition = SearchSync.getSimpleAllRegisteredIndexableKindsMap().get(kind);
-			if ( index_definition == null )
+			if (index_definition == null)
 			{
 				logger.error("Kind " + kind + " passed in for re-indexing is not registered with SearchSync.registerIndexableKind");
 				return false;
 			}
 
 			String index_name = createTimestampIndex(index_definition, null);
-			if ( index_name == null )
+			if (index_name == null)
 			{
 				logger.error("Kind " + kind + " could not create a new index to reindex documents with");
 				return false;
 			}
 
 			boolean success = syncSearchAndStorage(kind, index_name);
-			if ( !success )
+			if (!success)
 			{
 				logger.error("Kind " + kind + " could not complete sync of storage and search, no swap made");
-				if ( !deleteIndex(index_name) )
+				if (!deleteIndex(index_name))
 				{
 					logger.error("Error removing index " + index_name + " on failure.");
 				}
@@ -1000,10 +953,10 @@ public class ElasticSearchTransportClient implements ISearch
 
 			// Swap alias
 			success = updateAlias(index_definition, index_name);
-			if ( !success )
+			if (!success)
 			{
 				logger.error("Kind " + kind + " could not complete full alias swap");
-				if ( !deleteIndex(index_name) )
+				if (!deleteIndex(index_name))
 				{
 					logger.error("Error removing index " + index_name + " on failure.");
 				}
@@ -1028,7 +981,7 @@ public class ElasticSearchTransportClient implements ISearch
 	 *            The unique index name that data was upserted to
 	 * @return is_success
 	 */
-	private boolean updateAlias( SearchIndexDefinition definition, String index_name )
+	private boolean updateAlias(SearchIndexDefinition definition, String index_name)
 	{
 
 		Set<String> old_indices = getCurrentIndiciesFromAliasName(definition.getSimpleIndex().getSimpleValue());
@@ -1040,20 +993,19 @@ public class ElasticSearchTransportClient implements ISearch
 			IndicesAliasesRequestBuilder builder = client.admin().indices().prepareAliases().addAlias(index_name, definition.getSimpleIndex().getSimpleValue());
 
 			// deletes old indices
-			for ( String index : indices_to_delete )
+			for (String index : indices_to_delete)
 			{
 				builder.removeIndex(index);
 			}
 
 			IndicesAliasesResponse response = builder.execute().actionGet();
 
-			if ( !response.isAcknowledged() )
+			if (!response.isAcknowledged())
 			{
 				logger.fatal(String.format("Alias addition not acknowledged for index %s", index_name));
 				return false;
 			}
-		}
-		catch ( Exception e )
+		} catch (Exception e)
 		{
 			logger.error("Alias addition and removal failed", e);
 			return false;
@@ -1062,18 +1014,17 @@ public class ElasticSearchTransportClient implements ISearch
 		return true;
 	}
 
-	private boolean deleteIndex( String index_name )
+	private boolean deleteIndex(String index_name)
 	{
 		try
 		{
 			DeleteIndexResponse deleteResponse = client.admin().indices().delete(new DeleteIndexRequest(index_name)).get();
-			if ( !deleteResponse.isAcknowledged() )
+			if (!deleteResponse.isAcknowledged())
 			{
 				logger.fatal(String.format("Alias removal not acknowledged for index %s", index_name));
 				return false;
 			}
-		}
-		catch ( InterruptedException | ExecutionException e )
+		} catch (InterruptedException | ExecutionException e)
 		{
 			logger.error("Alias removal failed", e);
 			return false;
@@ -1090,16 +1041,16 @@ public class ElasticSearchTransportClient implements ISearch
 	 *            The alias_name that all the indices are related to
 	 * @return the set of indices that have relation to the alias
 	 */
-	public Set<String> getCurrentIndiciesFromAliasName( String alias_name )
+	public Set<String> getCurrentIndiciesFromAliasName(String alias_name)
 	{
 		Set<String> all_indicies_with_alias = new HashSet<>();
 
 		ClusterStateRequestBuilder builder = client.admin().cluster().prepareState();
-		for ( IndexMetaData index_meta_data : builder.execute().actionGet().getState().metaData() )
+		for (IndexMetaData index_meta_data : builder.execute().actionGet().getState().metaData())
 		{
-			for ( ObjectCursor<String> cursor : index_meta_data.getAliases().keys() )
+			for (ObjectCursor<String> cursor : index_meta_data.getAliases().keys())
 			{
-				if ( cursor.value.equals(alias_name) )
+				if (cursor.value.equals(alias_name))
 				{
 					all_indicies_with_alias.add(index_meta_data.getIndex().getName());
 					continue;
@@ -1120,9 +1071,9 @@ public class ElasticSearchTransportClient implements ISearch
 	 *            value to return on failure
 	 * @return the new unique index name on success, default_value on failure
 	 */
-	private String createTimestampIndex( SearchIndexDefinition index, String default_value )
+	private String createTimestampIndex(SearchIndexDefinition index, String default_value)
 	{
-		if ( index == null )
+		if (index == null)
 		{
 			logger.fatal("Cannot create a null Index");
 			return default_value;
@@ -1133,15 +1084,14 @@ public class ElasticSearchTransportClient implements ISearch
 			String index_name = index.getSimpleIndex().getSimpleValue() + "_" + System.currentTimeMillis();
 			CreateIndexResponse createResponse = client.admin().indices().prepareCreate(index_name).addMapping(ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, ElasticSearchCommon.getMappingBuilder(index, null)).get();
 
-			if ( !createResponse.isAcknowledged() )
+			if (!createResponse.isAcknowledged())
 			{
 				logger.fatal(String.format("Index Creation not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
 				return default_value;
 			}
 
 			return index_name;
-		}
-		catch ( Exception e )
+		} catch (Exception e)
 		{
 			logger.log(Level.FATAL, String.format("Failed to generate mapping json for index %s", index.getSimpleIndex().getSimpleValue()), e);
 			return default_value;
@@ -1157,16 +1107,16 @@ public class ElasticSearchTransportClient implements ISearch
 	 *            SearchIndexDefinition
 	 * @return if successful or not
 	 */
-	public boolean putAllFieldMappings( SearchIndexDefinition index )
+	public boolean putAllFieldMappings(SearchIndexDefinition index)
 	{
 
-		if ( index == null )
+		if (index == null)
 		{
 			logger.fatal("Null index");
 			return false;
 		}
 
-		if ( !indexExists(index) )
+		if (!indexExists(index))
 		{
 			logger.fatal(String.format("Index %s does not exist!", index.getSimpleIndex().getSimpleValue()));
 			return false;
@@ -1176,14 +1126,13 @@ public class ElasticSearchTransportClient implements ISearch
 		{
 			PutMappingResponse put_response = client.admin().indices().preparePutMapping(index.getSimpleIndex().getSimpleValue()).setType(ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE).setSource(ElasticSearchCommon.getMappingBuilder(index, null)).get();
 
-			if ( !put_response.isAcknowledged() )
+			if (!put_response.isAcknowledged())
 			{
 				logger.fatal(String.format("Put Mappings result not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
 				return false;
 			}
 
-		}
-		catch ( Exception e )
+		} catch (Exception e)
 		{
 			logger.log(Level.FATAL, String.format("Failed to generate mapping json for index %s", index.getSimpleIndex().getSimpleValue()), e);
 			return false;
@@ -1199,9 +1148,9 @@ public class ElasticSearchTransportClient implements ISearch
 	 * 
 	 * @return true on success
 	 */
-	private boolean syncSearchAndStorage( Kind kind, String index_name )
+	private boolean syncSearchAndStorage(Kind kind, String index_name)
 	{
-		if ( !CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().scan(kind, new UpsertDataHandler(index_name), 10) )
+		if (!CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().scan(kind, new UpsertDataHandler(index_name), 10))
 		{
 			logger.warn("Storage Scanner for Kind " + kind + " was unable to successfully run. This Kind may not be fully re-indexed or there may currently not be any entries of Kind in Storage. The index will not be swapped on the alias.");
 			return false;
@@ -1219,14 +1168,14 @@ public class ElasticSearchTransportClient implements ISearch
 	{
 		private String index_name;
 
-		private UpsertDataHandler( String index_name )
+		private UpsertDataHandler(String index_name)
 		{
 			this.index_name = index_name;
 		}
 
 		@SuppressWarnings("rawtypes")
 		@Override
-		public void handle( StorageKey key )
+		public void handle(StorageKey key)
 		{
 			byte[] bytes = CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(key, null);
 
@@ -1234,8 +1183,7 @@ public class ElasticSearchTransportClient implements ISearch
 			try
 			{
 				obj = new GenericStorableAndIndexable(bytes);
-			}
-			catch ( Exception e )
+			} catch (Exception e)
 			{
 				logger.error("This object from StorageKey " + key + " was unable to be deserialized as a Storable and Indexable object...", e);
 				return;
@@ -1254,7 +1202,7 @@ public class ElasticSearchTransportClient implements ISearch
 				IndexResponse response = client.prepareIndex(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).setSource(data).get();
 
 				Level level;
-				switch ( response.getResult() )
+				switch (response.getResult())
 				{
 				case CREATED:
 					level = Level.DEBUG;
@@ -1269,8 +1217,7 @@ public class ElasticSearchTransportClient implements ISearch
 
 				logger.log(level, String.format("%s %s/%s/%s %s", response.getResult().name(), index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name, data));
 
-			}
-			catch ( Exception e )
+			} catch (Exception e)
 			{
 				logger.log(Level.FATAL, String.format("Failure during upsert operation of Document id:%s on Index:%s", indexable.getSimpleSearchDocumentId().getSimpleValue(), indexable.getSimpleSearchIndexDefinition().getSimpleValue()), e);
 			}
@@ -1286,25 +1233,24 @@ public class ElasticSearchTransportClient implements ISearch
 		private T object;
 
 		@SuppressWarnings("unchecked")
-		public GenericStorableAndIndexable( byte[] bytes ) throws ValidationException
+		public GenericStorableAndIndexable(byte[] bytes) throws ValidationException
 		{
 			StandardObject<?> obj = null;
 			try
 			{
 				obj = StandardObject.deserialize(new String(bytes));
-			}
-			catch ( Exception e )
+			} catch (Exception e)
 			{
 				throw new ValidationException("Unable to deserialize object", e);
 			}
 
 			// Broken out this way, rather than just deserializing T so that we know exactly
 			// what a
-			if ( !(obj instanceof Storable) )
+			if (!(obj instanceof Storable))
 			{
 				throw new ValidationException("Object " + obj.getTypeName() + " is unable to be reindexed since it is not a Storable.");
 			}
-			if ( !(obj instanceof Indexable) )
+			if (!(obj instanceof Indexable))
 			{
 				throw new ValidationException("Object " + obj.getTypeName() + " is unable to be reindexed since it is not a Indexable.");
 			}
