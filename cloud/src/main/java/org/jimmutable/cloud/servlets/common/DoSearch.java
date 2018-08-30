@@ -70,7 +70,6 @@ public abstract class DoSearch extends HttpServlet
 		}
 		
 		search_string = checkForTimes(search_string);
-		search_string = getExtraSearchParameters(search_string);
 		Sort sort = getSort(Sort.DEFAULT_SORT);
 		
 		StandardSearchRequest search_request = null;
@@ -111,11 +110,6 @@ public abstract class DoSearch extends HttpServlet
 			ServletUtil.writeSerializedResponse(response, error, SearchResponseError.HTTP_STATUS_CODE_ERROR);
 		}
 
-	}
-
-	protected String getExtraSearchParameters( String search_string )
-	{
-		return search_string;
 	}
 
 	protected void getAdditionalParameters(HttpServletRequest request) {
