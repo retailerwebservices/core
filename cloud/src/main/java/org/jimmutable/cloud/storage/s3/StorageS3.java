@@ -404,6 +404,8 @@ public class StorageS3 extends Storage
 		protected Result performOperation() throws Exception
 		{
 			String root = getSimpleKind().getSimpleValue();
+			
+			
 			if (hasPrefix())
 			{
 				root += "/" + getOptionalPrefix(null);
@@ -435,7 +437,7 @@ public class StorageS3 extends Storage
 						name = new StorageKeyName(key_name);
 					} catch (Exception e)
 					{
-						LOGGER.error("[StorageS3.performOperation] could not create StorageKeyName for key " + key, e);
+						LOGGER.error(String.format("[StorageS3.performOperation] could not create StorageKeyName for key:%s root:%s bucket:%s request:%s", key, root, bucket_name, request), e);
 						continue;
 					}
 

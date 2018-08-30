@@ -18,6 +18,7 @@ public class AppAdminUtil
 		boolean startup_allowed = true;
 
 		logger.info("Validating all search indices...");
+
 		for (Map.Entry<Kind, SearchIndexDefinition> entry : SearchSync.getSimpleAllRegisteredIndexableKindsMap().entrySet())
 		{
 

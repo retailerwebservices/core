@@ -54,7 +54,7 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 			key = new ObjectIdStorageKey(getKind(), id, getExtension());
 		} catch (Exception e)
 		{
-			String error_message = String.format("Failed to create valid StorageKey from parameter:%s", getId());
+			String error_message = String.format("Failed to create valid StorageKey from Kind:%s Parameter:%s Extension:%s", getKind().getSimpleValue(), getId(), getExtension());
 			getLogger().error(error_message, e);
 			ServletUtil.writeSerializedResponse(response, new GetResponseError(error_message), GetResponseError.HTTP_STATUS_CODE_ERROR);
 			return;
@@ -64,7 +64,7 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 
 		if (bytes == null)
 		{
-			String error_message = String.format("%s %s not found in storage", key.getSimpleKind().getSimpleValue(), key.getSimpleName());
+			String error_message = String.format("%s/%s.%s not found in storage!", key.getSimpleKind().getSimpleValue(), key.getSimpleName().getSimpleValue(), key.getSimpleExtension().getSimpleValue());
 			getLogger().error(error_message);
 			ServletUtil.writeSerializedResponse(response, new GetResponseError(error_message), GetResponseError.HTTP_STATUS_CODE_ERROR);
 			return;
@@ -76,7 +76,7 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 			more_specific_data = getMoreSpecificData((T) StandardObject.deserialize(new String(bytes)), request, null);
 		} catch (Exception e)
 		{
-			String error_message = String.format("Failed to serialize %s from storage", key.getSimpleName());
+			String error_message = String.format("Failed to deserialize %s/%s.%s from storage!", key.getSimpleKind().getSimpleValue(), key.getSimpleName().getSimpleValue(), key.getSimpleExtension().getSimpleValue());
 			getLogger().error(error_message, e);
 			ServletUtil.writeSerializedResponse(response, new GetResponseError(error_message), GetResponseError.HTTP_STATUS_CODE_ERROR);
 			return;
