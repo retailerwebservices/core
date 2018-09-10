@@ -7,6 +7,7 @@ import java.io.IOException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
+import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
@@ -24,32 +25,32 @@ public class StorageUtils
 	 */
 	public static StandardObject<?> getOptionalFromStorage(Kind kind, ObjectId id, StandardObject<?> default_value)
 	{
-		if (kind == null)
+		try
 		{
-			// This will allow us to know if id was also null
-			logger.error("Could not retrieve StandardObject for id " + id + " because Kind was null");
-			return default_value;
-		}
-		if (id == null)
+			Validator.notNull(kind, "Kind");
+			Validator.notNull(id, "Id");
+		} catch (ValidationException e)
 		{
-			logger.error("Could not retrieve StandardObject for Kind " + kind + " because id was null");
+			logger.error(String.format("A required field was null for Kind:%s Id:%s!", kind, id), e);
 			return default_value;
 		}
 
-		StandardObject<?> obj = null;
 		try
 		{
-			obj = StandardObject.deserialize(new String(CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(new ObjectIdStorageKey(kind, id, StorageKeyExtension.JSON), null), CHARSET_NAME));
-			if (obj == null)
+			byte[] bytes = CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(new ObjectIdStorageKey(kind, id, StorageKeyExtension.JSON), null);
+
+			if (bytes == null)
 			{
+				logger.error(String.format("No bytes returned from storage for Kind:%s Id:%s!", kind, id));
 				return default_value;
 			}
+
+			return StandardObject.deserialize(new String(bytes, CHARSET_NAME));
 		} catch (Exception e)
 		{
-			logger.error("Could not retrieve StandardObject " + id + " of Kind " + kind + " from Storage", e);
+			logger.error(String.format("Failed to deserialize from storage for Kind:%s Id:%s!", kind, id), e);
 			return default_value;
 		}
-		return obj;
 	}
 
 	/**
@@ -60,33 +61,36 @@ public class StorageUtils
 	@SuppressWarnings("unchecked")
 	public static <T extends StandardObject<T>> T getOptional(Kind kind, ObjectId id, T default_value)
 	{
-		if (kind == null)
-		{
-			// This will allow us to know if id was also null
-			logger.error("Could not retrieve StandardObject for id " + id + " because Kind was null");
-			return default_value;
-		}
-		if (id == null)
-		{
-			logger.error("Could not retrieve StandardObject for Kind " + kind + " because id was null");
-			return default_value;
-		}
 
-		T obj = null;
 		try
 		{
-			obj = (T) StandardObject.deserialize(new String(CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(new ObjectIdStorageKey(kind, id, StorageKeyExtension.JSON), null), CHARSET_NAME));
-			if (obj == null)
-			{
-				return default_value;
-			}
-		} catch (Exception e)
+			Validator.notNull(kind, "Kind");
+			Validator.notNull(id, "Id");
+		} catch (ValidationException e)
 		{
-			logger.error("Could not retrieve StandardObject " + id + " of Kind " + kind + " from Storage", e);
+			logger.error(String.format("A required field was null for Kind:%s Id:%s!", kind, id), e);
 			return default_value;
 		}
 
-		return obj;
+		try
+		{
+
+			byte[] bytes = CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(new ObjectIdStorageKey(kind, id, StorageKeyExtension.JSON), null);
+
+			if (bytes == null)
+			{
+
+				logger.error(String.format("No bytes returned from storage for Kind:%s Id:%s!", kind, id));
+				return default_value;
+			}
+
+			return (T) StandardObject.deserialize(new String(bytes, CHARSET_NAME));
+		} catch (Exception e)
+		{
+			logger.error(String.format("Failed to deserialize from storage for Kind:%s Id:%s!", kind, id), e);
+			return default_value;
+		}
+
 	}
 
 	/**
