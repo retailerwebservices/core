@@ -11,6 +11,10 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.jimmutable.cloud.elasticsearch.ElasticSearchTransportClient;
+import org.jimmutable.cloud.cache.CacheRedis;
+import org.jimmutable.cloud.cache.CacheStub;
+import org.jimmutable.cloud.cache.ICache;
+import org.jimmutable.cloud.cache.redis.LowLevelRedisDriver;
 import org.jimmutable.cloud.elasticsearch.ElasticSearchEndpoint;
 import org.jimmutable.cloud.elasticsearch.ElasticSearchRESTClient;
 import org.jimmutable.cloud.elasticsearch.ISearch;
@@ -50,6 +54,7 @@ public class CloudExecutionEnvironment
 	private IQueue queue_service;
 	private ISignal signal_service;
 	private IEmail email_service;
+	private ICache cache_service;
 
 	// System properties
 	private static final String ENV_TYPE_VARIABLE_NAME = "JIMMUTABLE_ENV_TYPE";
@@ -61,13 +66,14 @@ public class CloudExecutionEnvironment
 	private static ApplicationId APPLICATION_ID;
 	private static StandardImmutableObjectCache STANDARD_IMMUTABLE_OBJECT_CACHE;
 
-	private CloudExecutionEnvironment(ISearch search, IStorage storage, IQueue queue_service, ISignal signal_service, IEmail email_service)
+	private CloudExecutionEnvironment(ISearch search, IStorage storage, IQueue queue_service, ISignal signal_service, IEmail email_service, ICache cache_service)
 	{
 		this.search = search;
 		this.storage = storage;
 		this.queue_service = queue_service;
 		this.signal_service = signal_service;
 		this.email_service = email_service;
+		this.cache_service = cache_service;
 	}
 
 	public EnvironmentType getSimpleEnvironmentType()
@@ -113,6 +119,11 @@ public class CloudExecutionEnvironment
 	public IEmail getSimpleEmailService()
 	{
 		return email_service;
+	}
+	
+	public ICache getSimpleCacheService()
+	{
+		return cache_service;
 	}
 
 	private static SESClient getSESClient()
@@ -184,7 +195,7 @@ public class CloudExecutionEnvironment
 				throw new RuntimeException("Failed to instantiate the elasticsearch client!");
 			}
 
-			CURRENT = new CloudExecutionEnvironment(new ElasticSearchTransportClient(client), new StorageDevLocalFileSystem(false, APPLICATION_ID), new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient());
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearchTransportClient(client), new StorageDevLocalFileSystem(false, APPLICATION_ID), new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient(), new CacheRedis(APPLICATION_ID, new LowLevelRedisDriver()));
 
 			break;
 		case PRODUCTION:
@@ -198,12 +209,12 @@ public class CloudExecutionEnvironment
 			StorageS3 storage = new StorageS3(RegionSpecificAmazonS3ClientFactory.defaultFactory(), APPLICATION_ID, false);
 			storage.upsertBucketIfNeeded();
 
-			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), storage, new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient());
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), storage, new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient(), new CacheRedis(APPLICATION_ID, new LowLevelRedisDriver()));
 			break;
 		case STUB:
 
 			checkOs();
-			CURRENT = new CloudExecutionEnvironment(new StubSearch(), new StubStorage(), new QueueStub(), new SignalStub(), new EmailStub());
+			CURRENT = new CloudExecutionEnvironment(new StubSearch(), new StubStorage(), new QueueStub(), new SignalStub(), new EmailStub(), new CacheStub());
 			break;
 
 		default:
