@@ -3,6 +3,7 @@ package org.jimmutable.cloud.elasticsearch;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -114,7 +115,15 @@ public class ElasticSearchTransportClient implements ISearch
 				{
 					if ( resultMap.containsKey(sorted_header.get(i).getSimpleValue()) )
 					{
-						document[i] = resultMap.get(sorted_header.get(i).getSimpleValue()).toString();
+						Object o = resultMap.get(sorted_header.get(i).getSimpleValue());
+						if ( o instanceof Collection<?> || o instanceof Map<?, ?> )
+						{
+							document[i] = o.toString().replaceFirst("^\\[", "").replaceAll("\\]$", "");
+						}
+						else
+						{
+							document[i] = o.toString();
+						}
 					}
 				}
 
