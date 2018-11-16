@@ -75,6 +75,12 @@ public abstract class DoDelete extends HttpServlet
 
 	protected boolean deleteSearchDocument(String id)
 	{
+		IndexDefinition index_definition = getIndexDefinition();
+		if (index_definition == null) 
+		{
+			return true;
+		}
+		
 		try
 		{
 			SearchDocumentId document_id = new SearchDocumentId(new ObjectId(id).getSimpleValue());
