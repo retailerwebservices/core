@@ -1,6 +1,8 @@
 package org.jimmutable.cloud.elasticsearch;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchRequest;
@@ -37,7 +39,7 @@ public interface ISearch
 	 * @return boolean if shutdown correctly or not
 	 * 
 	 */
-	public boolean shutdownDocumentUpsertThreadPool(int timeout_seconds);
+	public boolean shutdownDocumentUpsertThreadPool( int timeout_seconds );
 
 	/**
 	 * Upsert a document to a search index asynchronously
@@ -47,7 +49,7 @@ public interface ISearch
 	 *            The Indexable object
 	 * @return boolean If successful or not
 	 */
-	public boolean upsertDocumentAsync(Indexable object);
+	public boolean upsertDocumentAsync( Indexable object );
 
 	/**
 	 * Upsert a document to a search index asynchronously AND without logging to
@@ -58,7 +60,7 @@ public interface ISearch
 	 *            The Indexable object
 	 * @return boolean If successful or not
 	 */
-	public boolean upsertQuietDocumentAsync(Indexable object);
+	public boolean upsertQuietDocumentAsync( Indexable object );
 
 	/**
 	 * Upsert a document to a search index
@@ -67,7 +69,7 @@ public interface ISearch
 	 *            The Indexable object
 	 * @return boolean If successful or not
 	 */
-	public boolean upsertDocument(Indexable object);
+	public boolean upsertDocument( Indexable object );
 
 	/**
 	 * Search an index with a query string.
@@ -81,7 +83,7 @@ public interface ISearch
 	 *            The StandardSearchRequest
 	 * @return JSONServletResponse
 	 */
-	public JSONServletResponse search(IndexDefinition index, StandardSearchRequest request);
+	public JSONServletResponse search( IndexDefinition index, StandardSearchRequest request );
 
 	/**
 	 * Uses ElasticSearch's {@link org.elasticsearch.action.search.SearchRequest} to
@@ -95,9 +97,9 @@ public interface ISearch
 	 *            {@link ISearch#search(IndexDefinition index, SearchRequest request)}
 	 * @return SearchResponse with all matching searches
 	 */
-	public SearchResponse searchRaw(SearchRequest request);
+	public SearchResponse searchRaw( SearchRequest request );
 
-	public List<OneSearchResultWithTyping> search(IndexDefinition index, StandardSearchRequest request, List<OneSearchResultWithTyping> default_value);
+	public List<OneSearchResultWithTyping> search( IndexDefinition index, StandardSearchRequest request, List<OneSearchResultWithTyping> default_value );
 
 	/**
 	 * Test if the index exists or not
@@ -106,7 +108,7 @@ public interface ISearch
 	 *            IndexDefinition
 	 * @return boolean if the index exists or not
 	 */
-	public boolean indexExists(IndexDefinition index);
+	public boolean indexExists( IndexDefinition index );
 
 	/**
 	 * Test if the index exists or not
@@ -115,7 +117,7 @@ public interface ISearch
 	 *            SearchIndexDefinition
 	 * @return boolean if the index exists or not
 	 */
-	public boolean indexExists(SearchIndexDefinition index);
+	public boolean indexExists( SearchIndexDefinition index );
 
 	/**
 	 * An index is properly configured if it exists and its field names and
@@ -125,7 +127,7 @@ public interface ISearch
 	 *            SearchIndexDefinition
 	 * @return boolean if the index is properly configured or not
 	 */
-	public boolean indexProperlyConfigured(SearchIndexDefinition index);
+	public boolean indexProperlyConfigured( SearchIndexDefinition index );
 
 	/**
 	 * A re-index operation syncs a Storable and Indexable Kinds data from Storage
@@ -139,7 +141,7 @@ public interface ISearch
 	 *            The kind to attempt to re-index on
 	 * @return boolean if the index was fully successfully re-indexed
 	 */
-	public boolean reindex(IStorage storage, Kind... kinds);
+	public boolean reindex( IStorage storage, Kind... kinds );
 
 	/**
 	 * Upsert if the index doesn't exist or is not properly configured already
@@ -150,7 +152,7 @@ public interface ISearch
 	 *            SearchIndexDefinition
 	 * @return boolean if the upsert was successful or not
 	 */
-	public boolean upsertIndex(SearchIndexDefinition index);
+	public boolean upsertIndex( SearchIndexDefinition index );
 
 	/**
 	 * Runs a search and writes the results to the passed in ICsvListWriter.
@@ -167,7 +169,7 @@ public interface ISearch
 	 *            CellProcessor[]
 	 * @return boolean if successful or not
 	 */
-	public boolean writeAllToCSV(IndexDefinition index, String query_string, List<SearchFieldId> sorted_header, ICsvListWriter list_writer, CellProcessor[] cell_processors);
+	public boolean writeAllToCSV( IndexDefinition index, String query_string, List<SearchFieldId> sorted_header, ICsvListWriter list_writer, CellProcessor[] cell_processors );
 
 	/**
 	 * Delete a document within an index
@@ -176,7 +178,7 @@ public interface ISearch
 	 * @param document_id
 	 * @return
 	 */
-	public boolean deleteDocument(IndexDefinition index, SearchDocumentId document_id);
+	public boolean deleteDocument( IndexDefinition index, SearchDocumentId document_id );
 
 	/**
 	 * Puts all field mappings into an existing index. If the index doesn't already
@@ -187,10 +189,21 @@ public interface ISearch
 	 *            SearchIndexDefinition
 	 * @return if successful or not
 	 */
-	public boolean putAllFieldMappings(SearchIndexDefinition index);
+	public boolean putAllFieldMappings( SearchIndexDefinition index );
 
-	public SearchResponse searchScrollRaw(SearchScrollRequest request);
+	public SearchResponse searchScrollRaw( SearchScrollRequest request );
 
-	boolean clearScrollRaw(ClearScrollRequest request);
+	boolean clearScrollRaw( ClearScrollRequest request );
+
+	public default String normalizeReturnedValue( Object o )
+	{
+		if ( o instanceof Collection<?> || o instanceof Map<?, ?> )
+		{
+			//For Readability sake, we are removing the beginning and end brackets from collections 
+			return o.toString().replaceFirst("^\\[", "").replaceAll("\\]$", "");
+		}
+		return o.toString();
+
+	}
 
 }
