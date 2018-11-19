@@ -115,9 +115,15 @@ public class ElasticSearchTransportClient implements ISearch
 				{
 					if ( resultMap.containsKey(sorted_header.get(i).getSimpleValue()) )
 					{
+						/*
+						 * CR 11/19 pass the object into a normalize value method of some sort that both
+						 * the transport client and rest client can use. As well as keeping this method
+						 * clean and making further normalization easier.
+						 */
 						Object o = resultMap.get(sorted_header.get(i).getSimpleValue());
 						if ( o instanceof Collection<?> || o instanceof Map<?, ?> )
 						{
+							//CR 11/19 comment on the intention of the code here. Looks odd if we don't know the reasoning.
 							document[i] = o.toString().replaceFirst("^\\[", "").replaceAll("\\]$", "");
 						}
 						else
