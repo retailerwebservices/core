@@ -9,6 +9,7 @@ import java.util.Date;
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
+import org.jimmutable.cloud.elasticsearch.IndexDefinition;
 import org.jimmutable.cloud.objects.StandardChangeLogEntry;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
@@ -26,28 +27,37 @@ import org.junit.Test;
 
 public class DoSearchIT 
 {
+	DoSearch test = new DoSearch()
+	{
+		
+		@Override
+		protected IndexDefinition getSearchIndexDefinition()
+		{
+			return StandardChangeLogEntry.INDEX_DEFINITION;
+		}
+	};
 	
 	@Test
 	public void testCheckForTimeNothingToAdd() {
-		String s = DoSearch.checkForTimes("name:bob AND last:smith");
+		String s = test.checkForTimes("name:bob AND last:smith");
 		assertEquals("name:bob AND last:smith", s);
 	}
 	
 	@Test
 	public void testCheckForSimpleTime() {
-		String s = DoSearch.checkForTimes("scheduled_start:>2018-01-01 12:30");
+		String s = test.checkForTimes("scheduled_start:>2018-01-01 12:30");
 		assertEquals("scheduled_start:>1514835000000", s);
 	}
 	
 	@Test
 	public void testCheckForSimpleTimeRange() {
-		String s = DoSearch.checkForTimes("scheduled_start:>2017-06-03 10:03 AND scheduled_stop:<2017-07-16 12:30");
+		String s = test.checkForTimes("scheduled_start:>2017-06-03 10:03 AND scheduled_stop:<2017-07-16 12:30");
 		assertEquals("scheduled_start:>1496509380000 AND scheduled_stop:<1500233400000", s);
 	}
 	
 	@Test
 	public void testCheckForComplexTime() {
-		String s = DoSearch.checkForTimes("scheduled_start:>2016-12-12 12:30 AND name:bob AND last:smith");
+		String s = test.checkForTimes("scheduled_start:>2016-12-12 12:30 AND name:bob AND last:smith");
 		assertEquals("scheduled_start:>1481571000000 AND name:bob AND last:smith", s);
 	}
 	
@@ -95,7 +105,7 @@ public class DoSearchIT
 		
 		String search_string = "subject:thing";
 		
-		search_string = DoSearch.checkForTimes(search_string);//this is what we are really trying to check. 
+		search_string = test.checkForTimes(search_string);//this is what we are really trying to check. 
 	
 		JSONServletResponse search = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(StandardChangeLogEntry.INDEX_DEFINITION, new StandardSearchRequest(search_string));
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().delete(standard_change_log_entry);

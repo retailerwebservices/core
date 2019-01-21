@@ -2,7 +2,9 @@ package org.jimmutable.cloud.servlets.common;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.StringJoiner;
 
 import javax.servlet.http.HttpServlet;
@@ -13,15 +15,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.elasticsearch.IndexDefinition;
-import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
-import org.jimmutable.cloud.elasticsearch.SearchIndexFieldType;
-import org.jimmutable.cloud.servlet_utils.common_objects.GeneralResponseError;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.Sort;
-import org.jimmutable.cloud.servlet_utils.search.SortBy;
-import org.jimmutable.cloud.servlet_utils.search.SortDirection;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.servlets.util.RequestPageData;
 import org.jimmutable.cloud.servlets.util.ServletUtil;
@@ -29,6 +26,8 @@ import org.jimmutable.core.serialization.reader.HandReader;
 
 public abstract class DoSearch extends HttpServlet
 {
+
+	private static final List<String> DEFAULT_TIME_KEYWORDS = Arrays.asList("scheduled_start","scheduled_stop","start","stop");
 
 	private static Logger logger = LogManager.getLogger(DoSearch.class);
 
@@ -240,9 +239,9 @@ public abstract class DoSearch extends HttpServlet
 		return search_response;
 	}
 
-	public static String checkForTimes( String search_string )
+	public String checkForTimes( String search_string )
 	{
-		if ( !(search_string.contains("scheduled_start") || search_string.contains("scheduled_stop")) )
+		if(!getListOfTimeKeywords().stream().anyMatch(s -> search_string.contains(s)))
 		{
 			return search_string;
 		}
@@ -256,6 +255,7 @@ public abstract class DoSearch extends HttpServlet
 				if ( clause.contains(">") || clause.contains("<") )
 				{ // if we need to do any faffing about with ranges.
 					String split_string = ":>";
+					clause= clause.replace("=", "");
 					if ( clause.contains("<") )
 					{
 						split_string = ":<";
@@ -279,6 +279,10 @@ public abstract class DoSearch extends HttpServlet
 
 			return refined_search_string.toString();
 		}
+	}
+	
+	protected List<String> getListOfTimeKeywords() {
+		return DEFAULT_TIME_KEYWORDS;
 	}
 
 	abstract protected IndexDefinition getSearchIndexDefinition();
