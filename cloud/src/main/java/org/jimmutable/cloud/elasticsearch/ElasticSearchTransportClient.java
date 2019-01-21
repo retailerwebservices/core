@@ -176,13 +176,65 @@ public class ElasticSearchTransportClient implements ISearch
 		{
 			try
 			{
-				upsertDocument(object);
+				upsertDocument(object, RefreshPolicy.NONE);
 			}
 			catch ( Exception e )
 			{
 				logger.log(Level.FATAL, "Failure during upsert operation!", e);
 			}
 		}
+	}
+	
+	/**
+	 * Upsert a document to a search index
+	 * 
+	 * @param object
+	 *            The Indexable object
+	 * @return boolean If successful or not
+	 */
+	public boolean upsertDocument( Indexable object, RefreshPolicy refresh_policy )
+	{
+
+		if ( object == null )
+		{
+			logger.error("Null object!");
+			return false;
+		}
+
+		try
+		{
+
+			SearchDocumentWriter writer = new SearchDocumentWriter();
+			object.writeSearchDocument(writer);
+			Map<String, Object> data = writer.getSimpleFieldsMap();
+			String index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
+			String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
+			IndexResponse response = client.prepareIndex(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).setRefreshPolicy(refresh_policy).setSource(data).get();
+
+			Level level;
+			switch ( response.getResult() )
+			{
+			case CREATED:
+				level = Level.DEBUG;
+				break;
+			case UPDATED:
+				level = Level.DEBUG;
+				break;
+			default:
+				level = Level.FATAL;
+				break;
+			}
+
+			logger.log(level, String.format("%s %s/%s/%s %s", response.getResult().name(), index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name, data));
+
+		}
+		catch ( Exception e )
+		{
+			logger.log(Level.FATAL, String.format("Failure during upsert operation of Document id:%s on Index:%s", object.getSimpleSearchDocumentId().getSimpleValue(), object.getSimpleSearchIndexDefinition().getSimpleValue()), e);
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -295,47 +347,7 @@ public class ElasticSearchTransportClient implements ISearch
 	@Override
 	public boolean upsertDocument( Indexable object )
 	{
-
-		if ( object == null )
-		{
-			logger.error("Null object!");
-			return false;
-		}
-
-		try
-		{
-
-			SearchDocumentWriter writer = new SearchDocumentWriter();
-			object.writeSearchDocument(writer);
-			Map<String, Object> data = writer.getSimpleFieldsMap();
-			String index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
-			String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
-			IndexResponse response = client.prepareIndex(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).setRefreshPolicy(RefreshPolicy.WAIT_UNTIL).setSource(data).get();
-
-			Level level;
-			switch ( response.getResult() )
-			{
-			case CREATED:
-				level = Level.DEBUG;
-				break;
-			case UPDATED:
-				level = Level.DEBUG;
-				break;
-			default:
-				level = Level.FATAL;
-				break;
-			}
-
-			logger.log(level, String.format("%s %s/%s/%s %s", response.getResult().name(), index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name, data));
-
-		}
-		catch ( Exception e )
-		{
-			logger.log(Level.FATAL, String.format("Failure during upsert operation of Document id:%s on Index:%s", object.getSimpleSearchDocumentId().getSimpleValue(), object.getSimpleSearchIndexDefinition().getSimpleValue()), e);
-			return false;
-		}
-
-		return true;
+		return upsertDocument(object, RefreshPolicy.WAIT_UNTIL);
 	}
 
 	/**
