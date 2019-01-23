@@ -265,7 +265,11 @@ public abstract class DoSearch extends HttpServlet
 					String[] clause_breakdown = clause.split(split_string, 2);
 					try
 					{
-						Date date = formatter.parse(clause_breakdown[1].replace('T', ' '));
+						String date_string = clause_breakdown[1].replace('T', ' ');
+						if(!date_string.contains(":")) {
+							date_string= date_string+" 0:00";
+						}
+						Date date = formatter.parse(date_string);
 						refined_search_string.add("("+clause_breakdown[0] + split_string + date.getTime()+" OR "+clause_breakdown[0] + ":" + date.getTime()+")");
 						
 					}
