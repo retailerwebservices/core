@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.TimeZone;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -27,7 +28,7 @@ import org.jimmutable.core.serialization.reader.HandReader;
 public abstract class DoSearch extends HttpServlet
 {
 
-	private static final List<String> DEFAULT_TIME_KEYWORDS = Arrays.asList("scheduled_start","scheduled_stop","start","stop");
+	public static final List<String> DEFAULT_TIME_KEYWORDS = Arrays.asList("scheduled_start","scheduled_stop","start","stop");
 
 	private static Logger logger = LogManager.getLogger(DoSearch.class);
 
@@ -248,14 +249,19 @@ public abstract class DoSearch extends HttpServlet
 		else
 		{
 			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+			formatter.setTimeZone(TimeZone.getTimeZone("EST"));
 			String[] clauses = search_string.split(" AND");
 			StringJoiner refined_search_string = new StringJoiner(" AND");
 			for ( String clause : clauses )
 			{
+				boolean inclusive = false;
 				if ( clause.contains(">") || clause.contains("<") )
 				{ // if we need to do any faffing about with ranges.
 					String split_string = ":>";
-					clause= clause.replace("=", "");
+					if(clause.contains("=")) {
+						clause= clause.replace("=", "");
+						inclusive = true;
+					}
 					if ( clause.contains("<") )
 					{
 						split_string = ":<";
@@ -263,8 +269,17 @@ public abstract class DoSearch extends HttpServlet
 					String[] clause_breakdown = clause.split(split_string, 2);
 					try
 					{
-						Date date = formatter.parse(clause_breakdown[1].replace('T', ' '));
-						refined_search_string.add(clause_breakdown[0] + split_string + date.getTime());
+						String date_string = clause_breakdown[1].replace('T', ' ');
+						if(!date_string.contains(":")) {
+							date_string= date_string+" 0:00";
+						}
+						Date date = formatter.parse(date_string);
+						if(inclusive) {
+						refined_search_string.add("("+clause_breakdown[0] + split_string + date.getTime()+" OR "+clause_breakdown[0] + ":" + date.getTime()+")");
+						}else {
+							refined_search_string.add(clause_breakdown[0] + split_string + date.getTime());
+						}
+						
 					}
 					catch ( ParseException e )
 					{
@@ -281,7 +296,7 @@ public abstract class DoSearch extends HttpServlet
 		}
 	}
 	
-	protected List<String> getListOfTimeKeywords() {
+	public List<String> getListOfTimeKeywords() {
 		return DEFAULT_TIME_KEYWORDS;
 	}
 

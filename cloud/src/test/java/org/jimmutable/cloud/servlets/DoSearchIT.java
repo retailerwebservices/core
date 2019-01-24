@@ -46,19 +46,25 @@ public class DoSearchIT
 	@Test
 	public void testCheckForSimpleTime() {
 		String s = test.checkForTimes("scheduled_start:>2018-01-01 12:30");
-		assertEquals("scheduled_start:>1514835000000", s);
+		assertEquals("scheduled_start:>1514827800000", s);
+	}
+	
+	@Test
+	public void testCheckForSimpleTimeInclusive() {
+		String s = test.checkForTimes("scheduled_start:>=2018-01-01 12:30");
+		assertEquals("(scheduled_start:>1514827800000 OR scheduled_start:1514827800000)", s);
 	}
 	
 	@Test
 	public void testCheckForSimpleTimeRange() {
 		String s = test.checkForTimes("scheduled_start:>2017-06-03 10:03 AND scheduled_stop:<2017-07-16 12:30");
-		assertEquals("scheduled_start:>1496509380000 AND scheduled_stop:<1500233400000", s);
+		assertEquals("scheduled_start:>1496502180000 AND scheduled_stop:<1500226200000", s);
 	}
 	
 	@Test
 	public void testCheckForComplexTime() {
 		String s = test.checkForTimes("scheduled_start:>2016-12-12 12:30 AND name:bob AND last:smith");
-		assertEquals("scheduled_start:>1481571000000 AND name:bob AND last:smith", s);
+		assertEquals("scheduled_start:>1481563800000 AND name:bob AND last:smith", s);
 	}
 	
 	@Test
@@ -103,7 +109,7 @@ public class DoSearchIT
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocument(standard_change_log_entry2);
 
 		
-		String search_string = "subject:thing";
+		String search_string = "short_description:Short";
 		
 		search_string = test.checkForTimes(search_string);//this is what we are really trying to check. 
 	
@@ -114,6 +120,6 @@ public class DoSearchIT
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().deleteDocument(StandardChangeLogEntry.INDEX_DEFINITION, standard_change_log_entry2.getSimpleSearchDocumentId());
 		
 		assertEquals(2, ((SearchResponseOK)search).getSimpleResults().size());
-		assertEquals("subject:thing", search_string);
+		assertEquals("short_description:Short", search_string);
 	}
 }
