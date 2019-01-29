@@ -230,6 +230,26 @@ public class Builder
 		return ret;
 	}
 	
+	private ObjectParseTree mapKeyOrValueToObjectParseTree(FieldName field_name, StandardEnum value)
+	{
+		Validator.notNull(field_name, value);
+		
+		
+		//TODO cleanup and add case for StandardEnum value instead of key
+		TokenBuffer token_buffer = ObjectWriter.serializeToTokenBuffer(value.toString());
+		
+		ObjectParseTree ret = Parser.parse(token_buffer);
+		ret.setFieldName(field_name);
+		
+		return ret;
+	}
+	
+	/**
+	 * If adding StandardEnum to map please use addMapEntryEnum to avoid issues
+	 * @param field
+	 * @param key
+	 * @param value
+	 */
 	public void addMapEntry(FieldDefinition.Map field, Object key, Object value)
 	{
 		Validator.notNull(field);
@@ -238,9 +258,47 @@ public class Builder
 		
 		ObjectParseTree entry = new ObjectParseTree(field.getSimpleFieldName());
 		
+		
 		entry.add(mapKeyOrValueToObjectParseTree(FieldName.FIELD_KEY, key));
 		entry.add(mapKeyOrValueToObjectParseTree(FieldName.FIELD_VALUE, value));
 		
 		under_construction.add(entry);
 	}
+	
+	/**
+	 * Only used when key, value or both parameters are a StandardEnum object
+	 * @param field
+	 * @param key
+	 * @param value
+	 */
+	public void addMapEntryEnum(FieldDefinition.Map field, Object key, Object value)
+	{
+		
+		Validator.notNull(field);
+		
+		if ( key == null || value == null ) return; // nulls not allowed, skip...
+		
+		ObjectParseTree entry = new ObjectParseTree(field.getSimpleFieldName());
+		
+		
+		if(key instanceof StandardEnum)
+		{
+			entry.add(mapKeyOrValueToObjectParseTree(FieldName.FIELD_KEY, (StandardEnum) key));
+		}
+		else
+		{
+			entry.add(mapKeyOrValueToObjectParseTree(FieldName.FIELD_KEY, key));
+		}
+		
+		if(value instanceof StandardEnum)
+		{
+			entry.add(mapKeyOrValueToObjectParseTree(FieldName.FIELD_KEY, (StandardEnum) value));
+		}
+		else
+		{
+			entry.add(mapKeyOrValueToObjectParseTree(FieldName.FIELD_KEY, value));
+		}
+	}
+	
+	
 }
