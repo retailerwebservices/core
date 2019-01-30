@@ -199,6 +199,11 @@ public class Builder
 	{
 		Validator.notNull(field_name, value);
 		
+		if(value instanceof StandardEnum)
+		{
+			return createObjectParseTree(field_name, value.toString());
+		}
+		
 		// See if this is a primitive...
 		String primative_value = null;
 		
@@ -221,35 +226,10 @@ public class Builder
 		}
 		
 		// We have an object of some sort...
-		
-		TokenBuffer token_buffer = ObjectWriter.serializeToTokenBuffer(value);
-		
-		ObjectParseTree ret = Parser.parse(token_buffer);
-		ret.setFieldName(field_name);
-		
-		return ret;
+		return createObjectParseTree(field_name,value);
+	
 	}
 	
-	private ObjectParseTree mapKeyOrValueToObjectParseTree(FieldName field_name, StandardEnum value)
-	{
-		Validator.notNull(field_name, value);
-		
-		
-		//TODO cleanup and add case for StandardEnum value instead of key
-		TokenBuffer token_buffer = ObjectWriter.serializeToTokenBuffer(value.toString());
-		
-		ObjectParseTree ret = Parser.parse(token_buffer);
-		ret.setFieldName(field_name);
-		
-		return ret;
-	}
-	
-	/**
-	 * If adding StandardEnum to map please use addMapEntryEnum to avoid issues
-	 * @param field
-	 * @param key
-	 * @param value
-	 */
 	public void addMapEntry(FieldDefinition.Map field, Object key, Object value)
 	{
 		Validator.notNull(field);
@@ -264,41 +244,14 @@ public class Builder
 		
 		under_construction.add(entry);
 	}
-	
-	/**
-	 * Only used when key, value or both parameters are a StandardEnum object
-	 * @param field
-	 * @param key
-	 * @param value
-	 */
-	public void addMapEntryEnum(FieldDefinition.Map field, Object key, Object value)
+
+	private ObjectParseTree createObjectParseTree(FieldName field_name, Object value)
 	{
+		TokenBuffer token_buffer = ObjectWriter.serializeToTokenBuffer(value);
 		
-		Validator.notNull(field);
+		ObjectParseTree ret = Parser.parse(token_buffer);
+		ret.setFieldName(field_name);
 		
-		if ( key == null || value == null ) return; // nulls not allowed, skip...
-		
-		ObjectParseTree entry = new ObjectParseTree(field.getSimpleFieldName());
-		
-		
-		if(key instanceof StandardEnum)
-		{
-			entry.add(mapKeyOrValueToObjectParseTree(FieldName.FIELD_KEY, (StandardEnum) key));
-		}
-		else
-		{
-			entry.add(mapKeyOrValueToObjectParseTree(FieldName.FIELD_KEY, key));
-		}
-		
-		if(value instanceof StandardEnum)
-		{
-			entry.add(mapKeyOrValueToObjectParseTree(FieldName.FIELD_KEY, (StandardEnum) value));
-		}
-		else
-		{
-			entry.add(mapKeyOrValueToObjectParseTree(FieldName.FIELD_KEY, value));
-		}
+		return ret;
 	}
-	
-	
 }
