@@ -27,6 +27,9 @@ import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
+import org.elasticsearch.action.bulk.BulkItemResponse;
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.ClearScrollRequest;
@@ -184,7 +187,7 @@ public class ElasticSearchTransportClient implements ISearch
 			}
 		}
 	}
-	
+
 	/**
 	 * Upsert a document to a search index
 	 * 
@@ -231,6 +234,90 @@ public class ElasticSearchTransportClient implements ISearch
 		catch ( Exception e )
 		{
 			logger.log(Level.FATAL, String.format("Failure during upsert operation of Document id:%s on Index:%s", object.getSimpleSearchDocumentId().getSimpleValue(), object.getSimpleSearchIndexDefinition().getSimpleValue()), e);
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Upsert a set of document to a search index once elastic search is ready.
+	 * 
+	 * @param Set<Indexable>
+	 *            objects The Indexable objects
+	 * @return boolean If successful or not
+	 */
+	public boolean upsertDocuments( Set<Indexable> objects )
+	{
+		return upsertDocumentsBulk(objects, RefreshPolicy.WAIT_UNTIL);
+	}
+
+	/**
+	 * Upsert a set of document to a search index immediately. THIS IS EXPENSIVE USE
+	 * SPARINGLY!
+	 * 
+	 * @param Set<Indexable>
+	 *            objects The Indexable objects
+	 * @return boolean If successful or not
+	 */
+	public boolean upsertDocumentsImmediate( Set<Indexable> objects )
+	{
+		return upsertDocumentsBulk(objects, RefreshPolicy.IMMEDIATE);
+	}
+
+	/**
+	 * Upsert a document to a search index
+	 * 
+	 * @param object
+	 *            The Indexable object
+	 * @return boolean If successful or not
+	 */
+	public boolean upsertDocumentsBulk( Set<Indexable> objects, RefreshPolicy refresh_policy )
+	{
+
+		if ( objects == null )
+		{
+			logger.error("Null object!");
+			return false;
+		}
+
+		try
+		{
+			BulkRequestBuilder bulkRequest = client.prepareBulk();
+			bulkRequest.setRefreshPolicy(refresh_policy);
+			for ( Indexable object : objects )
+			{
+
+				SearchDocumentWriter writer = new SearchDocumentWriter();
+				object.writeSearchDocument(writer);
+				Map<String, Object> data = writer.getSimpleFieldsMap();
+				String index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
+				String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
+				bulkRequest.add(client.prepareIndex(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).setSource(data));
+
+			}
+
+			BulkResponse bulkResponse = bulkRequest.get();
+			for ( BulkItemResponse response : bulkResponse.getItems() )
+			{
+				Level level;
+				if ( response.isFailed() )
+				{
+					level = Level.ERROR;
+				}
+				else
+				{
+					level = Level.DEBUG;
+				}
+
+				logger.log(level, String.format("%s %s/%s/", response.getResponse(), response.getId(), (response.isFailed() ? response.getFailure().getMessage() : "")));
+
+			}
+
+		}
+		catch ( Exception e )
+		{
+			logger.log(Level.FATAL, String.format("Failure during upsert operation of documents!"), e);
 			return false;
 		}
 
@@ -1344,4 +1431,5 @@ public class ElasticSearchTransportClient implements ISearch
 			return object;
 		}
 	}
+
 }

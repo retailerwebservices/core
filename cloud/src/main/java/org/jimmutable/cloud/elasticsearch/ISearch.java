@@ -3,6 +3,7 @@ package org.jimmutable.cloud.elasticsearch;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchRequest;
@@ -70,6 +71,25 @@ public interface ISearch
 	 * @return boolean If successful or not
 	 */
 	public boolean upsertDocument( Indexable object );
+	
+	/**
+	 * Upsert documents to a search index
+	 * 
+	 * @param object
+	 *            The set of Indexable objects
+	 * @return boolean If successful or not
+	 */
+	public boolean upsertDocuments( Set<Indexable> object );
+	
+	
+	/**
+	 * Upsert documents to a search index
+	 * 
+	 * @param object
+	 *            The set of Indexable objects
+	 * @return boolean If successful or not
+	 */
+	public boolean upsertDocumentsImmediate( Set<Indexable> object );
 
 	/**
 	 * Search an index with a query string.

@@ -357,6 +357,11 @@ public class ElasticSearchRESTClient implements ISearch
 	@Override
 	public boolean upsertDocument( Indexable object )
 	{
+		return upsert(object, RefreshPolicy.WAIT_UNTIL);
+	}
+	
+	public boolean upsert(Indexable object, RefreshPolicy refresh_policy)
+	{
 		if ( object == null )
 		{
 			logger.error("Null object!");
@@ -372,7 +377,7 @@ public class ElasticSearchRESTClient implements ISearch
 			String index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
 			String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
 
-			IndexRequest request = new IndexRequest(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).source(data).setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
+			IndexRequest request = new IndexRequest(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).source(data).setRefreshPolicy(refresh_policy);
 			IndexResponse response = high_level_rest_client.index(request);
 
 			Level level;
@@ -399,6 +404,20 @@ public class ElasticSearchRESTClient implements ISearch
 			e.printStackTrace();
 			return false;
 		}
+	}
+	
+	@Override
+	public boolean upsertDocuments( Set<Indexable> object )
+	{
+		//TODO implement once using REST client
+		return false;
+	}
+
+	@Override
+	public boolean upsertDocumentsImmediate( Set<Indexable> object )
+	{
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 	/**

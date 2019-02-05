@@ -1,6 +1,7 @@
 package org.jimmutable.cloud.elasticsearch;
 
 import java.util.List;
+import java.util.Set;
 
 import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchRequest;
@@ -120,4 +121,15 @@ public class StubSearch implements ISearch
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
+	@Override
+	public boolean upsertDocuments( Set<Indexable> object )
+	{
+		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
+	}
+	
+	@Override
+	public boolean upsertDocumentsImmediate( Set<Indexable> object )
+	{
+		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
+	}
 }
