@@ -270,7 +270,7 @@ public class ElasticSearchTransportClient implements ISearch
 	 * 
 	 * @param object
 	 *            The Indexable object
-	 * @return boolean If successful or not
+	 * @return boolean If all were successful or not
 	 */
 	public boolean upsertDocumentsBulk( Set<Indexable> objects, RefreshPolicy refresh_policy )
 	{
@@ -283,8 +283,8 @@ public class ElasticSearchTransportClient implements ISearch
 
 		try
 		{
-			BulkRequestBuilder bulkRequest = client.prepareBulk();
-			bulkRequest.setRefreshPolicy(refresh_policy);
+			BulkRequestBuilder bulk_request = client.prepareBulk();
+			bulk_request.setRefreshPolicy(refresh_policy);
 			for ( Indexable object : objects )
 			{
 
@@ -293,18 +293,21 @@ public class ElasticSearchTransportClient implements ISearch
 				Map<String, Object> data = writer.getSimpleFieldsMap();
 				String index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
 				String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
-				bulkRequest.add(client.prepareIndex(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).setSource(data));
+				bulk_request.add(client.prepareIndex(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).setSource(data));
 
 			}
 
-			BulkResponse bulkResponse = bulkRequest.get();
-			for ( BulkItemResponse response : bulkResponse.getItems() )
+			boolean success = true;
+			BulkResponse bulk_response = bulk_request.get();
+			for ( BulkItemResponse response : bulk_response.getItems() )
 			{
 				Level level;
 				if ( response.isFailed() )
 				{
 					level = Level.ERROR;
+					success = false;
 				}
+				
 				else
 				{
 					level = Level.DEBUG;
@@ -313,15 +316,14 @@ public class ElasticSearchTransportClient implements ISearch
 				logger.log(level, String.format("%s %s/%s/", response.getResponse(), response.getId(), (response.isFailed() ? response.getFailure().getMessage() : "")));
 
 			}
-
+			
+			return success;
 		}
 		catch ( Exception e )
 		{
 			logger.log(Level.FATAL, String.format("Failure during upsert operation of documents!"), e);
 			return false;
 		}
-
-		return true;
 	}
 
 	/**
