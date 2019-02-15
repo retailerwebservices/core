@@ -98,11 +98,15 @@ public abstract class SearchSync
 		}
 		logger.info("Success checking that all indices are properly configured...");
 		logger.info("Reindexing of all Kinds started...");
-		//We want a single thread per kind
+		//We want a single thread per half the kinds to ensure some form of stability with elastic search
 		int executor_threads = getSimpleKinds().size();
-		if(executor_threads <= 0) 
+		if(executor_threads <= 1) 
 		{
 			executor_threads = 1;
+		}
+		else
+		{
+			executor_threads /= 2;
 		}
 		
 		ExecutorService executor = Executors.newFixedThreadPool(executor_threads);
