@@ -3,7 +3,6 @@ package org.jimmutable.cloud.elasticsearch;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -83,6 +82,7 @@ public class ElasticSearchTransportClient implements ISearch
 	private static final Logger logger = LogManager.getLogger(ElasticSearchTransportClient.class);
 
 	private volatile TransportClient client;
+	private static final int MAX_REQUESTS_PER_BATCH = 2000;
 
 	public ElasticSearchTransportClient()
 	{
@@ -286,7 +286,7 @@ public class ElasticSearchTransportClient implements ISearch
 	 *            The override of default WAIT_UNTIL refresh policy
 	 * @param index_name
 	 *            Override the index name with something different if wanted (needed for re-indexing on an alias   
-	 * @return boolean If all were successful or not
+	 * @return boolean If all we were able to execute all batches successful or not
 	 */
 	public boolean upsertDocumentsBulk( Set<Indexable> objects, RefreshPolicy refresh_policy, String index_name )
 	{
@@ -299,11 +299,22 @@ public class ElasticSearchTransportClient implements ISearch
 
 		try
 		{
+			
+			Set<BulkRequestBuilder> bulk_requests = new HashSet<>();
+			
 			BulkRequestBuilder bulk_request = client.prepareBulk();
 			bulk_request.setRefreshPolicy(refresh_policy);
+			int request_count = 0;
 			for ( Indexable object : objects )
 			{
-
+				if(request_count == MAX_REQUESTS_PER_BATCH)
+				{
+					bulk_requests.add(bulk_request);
+					bulk_request = client.prepareBulk();
+					bulk_request.setRefreshPolicy(refresh_policy);
+					request_count = 0;
+				}
+				
 				SearchDocumentWriter writer = new SearchDocumentWriter();
 				object.writeSearchDocument(writer);
 				Map<String, Object> data = writer.getSimpleFieldsMap();
@@ -313,28 +324,32 @@ public class ElasticSearchTransportClient implements ISearch
 				}
 				String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
 				bulk_request.add(client.prepareIndex(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).setSource(data));
-
+				request_count++;
 			}
 
 			boolean success = true;
-			BulkResponse bulk_response = bulk_request.get();
-			for ( BulkItemResponse response : bulk_response.getItems() )
+			for(BulkRequestBuilder cur_bulk_request : bulk_requests)
 			{
-				Level level;
-				if ( response.isFailed() )
+				BulkResponse bulk_response = cur_bulk_request.get();
+				for ( BulkItemResponse response : bulk_response.getItems() )
 				{
-					level = Level.ERROR;
-					success = false;
-				}
-				
-				else
-				{
-					level = Level.DEBUG;
-				}
+					Level level;
+					if ( response.isFailed() )
+					{
+						level = Level.ERROR;
+						success = false;
+					}
+					
+					else
+					{
+						level = Level.DEBUG;
+					}
 
-				logger.log(level, String.format("%s %s/%s/", response.getResponse(), response.getId(), (response.isFailed() ? response.getFailure().getMessage() : "")));
+					logger.log(level, String.format("%s %s/%s/", response.getResponse(), response.getId(), (response.isFailed() ? response.getFailure().getMessage() : "")));
 
+				}
 			}
+
 			
 			return success;
 		}
