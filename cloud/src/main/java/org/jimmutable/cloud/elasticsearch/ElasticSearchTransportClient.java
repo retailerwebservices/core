@@ -3,6 +3,7 @@ package org.jimmutable.cloud.elasticsearch;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -82,7 +83,6 @@ public class ElasticSearchTransportClient implements ISearch
 	private static final Logger logger = LogManager.getLogger(ElasticSearchTransportClient.class);
 
 	private volatile TransportClient client;
-	private static final int MAX_REQUESTS_PER_BATCH = 2000;
 
 	public ElasticSearchTransportClient()
 	{
@@ -269,26 +269,10 @@ public class ElasticSearchTransportClient implements ISearch
 	 * Upsert a document to a search index
 	 * 
 	 * @param object
-	 *            The Indexable objects
+	 *            The Indexable object
 	 * @return boolean If all were successful or not
 	 */
 	public boolean upsertDocumentsBulk( Set<Indexable> objects, RefreshPolicy refresh_policy )
-	{
-		return upsertDocumentsBulk(objects, refresh_policy, null);
-	}
-	
-	/**
-	 * Upsert a document to a search index
-	 * 
-	 * @param object
-	 *            The Indexable objects
-	 * @param refresh_policy
-	 *            The override of default WAIT_UNTIL refresh policy
-	 * @param index_name
-	 *            Override the index name with something different if wanted (needed for re-indexing on an alias   
-	 * @return boolean If all we were able to execute all batches successful or not
-	 */
-	public boolean upsertDocumentsBulk( Set<Indexable> objects, RefreshPolicy refresh_policy, String index_name )
 	{
 
 		if ( objects == null )
@@ -299,57 +283,39 @@ public class ElasticSearchTransportClient implements ISearch
 
 		try
 		{
-			
-			Set<BulkRequestBuilder> bulk_requests = new HashSet<>();
-			
 			BulkRequestBuilder bulk_request = client.prepareBulk();
 			bulk_request.setRefreshPolicy(refresh_policy);
-			int request_count = 0;
 			for ( Indexable object : objects )
 			{
-				if(request_count == MAX_REQUESTS_PER_BATCH)
-				{
-					bulk_requests.add(bulk_request);
-					bulk_request = client.prepareBulk();
-					bulk_request.setRefreshPolicy(refresh_policy);
-					request_count = 0;
-				}
-				
+
 				SearchDocumentWriter writer = new SearchDocumentWriter();
 				object.writeSearchDocument(writer);
 				Map<String, Object> data = writer.getSimpleFieldsMap();
-				if(index_name == null)
-				{
-					index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
-				}
+				String index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
 				String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
 				bulk_request.add(client.prepareIndex(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).setSource(data));
-				request_count++;
+
 			}
 
 			boolean success = true;
-			for(BulkRequestBuilder cur_bulk_request : bulk_requests)
+			BulkResponse bulk_response = bulk_request.get();
+			for ( BulkItemResponse response : bulk_response.getItems() )
 			{
-				BulkResponse bulk_response = cur_bulk_request.get();
-				for ( BulkItemResponse response : bulk_response.getItems() )
+				Level level;
+				if ( response.isFailed() )
 				{
-					Level level;
-					if ( response.isFailed() )
-					{
-						level = Level.ERROR;
-						success = false;
-					}
-					
-					else
-					{
-						level = Level.DEBUG;
-					}
-
-					logger.log(level, String.format("%s %s/%s/", response.getResponse(), response.getId(), (response.isFailed() ? response.getFailure().getMessage() : "")));
-
+					level = Level.ERROR;
+					success = false;
 				}
-			}
+				
+				else
+				{
+					level = Level.DEBUG;
+				}
 
+				logger.log(level, String.format("%s %s/%s/", response.getResponse(), response.getId(), (response.isFailed() ? response.getFailure().getMessage() : "")));
+
+			}
 			
 			return success;
 		}
@@ -1312,20 +1278,11 @@ public class ElasticSearchTransportClient implements ISearch
 	 */
 	private boolean syncSearchAndStorage( Kind kind, String index_name )
 	{
-		UpsertDataHandler handler = new UpsertDataHandler(index_name);
-		//check that the item is able to be deserialized as a Storable and Indexable, then add to set 
-		if ( !CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().scan(kind, handler, 10) )
+		if ( !CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().scan(kind, new UpsertDataHandler(index_name), 10) )
 		{
 			logger.warn("Storage Scanner for Kind " + kind + " was unable to successfully run. This Kind may not be fully re-indexed or there may currently not be any entries of Kind in Storage. The index will not be swapped on the alias.");
 			return false;
 		}
-		
-		//Then attempt to upsert the single Object's search document into Search.
-		if(!upsertDocumentsBulk(handler.getSimpleValuesToUpsert(), RefreshPolicy.WAIT_UNTIL, index_name))
-		{
-			return false;
-		}
-		
 		return true;
 	}
 
@@ -1333,21 +1290,15 @@ public class ElasticSearchTransportClient implements ISearch
 	 * This handles checking an individual file in Storage. It will check that the
 	 * item is able to be deserialized as a Storable and Indexable. If it is we will
 	 * set our Kind's Indexable to match that of the Object deserialized if not yet
-	 * set. 
+	 * set. Then attempt to upsert the single Object's search document into Search.
 	 */
 	private class UpsertDataHandler implements StorageKeyHandler
 	{
 		private String index_name;
-		private Set<Indexable> values_to_upsert = new HashSet<>();
-		
+
 		private UpsertDataHandler( String index_name )
 		{
 			this.index_name = index_name;
-		}
-		
-		public Set<Indexable> getSimpleValuesToUpsert()
-		{
-			return values_to_upsert;
 		}
 
 		@SuppressWarnings("rawtypes")
@@ -1365,7 +1316,39 @@ public class ElasticSearchTransportClient implements ISearch
 				return;
 			}
 
-			values_to_upsert.add((Indexable)obj.getObject());
+			SearchDocumentWriter writer = new SearchDocumentWriter();
+
+			Indexable indexable = (Indexable) obj.getObject();
+			indexable.writeSearchDocument(writer);
+			Map<String, Object> data = writer.getSimpleFieldsMap();
+
+			// Not async so it's only finished once the whole scan does so
+			try
+			{
+				String document_name = indexable.getSimpleSearchDocumentId().getSimpleValue();
+				IndexResponse response = client.prepareIndex(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).setSource(data).get();
+
+				Level level;
+				switch ( response.getResult() )
+				{
+				case CREATED:
+					level = Level.DEBUG;
+					break;
+				case UPDATED:
+					level = Level.DEBUG;
+					break;
+				default:
+					level = Level.FATAL;
+					break;
+				}
+
+				logger.log(level, String.format("%s %s/%s/%s %s", response.getResult().name(), index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name, data));
+
+			}
+			catch ( Exception e )
+			{
+				logger.log(Level.FATAL, String.format("Failure during upsert operation of Document id:%s on Index:%s", indexable.getSimpleSearchDocumentId().getSimpleValue(), indexable.getSimpleSearchIndexDefinition().getSimpleValue()), e);
+			}
 		}
 	}
 
