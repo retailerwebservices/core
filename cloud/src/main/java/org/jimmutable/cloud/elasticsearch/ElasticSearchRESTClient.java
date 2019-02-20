@@ -124,7 +124,7 @@ public class ElasticSearchRESTClient implements ISearch
 					return requestConfigBuilder.setConnectTimeout(5000).setSocketTimeout(60000);
 				}
 			});
-			builder.setDefaultHeaders(new Header[] { HEADER_BASIC_AUTH, HEADER_CONTENT_TYPE }).setMaxRetryTimeoutMillis(60000);
+			builder.setDefaultHeaders(new Header[] { HEADER_BASIC_AUTH, HEADER_CONTENT_TYPE }).setMaxRetryTimeoutMillis(120000);
 			high_level_rest_client = new RestHighLevelClient(builder);
 		}
 		else
