@@ -411,7 +411,7 @@ public class StorageS3 extends Storage
 				root += "/" + getOptionalPrefix(null);
 			}
 
-			ListObjectsRequest request = new ListObjectsRequest(bucket_name, root, null, null, -1);
+			ListObjectsRequest request = new ListObjectsRequest(bucket_name, root + "/", null, null, -1);
 
 			while (true)
 			{
