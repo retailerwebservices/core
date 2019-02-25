@@ -1,9 +1,9 @@
 package org.jimmutable.cloud.elasticsearch;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1086,7 +1086,15 @@ public class ElasticSearchRESTClient implements ISearch
 		@Override
 		public void handle( StorageKey key )
 		{
-			byte[] bytes = CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(key, null);
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			boolean retrieved = CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersionStreaming(key, out);
+			
+			if(!retrieved) {
+				logger.error("Could not retrieve object for StorageKey " + key);
+				return;
+			}
+			
+			byte[] bytes = out.toByteArray();
 
 			GenericStorableAndIndexable<?> obj = null;
 			try
