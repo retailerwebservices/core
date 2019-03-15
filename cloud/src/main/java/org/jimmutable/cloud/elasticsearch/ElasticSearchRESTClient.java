@@ -58,7 +58,6 @@ import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.EnvironmentType;
-import org.jimmutable.cloud.elasticsearch.ElasticSearchTransportClient.GenericStorableAndIndexable;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
@@ -68,8 +67,11 @@ import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.SortBy;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.storage.IStorage;
+import org.jimmutable.cloud.storage.Storable;
 import org.jimmutable.cloud.storage.StorageKey;
 import org.jimmutable.cloud.storage.StorageKeyHandler;
+import org.jimmutable.core.exceptions.ValidationException;
+import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.serialization.FieldName;
 import org.supercsv.cellprocessor.ift.CellProcessor;
@@ -573,6 +575,12 @@ public class ElasticSearchRESTClient implements ISearch
 			{
 				logger.info("No documents were found in Storage for index " + index_name);
 				return false;
+			}
+			
+			while( scan_handler.getSimpleBulkRequest().requests().contains(null))
+			{
+				logger.info("HEY WE HAVE A NULL REQUEST for index: " + index_name );
+				scan_handler.getSimpleBulkRequest().requests().remove(null);
 			}
 
 			BulkResponse bulk_response = high_level_rest_client.bulk(scan_handler.getSimpleBulkRequest());
@@ -1277,6 +1285,88 @@ public class ElasticSearchRESTClient implements ISearch
 		}
 
 		return true;
+	}
+	
+	/**
+	 * This is a simple class to handle deserializing any Kind's Object and ensuring
+	 * that the Kind's Object is both Indexable and Storable.
+	 */
+	static class GenericStorableAndIndexable<T>
+	{
+		private T object;
+
+		@SuppressWarnings("unchecked")
+		public GenericStorableAndIndexable( byte[] bytes ) throws ValidationException
+		{
+			StandardObject<?> obj = null;
+			try
+			{
+				obj = StandardObject.deserialize(new String(bytes));
+			}
+			catch ( Exception e )
+			{
+				throw new ValidationException("Unable to deserialize object", e);
+			}
+
+			// Broken out this way, rather than just deserializing T so that we know exactly
+			// what a
+			if ( !(obj instanceof Storable) )
+			{
+				throw new ValidationException("Object " + obj.getTypeName() + " is unable to be reindexed since it is not a Storable.");
+			}
+			if ( !(obj instanceof Indexable) )
+			{
+				throw new ValidationException("Object " + obj.getTypeName() + " is unable to be reindexed since it is not a Indexable.");
+			}
+
+			this.object = (T) obj;
+		}
+
+		@SuppressWarnings("unchecked")
+		public GenericStorableAndIndexable( StorageKey key ) throws ValidationException
+		{
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersionStreaming(key, baos);
+			StandardObject<?> obj = null;
+			try
+			{
+				String data = baos.toString("UTF-8");
+				obj = StandardObject.deserialize(data);
+			}
+			catch ( IOException e )
+			{
+				throw new ValidationException("Unable to deserialize object", e);
+			}
+			finally
+			{
+				try
+				{
+					baos.close();
+				}
+				catch ( IOException e )
+				{
+					logger.error("Can't close output stream", e);
+				}
+			}
+
+			// Broken out this way, rather than just deserializing T so that we know exactly
+			// what a
+			if ( !(obj instanceof Storable) )
+			{
+				throw new ValidationException("Object " + obj.getTypeName() + " is unable to be reindexed since it is not a Storable.");
+			}
+			if ( !(obj instanceof Indexable) )
+			{
+				throw new ValidationException("Object " + obj.getTypeName() + " is unable to be reindexed since it is not a Indexable.");
+			}
+
+			this.object = (T) obj;
+		}
+
+		public T getObject()
+		{
+			return object;
+		}
 	}
 
 }
