@@ -408,26 +408,29 @@ public class ElasticSearchRESTClient implements ISearch
 		}
 	}
 	
-	/*
-	 * CR TODO important this this is implemented and tested before we switch to
-	 * using it
-	 */
 	@Override
 	public boolean upsertDocuments( Set<Indexable> object )
 	{
-		//TODO implement once using REST client
-		return false;
+		return upsertDocumentsBulk(object, RefreshPolicy.IMMEDIATE);
 	}
 
-	/*
-	 * CR TODO important this this is implemented and tested before we switch to
-	 * using it
-	 */
 	@Override
 	public boolean upsertDocumentsImmediate( Set<Indexable> object )
 	{
-		// TODO Auto-generated method stub
-		return false;
+		return upsertDocumentsBulk(object, RefreshPolicy.IMMEDIATE);
+	}
+	
+	public boolean upsertDocumentsBulk( Set<Indexable> object, RefreshPolicy refresh_policy )
+	{
+		boolean result = true;
+		for ( Indexable indexable : object )
+		{
+			boolean individual_result = upsert(indexable, refresh_policy);
+			if(!individual_result) {
+				result = individual_result;
+			}
+		}
+		return result;
 	}
 
 	/**
@@ -1293,92 +1296,6 @@ public class ElasticSearchRESTClient implements ISearch
 		}
 
 		return true;
-	}
-	
-	/*
-	 * CR TODO if this is just a copy of the class in transport client then for the
-	 * time being put them in a centralized place where they can both use it.
-	 */
-	/**
-	 * This is a simple class to handle deserializing any Kind's Object and ensuring
-	 * that the Kind's Object is both Indexable and Storable.
-	 */
-	static class GenericStorableAndIndexable<T>
-	{
-		private T object;
-
-		@SuppressWarnings("unchecked")
-		public GenericStorableAndIndexable( byte[] bytes ) throws ValidationException
-		{
-			StandardObject<?> obj = null;
-			try
-			{
-				obj = StandardObject.deserialize(new String(bytes));
-			}
-			catch ( Exception e )
-			{
-				throw new ValidationException("Unable to deserialize object", e);
-			}
-
-			// Broken out this way, rather than just deserializing T so that we know exactly
-			// what a
-			if ( !(obj instanceof Storable) )
-			{
-				throw new ValidationException("Object " + obj.getTypeName() + " is unable to be reindexed since it is not a Storable.");
-			}
-			if ( !(obj instanceof Indexable) )
-			{
-				throw new ValidationException("Object " + obj.getTypeName() + " is unable to be reindexed since it is not a Indexable.");
-			}
-
-			this.object = (T) obj;
-		}
-
-		@SuppressWarnings("unchecked")
-		public GenericStorableAndIndexable( StorageKey key ) throws ValidationException
-		{
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersionStreaming(key, baos);
-			StandardObject<?> obj = null;
-			try
-			{
-				String data = baos.toString("UTF-8");
-				obj = StandardObject.deserialize(data);
-			}
-			catch ( IOException e )
-			{
-				throw new ValidationException("Unable to deserialize object", e);
-			}
-			finally
-			{
-				try
-				{
-					baos.close();
-				}
-				catch ( IOException e )
-				{
-					logger.error("Can't close output stream", e);
-				}
-			}
-
-			// Broken out this way, rather than just deserializing T so that we know exactly
-			// what a
-			if ( !(obj instanceof Storable) )
-			{
-				throw new ValidationException("Object " + obj.getTypeName() + " is unable to be reindexed since it is not a Storable.");
-			}
-			if ( !(obj instanceof Indexable) )
-			{
-				throw new ValidationException("Object " + obj.getTypeName() + " is unable to be reindexed since it is not a Indexable.");
-			}
-
-			this.object = (T) obj;
-		}
-
-		public T getObject()
-		{
-			return object;
-		}
 	}
 
 }
