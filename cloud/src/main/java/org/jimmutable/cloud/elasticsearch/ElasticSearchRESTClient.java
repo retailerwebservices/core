@@ -408,6 +408,10 @@ public class ElasticSearchRESTClient implements ISearch
 		}
 	}
 	
+	/*
+	 * CR TODO important this this is implemented and tested before we switch to
+	 * using it
+	 */
 	@Override
 	public boolean upsertDocuments( Set<Indexable> object )
 	{
@@ -415,6 +419,10 @@ public class ElasticSearchRESTClient implements ISearch
 		return false;
 	}
 
+	/*
+	 * CR TODO important this this is implemented and tested before we switch to
+	 * using it
+	 */
 	@Override
 	public boolean upsertDocumentsImmediate( Set<Indexable> object )
 	{
@@ -1287,6 +1295,10 @@ public class ElasticSearchRESTClient implements ISearch
 		return true;
 	}
 	
+	/*
+	 * CR TODO if this is just a copy of the class in transport client then for the
+	 * time being put them in a centralized place where they can both use it.
+	 */
 	/**
 	 * This is a simple class to handle deserializing any Kind's Object and ensuring
 	 * that the Kind's Object is both Indexable and Storable.
