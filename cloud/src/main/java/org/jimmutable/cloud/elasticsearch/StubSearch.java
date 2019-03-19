@@ -32,12 +32,6 @@ public class StubSearch implements ISearch
 	}
 
 	@Override
-	public JSONServletResponse search(IndexDefinition index, StandardSearchRequest request)
-	{
-		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
-	}
-
-	@Override
 	public SearchResponse searchRaw(SearchRequest request)
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");

@@ -1,6 +1,5 @@
 package org.jimmutable.cloud.elasticsearch;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -9,15 +8,10 @@ import java.util.List;
 
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.IntegrationTest;
-import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
-import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
-import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
-import org.jimmutable.cloud.servlet_utils.search.SearchResponseOKOLD;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.storage.ObjectIdStorageKey;
 import org.jimmutable.cloud.storage.StorageKeyExtension;
-import org.jimmutable.core.fields.FieldMap;
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.common.Day;
 import org.jimmutable.core.objects.common.Kind;

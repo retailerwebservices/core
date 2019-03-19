@@ -3,19 +3,17 @@ package org.jimmutable.cloud.tinyurl;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
-import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
-import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
+import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.storage.ObjectIdStorageKey;
 import org.jimmutable.cloud.storage.StorageKeyExtension;
-import org.jimmutable.core.fields.FieldMap;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.ObjectId;
-import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.Format;
 
 /**
@@ -36,13 +34,13 @@ public class TinyURLApi
 
 	public static TinyUrlResult tinyURLComplex( String url, TinyUrlResult default_value )
 	{
-		JSONServletResponse result_response = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(TinyUrlResult.INDEX_DEFINITION, new StandardSearchRequest(String.format("%s:\"%s\"", TinyUrlResult.FIELD_URL.getSimpleFieldName().getSimpleName(), url), 10000, 0));
+		List<OneSearchResultWithTyping> result_response = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(TinyUrlResult.INDEX_DEFINITION, new StandardSearchRequest(String.format("%s:\"%s\"", TinyUrlResult.FIELD_URL.getSimpleFieldName().getSimpleName(), url), 10000, 0), null);
 
-		if ( result_response instanceof SearchResponseOK &&((SearchResponseOK) result_response).getSimpleResults().size()>0)
+		if ( !result_response.isEmpty())
 		{
-			FieldMap<FieldName, String> map = ((SearchResponseOK) result_response).getSimpleResults().get(0).getSimpleContents();
+			OneSearchResultWithTyping map = result_response.get(0);
 
-			ObjectId id = new ObjectId(map.get(TinyUrlResult.SEARCH_FIELD_ID.getSimpleFieldName()));
+			ObjectId id = new ObjectId(map.readAsAtom(TinyUrlResult.SEARCH_FIELD_ID.getSimpleFieldName(), null));
 			try
 			{
 				String json = new String(CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(new ObjectIdStorageKey(TinyUrlResult.KIND, id, StorageKeyExtension.JSON), null), "UTF-8");
