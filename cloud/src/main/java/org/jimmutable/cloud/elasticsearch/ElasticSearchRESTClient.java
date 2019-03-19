@@ -58,20 +58,14 @@ import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.EnvironmentType;
-import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
-import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
-import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
-import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.SortBy;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.storage.IStorage;
-import org.jimmutable.cloud.storage.Storable;
 import org.jimmutable.cloud.storage.StorageKey;
 import org.jimmutable.cloud.storage.StorageKeyHandler;
-import org.jimmutable.core.exceptions.ValidationException;
-import org.jimmutable.core.objects.StandardObject;
+import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.serialization.FieldName;
 import org.supercsv.cellprocessor.ift.CellProcessor;
@@ -361,8 +355,8 @@ public class ElasticSearchRESTClient implements ISearch
 	{
 		return upsert(object, RefreshPolicy.WAIT_UNTIL);
 	}
-	
-	public boolean upsert(Indexable object, RefreshPolicy refresh_policy)
+
+	public boolean upsert( Indexable object, RefreshPolicy refresh_policy )
 	{
 		if ( object == null )
 		{
@@ -407,7 +401,7 @@ public class ElasticSearchRESTClient implements ISearch
 			return false;
 		}
 	}
-	
+
 	@Override
 	public boolean upsertDocuments( Set<Indexable> object )
 	{
@@ -419,18 +413,58 @@ public class ElasticSearchRESTClient implements ISearch
 	{
 		return upsertDocumentsBulk(object, RefreshPolicy.IMMEDIATE);
 	}
-	
-	public boolean upsertDocumentsBulk( Set<Indexable> object, RefreshPolicy refresh_policy )
+
+	public boolean upsertDocumentsBulk( Set<Indexable> objects, RefreshPolicy refresh_policy )
 	{
-		boolean result = true;
-		for ( Indexable indexable : object )
+		if ( objects == null )
 		{
-			boolean individual_result = upsert(indexable, refresh_policy);
-			if(!individual_result) {
-				result = individual_result;
-			}
+			logger.error("Null object!");
+			return false;
 		}
-		return result;
+
+		try
+		{
+			BulkRequest bulk_request = new BulkRequest();
+			bulk_request.setRefreshPolicy(refresh_policy);
+			for ( Indexable object : objects )
+			{
+
+				SearchDocumentWriter writer = new SearchDocumentWriter();
+				object.writeSearchDocument(writer);
+				Map<String, Object> data = writer.getSimpleFieldsMap();
+				String index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
+				String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
+				bulk_request.add(new IndexRequest().index(index_name).type(ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE).id(document_name).source(data));
+
+			}
+
+			boolean success = true;
+			BulkResponse bulk_response = high_level_rest_client.bulk(bulk_request);
+			for ( BulkItemResponse response : bulk_response.getItems() )
+			{
+				Level level;
+				if ( response.isFailed() )
+				{
+					level = Level.ERROR;
+					success = false;
+				}
+
+				else
+				{
+					level = Level.DEBUG;
+				}
+
+				logger.log(level, String.format("%s %s/%s/", response.getResponse(), response.getId(), (response.isFailed() ? response.getFailure().getMessage() : "")));
+
+			}
+
+			return success;
+		}
+		catch ( Exception e )
+		{
+			logger.log(Level.FATAL, String.format("Failure during upsert operation of documents!"), e);
+			return false;
+		}
 	}
 
 	/**
@@ -587,10 +621,10 @@ public class ElasticSearchRESTClient implements ISearch
 				logger.info("No documents were found in Storage for index " + index_name);
 				return false;
 			}
-			
-			while( scan_handler.getSimpleBulkRequest().requests().contains(null))
+
+			while ( scan_handler.getSimpleBulkRequest().requests().contains(null) )
 			{
-				logger.info("HEY WE HAVE A NULL REQUEST for index: " + index_name );
+				logger.info("HEY WE HAVE A NULL REQUEST for index: " + index_name);
 				scan_handler.getSimpleBulkRequest().requests().remove(null);
 			}
 
@@ -696,103 +730,6 @@ public class ElasticSearchRESTClient implements ISearch
 		return false;
 	}
 
-	/**
-	 * Search an index with a query string.
-	 * 
-	 * @see <a href=
-	 *      "https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html">query-dsl-query-string-query</a>
-	 * 
-	 * @param index
-	 *            The IndexDefinition
-	 * @param request
-	 *            The StandardSearchRequest
-	 * @return JSONServletResponse
-	 */
-	@Override
-	public JSONServletResponse search( IndexDefinition index, StandardSearchRequest request )
-	{
-		if ( index == null || request == null )
-		{
-			return new SearchResponseError(request, "Null parameter(s)!");
-		}
-
-		try
-		{
-			String index_name = index.getSimpleValue();
-			int from = request.getSimpleStartResultsAfter();
-			int size = request.getSimpleMaxResults();
-
-			SearchSourceBuilder query_builder = new SearchSourceBuilder().from(from).size(size).query(QueryBuilders.queryStringQuery(request.getSimpleQueryString()));
-			// Sorting
-			for ( SortBy sort_by : request.getSimpleSort().getSimpleSortOrder() )
-			{
-				FieldSortBuilder sort_builder = ElasticSearchCommon.getSort(sort_by, null);
-				if ( sort_builder == null )
-					continue;
-
-				query_builder.sort(sort_builder);
-			}
-
-			SearchRequest ext_request = new SearchRequest(index_name).types(ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE).source(query_builder);
-
-			SearchResponse response = high_level_rest_client.search(ext_request);
-
-			List<OneSearchResult> results = new LinkedList<OneSearchResult>();
-
-			response.getHits().forEach(hit ->
-			{
-				Map<FieldName, String> map = new HashMap<FieldName, String>();
-				hit.getSourceAsMap().forEach(( k, v ) ->
-				{
-					map.put(new FieldName(k), v.toString());
-				});
-				results.add(new OneSearchResult(map));
-			});
-
-			long total_hits = response.getHits().totalHits;
-
-			int next_page = from + size;
-			int previous_page = (from - size) < 0 ? -1 : (from - size);
-
-			boolean has_more_results = total_hits > next_page;
-
-			boolean has_previous_results = from > 0;
-
-			Level level;
-			switch ( response.status() )
-			{
-			case OK:
-				level = Level.INFO;
-				break;
-			default:
-				level = Level.WARN;
-				break;
-			}
-
-			SearchResponseOK ok = new SearchResponseOK(request, results, from, has_more_results, has_previous_results, next_page, previous_page, total_hits);
-
-			logger.log(level, String.format("QUERY:%s INDEX:%s STATUS:%s HITS:%s TOTAL_HITS:%s MAX_RESULTS:%d START_RESULTS_AFTER:%d", ok.getSimpleSearchRequest().getSimpleQueryString(), index.getSimpleValue(), response.status(), results.size(), ok.getSimpleTotalHits(), ok.getSimpleSearchRequest().getSimpleMaxResults(), ok.getSimpleSearchRequest().getSimpleStartResultsAfter()));
-			logger.trace(String.format("FIRST_RESULT_IDX:%s HAS_MORE_RESULTS:%s HAS_PREVIOUS_RESULTS:%s START_OF_NEXT_PAGE_OF_RESULTS:%s START_OF_PREVIOUS_PAGE_OF_RESULTS:%s", ok.getSimpleFirstResultIdx(), ok.getSimpleHasMoreResults(), ok.getSimpleHasMoreResults(), ok.getSimpleStartOfNextPageOfResults(), ok.getSimpleStartOfPreviousPageOfResults()));
-			logger.trace(ok.getSimpleResults().toString());
-
-			return ok;
-
-		}
-		catch ( Exception e )
-		{
-			if ( e.getCause() instanceof QueryShardException )
-			{
-				logger.warn(String.format("%s on index %s", e.getCause().getMessage(), index.getSimpleValue()));
-				return new SearchResponseError(request, e.getCause().getMessage());
-			}
-			else
-			{
-				logger.error(String.format("Search failed for %s on index %s", request.getSimpleQueryString(), index.getSimpleValue()), e);
-				return new SearchResponseError(request, e.getMessage());
-			}
-		}
-	}
-
 	@Override
 	public List<OneSearchResultWithTyping> search( IndexDefinition index, StandardSearchRequest request, List<OneSearchResultWithTyping> default_value )
 	{
@@ -828,29 +765,29 @@ public class ElasticSearchRESTClient implements ISearch
 
 			response.getHits().forEach(hit ->
 			{
-				Map<FieldName, String[]> map = new TreeMap<FieldName, String[]>();
+				Map<FieldName, FieldArrayList<String>> map = new TreeMap<FieldName, FieldArrayList<String>>();
 				hit.getSourceAsMap().forEach(( k, v ) ->
 				{
 					FieldName name = new FieldName(k);
-					String[] array_val = map.get(name);
+					FieldArrayList<String> array_val = map.get(name);
 
-					String[] new_array_val = null;
+					FieldArrayList<String> new_array_val = new FieldArrayList<>();
 
 					if ( v instanceof ArrayList<?> )
 					{
 						List<Object> array_as_list = (ArrayList<Object>) v;
-						new_array_val = new String[array_as_list.size()];
+						new_array_val = new FieldArrayList<String>();
 
 						for ( int i = 0; i < array_as_list.size(); i++ )
 						{
-							new_array_val[i] = String.valueOf(array_as_list.get(i));
+							new_array_val.add(String.valueOf(array_as_list.get(i)));
 						}
 					}
 					else
 					{
 						if ( array_val == null )
-							array_val = new String[0];
-						new_array_val = new String[] { String.valueOf(v) };
+							array_val = new FieldArrayList<String>();
+						new_array_val.add(String.valueOf(v));
 					}
 
 					if ( new_array_val != null )
@@ -1107,12 +1044,13 @@ public class ElasticSearchRESTClient implements ISearch
 		{
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			boolean retrieved = CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersionStreaming(key, out);
-			
-			if(!retrieved) {
+
+			if ( !retrieved )
+			{
 				logger.error("Could not retrieve object for StorageKey " + key);
 				return;
 			}
-			
+
 			byte[] bytes = out.toByteArray();
 
 			GenericStorableAndIndexable<?> obj = null;
