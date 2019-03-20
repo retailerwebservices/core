@@ -58,7 +58,6 @@ import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.EnvironmentType;
-import org.jimmutable.cloud.elasticsearch.ElasticSearchTransportClient.GenericStorableAndIndexable;
 import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResult;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
@@ -68,8 +67,11 @@ import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.SortBy;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.storage.IStorage;
+import org.jimmutable.cloud.storage.Storable;
 import org.jimmutable.cloud.storage.StorageKey;
 import org.jimmutable.cloud.storage.StorageKeyHandler;
+import org.jimmutable.core.exceptions.ValidationException;
+import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.serialization.FieldName;
 import org.supercsv.cellprocessor.ift.CellProcessor;
@@ -409,15 +411,26 @@ public class ElasticSearchRESTClient implements ISearch
 	@Override
 	public boolean upsertDocuments( Set<Indexable> object )
 	{
-		//TODO implement once using REST client
-		return false;
+		return upsertDocumentsBulk(object, RefreshPolicy.IMMEDIATE);
 	}
 
 	@Override
 	public boolean upsertDocumentsImmediate( Set<Indexable> object )
 	{
-		// TODO Auto-generated method stub
-		return false;
+		return upsertDocumentsBulk(object, RefreshPolicy.IMMEDIATE);
+	}
+	
+	public boolean upsertDocumentsBulk( Set<Indexable> object, RefreshPolicy refresh_policy )
+	{
+		boolean result = true;
+		for ( Indexable indexable : object )
+		{
+			boolean individual_result = upsert(indexable, refresh_policy);
+			if(!individual_result) {
+				result = individual_result;
+			}
+		}
+		return result;
 	}
 
 	/**
@@ -573,6 +586,12 @@ public class ElasticSearchRESTClient implements ISearch
 			{
 				logger.info("No documents were found in Storage for index " + index_name);
 				return false;
+			}
+			
+			while( scan_handler.getSimpleBulkRequest().requests().contains(null))
+			{
+				logger.info("HEY WE HAVE A NULL REQUEST for index: " + index_name );
+				scan_handler.getSimpleBulkRequest().requests().remove(null);
 			}
 
 			BulkResponse bulk_response = high_level_rest_client.bulk(scan_handler.getSimpleBulkRequest());
