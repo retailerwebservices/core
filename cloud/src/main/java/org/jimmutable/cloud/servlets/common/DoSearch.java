@@ -23,6 +23,7 @@ import org.jimmutable.cloud.servlet_utils.search.Sort;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.servlets.util.RequestPageData;
 import org.jimmutable.cloud.servlets.util.ServletUtil;
+import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.serialization.reader.HandReader;
 
 public abstract class DoSearch extends HttpServlet
@@ -101,6 +102,7 @@ public abstract class DoSearch extends HttpServlet
 			if ( json_servlet_response instanceof SearchResponseOK )
 			{
 				SearchResponseOK ok = (SearchResponseOK) json_servlet_response;
+				logSearch(user_input_search, ok);
 				ServletUtil.writeSerializedResponse(response, ok, SearchResponseOK.HTTP_STATUS_CODE_OK);
 			}
 			else if ( json_servlet_response instanceof SearchResponseError )
@@ -199,6 +201,7 @@ public abstract class DoSearch extends HttpServlet
 			if ( json_servlet_response instanceof SearchResponseOK )
 			{
 				SearchResponseOK ok = (SearchResponseOK) json_servlet_response;
+				logSearch(user_input_search, ok);
 				ServletUtil.writeSerializedResponse(response, ok, SearchResponseOK.HTTP_STATUS_CODE_OK);
 			}
 			else if ( json_servlet_response instanceof SearchResponseError )
@@ -318,5 +321,10 @@ public abstract class DoSearch extends HttpServlet
 	protected String baseSearchTermsForAllSearchRequestsPOST( HttpServletRequest request, HttpServletResponse response )
 	{
 		return "";
+	}
+	
+	protected void logSearch(String query, SearchResponseOK results)
+	{
+		return;
 	}
 }
