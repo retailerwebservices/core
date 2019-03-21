@@ -405,9 +405,19 @@ public class ElasticSearchRESTClient implements ISearch
 	@Override
 	public boolean upsertDocuments( Set<Indexable> object )
 	{
+		/*
+		 * CR TODO this should NOT be set to immediate. This will cause large churn on
+		 * our client if all bulk requests are set to immediate. Set this to use
+		 * Elasticsearches default behavior instead for default bulk upsert.
+		 */
 		return upsertDocumentsBulk(object, RefreshPolicy.IMMEDIATE);
 	}
 
+	/*
+	 * CR TODO we need to document the use case of this method. There was documentation
+	 * around the use case in the old client that should be maintained since this is
+	 * a sensitive operation.
+	 */
 	@Override
 	public boolean upsertDocumentsImmediate( Set<Indexable> object )
 	{
@@ -622,6 +632,12 @@ public class ElasticSearchRESTClient implements ISearch
 				return false;
 			}
 
+			/*
+			 * CR TODO this error handling is treating the symptoms of a problem and not the
+			 * underlying cause. Rather than just allowing a null request to be added to the
+			 * list, we should be stopping the behavior from where it originally came. Once
+			 * that is fixed, this while loop should be removed.
+			 */
 			while ( scan_handler.getSimpleBulkRequest().requests().contains(null) )
 			{
 				logger.info("HEY WE HAVE A NULL REQUEST for index: " + index_name);
