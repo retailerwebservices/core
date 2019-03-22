@@ -122,7 +122,7 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
 	@Override
 	public void validate()
 	{
-		//Validator.containsOnlyInstancesOfValueStringArray(FieldName.class, String.class, result);
+		Validator.containsNoNulls(result.values());
 	}
 	
 	@Override
