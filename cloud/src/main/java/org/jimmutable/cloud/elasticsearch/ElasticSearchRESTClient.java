@@ -405,18 +405,16 @@ public class ElasticSearchRESTClient implements ISearch
 	@Override
 	public boolean upsertDocuments( Set<Indexable> object )
 	{
-		/*
-		 * CR TODO this should NOT be set to immediate. This will cause large churn on
-		 * our client if all bulk requests are set to immediate. Set this to use
-		 * Elasticsearches default behavior instead for default bulk upsert.
-		 */
-		return upsertDocumentsBulk(object, RefreshPolicy.IMMEDIATE);
+		return upsertDocumentsBulk(object, RefreshPolicy.NONE);
 	}
 
-	/*
-	 * CR TODO we need to document the use case of this method. There was documentation
-	 * around the use case in the old client that should be maintained since this is
-	 * a sensitive operation.
+	/**
+	 * Upsert a set of document to a search index immediately. THIS IS EXPENSIVE USE
+	 * SPARINGLY!
+	 * 
+	 * @param Set<Indexable>
+	 *            objects The Indexable objects
+	 * @return boolean If successful or not
 	 */
 	@Override
 	public boolean upsertDocumentsImmediate( Set<Indexable> object )
@@ -633,10 +631,17 @@ public class ElasticSearchRESTClient implements ISearch
 			}
 
 			/*
-			 * CR TODO this error handling is treating the symptoms of a problem and not the
+			 * This error handling is treating the symptoms of a problem and not the
 			 * underlying cause. Rather than just allowing a null request to be added to the
 			 * list, we should be stopping the behavior from where it originally came. Once
 			 * that is fixed, this while loop should be removed.
+			 * 
+			 * ANSWER- Even if we fix the issues that caused the null requests to be
+			 * generated, there is no guarantee that a null request might not slip into the
+			 * requests in the future do to changes. We should keep this here as a defensive
+			 * measure, because null requests absolutely kill the reindexer. We should also
+			 * should keep the log message so we can go look for what created then null
+			 * request.
 			 */
 			while ( scan_handler.getSimpleBulkRequest().requests().contains(null) )
 			{
@@ -1092,7 +1097,10 @@ public class ElasticSearchRESTClient implements ISearch
 				String document_name = indexable.getSimpleSearchDocumentId().getSimpleValue();
 
 				IndexRequest request = new IndexRequest(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).source(data);
-				requests.add(request);
+				if ( request != null )
+				{
+					requests.add(request);
+				}
 			}
 			catch ( Exception e )
 			{
