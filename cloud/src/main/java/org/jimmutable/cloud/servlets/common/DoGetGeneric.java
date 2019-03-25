@@ -73,8 +73,11 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 		Object more_specific_data = null;
 		try
 		{
-			more_specific_data = getMoreSpecificData((T) StandardObject.deserialize(new String(bytes)), request, null);
-		} catch (Exception e)
+			T obj = (T) StandardObject.deserialize(new String(bytes));
+			handleSuccessfulRetrieval(obj);
+			more_specific_data = getMoreSpecificData(obj, request, null);
+		}
+		catch (Exception e)
 		{
 			String error_message = String.format("Failed to deserialize %s/%s.%s from storage!", key.getSimpleKind().getSimpleValue(), key.getSimpleName().getSimpleValue(), key.getSimpleExtension().getSimpleValue());
 			getLogger().error(error_message, e);
@@ -127,8 +130,13 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 		// to be overriddden if more specific data is needed.
 		return "id";
 	}
-
+		
 	abstract protected Logger getLogger();
 
 	abstract protected Kind getKind();
+
+	protected void handleSuccessfulRetrieval(Object value)
+	{		
+		return;
+	}
 }
