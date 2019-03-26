@@ -111,8 +111,7 @@ public class UpsertStandardChangeLog extends HttpServlet
 		}
 		catch ( Exception e )
 		{
-			//Because we tracke inner causes, we are not going to convert this to fail silently. 
-			logger.error("Failed to create new change log object!");
+			logger.error("Failed to create new change log object!", e);
 			StringJoiner joiner = new StringJoiner(", ");
 			joiner.add(String.format("%s %s", e.getClass().getName(), e.getMessage()));
 
