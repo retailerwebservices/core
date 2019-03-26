@@ -145,7 +145,7 @@ public class StorageDevLocalFileSystem extends Storage
 		builder.set(StorageMetadata.FIELD_LAST_MODIFIED, last_modified);
 		builder.set(StorageMetadata.FIELD_SIZE, size);
 
-		return (StorageMetadata) builder.create(null);
+		return (StorageMetadata) builder.createSilent(null);
 	}
 
 	/**

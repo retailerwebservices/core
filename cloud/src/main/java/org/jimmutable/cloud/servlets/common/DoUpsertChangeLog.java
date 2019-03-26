@@ -154,9 +154,7 @@ public class DoUpsertChangeLog extends HttpServlet
 
 			b.set(StandardChangeLogEntry.FIELD_AFTER, entry.getOptionalAfter(null));
 
-			StandardChangeLogEntry new_entry = (StandardChangeLogEntry) b.create(null);
-
-			// logger.info(new_entry);
+			StandardChangeLogEntry new_entry = (StandardChangeLogEntry) b.createSilent(null);
 
 			try
 			{

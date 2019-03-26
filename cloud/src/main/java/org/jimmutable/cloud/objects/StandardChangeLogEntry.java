@@ -1,14 +1,10 @@
 package org.jimmutable.cloud.objects;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.StringJoiner;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.elasticsearch.IndexDefinition;
 import org.jimmutable.cloud.elasticsearch.IndexId;
@@ -33,7 +29,6 @@ import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.TypeName;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
-import org.jimmutable.core.serialization.reader.ReadAs;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.serialization.writer.WriteAs;
 import org.jimmutable.core.utils.Comparison;
