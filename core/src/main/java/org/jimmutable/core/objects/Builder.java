@@ -171,7 +171,6 @@ public class Builder
 
 	public <U extends StandardObject> U createSilent( U default_value )
 	{
-		// @CR - this method needs to be tested in BuilderTest. -PM
 		U object;
 		try
 		{
