@@ -50,7 +50,7 @@ public class DeckHashMapTest extends TestCase
 		builder.addMapEntry(BookDeckMap.FIELD_BOOKS,"jim_first_book",test_books.get(0));
 		builder.addMapEntry(BookDeckMap.FIELD_BOOKS,"jim_second_book",test_books.get(1));
 
-		BookDeckMap first_library = (BookDeckMap)builder.create(null);
+		BookDeckMap first_library = (BookDeckMap)builder.create();
 		
 		assertTrue(first_library != null);
 		
@@ -66,7 +66,7 @@ public class DeckHashMapTest extends TestCase
 		builder.addMapEntry(BookDeckMap.FIELD_BOOKS,"jim_first_book",test_books.get(2));
 		builder.addMapEntry(BookDeckMap.FIELD_BOOKS,"jim_third_book",test_books.get(3));
 		
-		BookDeckMap second_library = (BookDeckMap)builder.create(null);
+		BookDeckMap second_library = (BookDeckMap)builder.create();
 		
 		assertTrue(second_library != null);
 		
@@ -142,7 +142,7 @@ public class DeckHashMapTest extends TestCase
     	builder.addMapEntry(BookDeckMap.FIELD_BOOKS,"jim_second_book",test_books.get(1));
     	builder.addMapEntry(BookDeckMap.FIELD_BOOKS,"jim_third_book",test_books.get(3));
     	
-    	BookDeckMap second_library = (BookDeckMap)builder.create(null);
+    	BookDeckMap second_library = (BookDeckMap)builder.create();
     	
     	assertEquals(obj,second_library);
     }
@@ -209,7 +209,7 @@ public class DeckHashMapTest extends TestCase
     	builder.addMapEntry(BookDeckMap.FIELD_BOOKS,"jim_second_book",test_books.get(1));
     	builder.addMapEntry(BookDeckMap.FIELD_BOOKS,"jim_third_book",test_books.get(3));
     	
-    	BookDeckMap second_library = (BookDeckMap)builder.create(null);
+    	BookDeckMap second_library = (BookDeckMap)builder.create();
     	
     	assertEquals(obj,second_library);
     }

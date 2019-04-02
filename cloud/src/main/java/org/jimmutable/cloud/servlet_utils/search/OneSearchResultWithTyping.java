@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.fields.FieldHashMap;
 import org.jimmutable.core.fields.FieldMap;
 import org.jimmutable.core.objects.StandardImmutableObject;
@@ -40,16 +41,16 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
 		return TYPE_NAME;
 	}
 
-	static public final FieldDefinition.Map FIELD_RESULT = new FieldDefinition.Map("result", new FieldHashMap<FieldName, String[]>());
+	static public final FieldDefinition.Map FIELD_RESULT = new FieldDefinition.Map("result", new FieldHashMap<FieldName, FieldArrayList<String>>());
 
-	private FieldMap<FieldName, String[]> result; // required
+	private FieldMap<FieldName, FieldArrayList<String>> result; // required
 
 	public OneSearchResultWithTyping()
 	{
 		this(Collections.emptyMap());
 	}
 
-	public OneSearchResultWithTyping( Map<FieldName, String[]> result )
+	public OneSearchResultWithTyping( Map<FieldName, FieldArrayList<String>> result )
 	{
 		super();
 
@@ -64,7 +65,7 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
 
 	public OneSearchResultWithTyping( ObjectParseTree t )
 	{
-		FieldHashMap<FieldName, String[]> map = new FieldHashMap<FieldName, String[]>();
+		FieldHashMap<FieldName, FieldArrayList<String>> map = new FieldHashMap<FieldName, FieldArrayList<String>>();
 		
 		for ( ObjectParseTree entry : t )
 		{
@@ -80,17 +81,15 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
 				
 				if ( key == null || value == null ) continue;
 				
-				String[] array_val = map.get(key);
-				if ( array_val == null ) array_val = new String[0];
-				String[] new_array_val = new String[array_val.length+1];
-				
-				int i = 0;
-				for ( i = 0; i < array_val.length; i++ )
+				FieldArrayList<String> array_val = map.get(key);
+				FieldArrayList<String> new_array_val = new FieldArrayList<String>();
+				if ( array_val == null ) array_val = new FieldArrayList<String>();
+
+				for ( String object : array_val )
 				{
-					new_array_val[i] = array_val[i];
+					new_array_val.add(object);
 				}
-				
-				new_array_val[i] = String.valueOf(value);
+				new_array_val.add(value);
 				
 				map.put(key, new_array_val);
 			}
@@ -104,7 +103,7 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
 	 * 
 	 * @return
 	 */
-	public FieldMap<FieldName, String[]> getSimpleContents()
+	public FieldMap<FieldName, FieldArrayList<String>> getSimpleContents()
 	{
 		return result;
 	}
@@ -112,7 +111,7 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
 	@Override
 	public void write( ObjectWriter writer )
 	{
-		writer.writeMap(FIELD_RESULT, result, WriteAs.OBJECT, WriteAs.STRING);
+		writer.writeMap(FIELD_RESULT, result, WriteAs.OBJECT, WriteAs.COLLECTION);
 	}
 
 	@Override
@@ -123,7 +122,7 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
 	@Override
 	public void validate()
 	{
-		Validator.containsOnlyInstancesOfValueStringArray(FieldName.class, String.class, result);
+		Validator.containsNoNulls(result.values());
 	}
 	
 	@Override
@@ -162,11 +161,11 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
      */
     private String getFirstValueOfArrayAsString(FieldName name, String default_value)
     {
-    	String[] array = result.get(name);
+    	FieldArrayList<String> array = result.get(name);
     	
-    	if ( array == null || array.length <= 0 ) return default_value;
+    	if ( array == null || array.size() <= 0 ) return default_value;
     	
-    	return array[0];
+    	return array.get(0);
     }
     
     /**
@@ -175,9 +174,9 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
      * @param default_value
      * @return
      */
-    private String[] getArrayAsString(FieldName name, String[] default_value)
+    private FieldArrayList<String> getArrayAsString(FieldName name, FieldArrayList<String> default_value)
     {
-    	String[] array = result.get(name);
+    	FieldArrayList<String> array = result.get(name);
     	
     	if ( array == null ) return default_value;
     	
@@ -203,7 +202,7 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
      * @param default_value
      * @return
      */
-    public String[] readAsTextArray(FieldName name, String[] default_value)
+    public FieldArrayList<String> readAsTextArray(FieldName name, FieldArrayList<String> default_value)
     {
     	return getArrayAsString(name, default_value);
     }
@@ -227,7 +226,7 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
      * @param default_value
      * @return
      */
-    public String[] readAsAtomArray(FieldName name, String[] default_value)
+    public FieldArrayList<String> readAsAtomArray(FieldName name, FieldArrayList<String> default_value)
     {
     	return getArrayAsString(name, default_value);
     }
@@ -264,16 +263,16 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
      */
     public long[] readAsLongArray(FieldName name, long[] default_value)
     {
-    	String[] value_as_string_array = getArrayAsString(name, null);
+    	FieldArrayList<String> value_as_string_array = getArrayAsString(name, null);
     	
     	if ( value_as_string_array == null ) return default_value;
     	
     	List<Long> valid_values = new ArrayList<>();    	
-    	for ( int i = 0; i < value_as_string_array.length; i++ )
+    	for ( int i = 0; i < value_as_string_array.size(); i++ )
     	{
     		try
     		{
-    			valid_values.add(Long.parseLong(value_as_string_array[i]));
+    			valid_values.add(Long.parseLong(value_as_string_array.get(i)));
     		}
     		catch ( Exception e )
     		{
@@ -324,16 +323,16 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
      */
     public float[] readAsFloatArray(FieldName name, float[] default_value)
     {
-    	String[] value_as_string_array = getArrayAsString(name, null);
+    	FieldArrayList<String> value_as_string_array = getArrayAsString(name, null);
     	
     	if ( value_as_string_array == null ) return default_value;
     	
     	List<Float> valid_values = new ArrayList<>();    	
-    	for ( int i = 0; i < value_as_string_array.length; i++ )
+    	for ( int i = 0; i < value_as_string_array.size(); i++ )
     	{
     		try
     		{
-    			valid_values.add(Float.parseFloat(value_as_string_array[i]));
+    			valid_values.add(Float.parseFloat(value_as_string_array.get(i)));
     		}
     		catch ( Exception e )
     		{
@@ -384,16 +383,16 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
      */
     public boolean[] readAsBooleanArray(FieldName name, boolean[] default_value)
     {
-    	String[] value_as_string_array = getArrayAsString(name, null);
+    	FieldArrayList<String> value_as_string_array = getArrayAsString(name, null);
     	
     	if ( value_as_string_array == null ) return default_value;
     	
     	List<Boolean> valid_values = new ArrayList<>();    	
-    	for ( int i = 0; i < value_as_string_array.length; i++ )
+    	for ( int i = 0; i < value_as_string_array.size(); i++ )
     	{
     		try
     		{
-    			valid_values.add(Boolean.parseBoolean(value_as_string_array[i]));
+    			valid_values.add(Boolean.parseBoolean(value_as_string_array.get(i)));
     		}
     		catch ( Exception e )
     		{
@@ -445,16 +444,16 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
      */
     public Day[] readAsDayArray(FieldName name, Day[] default_value)
     {
-    	String[] value_as_string_array = getArrayAsString(name, null);
+    	FieldArrayList<String> value_as_string_array = getArrayAsString(name, null);
     	
     	if ( value_as_string_array == null ) return default_value;
     	
     	List<Day> valid_values = new ArrayList<>();    	
-    	for ( int i = 0; i < value_as_string_array.length; i++ )
+    	for ( int i = 0; i < value_as_string_array.size(); i++ )
     	{
     		try
     		{
-    			Day day = getDayFromString(value_as_string_array[i], null);    			
+    			Day day = getDayFromString(value_as_string_array.get(i), null);    			
     			if ( day == null ) continue;
     			valid_values.add(day);
     		}
@@ -534,16 +533,16 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
      */
     public Instant[] readAsInstantArray(FieldName name, Instant[] default_value)
     {
-    	String[] value_as_string_array = getArrayAsString(name, null);
+    	FieldArrayList<String> value_as_string_array = getArrayAsString(name, null);
     	
     	if ( value_as_string_array == null ) return default_value;
     	
     	List<Instant> valid_values = new ArrayList<>();    	
-    	for ( int i = 0; i < value_as_string_array.length; i++ )
+    	for ( int i = 0; i < value_as_string_array.size(); i++ )
     	{
     		try
     		{
-    			Instant instant = (Instant)StandardObject.deserialize(value_as_string_array[i]);	
+    			Instant instant = (Instant)StandardObject.deserialize(value_as_string_array.get(i));	
     			if ( instant == null ) continue;
     			valid_values.add(instant);
     		}
@@ -596,16 +595,16 @@ public class OneSearchResultWithTyping extends StandardImmutableObject<OneSearch
      */
     public TimeOfDay[] readAsTimeOfDayArray(FieldName name, TimeOfDay[] default_value)
     {
-    	String[] value_as_string_array = getArrayAsString(name, null);
+    	FieldArrayList<String> value_as_string_array = getArrayAsString(name, null);
     	
     	if ( value_as_string_array == null ) return default_value;
     	
     	List<TimeOfDay> valid_values = new ArrayList<>();    	
-    	for ( int i = 0; i < value_as_string_array.length; i++ )
+    	for ( int i = 0; i < value_as_string_array.size(); i++ )
     	{
     		try
     		{
-    			TimeOfDay instant = (TimeOfDay)StandardObject.deserialize(value_as_string_array[i]);	
+    			TimeOfDay instant = (TimeOfDay)StandardObject.deserialize(value_as_string_array.get(i));	
     			if ( instant == null ) continue;
     			valid_values.add(instant);
     		}

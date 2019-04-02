@@ -4,24 +4,21 @@ import static org.junit.Assert.assertEquals;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
 import org.jimmutable.cloud.elasticsearch.IndexDefinition;
 import org.jimmutable.cloud.objects.StandardChangeLogEntry;
-import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
-import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.servlets.common.DoSearch;
 import org.jimmutable.core.fields.FieldArrayList;
-import org.jimmutable.core.objects.common.FacebookId;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.objects.common.ObjectReference;
-import org.jimmutable.core.objects.common.TimezoneID;
-import org.jimmutable.core.objects.common.USDMonetaryAmount;
 import org.jimmutable.core.serialization.Format;
 import org.junit.Test;
 
@@ -113,13 +110,13 @@ public class DoSearchIT
 		
 		search_string = test.checkForTimes(search_string);//this is what we are really trying to check. 
 	
-		JSONServletResponse search = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(StandardChangeLogEntry.INDEX_DEFINITION, new StandardSearchRequest(search_string));
+		List search = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(StandardChangeLogEntry.INDEX_DEFINITION, new StandardSearchRequest(search_string), Collections.EMPTY_LIST);
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().delete(standard_change_log_entry);
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().deleteDocument(StandardChangeLogEntry.INDEX_DEFINITION, standard_change_log_entry.getSimpleSearchDocumentId());
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().delete(standard_change_log_entry2);
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().deleteDocument(StandardChangeLogEntry.INDEX_DEFINITION, standard_change_log_entry2.getSimpleSearchDocumentId());
 		
-		assertEquals(2, ((SearchResponseOK)search).getSimpleResults().size());
+		assertEquals(2,search.size());
 		assertEquals("short_description:Short", search_string);
 	}
 }

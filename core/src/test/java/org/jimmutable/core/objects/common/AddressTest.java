@@ -36,7 +36,7 @@ public class AddressTest extends TestCase
 		
 		try
 		{
-			builder.create(null);
+			builder.create();
 			fail();
 		}
 		catch(Exception e)
@@ -53,7 +53,7 @@ public class AddressTest extends TestCase
 		try
 		{
 			@SuppressWarnings("unused")
-			Address invalid = (Address)builder.create(null);
+			Address invalid = (Address)builder.create();
 			fail();
 		}
 		catch(Exception e)
@@ -67,7 +67,7 @@ public class AddressTest extends TestCase
 		builder.set(Address.FIELD_STATE, "AZ");
 		builder.set(Address.FIELD_POSTAL_CODE, new PostalCode("85003"));
 		builder.set(Address.FIELD_COUNTRY, CountryCode.US);
-		Address no_specs = (Address)builder.create(null);
+		Address no_specs = (Address)builder.create();
 
 		assertTrue(no_specs != null);
 		assertTrue(no_specs.getSimpleLine1().equals("123 Main St"));
@@ -88,7 +88,7 @@ public class AddressTest extends TestCase
 		builder.set(Address.FIELD_POSTAL_CODE, new PostalCode("L9T 2Y2"));
 		builder.set(Address.FIELD_COUNTRY, CountryCode.CA);
 
-		Address canadian_addr = (Address)builder.create(null);
+		Address canadian_addr = (Address)builder.create();
 		
 		assertTrue(canadian_addr != null);
 		assertTrue(canadian_addr.getOptionalName(null).equals("Bob Smith"));
@@ -112,7 +112,7 @@ public class AddressTest extends TestCase
 		builder.set(Address.FIELD_LATITUDE, 10.03F);
 		builder.set(Address.FIELD_LONGITUDE, 18.323F);
 		
-		Address addr_with_lat_long = (Address)builder.create(null);
+		Address addr_with_lat_long = (Address)builder.create();
 
 		assertTrue(addr_with_lat_long.getOptionalLatitude(999999999) == 10.03F);
 		assertTrue(addr_with_lat_long.getOptionalLongitude(999999999) == 18.323F);
@@ -123,7 +123,7 @@ public class AddressTest extends TestCase
 		builder.set(Address.FIELD_STATE, "AZ");
 		builder.set(Address.FIELD_POSTAL_CODE, new PostalCode("85003"));
 		builder.set(Address.FIELD_COUNTRY, CountryCode.US);
-		Address addr_without_lat_long = (Address)builder.create(null);
+		Address addr_without_lat_long = (Address)builder.create();
 
 		assertTrue(addr_without_lat_long.getOptionalLatitude(999999999) == 999999999F);
 		assertTrue(addr_without_lat_long.getOptionalLongitude(999999999) == 999999999F);

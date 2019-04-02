@@ -46,7 +46,7 @@ public class DeckArrayListTest extends TestCase
 		builder.add(BookDeckList.FIELD_CONTENTS, new Book("Grapes of Wrath", 1211, "33242347234", BindingType.TRADE_PAPER_BACK, authors));
 		builder.add(BookDeckList.FIELD_CONTENTS, new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, authors));
 		
-		BookDeckList first_library = (BookDeckList)builder.create(null);
+		BookDeckList first_library = (BookDeckList)builder.create();
 		
 		assertTrue(first_library != null);
 		
@@ -65,7 +65,7 @@ public class DeckArrayListTest extends TestCase
 		
 		builder.add(BookDeckList.FIELD_CONTENTS,new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, authors));
 		
-		BookDeckList second_library = (BookDeckList)builder.create(null);
+		BookDeckList second_library = (BookDeckList)builder.create();
 		
 		assertTrue(second_library != null);
 		
@@ -135,7 +135,7 @@ public class DeckArrayListTest extends TestCase
     		builder.add(BookDeckList.FIELD_CONTENTS,new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
     		builder.add(BookDeckList.FIELD_CONTENTS,new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
     		
-    		BookDeckList second_library = (BookDeckList)builder.create(null);
+    		BookDeckList second_library = (BookDeckList)builder.create();
     		
     		assertEquals(second_library,obj);
     }
@@ -186,7 +186,7 @@ public class DeckArrayListTest extends TestCase
     		builder.add(BookDeckList.FIELD_CONTENTS,new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
     		builder.add(BookDeckList.FIELD_CONTENTS,new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
     		
-    		BookDeckList second_library = (BookDeckList)builder.create(null);
+    		BookDeckList second_library = (BookDeckList)builder.create();
     		
     		assertEquals(second_library,obj);
     }

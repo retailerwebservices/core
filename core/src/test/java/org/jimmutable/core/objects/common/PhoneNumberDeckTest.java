@@ -44,7 +44,7 @@ public class PhoneNumberDeckTest extends TestCase
 		Builder phone_deck_builder = new Builder(PhoneNumberDeck.TYPE_NAME);
 		phone_deck_builder.add(PhoneNumberDeck.FIELD_PHONE_NUMBERS, mobile);
 		phone_deck_builder.add(PhoneNumberDeck.FIELD_PHONE_NUMBERS, work);
-		PhoneNumberDeck deck = phone_deck_builder.create(null);
+		PhoneNumberDeck deck = phone_deck_builder.create();
 
 		PhoneNumberDeck deck2 = new PhoneNumberDeck(mobile, work);
 

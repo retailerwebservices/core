@@ -92,20 +92,6 @@ public interface ISearch
 	public boolean upsertDocumentsImmediate( Set<Indexable> object );
 
 	/**
-	 * Search an index with a query string.
-	 * 
-	 * @see <a href=
-	 *      "https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html">query-dsl-query-string-query</a>
-	 * 
-	 * @param index
-	 *            The IndexDefinition
-	 * @param request
-	 *            The StandardSearchRequest
-	 * @return JSONServletResponse
-	 */
-	public JSONServletResponse search( IndexDefinition index, StandardSearchRequest request );
-
-	/**
 	 * Uses ElasticSearch's {@link org.elasticsearch.action.search.SearchRequest} to
 	 * prepare and send out a search. This method is useful for complex queries,
 	 * that require more than a simple text search.

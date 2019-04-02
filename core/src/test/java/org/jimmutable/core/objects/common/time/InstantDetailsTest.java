@@ -65,7 +65,7 @@ public class InstantDetailsTest
 		b.set(InstantDetails.FIELD_SECONDS_ON_TWENTY_FOUR_HOUR_CLOCK, i.toTimeOfDay(timezone_id).getSimple24hrClockSeconds());
 		b.set(InstantDetails.FIELD_TIMESTAMP, i.createTimestampString(timezone_id, true, ""));
 		
-		InstantDetails instantDetails = (InstantDetails) b.create(null);
+		InstantDetails instantDetails = (InstantDetails) b.create();
 		System.out.println(instantDetails.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s"
 			     , "{"

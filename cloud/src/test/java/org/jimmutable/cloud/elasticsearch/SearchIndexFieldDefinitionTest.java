@@ -30,7 +30,7 @@ public class SearchIndexFieldDefinitionTest
 		b.set(SearchIndexFieldDefinition.FIELD_FIELD_NAME, new FieldName("spaghetti"));
 		b.set(SearchIndexFieldDefinition.FIELD_SEARCH_INDEX_FIELD_TYPE, SearchIndexFieldType.ATOM);
 
-		SearchIndexFieldDefinition def = (SearchIndexFieldDefinition) b.create(null);
+		SearchIndexFieldDefinition def = (SearchIndexFieldDefinition) b.create();
 
 		assertNotNull(def);
 		assertEquals("spaghetti", def.getSimpleFieldName().getSimpleName());
@@ -47,7 +47,7 @@ public class SearchIndexFieldDefinitionTest
 		b.set(SearchIndexFieldDefinition.FIELD_FIELD_NAME, new FieldName("spaghetti"));
 		b.set(SearchIndexFieldDefinition.FIELD_SEARCH_INDEX_FIELD_TYPE, null);
 
-		b.create(null);
+		b.create();
 
 	}
 
@@ -58,14 +58,14 @@ public class SearchIndexFieldDefinitionTest
 
 		b.set(SearchIndexFieldDefinition.FIELD_FIELD_NAME, null);
 		b.set(SearchIndexFieldDefinition.FIELD_SEARCH_INDEX_FIELD_TYPE, SearchIndexFieldType.ATOM);
-		b.create(null);
+		b.create();
 	}
 
 	@Test(expected = SerializeException.class)
 	public void notSet()
 	{
 		Builder b = new Builder(SearchIndexFieldDefinition.TYPE_NAME);
-		b.create(null);
+		b.create();
 	}
 
 	@Test

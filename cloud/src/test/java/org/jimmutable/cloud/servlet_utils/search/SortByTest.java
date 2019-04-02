@@ -34,7 +34,7 @@ public class SortByTest
 		b.set(SortBy.FIELD_FIELD, new SearchIndexFieldDefinition(new FieldName("fboolean"), SearchIndexFieldType.BOOLEAN));
 		b.set(SortBy.FIELD_DIRECTION,  SortDirection.ASCENDING);
 
-		SortBy sort_by = (SortBy) b.create(null);
+		SortBy sort_by = (SortBy) b.create();
 
 		//System.out.println(sort_by.toJavaCode(Format.JSON_PRETTY_PRINT, "sort_by"));
 
@@ -63,7 +63,7 @@ public class SortByTest
 		// Intentionally omitted
 		// b.set(SortBy.FIELD_DIRECTION,  SortDirection.ASCENDING);
 
-		b.create(null);
+		b.create();
 
 	}
 

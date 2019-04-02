@@ -10,7 +10,6 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
-import org.jimmutable.cloud.elasticsearch.ElasticSearchTransportClient;
 import org.jimmutable.cloud.cache.CacheRedis;
 import org.jimmutable.cloud.cache.CacheStub;
 import org.jimmutable.cloud.cache.ICache;
@@ -195,7 +194,7 @@ public class CloudExecutionEnvironment
 				throw new RuntimeException("Failed to instantiate the elasticsearch client!");
 			}
 
-			CURRENT = new CloudExecutionEnvironment(new ElasticSearchTransportClient(client), new StorageDevLocalFileSystem(false, APPLICATION_ID), new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient(), new CacheRedis(APPLICATION_ID, new LowLevelRedisDriver()));
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), new StorageDevLocalFileSystem(false, APPLICATION_ID), new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient(), new CacheRedis(APPLICATION_ID, new LowLevelRedisDriver()));
 
 			break;
 		case PRODUCTION:

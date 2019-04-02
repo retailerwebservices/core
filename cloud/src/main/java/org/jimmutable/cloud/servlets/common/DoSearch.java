@@ -16,7 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.elasticsearch.IndexDefinition;
-import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
+import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseError;
 import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
 import org.jimmutable.cloud.servlet_utils.search.Sort;
@@ -29,7 +29,7 @@ import org.jimmutable.core.serialization.reader.HandReader;
 public abstract class DoSearch extends HttpServlet
 {
 
-	public static final List<String> DEFAULT_TIME_KEYWORDS = Arrays.asList("scheduled_start","scheduled_stop","start","stop");
+	public static final List<String> DEFAULT_TIME_KEYWORDS = Arrays.asList("scheduled_start", "scheduled_stop", "start", "stop");
 
 	private static Logger logger = LogManager.getLogger(DoSearch.class);
 
@@ -92,28 +92,12 @@ public abstract class DoSearch extends HttpServlet
 
 		try
 		{
-			JSONServletResponse json_servlet_response = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(getSearchIndexDefinition(), search_request);
+			List<OneSearchResultWithTyping> json_servlet_response = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(getSearchIndexDefinition(), search_request, null);
 
-			if ( json_servlet_response instanceof SearchResponseOK )
-			{
-				json_servlet_response = updateSearchResponse(json_servlet_response, search_request);
-			}
 
-			if ( json_servlet_response instanceof SearchResponseOK )
-			{
-				SearchResponseOK ok = (SearchResponseOK) json_servlet_response;
-				logSearch(user_input_search, ok);
-				ServletUtil.writeSerializedResponse(response, ok, SearchResponseOK.HTTP_STATUS_CODE_OK);
-			}
-			else if ( json_servlet_response instanceof SearchResponseError )
-			{
-				SearchResponseError error = (SearchResponseError) json_servlet_response;
-				ServletUtil.writeSerializedResponse(response, error, SearchResponseError.HTTP_STATUS_CODE_ERROR);
-			}
-			else
-			{
-				throw new Exception("Unexpected JSONServletResponse returned!");
-			}
+			json_servlet_response = updateSearchResponse(json_servlet_response, search_request);
+
+			ServletUtil.writeSerializedResponse(response, new SearchResponseOK(search_request, json_servlet_response), SearchResponseOK.HTTP_STATUS_CODE_OK);
 		}
 		catch ( Exception e )
 		{
@@ -174,7 +158,7 @@ public abstract class DoSearch extends HttpServlet
 		}
 		getAdditionalParametersPOST(request);
 
-		//TODO move the below common GET & POST search code to own common methods
+		// TODO move the below common GET & POST search code to own common methods
 		search_string = checkForTimes(search_string);
 		Sort sort = getSort(Sort.DEFAULT_SORT);
 
@@ -188,31 +172,14 @@ public abstract class DoSearch extends HttpServlet
 			logger.error(e);
 		}
 
-
 		try
 		{
-			JSONServletResponse json_servlet_response = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(getSearchIndexDefinition(), search_request);
+			List<OneSearchResultWithTyping> json_servlet_response = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(getSearchIndexDefinition(), search_request, null);
 
-			if ( json_servlet_response instanceof SearchResponseOK )
-			{
-				json_servlet_response = updateSearchResponse(json_servlet_response, search_request);
-			}
+			json_servlet_response = updateSearchResponse(json_servlet_response, search_request);
 
-			if ( json_servlet_response instanceof SearchResponseOK )
-			{
-				SearchResponseOK ok = (SearchResponseOK) json_servlet_response;
-				logSearch(user_input_search, ok);
-				ServletUtil.writeSerializedResponse(response, ok, SearchResponseOK.HTTP_STATUS_CODE_OK);
-			}
-			else if ( json_servlet_response instanceof SearchResponseError )
-			{
-				SearchResponseError error = (SearchResponseError) json_servlet_response;
-				ServletUtil.writeSerializedResponse(response, error, SearchResponseError.HTTP_STATUS_CODE_ERROR);
-			}
-			else
-			{
-				throw new Exception("Unexpected JSONServletResponse returned!");
-			}
+			ServletUtil.writeSerializedResponse(response, new SearchResponseOK(search_request, json_servlet_response), SearchResponseOK.HTTP_STATUS_CODE_OK);
+
 		}
 		catch ( Exception e )
 		{
@@ -226,7 +193,7 @@ public abstract class DoSearch extends HttpServlet
 	{
 		// Template method - intended to be overridden if necessary
 	}
-	
+
 	protected void getAdditionalParametersPOST( HttpServletRequest request )
 	{
 		// Template method - intended to be overridden if necessary
@@ -237,7 +204,7 @@ public abstract class DoSearch extends HttpServlet
 		return default_value;
 	}
 
-	protected JSONServletResponse updateSearchResponse( JSONServletResponse search_response, StandardSearchRequest request )
+	protected List<OneSearchResultWithTyping> updateSearchResponse( List<OneSearchResultWithTyping> search_response, StandardSearchRequest request )
 	{
 		// Override to further enrich, change, filter or validate the search response
 		return search_response;
@@ -245,7 +212,7 @@ public abstract class DoSearch extends HttpServlet
 
 	public String checkForTimes( String search_string )
 	{
-		if(!getListOfTimeKeywords().stream().anyMatch(s -> search_string.contains(s)))
+		if ( !getListOfTimeKeywords().stream().anyMatch(s -> search_string.contains(s)) )
 		{
 			return search_string;
 		}
@@ -261,8 +228,9 @@ public abstract class DoSearch extends HttpServlet
 				if ( clause.contains(">") || clause.contains("<") )
 				{ // if we need to do any faffing about with ranges.
 					String split_string = ":>";
-					if(clause.contains("=")) {
-						clause= clause.replace("=", "");
+					if ( clause.contains("=") )
+					{
+						clause = clause.replace("=", "");
 						inclusive = true;
 					}
 					if ( clause.contains("<") )
@@ -273,16 +241,20 @@ public abstract class DoSearch extends HttpServlet
 					try
 					{
 						String date_string = clause_breakdown[1].replace('T', ' ');
-						if(!date_string.contains(":")) {
-							date_string= date_string+" 0:00";
+						if ( !date_string.contains(":") )
+						{
+							date_string = date_string + " 0:00";
 						}
 						Date date = formatter.parse(date_string);
-						if(inclusive) {
-						refined_search_string.add("("+clause_breakdown[0] + split_string + date.getTime()+" OR "+clause_breakdown[0] + ":" + date.getTime()+")");
-						}else {
+						if ( inclusive )
+						{
+							refined_search_string.add("(" + clause_breakdown[0] + split_string + date.getTime() + " OR " + clause_breakdown[0] + ":" + date.getTime() + ")");
+						}
+						else
+						{
 							refined_search_string.add(clause_breakdown[0] + split_string + date.getTime());
 						}
-						
+
 					}
 					catch ( ParseException e )
 					{
@@ -298,8 +270,9 @@ public abstract class DoSearch extends HttpServlet
 			return refined_search_string.toString();
 		}
 	}
-	
-	public List<String> getListOfTimeKeywords() {
+
+	public List<String> getListOfTimeKeywords()
+	{
 		return DEFAULT_TIME_KEYWORDS;
 	}
 
@@ -313,7 +286,7 @@ public abstract class DoSearch extends HttpServlet
 	{
 		return "";
 	}
-	
+
 	/**
 	 * Override this to add any search terms that need to exist for all searches on
 	 * a page.
@@ -322,7 +295,7 @@ public abstract class DoSearch extends HttpServlet
 	{
 		return "";
 	}
-	
+
 	protected void logSearch(String query, SearchResponseOK results)
 	{
 		return;

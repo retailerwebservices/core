@@ -74,7 +74,7 @@ public class OldSpecXMLConverter
 				case "product_specs":
 					try 
 					{ 
-						out.writeDocument(builder.create(null).serialize(Format.JSON));
+						out.writeDocument(builder.create().serialize(Format.JSON));
 						object_count++;
 						
 						if ( object_count > max_objects ) break outer_loop;

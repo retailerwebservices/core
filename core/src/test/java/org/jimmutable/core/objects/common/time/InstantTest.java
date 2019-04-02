@@ -68,7 +68,7 @@ public class InstantTest
 
 		Builder b = new Builder(Instant.TYPE_NAME);
 		b.set(Instant.FIELD_MS_FROM_EPOCH, 1516057366987l);
-		Instant instant = (Instant) b.create(null);
+		Instant instant = (Instant) b.create();
 
 		System.out.println(instant.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 

@@ -74,7 +74,7 @@ public class GetInstantDetail extends HttpServlet
 			b.set(InstantDetails.FIELD_SECONDS_ON_TWENTY_FOUR_HOUR_CLOCK, instant.toTimeOfDay(timezone_id).getSimple24hrClockSeconds());
 			b.set(InstantDetails.FIELD_TIMESTAMP, instant.createTimestampString(timezone_id, true, ""));
 
-			ServletUtil.writeSerializedResponse(response, (InstantDetails) b.create(null), GetResponseOK.HTTP_STATUS_CODE_OK);
+			ServletUtil.writeSerializedResponse(response, (InstantDetails) b.create(), GetResponseOK.HTTP_STATUS_CODE_OK);
 		} catch (Exception e)
 		{
 			logger.error(e);

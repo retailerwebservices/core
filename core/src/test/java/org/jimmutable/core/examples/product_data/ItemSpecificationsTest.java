@@ -36,7 +36,7 @@ public class ItemSpecificationsTest extends TestCase
 		
 		try
 		{
-			builder.create(null);
+			builder.create();
 			fail(); // error, creation worked without a key set
 		}
 		catch(Exception e)
@@ -46,7 +46,7 @@ public class ItemSpecificationsTest extends TestCase
 		
 		builder.set(ItemSpecifications.FIELD_ITEM_KEY, new ItemKey("foo","bar"));
 		
-		ItemSpecifications no_specs = (ItemSpecifications)builder.create(null);
+		ItemSpecifications no_specs = (ItemSpecifications)builder.create();
 		
 		assertTrue(no_specs != null);
 		
@@ -65,7 +65,7 @@ public class ItemSpecificationsTest extends TestCase
 		builder.addMapEntry(ItemSpecifications.FIELD_ATTRIBUTES, new ItemAttribute("DOC_SRC_URL0"), "http://toolbox.legacyclassic.com/customer_images/assemblypdf/490-8900_Assembly.pdf");
 		builder.addMapEntry(ItemSpecifications.FIELD_ATTRIBUTES, new ItemAttribute("DOC_SRC_FILE0"), "FRBJHKQALSYB.PDF");
 		
-		ItemSpecifications some_specs = (ItemSpecifications)builder.create(null);
+		ItemSpecifications some_specs = (ItemSpecifications)builder.create();
 		
 		assertTrue(some_specs != null);
 		

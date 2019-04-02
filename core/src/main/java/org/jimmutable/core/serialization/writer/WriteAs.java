@@ -1,8 +1,11 @@
 package org.jimmutable.core.serialization.writer;
 
+import java.util.Collection;
 import java.util.Map;
 
 import org.jimmutable.core.exceptions.SerializeException;
+import org.jimmutable.core.fields.FieldArrayList;
+import org.jimmutable.core.fields.FieldList;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.serialization.FieldName;
@@ -60,6 +63,8 @@ abstract public class WriteAs
 	 * Write as a boolean (will be read by JavaScritp code as a boolean)
 	 */
 	static public final WriteAs BOOLEAN = new WriteAsBoolean();
+	
+	static public final WriteAs COLLECTION = new WriteAsCollection();
 
 	/**
 	 * Write an object in the proper format
@@ -75,6 +80,19 @@ abstract public class WriteAs
 		public void writeObject(ObjectWriter writer, FieldName field_name, Object obj)
 		{
 			writer.writeObject(field_name, obj);
+		}
+	}
+	
+	static private class WriteAsCollection extends WriteAs
+	{
+		public void writeObject(ObjectWriter writer, FieldName field_name, Object obj)
+		{
+			if(obj instanceof Collection) {
+				Collection c = (Collection) obj;
+				writer.writeCollection(field_name, c, WriteAs.OBJECT);
+			}else {
+				throw new SerializeException("Could not write Collection");
+			}
 		}
 	}
 	

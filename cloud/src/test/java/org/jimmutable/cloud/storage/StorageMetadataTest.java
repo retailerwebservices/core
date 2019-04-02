@@ -52,7 +52,7 @@ public class StorageMetadataTest extends TestCase
 			builder = new Builder(StorageMetadata.TYPE_NAME);
 			try
 			{
-				builder.create(null);
+				builder.create();
 				fail();
 			}
 			catch(Exception e)
@@ -69,7 +69,7 @@ public class StorageMetadataTest extends TestCase
 			
 			try
 			{
-				builder.create(null);
+				builder.create();
 				fail();
 			}
 			catch(Exception e)
@@ -84,7 +84,7 @@ public class StorageMetadataTest extends TestCase
 			builder.set(StorageMetadata.FIELD_LAST_MODIFIED, LAST_MODIFIED);
 			builder.set(StorageMetadata.FIELD_SIZE, SIZE);
 			
-			StorageMetadata only_required = (StorageMetadata) builder.create(null);
+			StorageMetadata only_required = (StorageMetadata) builder.create();
 			
 			assertTrue(only_required.getSimpleLastModified() > 0);
 			assertTrue(only_required.getSimpleSize() >= 0);
@@ -99,7 +99,7 @@ public class StorageMetadataTest extends TestCase
 			builder.set(StorageMetadata.FIELD_SIZE, SIZE);
 			builder.set(StorageMetadata.FIELD_ETAG, ETAG);
 			
-			StorageMetadata set_etag = (StorageMetadata) builder.create(null);
+			StorageMetadata set_etag = (StorageMetadata) builder.create();
 			
 			assertTrue(set_etag.getSimpleLastModified() > 0);
 			assertTrue(set_etag.getSimpleSize() >= 0);

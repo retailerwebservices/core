@@ -265,7 +265,7 @@ public class TimeOfDayTest
 	{
 		Builder b = new Builder(TimeOfDay.TYPE_NAME);
 		b.set(TimeOfDay.FIELD_MS_FROM_MIDNIGHT, 82860000);
-		TimeOfDay tod = (TimeOfDay) b.create(null);
+		TimeOfDay tod = (TimeOfDay) b.create();
 
 		// System.out.println(tod.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 

@@ -2,10 +2,11 @@ package org.jimmutable.cloud.elasticsearch;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.IntegrationTest;
-import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
-import org.jimmutable.cloud.servlet_utils.search.SearchResponseOK;
+import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.storage.ObjectIdStorageKey;
 import org.jimmutable.cloud.storage.StorageKeyExtension;
@@ -60,15 +61,15 @@ public class ElasticSearchStressTestIT extends IntegrationTest
 	{
 
 		StandardSearchRequest request = new StandardSearchRequest("email_address:emailaddress9999**", 1, 21);
-		JSONServletResponse r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(TestLibraryPatron.INDEX_DEFINITION, request);
+		List<OneSearchResultWithTyping> r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(TestLibraryPatron.INDEX_DEFINITION, request, null);
 
-		assertTrue(r1 instanceof SearchResponseOK);
-		if (r1 instanceof SearchResponseOK)
-		{
-			SearchResponseOK ok = (SearchResponseOK) r1;
-
-			System.out.println(ok.toString());
-		}
+		assertTrue(!r1.isEmpty());
+//		if (r1 instanceof SearchResponseOK)
+//		{
+//			SearchResponseOK ok = (SearchResponseOK) r1;
+//
+//			System.out.println(ok.toString());
+//		}
 
 	}
 

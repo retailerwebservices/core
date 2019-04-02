@@ -29,7 +29,7 @@ public class EmailIT extends IntegrationTest
 		b.add(Email.FIELD_TO, new EmailAddress("trevor.box@retailerwebservices.com"));
 		b.set(Email.FIELD_HTML_BODY, "<i>body</i>");
 
-		assertTrue(CloudExecutionEnvironment.getSimpleCurrent().getSimpleEmailService().sendEmail(b.create(null)));
+		assertTrue(CloudExecutionEnvironment.getSimpleCurrent().getSimpleEmailService().sendEmail(b.create()));
 	}
 
 }
