@@ -97,6 +97,7 @@ public class UpsertAttachment extends HttpServlet
 							b.set(AttachmentMetaData.FIELD_FILE_NAME, new DownloadFileName(file_name));
 							b.set(AttachmentMetaData.FIELD_OBJECT_ID, key.getSimpleObjectId());
 
+							// @CR - I don't see a try/catch for this. Should it be createSilent()? -PM
 							attachment_metadata = b.create(null);
 
 							if ( attachment_metadata != null )
