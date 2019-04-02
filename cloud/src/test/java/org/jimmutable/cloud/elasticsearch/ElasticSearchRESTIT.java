@@ -172,7 +172,7 @@ public class ElasticSearchRESTIT extends IntegrationTest
 		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("test2"), SearchIndexFieldType.INSTANT));
 		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("test3"), SearchIndexFieldType.LONG));
 
-		SearchIndexDefinition def = (SearchIndexDefinition) b.create(null);
+		SearchIndexDefinition def = (SearchIndexDefinition) b.create();
 
 		assertTrue(elastic_search.putAllFieldMappings(def));
 

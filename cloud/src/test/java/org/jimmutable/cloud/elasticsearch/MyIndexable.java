@@ -58,7 +58,7 @@ public class MyIndexable implements Indexable
 
 		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, new IndexDefinition("trevor_isawesome_v1"));
 
-		SEARCH_INDEX_DEFINITION = (SearchIndexDefinition) b.create(null);
+		SEARCH_INDEX_DEFINITION = (SearchIndexDefinition) b.create();
 	}
 
 	public MyIndexable(IndexDefinition index_definition, SearchDocumentId document_id)

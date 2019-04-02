@@ -23,7 +23,7 @@ public class EmailTest extends StubTest
 		b.set(Email.FIELD_SUBJECT, "subject");
 		b.add(Email.FIELD_TO, new EmailAddress("someone.else@retailerwebservices.com"));
 		b.set(Email.FIELD_HTML_BODY, "<p>body</p>");
-		base_email = b.create(null);
+		base_email = b.create();
 	}
 
 	@Test
@@ -55,7 +55,7 @@ public class EmailTest extends StubTest
 		b.add(Email.FIELD_CC, "cc@retailerwebservices.com");
 		b.add(Email.FIELD_REPLY_TO, "reply_to@retailerwebservices.com");
 		
-		Email email = b.create(null);
+		Email email = b.create();
 		
 		//System.out.println(email.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 		

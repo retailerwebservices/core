@@ -51,7 +51,7 @@ public class DeckHashSetTest extends TestCase
 		builder.add(BookDeckSet.FIELD_BOOKS,test_books.get(0));
 		builder.add(BookDeckSet.FIELD_BOOKS,test_books.get(1));
 
-		BookDeckSet first_library = (BookDeckSet)builder.create(null);
+		BookDeckSet first_library = (BookDeckSet)builder.create();
 		
 		assertEquals(first_library.getSimpleContents().size(),2);
 		
@@ -65,7 +65,7 @@ public class DeckHashSetTest extends TestCase
 		builder.add(BookDeckSet.FIELD_BOOKS,test_books.get(2));
 		builder.add(BookDeckSet.FIELD_BOOKS,test_books.get(3));
 		
-		BookDeckSet second_library = (BookDeckSet)builder.create(null);
+		BookDeckSet second_library = (BookDeckSet)builder.create();
 		
 		// Confirm that first library has not changed...
 		assertEquals(second_library.getSimpleContents().size(),3); // because book 2 and 3 are duplicates...
@@ -127,7 +127,7 @@ public class DeckHashSetTest extends TestCase
     	builder.add(BookDeckSet.FIELD_BOOKS,test_books.get(1));
     	builder.add(BookDeckSet.FIELD_BOOKS,test_books.get(2));
 		
-		BookDeckSet second_library = (BookDeckSet)builder.create(null);
+		BookDeckSet second_library = (BookDeckSet)builder.create();
 		
 		assertEquals(obj,second_library);
     }
@@ -177,7 +177,7 @@ public class DeckHashSetTest extends TestCase
     	builder.add(BookDeckSet.FIELD_BOOKS,test_books.get(1));
     	builder.add(BookDeckSet.FIELD_BOOKS,test_books.get(2));
 		
-		BookDeckSet second_library = (BookDeckSet)builder.create(null);
+		BookDeckSet second_library = (BookDeckSet)builder.create();
 		
 		assertEquals(obj,second_library);
     }

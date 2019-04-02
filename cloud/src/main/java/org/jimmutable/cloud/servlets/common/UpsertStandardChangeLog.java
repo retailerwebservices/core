@@ -106,7 +106,7 @@ public class UpsertStandardChangeLog extends HttpServlet
 			b.set(StandardChangeLogEntry.FIELD_BEFORE, entry.getOptionalBefore(null));
 			b.set(StandardChangeLogEntry.FIELD_AFTER, entry.getOptionalAfter(null));
 
-			new_entry = (StandardChangeLogEntry) b.create(null);
+			new_entry = (StandardChangeLogEntry) b.create();
 
 		}
 		catch ( Exception e )

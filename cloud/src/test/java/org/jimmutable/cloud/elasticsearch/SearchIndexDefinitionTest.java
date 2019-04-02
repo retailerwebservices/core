@@ -43,7 +43,7 @@ public class SearchIndexDefinitionTest
 
 		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, new IndexDefinition("foo_bar_v4"));
 
-		SearchIndexDefinition def = (SearchIndexDefinition) b.create(null);
+		SearchIndexDefinition def = (SearchIndexDefinition) b.create();
 
 		// System.out.println(def.toJavaCode(Format.JSON_PRETTY_PRINT, "def"));
 
@@ -80,7 +80,7 @@ public class SearchIndexDefinitionTest
 
 		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, new IndexDefinition("foo_bar_v2"));
 
-		SearchIndexDefinition def = (SearchIndexDefinition) b.create(null);
+		SearchIndexDefinition def = (SearchIndexDefinition) b.create();
 
 		assertNotNull(def);
 		assertEquals(0, def.getSimpleFields().size());
@@ -102,7 +102,7 @@ public class SearchIndexDefinitionTest
 		// b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, new
 		// IndexDefinition("foo_bar_v2"));
 
-		SearchIndexDefinition Index = (SearchIndexDefinition) b.create(null);
+		SearchIndexDefinition Index = (SearchIndexDefinition) b.create();
 
 	}
 

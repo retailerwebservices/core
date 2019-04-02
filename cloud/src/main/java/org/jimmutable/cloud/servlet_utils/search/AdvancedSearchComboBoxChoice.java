@@ -47,7 +47,7 @@ public class AdvancedSearchComboBoxChoice extends StandardImmutableObject<Advanc
 
 		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
 
-		INDEX_MAPPING = (SearchIndexDefinition) b.create(null);
+		INDEX_MAPPING = (SearchIndexDefinition) b.create();
 
 	}
 

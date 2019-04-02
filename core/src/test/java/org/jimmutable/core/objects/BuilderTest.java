@@ -5,6 +5,7 @@ import java.util.Objects;
 import org.jimmutable.core.examples.book.BindingType;
 import org.jimmutable.core.examples.book.Book;
 import org.jimmutable.core.examples.product_data.BrandCode;
+import org.jimmutable.core.exceptions.SerializeException;
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.fields.FieldHashMap;
 import org.jimmutable.core.fields.FieldList;
@@ -18,6 +19,7 @@ import org.jimmutable.core.serialization.reader.ReadAs;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.serialization.writer.WriteAs;
 import org.jimmutable.core.utils.TestingUtils;
+import org.jimmutable.core.utils.Validator;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -108,7 +110,7 @@ public class BuilderTest extends TestCase
 
 			my_stringable = t.getStringable(FIELD_MY_STRINGABLE);
 		}
-
+		
 		public void write( ObjectWriter writer )
 		{
 			writer.writeString(FIELD_MY_STRING, my_string);
@@ -148,6 +150,10 @@ public class BuilderTest extends TestCase
 
 		public void validate()
 		{
+			if ( this.my_string != null )
+			{
+				Validator.isFalse(this.my_string.equals("This Should fail!"));
+			}
 		}
 
 		public int hashCode()
@@ -191,7 +197,7 @@ public class BuilderTest extends TestCase
 		// Empty list
 		{
 			builder = new Builder(TestObject.TYPE_NAME);
-			obj = (TestObject) builder.create(null);
+			obj = (TestObject) builder.create();
 
 			assertTrue(obj != null);
 			assertEquals(obj.my_list_of_strings.size(), 0);
@@ -202,7 +208,7 @@ public class BuilderTest extends TestCase
 			builder = new Builder(TestObject.TYPE_NAME);
 			builder.add(TestObject.FIELD_MY_LIST_OF_STRINGS, "foo");
 
-			obj = (TestObject) builder.create(null);
+			obj = (TestObject) builder.create();
 
 			assertTrue(obj != null);
 			assertEquals(obj.my_list_of_strings.size(), 1);
@@ -216,7 +222,7 @@ public class BuilderTest extends TestCase
 			builder.add(TestObject.FIELD_MY_LIST_OF_STRINGS, "foo");
 			builder.add(TestObject.FIELD_MY_LIST_OF_STRINGS, "bar");
 
-			obj = (TestObject) builder.create(null);
+			obj = (TestObject) builder.create();
 
 			assertTrue(obj != null);
 			assertEquals(obj.my_list_of_strings.size(), 3);
@@ -232,7 +238,7 @@ public class BuilderTest extends TestCase
 			builder.add(TestObject.FIELD_MY_LIST_OF_STRINGS, (String) null);
 			builder.add(TestObject.FIELD_MY_LIST_OF_STRINGS, "bar");
 
-			obj = (TestObject) builder.create(null);
+			obj = (TestObject) builder.create();
 
 			assertTrue(obj != null);
 			assertEquals(obj.my_list_of_strings.size(), 2);
@@ -251,7 +257,7 @@ public class BuilderTest extends TestCase
 		builder = new Builder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_FLOAT, 3.14159f);
 
-		TestObject first = (TestObject) builder.create(null);
+		TestObject first = (TestObject) builder.create();
 
 		assertTrue(first != null);
 		assertEquals(first.my_float, 3.14159f);
@@ -259,7 +265,7 @@ public class BuilderTest extends TestCase
 		builder = new Builder(first);
 		builder.set(TestObject.FIELD_MY_STRING, "foo");
 
-		TestObject second = (TestObject) builder.create(null);
+		TestObject second = (TestObject) builder.create();
 		assertTrue(second != null);
 
 		assertEquals(second.my_float, 3.14159f);
@@ -379,7 +385,7 @@ public class BuilderTest extends TestCase
 			builder.set(Book.FIELD_ISBN, "0139438452");
 			builder.set(Book.FIELD_PAGE_COUNT, 821);
 
-			Book book = (Book) builder.create(null);
+			Book book = (Book) builder.create();
 
 			assertTrue(book != null);
 
@@ -387,6 +393,40 @@ public class BuilderTest extends TestCase
 		}
 	}
 
+	public void testSerilizationforSilent() {
+		Builder builder = new Builder(TestObject.TYPE_NAME);
+
+		builder.set(TestObject.FIELD_MY_STRING, "This Should fail!");
+		assertNull(builder.createSilent(null));
+		
+		Builder other_builder = new Builder(TestObject.TYPE_NAME);
+
+		other_builder.set(TestObject.FIELD_MY_STRING, "This Should Not fail!");
+		
+		assertEquals(((TestObject)builder.createSilent(other_builder.createSilent(null))).my_string, "This Should Not fail!");
+		
+	}
+	
+	public void testSerilizationforNotSilent() {
+		Builder builder = new Builder(TestObject.TYPE_NAME);
+		Boolean fail = true;
+		builder.set(TestObject.FIELD_MY_STRING, "This Should fail!");
+		try {
+			TestObject object = builder.create();
+		}catch(SerializeException e) {
+			fail = false;
+		}
+		assertFalse(fail);
+
+		builder.set(TestObject.FIELD_MY_STRING, "This Should Not fail!");
+		try {
+			TestObject object = builder.create();
+		}catch(SerializeException e) {
+			fail = true;
+		}
+		assertFalse(fail);
+	}
+	
 	public void testStringIntMap()
 	{
 		Builder builder = new Builder(TestObject.TYPE_NAME);
@@ -397,7 +437,7 @@ public class BuilderTest extends TestCase
 		builder.addMapEntry(TestObject.FIELD_MY_STRING_INT_MAP, null, 3);
 		builder.addMapEntry(TestObject.FIELD_MY_STRING_INT_MAP, "baz", null);
 
-		TestObject obj = (TestObject) builder.create(null);
+		TestObject obj = (TestObject) builder.create();
 
 		assertTrue(obj != null);
 
@@ -424,7 +464,7 @@ public class BuilderTest extends TestCase
 			builder.set(Book.FIELD_ISBN, "0139438452");
 			builder.set(Book.FIELD_PAGE_COUNT, 821);
 
-			of_mice_and_men = (Book) builder.create(null);
+			of_mice_and_men = (Book) builder.create();
 
 			assertTrue(of_mice_and_men != null);
 		}
@@ -437,7 +477,7 @@ public class BuilderTest extends TestCase
 			builder.set(Book.FIELD_ISBN, "274645102");
 			builder.set(Book.FIELD_PAGE_COUNT, 261);
 
-			the_great_divorce = (Book) builder.create(null);
+			the_great_divorce = (Book) builder.create();
 
 			assertTrue(the_great_divorce != null);
 		}
@@ -450,7 +490,7 @@ public class BuilderTest extends TestCase
 			builder.set(Book.FIELD_ISBN, "174645102");
 			builder.set(Book.FIELD_PAGE_COUNT, 601);
 
-			the_screwtape_letters = (Book) builder.create(null);
+			the_screwtape_letters = (Book) builder.create();
 
 			assertTrue(the_screwtape_letters != null);
 		}
@@ -467,7 +507,7 @@ public class BuilderTest extends TestCase
 		builder.addMapEntry(TestObject.FIELD_MY_INT_BOOK_MAP, null, the_screwtape_letters);
 		builder.addMapEntry(TestObject.FIELD_MY_INT_BOOK_MAP, 48, null);
 
-		TestObject obj = (TestObject) builder.create(null);
+		TestObject obj = (TestObject) builder.create();
 
 		assertTrue(obj != null);
 
@@ -485,7 +525,7 @@ public class BuilderTest extends TestCase
 		Builder builder = new Builder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_STRING, value);
 
-		TestObject obj = (TestObject) builder.create(null);
+		TestObject obj = (TestObject) builder.create();
 
 		assertTrue(obj != null);
 		assertEquals(obj.my_string, value);
@@ -496,7 +536,7 @@ public class BuilderTest extends TestCase
 		Builder builder = new Builder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_ENUM, value);
 
-		TestObject obj = (TestObject) builder.create(null);
+		TestObject obj = (TestObject) builder.create();
 
 		assertTrue(obj != null);
 		assertEquals(obj.my_enum, value);
@@ -507,7 +547,7 @@ public class BuilderTest extends TestCase
 		Builder builder = new Builder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_STRINGABLE, value);
 
-		TestObject obj = (TestObject) builder.create(null);
+		TestObject obj = (TestObject) builder.create();
 
 		assertTrue(obj != null);
 		assertEquals(obj.my_stringable, value);
@@ -518,7 +558,7 @@ public class BuilderTest extends TestCase
 		Builder builder = new Builder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_DOUBLE, value);
 
-		TestObject obj = (TestObject) builder.create(null);
+		TestObject obj = (TestObject) builder.create();
 
 		assertTrue(obj != null);
 		assertEquals(obj.my_double, value);
@@ -529,7 +569,7 @@ public class BuilderTest extends TestCase
 		Builder builder = new Builder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_FLOAT, value);
 
-		TestObject obj = (TestObject) builder.create(null);
+		TestObject obj = (TestObject) builder.create();
 
 		assertTrue(obj != null);
 		assertEquals(obj.my_float, value);
@@ -540,7 +580,7 @@ public class BuilderTest extends TestCase
 		Builder builder = new Builder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_LONG, value);
 
-		TestObject obj = (TestObject) builder.create(null);
+		TestObject obj = (TestObject) builder.create();
 
 		assertTrue(obj != null);
 		assertEquals(obj.my_long, value);
@@ -551,7 +591,7 @@ public class BuilderTest extends TestCase
 		Builder builder = new Builder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_INT, value);
 
-		TestObject obj = (TestObject) builder.create(null);
+		TestObject obj = (TestObject) builder.create();
 
 		assertTrue(obj != null);
 		assertEquals(obj.my_int, value);
@@ -562,7 +602,7 @@ public class BuilderTest extends TestCase
 		Builder builder = new Builder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_SHORT, value);
 
-		TestObject obj = (TestObject) builder.create(null);
+		TestObject obj = (TestObject) builder.create();
 
 		assertTrue(obj != null);
 		assertEquals(obj.my_short, value);
@@ -573,7 +613,7 @@ public class BuilderTest extends TestCase
 		Builder builder = new Builder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_BYTE, value);
 
-		TestObject obj = (TestObject) builder.create(null);
+		TestObject obj = (TestObject) builder.create();
 
 		assertTrue(obj != null);
 		assertEquals(obj.my_byte, value);
@@ -584,7 +624,7 @@ public class BuilderTest extends TestCase
 		Builder builder = new Builder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_CHAR, value);
 
-		TestObject obj = (TestObject) builder.create(null);
+		TestObject obj = (TestObject) builder.create();
 
 		assertTrue(obj != null);
 		assertEquals(obj.my_char, value);
@@ -595,7 +635,7 @@ public class BuilderTest extends TestCase
 		Builder builder = new Builder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_BOOLEAN, value);
 
-		TestObject obj = (TestObject) builder.create(null);
+		TestObject obj = (TestObject) builder.create();
 
 		assertTrue(obj != null);
 		assertEquals(obj.my_boolean, value);
@@ -606,7 +646,7 @@ public class BuilderTest extends TestCase
 		Builder builder = new Builder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_BOOK, value);
 
-		TestObject obj = (TestObject) builder.create(null);
+		TestObject obj = (TestObject) builder.create();
 
 		assertTrue(obj != null);
 		assertEquals(obj.my_book, value);

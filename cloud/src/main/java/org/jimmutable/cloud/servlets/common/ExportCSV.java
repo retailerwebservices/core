@@ -74,7 +74,7 @@ public abstract class ExportCSV extends HttpServlet
 				field = r.readString("field_to_include_in_export", null);
 			}
 
-			request_csv = b.create(null);
+			request_csv = b.create();
 
 		} catch (Exception e)
 		{

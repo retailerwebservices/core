@@ -39,7 +39,7 @@ public class SortTest
 		b.add(Sort.FIELD_SORT_ORDER, new SortBy(new SearchIndexFieldDefinition(new FieldName("ffloat"), SearchIndexFieldType.FLOAT), SortDirection.ASCENDING));
 		b.add(Sort.FIELD_SORT_ORDER, new SortBy(new SearchIndexFieldDefinition(new FieldName("flong"), SearchIndexFieldType.LONG), SortDirection.DESCENDING));
 
-		Sort sort = (Sort) b.create(null);
+		Sort sort = (Sort) b.create();
 
 		// System.out.println(sort.toJavaCode(Format.JSON_PRETTY_PRINT, "def"));
 
@@ -68,7 +68,7 @@ public class SortTest
 	{
 		Builder b = new Builder(Sort.TYPE_NAME);
 
-		Sort def = (Sort) b.create(null);
+		Sort def = (Sort) b.create();
 
 		assertNotNull(def);
 		assertEquals(0, def.getSimpleSortOrder().size());

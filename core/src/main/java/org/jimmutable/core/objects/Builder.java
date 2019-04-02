@@ -1,5 +1,6 @@
 package org.jimmutable.core.objects;
 
+import org.jimmutable.core.exceptions.SerializeException;
 import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.TypeName;
@@ -158,17 +159,19 @@ public class Builder
 		System.out.println(under_construction.toString());
 	}
 
-	// @CR - The story calls for removing the default value from the create method. Was this left in intentionally? -PM
-	public <U extends StandardObject> U create( U default_value )
+	public <U extends StandardObject> U create() throws SerializeException
 	{
-		//@CR - The story calls for throwing a SerializeException if the default_value is returned by asObject. Also,
-		// make sure the unit test is updated to test for the thrown Exception. -PM
-		return (U) under_construction.asObject(default_value);
+		U toReturn = (U) under_construction.asObject(null);
+		if ( toReturn == null )
+		{
+			throw new SerializeException();
+		}
+		return toReturn;
 	}
 
 	public <U extends StandardObject> U createSilent( U default_value )
 	{
-		//@CR - this method needs to be tested in BuilderTest. -PM
+		// @CR - this method needs to be tested in BuilderTest. -PM
 		U object;
 		try
 		{

@@ -203,7 +203,7 @@ public class SearchSortIntegrationTest
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
 
-			INDEX_MAPPING = (SearchIndexDefinition) b.create(null);
+			INDEX_MAPPING = (SearchIndexDefinition) b.create();
 		}
 		
 		public SearchSortObjectLong(long value)
@@ -328,7 +328,7 @@ public class SearchSortIntegrationTest
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
 
-			INDEX_MAPPING = (SearchIndexDefinition) b.create(null);
+			INDEX_MAPPING = (SearchIndexDefinition) b.create();
 		}
 		
 		public SearchSortObjectLongArray(Collection<Long> value)
@@ -466,7 +466,7 @@ public class SearchSortIntegrationTest
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
 
-			INDEX_MAPPING = (SearchIndexDefinition) b.create(null);
+			INDEX_MAPPING = (SearchIndexDefinition) b.create();
 		}
 		
 		public SearchSortObjectText(String value)
@@ -608,7 +608,7 @@ public class SearchSortIntegrationTest
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
 
-			INDEX_MAPPING = (SearchIndexDefinition) b.create(null);
+			INDEX_MAPPING = (SearchIndexDefinition) b.create();
 		}
 		
 		public SearchSortObjectTextArray(Collection<String> value)
@@ -765,7 +765,7 @@ public class SearchSortIntegrationTest
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
 
-			INDEX_MAPPING = (SearchIndexDefinition) b.create(null);
+			INDEX_MAPPING = (SearchIndexDefinition) b.create();
 		}
 		
 		public SearchSortObjectFloat(float value)
@@ -896,7 +896,7 @@ public class SearchSortIntegrationTest
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
 
-			INDEX_MAPPING = (SearchIndexDefinition) b.create(null);
+			INDEX_MAPPING = (SearchIndexDefinition) b.create();
 		}
 		
 		public SearchSortObjectFloatArray(Collection<Float> value)
@@ -1041,7 +1041,7 @@ public class SearchSortIntegrationTest
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
 
-			INDEX_MAPPING = (SearchIndexDefinition) b.create(null);
+			INDEX_MAPPING = (SearchIndexDefinition) b.create();
 		}
 		
 		public SearchSortObjectBoolean(boolean value)
@@ -1167,7 +1167,7 @@ public class SearchSortIntegrationTest
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
 
-			INDEX_MAPPING = (SearchIndexDefinition) b.create(null);
+			INDEX_MAPPING = (SearchIndexDefinition) b.create();
 		}
 		
 		public SearchSortObjectBooleanArray(Collection<Boolean> value)
@@ -1305,7 +1305,7 @@ public class SearchSortIntegrationTest
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
 
-			INDEX_MAPPING = (SearchIndexDefinition) b.create(null);
+			INDEX_MAPPING = (SearchIndexDefinition) b.create();
 		}
 		
 		public SearchSortObjectDay(Day value)
@@ -1432,7 +1432,7 @@ public class SearchSortIntegrationTest
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
 
-			INDEX_MAPPING = (SearchIndexDefinition) b.create(null);
+			INDEX_MAPPING = (SearchIndexDefinition) b.create();
 		}
 		
 		public SearchSortObjectDayArray(Collection<Day> value)
@@ -1572,7 +1572,7 @@ public class SearchSortIntegrationTest
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
 
-			INDEX_MAPPING = (SearchIndexDefinition) b.create(null);
+			INDEX_MAPPING = (SearchIndexDefinition) b.create();
 		}
 		
 		public SearchSortObjectInstant(Instant value)
@@ -1699,7 +1699,7 @@ public class SearchSortIntegrationTest
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
 
-			INDEX_MAPPING = (SearchIndexDefinition) b.create(null);
+			INDEX_MAPPING = (SearchIndexDefinition) b.create();
 		}
 		
 		public SearchSortObjectInstantArray(Collection<Instant> value)
@@ -1840,7 +1840,7 @@ public class SearchSortIntegrationTest
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
 
-			INDEX_MAPPING = (SearchIndexDefinition) b.create(null);
+			INDEX_MAPPING = (SearchIndexDefinition) b.create();
 		}
 		
 		public SearchSortObjectTimeOfDay(TimeOfDay value)
@@ -1967,7 +1967,7 @@ public class SearchSortIntegrationTest
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
 
-			INDEX_MAPPING = (SearchIndexDefinition) b.create(null);
+			INDEX_MAPPING = (SearchIndexDefinition) b.create();
 		}
 		
 		public SearchSortObjectTimeOfDayArray(Collection<TimeOfDay> value)
