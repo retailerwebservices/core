@@ -96,7 +96,7 @@ public abstract class DoSearch extends HttpServlet
 
 
 			json_servlet_response = updateSearchResponse(json_servlet_response, search_request);
-
+			logSearch(search_string, json_servlet_response);
 			ServletUtil.writeSerializedResponse(response, new SearchResponseOK(search_request, json_servlet_response), SearchResponseOK.HTTP_STATUS_CODE_OK);
 		}
 		catch ( Exception e )
@@ -177,7 +177,7 @@ public abstract class DoSearch extends HttpServlet
 			List<OneSearchResultWithTyping> json_servlet_response = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(getSearchIndexDefinition(), search_request, null);
 
 			json_servlet_response = updateSearchResponse(json_servlet_response, search_request);
-
+			logSearch(search_string, json_servlet_response);
 			ServletUtil.writeSerializedResponse(response, new SearchResponseOK(search_request, json_servlet_response), SearchResponseOK.HTTP_STATUS_CODE_OK);
 
 		}
@@ -296,7 +296,7 @@ public abstract class DoSearch extends HttpServlet
 		return "";
 	}
 
-	protected void logSearch(String query, SearchResponseOK results)
+	protected void logSearch(String query, List<OneSearchResultWithTyping> results)
 	{
 		return;
 	}
