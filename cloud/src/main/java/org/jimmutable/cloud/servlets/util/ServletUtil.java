@@ -119,6 +119,47 @@ public class ServletUtil
 			logger.error(e);
 		}
 	}
+	
+	/**
+	 * 
+	 * Common json response writer to write JSON objects from the
+	 * HttpResponse PrintWriter. This is for data that is already
+	 * in JSON format and, therefore, already serialized.
+	 * 
+	 * @param response
+	 *            the HttpServletResponse
+	 * @param json
+	 *            the JSON string
+	 * @param http_status_code
+	 *            you can use the HttpServletResponse interface to get the http
+	 *            status code constant. Such as:</br>
+	 *            <p>
+	 *            HttpServletResponse.SC_OK (200)</br>
+	 *            HttpServletResponse.SC_FORBIDDEN (403)</br>
+	 *            HttpServletResponse.SC_NOT_FOUND (404)</br>
+	 *            HttpServletResponse.SC_INTERNAL_SERVER_ERROR (500)
+	 *            </p>
+	 */
+	public static void writeJSONResponse( HttpServletResponse response, String json, int http_status_code )
+	{
+
+		response.setContentType(ContentType.APPLICATION_JSON.getMimeType());
+
+		response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+
+		response.setStatus(http_status_code);
+
+		try
+		{
+			PrintWriter out = response.getWriter();
+			out.write(json);
+			out.flush();
+		}
+		catch ( IOException e )
+		{
+			logger.error(e);
+		}
+	}
 
 	/**
 	 * Parse the int from a string (http parameter). If it fails just return the
