@@ -5,45 +5,47 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
-import org.jimmutable.cloud.messaging.signal.SignalTopicId;
+import org.jimmutable.cloud.cache.CacheKey;
+import org.jimmutable.cloud.cache.ICache;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
-import org.jimmutable.core.objects.common.ObjectReference;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
-import org.jimmutable.core.threading.ExpirationCache;
 
 @SuppressWarnings("rawtypes")
 public class StandardImmutableObjectCache
 {
-	private ExpirationCache<ObjectReference, StandardImmutableObject> cache = new ExpirationCache<>(TimeUnit.MINUTES.toMillis(5), 100_000);
+	private ICache cache;
+	private String prefix; // required
+	private long max_allowed_entry_age_in_ms = TimeUnit.MINUTES.toMillis(20);
 
 	private static final Logger logger = LogManager.getLogger(StandardImmutableObjectCache.class);
 
-	/**
-	 * Central topic for all standard immutable objects that are going to be
-	 * upserted
-	 */
-	public static SignalTopicId TOPIC_ID = new SignalTopicId("standard-immutable-object-cache");
-
-	public static void setupListeners()
+	public StandardImmutableObjectCache( ICache cache, String prefix )
 	{
-		UpsertListener upsert_listener = new UpsertListener();
-		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSignalService().startListening(TOPIC_ID, upsert_listener);
+		this.cache = cache;
+		this.prefix = prefix;
 	}
 
-	public void put(Kind kind, ObjectId id, StandardImmutableObject object)
+	public StandardImmutableObjectCache( ICache cache, String prefix, long max_allowed_entry_age_in_ms )// - replaces value in this.max_allowed_entry_age_in_ms.
 	{
-		if (kind == null || id == null || object == null)
-			return;
-		put(new ObjectReference(kind, id), object);
+		this.cache = cache;
+		this.prefix = prefix;
+		this.max_allowed_entry_age_in_ms = max_allowed_entry_age_in_ms;
 	}
 
-	public void put(ObjectReference object_reference, StandardImmutableObject object)
+	public void put( Kind kind, ObjectId id, StandardImmutableObject object )
 	{
-		if (object_reference == null || object == null)
+		if ( kind == null || id == null || object == null )
 			return;
-		cache.put(object_reference, object);
+		put(new CacheKey(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId().getSimpleValue() + "://" + prefix + ":" + kind.toString() + ":" + id.toString()), object);
+	}
+
+	public void put( CacheKey cache_key, StandardImmutableObject object )
+	{
+		if ( cache_key == null || object == null )
+			return;
+		cache.put(cache_key, object, max_allowed_entry_age_in_ms);
 	}
 
 	/*
@@ -67,36 +69,36 @@ public class StandardImmutableObjectCache
 	 * to save someone a little typing.
 	 * 
 	 */
-	public <T extends Storable> boolean has(T object)
+	public <T extends Storable> boolean has( T object )
 	{
-		if (object == null)
+		if ( object == null )
 			return false;
-		return has(new ObjectReference(object.getSimpleKind(), object.getSimpleObjectId()));
+		return has(object.getSimpleKind(), object.getSimpleObjectId());
 	}
 
-	public boolean has(Kind kind, ObjectId id)
+	public boolean has( Kind kind, ObjectId id )
 	{
-		if (kind == null || id == null)
+		if ( kind == null || id == null )
 			return false;
-		return has(new ObjectReference(kind, id));
+		return has(new CacheKey(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId().getSimpleValue() + "://" + prefix + ":" + kind.toString() + ":" + id.toString()));
 	}
 
-	public boolean has(ObjectReference object_reference)
+	public boolean has( CacheKey cache_key )
 	{
-		if (object_reference == null)
+		if ( cache_key == null )
 		{
 			return false;
 		}
-		return cache.has(object_reference);
+		return cache.exists(cache_key);
 	}
 
-	public StandardImmutableObject get(Kind kind, ObjectId id, StandardImmutableObject default_value)
+	public StandardImmutableObject get( Kind kind, ObjectId id, StandardImmutableObject default_value )
 	{
-		if (kind == null || id == null)
+		if ( kind == null || id == null )
 		{
 			return default_value;
 		}
-		return get(new ObjectReference(kind, id), default_value);
+		return get(new CacheKey(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId().getSimpleValue() + "://" + prefix + ":" + kind.toString() + ":" + id.toString()), default_value);
 	}
 
 	// CODEREVIEW I see that Panda uses getSimple and getOptional. Do you also have
@@ -109,24 +111,19 @@ public class StandardImmutableObjectCache
 	// something from a map or other storage
 	// places, we use the method signature get. I am trying to stay consistent with
 	// that methodology.
-	public StandardImmutableObject get(ObjectReference reference, StandardImmutableObject default_value)
+	public StandardImmutableObject get( CacheKey reference, StandardImmutableObject default_value )
 	{
-		if (reference == null)
+		if ( reference == null )
 		{
 			return default_value;
 		}
 
-		StandardImmutableObject standard_immutable_object = cache.getOptional(reference, default_value);
-		if (default_value != null && standard_immutable_object.equals(default_value))
-		{
-			return default_value;
-		}
+		StandardImmutableObject standard_immutable_object = null;
 
 		// if you did not find it in the cache go find it in storage.
 
-		byte[] bytes = CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(new ObjectIdStorageKey(reference.getSimpleKind(), reference.getSimpleObjectId(), StorageKeyExtension.JSON), null);
-
-		if (bytes == null)
+		byte[] bytes = cache.getBytes(reference, null);
+		if ( bytes == null )
 		{
 			logger.error(String.format("Failed to retreive %s from storage!", reference.getSimpleValue()));
 			return default_value;
@@ -135,26 +132,35 @@ public class StandardImmutableObjectCache
 		try
 		{
 			standard_immutable_object = (StandardImmutableObject) ObjectParseTree.deserialize(new String(bytes));
-		} catch (Exception e)
+		}
+		catch ( Exception e )
 		{
 
 			logger.error(String.format("Failed to serialize %s!", reference.getSimpleValue()), e);
 		}
 
-		if (standard_immutable_object != null)
+		if ( standard_immutable_object != null )
 		{
 			// if there is something, cache it and return it.
-			cache.put(reference, standard_immutable_object);
+			cache.put(reference, standard_immutable_object, max_allowed_entry_age_in_ms);
 			return standard_immutable_object;
 		}
 		// else return default_value.
 		return default_value;
 	}
 
-	public void remove(ObjectReference reference)
+	public void remove( CacheKey reference )
 	{
-		cache.remove(reference);
+		cache.delete(reference);
 	}
+	
+	public void remove( Kind kind, ObjectId id)
+	{
+		if ( kind == null || id == null )
+		{
+			return;
+		}
+		cache.delete(new CacheKey(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId().getSimpleValue() + "://" + prefix + ":" + kind.toString() + ":" + id.toString()));	}
 
 	// we use this class in CloudExecutionEnvironment.
 

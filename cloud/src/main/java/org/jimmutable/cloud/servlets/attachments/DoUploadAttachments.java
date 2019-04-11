@@ -187,7 +187,7 @@ public class DoUploadAttachments extends HttpServlet
 		simple_current.getSimpleStorage().upsert(new ObjectIdStorageKey(kind, meta_data.getSimpleObjectId(), StorageKeyExtension.BIN), data, false);
 		simple_current.getSimpleCache().put(kind, meta_data.getSimpleObjectId(), meta_data);
 
-		simple_current.getSimpleSignalService().sendAsync(StandardImmutableObjectCache.TOPIC_ID, new StandardMessageOnUpsert(kind, meta_data.getSimpleObjectId()));
+		simple_current.getSimpleSignalService().sendAsync(new SignalTopicId("standard-immutable-object-cache"), new StandardMessageOnUpsert(kind, meta_data.getSimpleObjectId()));
 		return meta_data;
 	}
 }

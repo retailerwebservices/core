@@ -1,40 +1,62 @@
 package org.jimmutable.cloud.storage;
 
+import static org.junit.Assert.fail;
+
+import java.util.concurrent.TimeUnit;
+
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.IntegrationTest;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
-import org.jimmutable.core.objects.common.ObjectReference;
+import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.TypeName;
+import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import junit.framework.TestCase;
 
 public class StandardImmutableObjectCacheIT extends IntegrationTest
 {
 	@BeforeClass
 	public  static void setup() {
 		setupEnvironment();
+		ObjectParseTree.registerTypeName(TestStorable.class);
+		
 	}
 	@Test
 	public void testConvenienceMethod() {
 		TestStorable storable = new TestStorable(new ObjectId("0000-0000-0000-0000"));
-		CloudExecutionEnvironment.getSimpleCurrent().getSimpleCache().put(new ObjectReference(storable.getSimpleKind(), storable.getSimpleObjectId()), storable);
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleCache().put(storable.getSimpleKind(), storable.getSimpleObjectId(), storable);
 		assert(CloudExecutionEnvironment.getSimpleCurrent().getSimpleCache().has(storable)==true);
 	}
 
+	//This Method no Longer Makes Sense
+//	@Test
+//	public void testSize() {
+//		TestStorable storable = new TestStorable(new ObjectId("0000-0000-0000-0000"));
+//		StandardImmutableObjectCache simple_cache = CloudExecutionEnvironment.getSimpleCurrent().getSimpleCache();
+//		simple_cache.put(storable.getSimpleKind(), storable.getSimpleObjectId(), storable);
+//		for(int i = 0;i<100000;i++) {
+//			TestStorable not_what_we_are_looking_for = new TestStorable(ObjectId.createRandomId());
+//			simple_cache.put(new Kind("not-what-we-are-looking-for"),not_what_we_are_looking_for.getSimpleObjectId(),not_what_we_are_looking_for);
+//		}
+//		assert(simple_cache.has(storable)==false);
+//	}
+	
 	@Test
-	public void testSize() {
+	public void testTime() {
 		TestStorable storable = new TestStorable(new ObjectId("0000-0000-0000-0000"));
-		StandardImmutableObjectCache simple_cache = CloudExecutionEnvironment.getSimpleCurrent().getSimpleCache();
-		simple_cache.put(new ObjectReference(storable.getSimpleKind(), storable.getSimpleObjectId()), storable);
-		for(int i = 0;i<100000;i++) {
-			TestStorable not_what_we_are_looking_for = new TestStorable(ObjectId.createRandomId());
-			simple_cache.put(new ObjectReference(new Kind("not-what-we-are-looking-for"),not_what_we_are_looking_for.getSimpleObjectId()),not_what_we_are_looking_for);
+		StandardImmutableObjectCache simple_cache = new StandardImmutableObjectCache(CloudExecutionEnvironment.getSimpleCurrent().getSimpleCacheService(), CloudExecutionEnvironment.getSimpleCurrent().getSimpleEnvironmentType().getSimpleCode().toLowerCase(), TimeUnit.SECONDS.toMillis(20));
+		simple_cache.put(storable.getSimpleKind(), storable.getSimpleObjectId(), storable);
+		try
+		{
+			TimeUnit.SECONDS.sleep(21);
+		}
+		catch ( InterruptedException e )
+		{
+			fail();
 		}
 		assert(simple_cache.has(storable)==false);
 	}
@@ -73,14 +95,13 @@ public class StandardImmutableObjectCacheIT extends IntegrationTest
 		@Override
 		public TypeName getTypeName()
 		{
-			// TODO Auto-generated method stub
-			return null;
+			return new TypeName("test_storable");
 		}
 
 		@Override
 		public void write( ObjectWriter writer )
 		{
-			// TODO Auto-generated method stub
+			writer.writeString(new FieldName("id"), id.getSimpleValue());
 
 		}
 

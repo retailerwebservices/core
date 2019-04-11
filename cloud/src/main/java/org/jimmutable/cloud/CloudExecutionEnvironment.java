@@ -306,7 +306,7 @@ public class CloudExecutionEnvironment
 	{
 		if (STANDARD_IMMUTABLE_OBJECT_CACHE == null)
 		{
-			STANDARD_IMMUTABLE_OBJECT_CACHE = new StandardImmutableObjectCache();
+			STANDARD_IMMUTABLE_OBJECT_CACHE = new StandardImmutableObjectCache(new CacheRedis(APPLICATION_ID, new LowLevelRedisDriver()), ENV_TYPE.getSimpleCode().toLowerCase());
 		}
 		return STANDARD_IMMUTABLE_OBJECT_CACHE;
 	}

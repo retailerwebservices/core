@@ -30,7 +30,7 @@ public class StandardImmutableObjectCacheLongRunningIT extends IntegrationTest
 	public void testConvenienceMethod() {
 		TestStorable storable = new TestStorable(new ObjectId("0000-0000-0000-0000"));
 		StandardImmutableObjectCache simple_cache = CloudExecutionEnvironment.getSimpleCurrent().getSimpleCache();
-		simple_cache.put(new ObjectReference(storable.getSimpleKind(), storable.getSimpleObjectId()), storable);
+		simple_cache.put(storable.getSimpleKind(), storable.getSimpleObjectId(), storable);
 		assert(simple_cache.has(storable)==true);
 	}
 	
@@ -38,7 +38,7 @@ public class StandardImmutableObjectCacheLongRunningIT extends IntegrationTest
 	public void testTiming() throws InterruptedException {
 		TestStorable storable = new TestStorable(new ObjectId("0000-0000-0000-0000"));
 		StandardImmutableObjectCache simple_cache = CloudExecutionEnvironment.getSimpleCurrent().getSimpleCache();
-		simple_cache.put(new ObjectReference(storable.getSimpleKind(), storable.getSimpleObjectId()), storable);
+		simple_cache.put(storable.getSimpleKind(), storable.getSimpleObjectId(), storable);
 		Thread.sleep(TimeUnit.MINUTES.toMillis(5)+1);
 		assert(simple_cache.has(storable)==false);
 	}
@@ -47,10 +47,10 @@ public class StandardImmutableObjectCacheLongRunningIT extends IntegrationTest
 	public void testSize() {
 		TestStorable storable = new TestStorable(new ObjectId("0000-0000-0000-0000"));
 		StandardImmutableObjectCache simple_cache = CloudExecutionEnvironment.getSimpleCurrent().getSimpleCache();
-		simple_cache.put(new ObjectReference(storable.getSimpleKind(), storable.getSimpleObjectId()), storable);
+		simple_cache.put(storable.getSimpleKind(), storable.getSimpleObjectId(), storable);
 		for(int i = 0;i<100000;i++) {
 			TestStorable not_what_we_are_looking_for = new TestStorable(ObjectId.createRandomId());
-			simple_cache.put(new ObjectReference(new Kind("not-what-we-are-looking-for"),not_what_we_are_looking_for.getSimpleObjectId()),not_what_we_are_looking_for);
+			simple_cache.put(new Kind("not-what-we-are-looking-for"),not_what_we_are_looking_for.getSimpleObjectId(),not_what_we_are_looking_for);
 		}
 		assert(simple_cache.has(storable)==false);
 	}
