@@ -1,6 +1,7 @@
 package org.jimmutable.cloud;
 
 import org.jimmutable.cloud.attachments.AttachmentMetaData;
+import org.jimmutable.cloud.cache.CacheEvent;
 import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
 import org.jimmutable.cloud.email.Email;
@@ -85,6 +86,6 @@ public class JimmutableCloudTypeNameRegister
 		ObjectParseTree.registerTypeName(LogLevelMessageOnChange.class);
 
 		ObjectParseTree.registerTypeName(Email.class);
-		
+		ObjectParseTree.registerTypeName(CacheEvent.class);
 	}
 }
