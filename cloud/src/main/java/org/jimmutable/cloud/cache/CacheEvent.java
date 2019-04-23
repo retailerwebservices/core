@@ -11,7 +11,12 @@ import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.utils.Comparison;
 import org.jimmutable.core.utils.Validator;
 
-//TODO CR- javadoc
+/**
+ * This is used by our Cache Metrics 
+ * to keep track of what is happening. 
+ * @author andrew.towe
+ *
+ */
 public class CacheEvent extends StandardImmutableObject<CacheEvent>
 {
 	static public final TypeName TYPE_NAME = new TypeName("cache_event");
