@@ -38,7 +38,7 @@ public class StandardImmutableObjectCache
 	{
 		if ( kind == null || id == null || object == null )
 			return;
-		put(new CacheKey(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId().getSimpleValue() + "://" + prefix + ":" + kind.toString() + ":" + id.toString()), object);
+		put(new CacheKey(getCahcePrefix() + kind.toString() + ":" + id.toString()), object);
 	}
 
 	public void put( CacheKey cache_key, StandardImmutableObject object )
@@ -80,7 +80,12 @@ public class StandardImmutableObjectCache
 	{
 		if ( kind == null || id == null )
 			return false;
-		return has(new CacheKey(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId().getSimpleValue() + "://" + prefix + ":" + kind.toString() + ":" + id.toString()));
+		return has(new CacheKey(getCahcePrefix() + kind.toString() + ":" + id.toString()));
+	}
+
+	public String getCahcePrefix()
+	{
+		return CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId().getSimpleValue() + "://" + prefix + ":";
 	}
 
 	public boolean has( CacheKey cache_key )
@@ -149,18 +154,39 @@ public class StandardImmutableObjectCache
 		return default_value;
 	}
 
+	public byte[] get( CacheKey reference, byte[] default_value )
+	{
+		if ( reference == null )
+		{
+			return default_value;
+		}
+
+		// if you did not find it in the cache go find it in storage.
+
+		byte[] bytes = cache.getBytes(reference, null);
+		if ( bytes == null )
+		{
+			logger.error(String.format("Failed to retreive %s from storage!", reference.getSimpleValue()));
+			return default_value;
+		}
+
+		cache.put(reference, bytes, max_allowed_entry_age_in_ms);
+		return bytes;
+	}
+
 	public void remove( CacheKey reference )
 	{
 		cache.delete(reference);
 	}
-	
-	public void remove( Kind kind, ObjectId id)
+
+	public void remove( Kind kind, ObjectId id )
 	{
 		if ( kind == null || id == null )
 		{
 			return;
 		}
-		cache.delete(new CacheKey(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId().getSimpleValue() + "://" + prefix + ":" + kind.toString() + ":" + id.toString()));	}
+		cache.delete(new CacheKey(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId().getSimpleValue() + "://" + prefix + ":" + kind.toString() + ":" + id.toString()));
+	}
 
 	// we use this class in CloudExecutionEnvironment.
 

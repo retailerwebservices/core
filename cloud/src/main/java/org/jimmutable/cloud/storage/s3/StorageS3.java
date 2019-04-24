@@ -3,7 +3,6 @@ package org.jimmutable.cloud.storage.s3;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -14,19 +13,21 @@ import java.io.OutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jimmutable.cloud.ApplicationId;
+import org.jimmutable.cloud.cache.CacheKey;
 import org.jimmutable.cloud.storage.GenericStorageKey;
 import org.jimmutable.cloud.storage.ObjectIdStorageKey;
 import org.jimmutable.cloud.storage.Storage;
 import org.jimmutable.cloud.storage.StorageKey;
 import org.jimmutable.cloud.storage.StorageKeyName;
 import org.jimmutable.cloud.storage.StorageMetadata;
+import org.jimmutable.core.objects.StandardImmutableObject;
+import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Kind;
+import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.utils.IOUtils;
 //import org.jimmutable.core.utils.IOUtils;
 import org.jimmutable.core.utils.Validator;
 
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.CreateBucketRequest;
@@ -57,7 +58,7 @@ public class StorageS3 extends Storage
 
 	// Since this will be init'd in CEE.startup, we can't rely on the singleton for
 	// access to the ApplicationId
-	public StorageS3(final AmazonS3ClientFactory client_factory, final ApplicationId application_id, final boolean is_read_only)
+	public StorageS3( final AmazonS3ClientFactory client_factory, final ApplicationId application_id, final boolean is_read_only )
 	{
 		super(is_read_only);
 
@@ -71,13 +72,14 @@ public class StorageS3 extends Storage
 
 	public void upsertBucketIfNeeded()
 	{
-		if (!client.doesBucketExist(bucket_name))
+		if ( !client.doesBucketExist(bucket_name) )
 		{
 			LOGGER.info("creating bucket: " + bucket_name);
 
 			CreateBucketRequest request = new CreateBucketRequest(bucket_name, RegionSpecificAmazonS3ClientFactory.DEFAULT_REGION);
 			client.createBucket(request);
-		} else
+		}
+		else
 		{
 			LOGGER.info("using storage bucket: " + bucket_name);
 		}
@@ -89,12 +91,13 @@ public class StorageS3 extends Storage
 	}
 
 	@Override
-	public boolean exists(final StorageKey key, final boolean default_value)
+	public boolean exists( final StorageKey key, final boolean default_value )
 	{
 		try
 		{
 			return client.doesObjectExist(bucket_name, key.toString());
-		} catch (Exception e)
+		}
+		catch ( Exception e )
 		{
 			LOGGER.catching(e);
 			return default_value;
@@ -104,11 +107,11 @@ public class StorageS3 extends Storage
 	// TODO Use hint_content_likely_to_be_compressible to auto-gzip contents. Must
 	// be able to detect dynamically on read.
 	@Override
-	public boolean upsert(StorageKey key, byte[] bytes, boolean hint_content_likely_to_be_compressible)
+	public boolean upsert( StorageKey key, byte[] bytes, boolean hint_content_likely_to_be_compressible )
 	{
 		Validator.max(bytes.length, MAX_TRANSFER_BYTES_IN_BYTES);
 
-		if (isReadOnly())
+		if ( isReadOnly() )
 			return false;
 
 		try
@@ -119,8 +122,13 @@ public class StorageS3 extends Storage
 			metadata.setContentLength(bytes.length);
 
 			client.putObject(bucket_name, key.toString(), bin, metadata);
+			if ( isCacheEnabled() )
+			{
+				removeFromCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()));
+			}
 			return true;
-		} catch (Exception e)
+		}
+		catch ( Exception e )
 		{
 			LOGGER.catching(e);
 			return false;
@@ -130,11 +138,11 @@ public class StorageS3 extends Storage
 	// TODO Use hint_content_likely_to_be_compressible to auto-gzip contents. Must
 	// be able to detect dynamically on read.
 	@Override
-	public boolean upsertStreaming(final StorageKey key, final InputStream source, final boolean hint_content_likely_to_be_compressible)
+	public boolean upsertStreaming( final StorageKey key, final InputStream source, final boolean hint_content_likely_to_be_compressible )
 	{
 		Validator.notNull(key, source);
 
-		if (isReadOnly())
+		if ( isReadOnly() )
 			return false;
 
 		final String log_prefix = "[upsert(" + key + ")] ";
@@ -144,7 +152,7 @@ public class StorageS3 extends Storage
 			final File temp = File.createTempFile("storage_s3_", null);
 
 			LOGGER.debug(log_prefix + "Writing source to temp file");
-			try (OutputStream fout = new BufferedOutputStream(new FileOutputStream(temp)))
+			try ( OutputStream fout = new BufferedOutputStream(new FileOutputStream(temp)) )
 			{
 				IOUtils.transferAllBytes(source, fout);
 			}
@@ -159,13 +167,14 @@ public class StorageS3 extends Storage
 
 				LOGGER.info(log_prefix + "Upload: " + upload.getDescription());
 
-				while (!upload.isDone())
+				while ( !upload.isDone() )
 				{
 					LOGGER.debug(log_prefix + "Progress: " + upload.getProgress().getPercentTransferred());
 					try
 					{
 						Thread.sleep(TRANSFER_MANAGER_POLLING_INTERVAL_MS);
-					} catch (Exception e)
+					}
+					catch ( Exception e )
 					{
 					} // give progress updates every .5 sec
 				}
@@ -175,13 +184,20 @@ public class StorageS3 extends Storage
 																										// before
 																										// exiting
 
-				return TransferState.Completed == upload.getState();
-			} catch (Exception e)
+				boolean result = TransferState.Completed == upload.getState();
+				if ( result && isCacheEnabled() )
+				{
+					removeFromCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()));
+				}
+				return result;
+			}
+			catch ( Exception e )
 			{
 				LOGGER.catching(e);
 				upload.abort();
 			}
-		} catch (Exception e)
+		}
+		catch ( Exception e )
 		{
 			LOGGER.catching(e);
 		}
@@ -197,7 +213,7 @@ public class StorageS3 extends Storage
 	 * @return
 	 */
 	@Override
-	public byte[] getCurrentVersion(final StorageKey key, byte[] default_value)
+	public byte[] getCurrentVersion( final StorageKey key, byte[] default_value )
 	{
 
 		Validator.notNull(key, "StorageKey");
@@ -206,18 +222,33 @@ public class StorageS3 extends Storage
 		try
 		{
 			s3_obj = client.getObject(new GetObjectRequest(bucket_name, key.toString()).withRange(0, MAX_TRANSFER_BYTES_IN_BYTES));
+			if ( isCacheEnabled() )
+			{
+				try
+				{
+					addToCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()), (StandardImmutableObject) StandardObject.deserialize(new String(org.apache.commons.io.IOUtils.toByteArray(s3_obj.getObjectContent()), "UTF8")));
+				}
+				catch ( Exception e )
+				{
+					LogManager.getRootLogger().error("Failure to make into a StandardImmutableObject " + key.toString() + ". This object is not in the cache.", e);
+				}
+			}
+
 			return org.apache.commons.io.IOUtils.toByteArray(s3_obj.getObjectContent());
-		} catch (Exception e)
+		}
+		catch ( Exception e )
 		{
 			LOGGER.error(String.format("Failed to retrieve %s from S3!", key.toString()), e);
-		} finally
+		}
+		finally
 		{
-			if (s3_obj != null)
+			if ( s3_obj != null )
 			{
 				try
 				{
 					s3_obj.close();
-				} catch (IOException e)
+				}
+				catch ( IOException e )
 				{
 					LOGGER.error(String.format("Failed to close S3Object when reading %s!", key.toString()), e);
 				}
@@ -234,7 +265,7 @@ public class StorageS3 extends Storage
 	 * @return
 	 */
 	@Override
-	public boolean getCurrentVersionStreaming(final StorageKey key, final OutputStream sink)
+	public boolean getCurrentVersionStreaming( final StorageKey key, final OutputStream sink )
 	{
 
 		long start = System.currentTimeMillis();
@@ -248,18 +279,32 @@ public class StorageS3 extends Storage
 
 			org.apache.commons.io.IOUtils.copy(s3_obj.getObjectContent(), sink);
 			LOGGER.debug(String.format("Took %d millis", System.currentTimeMillis() - start));
+			if ( isCacheEnabled() )
+			{
+				try
+				{
+					addToCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()), (StandardImmutableObject) StandardObject.deserialize(new String(org.apache.commons.io.IOUtils.toByteArray(s3_obj.getObjectContent()), "UTF8")));
+				}
+				catch ( Exception e )
+				{
+					LogManager.getRootLogger().error("Failure to make into a StandardImmutableObject " + key.toString() + ". This object is not in the cache.", e);
+				}
+			}
 			return true;
-		} catch (Exception e)
+		}
+		catch ( Exception e )
 		{
 			LOGGER.error(String.format("Failed to retrieve %s from S3!", key.toString()), e);
-		} finally
+		}
+		finally
 		{
-			if (s3_obj != null)
+			if ( s3_obj != null )
 			{
 				try
 				{
 					s3_obj.close();
-				} catch (IOException e)
+				}
+				catch ( IOException e )
 				{
 					LOGGER.error(String.format("Failed to close S3Object when reading %s!", key.toString()), e);
 				}
@@ -277,7 +322,7 @@ public class StorageS3 extends Storage
 	 * @return
 	 */
 	@Override
-	public boolean getThreadedCurrentVersionStreaming(final StorageKey key, final OutputStream sink)
+	public boolean getThreadedCurrentVersionStreaming( final StorageKey key, final OutputStream sink )
 	{
 
 		long start = System.currentTimeMillis();
@@ -298,13 +343,14 @@ public class StorageS3 extends Storage
 
 				LOGGER.debug(log_prefix + "Download: " + download.getDescription());
 
-				while (!download.isDone())
+				while ( !download.isDone() )
 				{
 					LOGGER.debug(log_prefix + "Progress: " + download.getProgress().getPercentTransferred());
 					try
 					{
 						Thread.sleep(TRANSFER_MANAGER_POLLING_INTERVAL_MS);
-					} catch (Exception e)
+					}
+					catch ( Exception e )
 					{
 					} // give progress updates every .5 sec
 				}
@@ -314,7 +360,8 @@ public class StorageS3 extends Storage
 																											// percent
 																											// before
 																											// exiting
-			} catch (Exception e)
+			}
+			catch ( Exception e )
 			{
 				LOGGER.catching(e);
 				download.abort();
@@ -322,7 +369,7 @@ public class StorageS3 extends Storage
 			}
 
 			LOGGER.debug(log_prefix + "Writing temp file to sink");
-			try (InputStream fin = new BufferedInputStream(new FileInputStream(temp)))
+			try ( InputStream fin = new BufferedInputStream(new FileInputStream(temp)) )
 			{
 				IOUtils.transferAllBytes(fin, sink);
 			}
@@ -331,7 +378,8 @@ public class StorageS3 extends Storage
 			LOGGER.debug(String.format("Took %d millis", System.currentTimeMillis() - start));
 
 			return completed;
-		} catch (Exception e)
+		}
+		catch ( Exception e )
 		{
 			LOGGER.catching(e);
 		}
@@ -340,16 +388,21 @@ public class StorageS3 extends Storage
 	}
 
 	@Override
-	public boolean delete(final StorageKey key)
+	public boolean delete( final StorageKey key )
 	{
-		if (isReadOnly())
+		if ( isReadOnly() )
 			return false;
 
 		try
 		{
 			client.deleteObject(new DeleteObjectRequest(bucket_name, key.toString()));
+			if ( isCacheEnabled() )
+			{
+				cache.remove(new CacheKey(cache.getCahcePrefix() + key.getSimpleKind() + ":" + key.getSimpleName().getSimpleValue()));
+			}
 			return true;
-		} catch (Exception e)
+		}
+		catch ( Exception e )
 		{
 			LOGGER.catching(e);
 			return false;
@@ -357,7 +410,7 @@ public class StorageS3 extends Storage
 	}
 
 	@Override
-	public StorageMetadata getObjectMetadata(final StorageKey key, final StorageMetadata default_value)
+	public StorageMetadata getObjectMetadata( final StorageKey key, final StorageMetadata default_value )
 	{
 		try
 		{
@@ -368,18 +421,20 @@ public class StorageS3 extends Storage
 			String etag = s3_metadata.getETag();
 
 			return new StorageMetadata(last_modified, size, etag);
-		} catch (AmazonS3Exception e)
+		}
+		catch ( AmazonS3Exception e )
 		{
 			// We get a 404 Not Found for any object that doesn't exist.
 			// A separate doesObjectExist call would be an entire extra
 			// network round trip... so just special case it.
-			if (404 == e.getStatusCode())
+			if ( 404 == e.getStatusCode() )
 			{
 				return default_value;
 			}
 
 			throw e;
-		} catch (Exception e)
+		}
+		catch ( Exception e )
 		{
 			LOGGER.catching(e);
 			return default_value;
@@ -395,7 +450,7 @@ public class StorageS3 extends Storage
 	 */
 	private class Scanner extends Storage.Scanner
 	{
-		public Scanner(final Kind kind, final StorageKeyName prefix, final boolean only_object_ids)
+		public Scanner( final Kind kind, final StorageKeyName prefix, final boolean only_object_ids )
 		{
 			super(kind, prefix, only_object_ids);
 		}
@@ -404,28 +459,27 @@ public class StorageS3 extends Storage
 		protected Result performOperation() throws Exception
 		{
 			String root = getSimpleKind().getSimpleValue();
-			
-			
-			if (hasPrefix())
+
+			if ( hasPrefix() )
 			{
 				root += "/" + getOptionalPrefix(null);
 			}
 
 			ListObjectsRequest request = new ListObjectsRequest(bucket_name, root + "/", null, null, -1);
 
-			while (true)
+			while ( true )
 			{
 				ObjectListing object_listing = client.listObjects(request);
-				if (null == object_listing)
+				if ( null == object_listing )
 					return Result.ERROR;
 
-				for (S3ObjectSummary summary : object_listing.getObjectSummaries())
+				for ( S3ObjectSummary summary : object_listing.getObjectSummaries() )
 				{
 					final String key = summary.getKey(); // The full S3 key, also the StorageKey
 					final String full_key_name = key.substring(root.length() + 1); // The "filename" without the
 																					// backslash
 					// This would be the folder of the Kind we are looking at
-					if (full_key_name.isEmpty())
+					if ( full_key_name.isEmpty() )
 						continue;
 
 					String[] key_name_and_ext = full_key_name.split("\\.");
@@ -435,25 +489,27 @@ public class StorageS3 extends Storage
 					try
 					{
 						name = new StorageKeyName(key_name);
-					} catch (Exception e)
+					}
+					catch ( Exception e )
 					{
 						LOGGER.error(String.format("[StorageS3.performOperation] could not create StorageKeyName for key:%s root:%s bucket:%s request:%s", key, root, bucket_name, request), e);
 						continue;
 					}
 
-					if (name.isObjectId())
+					if ( name.isObjectId() )
 					{
 						emit(new ObjectIdStorageKey(key));
-					} else
+					}
+					else
 					{
-						if (!onlyObjectIds())
+						if ( !onlyObjectIds() )
 						{
 							emit(new GenericStorageKey(key));
 						}
 					}
 				}
 
-				if (!object_listing.isTruncated())
+				if ( !object_listing.isTruncated() )
 					break;
 				request.setMarker(object_listing.getNextMarker());
 			}
@@ -463,7 +519,7 @@ public class StorageS3 extends Storage
 	}
 
 	@Override
-	protected Storage.Scanner createScanner(Kind kind, StorageKeyName prefix, boolean only_object_ids)
+	protected Storage.Scanner createScanner( Kind kind, StorageKeyName prefix, boolean only_object_ids )
 	{
 		return new Scanner(kind, prefix, only_object_ids);
 	}
