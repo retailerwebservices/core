@@ -16,6 +16,7 @@ import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.cache.CacheKey;
 import org.jimmutable.cloud.storage.GenericStorageKey;
 import org.jimmutable.cloud.storage.ObjectIdStorageKey;
+import org.jimmutable.cloud.storage.StandardImmutableObjectCache;
 import org.jimmutable.cloud.storage.Storage;
 import org.jimmutable.cloud.storage.StorageKey;
 import org.jimmutable.cloud.storage.StorageKeyName;
@@ -61,6 +62,18 @@ public class StorageS3 extends Storage
 	public StorageS3( final AmazonS3ClientFactory client_factory, final ApplicationId application_id, final boolean is_read_only )
 	{
 		super(is_read_only);
+
+		bucket_name = BUCKET_NAME_PREFIX + application_id;
+
+		Validator.notNull(client_factory);
+		client = client_factory.create();
+
+		transfer_manager = TransferManagerBuilder.standard().withS3Client(client).build();
+	}
+	
+	public StorageS3( final AmazonS3ClientFactory client_factory, final ApplicationId application_id, StandardImmutableObjectCache cache , final boolean is_read_only )
+	{
+		super(is_read_only, cache);
 
 		bucket_name = BUCKET_NAME_PREFIX + application_id;
 
