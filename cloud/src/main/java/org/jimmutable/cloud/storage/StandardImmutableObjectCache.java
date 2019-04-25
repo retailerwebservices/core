@@ -5,8 +5,14 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
+import org.jimmutable.cloud.cache.CacheActivity;
+import org.jimmutable.cloud.cache.CacheEvent;
+import org.jimmutable.cloud.cache.CacheEventListener;
 import org.jimmutable.cloud.cache.CacheKey;
+import org.jimmutable.cloud.cache.CacheMetric;
 import org.jimmutable.cloud.cache.ICache;
+import org.jimmutable.cloud.messaging.signal.SignalTopicId;
+import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
@@ -18,6 +24,7 @@ public class StandardImmutableObjectCache
 	private ICache cache;
 	private String prefix; // required
 	private long max_allowed_entry_age_in_ms = TimeUnit.MINUTES.toMillis(20);
+	private SignalTopicId topic_id = null;
 
 	private static final Logger logger = LogManager.getLogger(StandardImmutableObjectCache.class);
 
@@ -25,6 +32,8 @@ public class StandardImmutableObjectCache
 	{
 		this.cache = cache;
 		this.prefix = prefix;
+		this.topic_id = new SignalTopicId(prefix);
+		createListeners();
 	}
 
 	public StandardImmutableObjectCache( ICache cache, String prefix, long max_allowed_entry_age_in_ms )// - replaces value in this.max_allowed_entry_age_in_ms.
@@ -32,6 +41,27 @@ public class StandardImmutableObjectCache
 		this.cache = cache;
 		this.prefix = prefix;
 		this.max_allowed_entry_age_in_ms = max_allowed_entry_age_in_ms;
+		this.topic_id = new SignalTopicId(prefix);
+		createListeners();
+	}
+
+	private void createListeners()
+	{
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSignalService().startListening(this.topic_id, new CacheEventListener());
+	}// - In here, register CacheEventListener for StandardImmutableObjectCache by
+		// calling
+		// CloudExecutionEnvironment.getSimpleCurrent().getSimpleSignalService().startListening.
+		// Use the topic_id created above.
+
+	private void createAndSendEvent( CacheActivity activity, CacheMetric metric, CacheKey key )
+	{
+		Builder b = new Builder(CacheEvent.TYPE_NAME);
+		b.set(CacheEvent.FIELD_ACTIVITY, activity);
+		b.set(CacheEvent.FIELD_METRIC, metric);
+		b.set(CacheEvent.FIELD_KEY, key);
+		b.set(CacheEvent.FIELD_TIMESTAMP, System.currentTimeMillis());
+		CacheEvent cache_event = b.create();
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSignalService().sendAsync(topic_id, cache_event);
 	}
 
 	public void put( Kind kind, ObjectId id, StandardImmutableObject object )
@@ -46,6 +76,7 @@ public class StandardImmutableObjectCache
 		if ( cache_key == null || object == null )
 			return;
 		cache.put(cache_key, object, max_allowed_entry_age_in_ms);
+		createAndSendEvent(CacheActivity.PUT, CacheMetric.ADD, cache_key);
 	}
 
 	/*
@@ -120,6 +151,7 @@ public class StandardImmutableObjectCache
 	{
 		if ( reference == null )
 		{
+			createAndSendEvent(CacheActivity.GET, CacheMetric.MISS, reference);
 			return default_value;
 		}
 
@@ -131,6 +163,7 @@ public class StandardImmutableObjectCache
 		if ( bytes == null )
 		{
 			logger.error(String.format("Failed to retreive %s from storage!", reference.getSimpleValue()));
+			createAndSendEvent(CacheActivity.GET, CacheMetric.MISS, reference);
 			return default_value;
 		}
 
@@ -148,9 +181,11 @@ public class StandardImmutableObjectCache
 		{
 			// if there is something, cache it and return it.
 			cache.put(reference, standard_immutable_object, max_allowed_entry_age_in_ms);
+			createAndSendEvent(CacheActivity.GET, CacheMetric.HIT, reference);
 			return standard_immutable_object;
 		}
 		// else return default_value.
+		createAndSendEvent(CacheActivity.GET, CacheMetric.MISS, reference);
 		return default_value;
 	}
 
@@ -158,6 +193,7 @@ public class StandardImmutableObjectCache
 	{
 		if ( reference == null )
 		{
+			createAndSendEvent(CacheActivity.GET, CacheMetric.MISS, reference);
 			return default_value;
 		}
 
@@ -167,16 +203,19 @@ public class StandardImmutableObjectCache
 		if ( bytes == null )
 		{
 			logger.error(String.format("Failed to retreive %s from storage!", reference.getSimpleValue()));
+			createAndSendEvent(CacheActivity.GET, CacheMetric.MISS, reference);
 			return default_value;
 		}
 
 		cache.put(reference, bytes, max_allowed_entry_age_in_ms);
+		createAndSendEvent(CacheActivity.GET, CacheMetric.HIT, reference);
 		return bytes;
 	}
 
 	public void remove( CacheKey reference )
 	{
 		cache.delete(reference);
+		createAndSendEvent(CacheActivity.REMOVE, CacheMetric.REMOVE, reference);
 	}
 
 	public void remove( Kind kind, ObjectId id )
@@ -185,7 +224,9 @@ public class StandardImmutableObjectCache
 		{
 			return;
 		}
-		cache.delete(new CacheKey(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId().getSimpleValue() + "://" + prefix + ":" + kind.toString() + ":" + id.toString()));
+		CacheKey cache_key = new CacheKey(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId().getSimpleValue() + "://" + prefix + ":" + kind.toString() + ":" + id.toString());
+		cache.delete(cache_key);
+		createAndSendEvent(CacheActivity.REMOVE, CacheMetric.REMOVE, cache_key);
 	}
 
 	// we use this class in CloudExecutionEnvironment.
