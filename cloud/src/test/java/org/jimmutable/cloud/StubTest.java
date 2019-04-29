@@ -15,9 +15,8 @@ public abstract class StubTest
 			CloudExecutionEnvironment.startupStubTest(new ApplicationId("stub"));
 		} catch (RuntimeException e)
 		{
-
+			System.out.println(e);
 		}
-
 	}
 
 }

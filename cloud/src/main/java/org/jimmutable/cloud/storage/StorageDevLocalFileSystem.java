@@ -97,23 +97,12 @@ public class StorageDevLocalFileSystem extends Storage
 	public boolean getCurrentVersionStreaming( final StorageKey key, final OutputStream sink )
 	{
 		Validator.notNull(key);
-		// @CR - The intention was for this to use getComplextCurrentVersionFromCache(key, default_value), not interact directly with the cache. -PM
-		if ( isCacheEnabled() && cache.has(new CacheKey(cache.getCahcePrefix() + key.getSimpleKind().toString() + ":" + key.getSimpleName().getSimpleValue())) )
+		if ( isCacheEnabled() )
 		{
-			try
-			{
-				byte[] object = cache.get(new CacheKey(cache.getCahcePrefix() + key.getSimpleKind().toString() + ":" + key.getSimpleName().getSimpleValue()), new byte[0]);
-				if ( object == new byte[0] )
-				{
-					sink.write(object);
-					return true;
-				}
+			byte[] object = getComplexCurrentVersionFromCache(key, null);
+			if (object!=null) {
+				return true;
 			}
-			catch ( Exception e )
-			{
-				logger.error("Failed to write to sink from cache", e);
-			}
-
 		}
 
 		final File source_file = new File(root.getAbsolutePath() + "/" + key.toString());
@@ -151,10 +140,7 @@ public class StorageDevLocalFileSystem extends Storage
 			boolean successful = f.delete();
 			if ( isCacheEnabled() )
 			{
-				// @CR - Please use removeFromCache( Kind kind, ObjectId id ). I believe we can convert it to Kind and ObjectId.
-				//		 If not or it's more convenient, we can add a new method to Storage: removeFromCache( StorageKey key ).
-				//       -PM
-				CacheKey cache_key = new CacheKey(cache.getCahcePrefix() + key.getSimpleKind() + ":" + key.getSimpleName().getSimpleValue());
+				CacheKey cache_key = cache.createCacheKey(key);
 				if ( successful && cache.has(cache_key) )
 				{
 					cache.remove(cache_key);

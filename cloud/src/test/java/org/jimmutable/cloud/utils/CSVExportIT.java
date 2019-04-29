@@ -24,7 +24,7 @@ public class CSVExportIT extends IntegrationTest
 	@BeforeClass
 	public static void setup()
 	{
-		CloudExecutionEnvironment.startup(new ApplicationId("integration"), EnvironmentType.DEV);
+		setupEnvironment();
 
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertIndex(StandardChangeLogEntry.INDEX_MAPPING);
 

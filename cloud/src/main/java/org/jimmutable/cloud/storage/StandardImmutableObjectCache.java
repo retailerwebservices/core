@@ -33,7 +33,7 @@ public class StandardImmutableObjectCache
 		this.cache = cache;
 		this.prefix = prefix;
 		this.topic_id = new SignalTopicId(prefix);
-		createListeners();
+
 	}
 
 	public StandardImmutableObjectCache( ICache cache, String prefix, long max_allowed_entry_age_in_ms )// - replaces value in this.max_allowed_entry_age_in_ms.
@@ -42,10 +42,10 @@ public class StandardImmutableObjectCache
 		this.prefix = prefix;
 		this.max_allowed_entry_age_in_ms = max_allowed_entry_age_in_ms;
 		this.topic_id = new SignalTopicId(prefix);
-		createListeners();
+
 	}
 
-	private void createListeners()
+	public void createListeners()
 	{
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSignalService().startListening(this.topic_id, new CacheEventListener());
 	}// - In here, register CacheEventListener for StandardImmutableObjectCache by
@@ -68,9 +68,9 @@ public class StandardImmutableObjectCache
 	{
 		if ( kind == null || id == null || object == null )
 			return;
-		// @CR - Replace CacheKey creation with call to createCacheKey(kind, id, null) 
-		// 		 and check for null before using it. -PM
-		put(new CacheKey(getCahcePrefix() + kind.toString() + ":" + id.toString()), object);
+		// @CR - Replace CacheKey creation with call to createCacheKey(kind, id, null)
+		// and check for null before using it. -PM
+		put(new CacheKey(getCachePrefix() + kind.toString() + ":" + id.toString()), object);
 	}
 
 	public void put( CacheKey cache_key, StandardImmutableObject object )
@@ -113,19 +113,23 @@ public class StandardImmutableObjectCache
 	{
 		if ( kind == null || id == null )
 			return false;
-		return has(new CacheKey(getCahcePrefix() + kind.toString() + ":" + id.toString()));
+		return has(new CacheKey(getCachePrefix() + kind.toString() + ":" + id.toString()));
 	}
 
-	// @CR - Add two public methods to create CacheKey's. That will give us a more reliable, consistent way to manage CacheKeys and prevent accidents in key creation. 
-	//		 createCacheKey(StorageKey key, CacheKey default_value) - (This one may be optional if you want to convert StorageKey to Kind and ObjectId before calling createCacheKey)
-	//		 createCacheKey(Kind kind, ObjectId id, CacheKey default_value)
-	//	   -PM
-	
-	// @CR - Also, I think that will make getCahcePrefix able to be private rather than public. That would be better encapsulation and help protect outside classes from
-	// 		 knowing too much about the internals of this class. Also, it's misspelled. -PM
-	public String getCahcePrefix()
+	private String getCachePrefix()
 	{
 		return CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId().getSimpleValue() + "://" + prefix + ":";
+	}
+	
+	public CacheKey createCacheKey( StorageKey key)
+	{
+		return new CacheKey(getCachePrefix() + "://" + prefix + ":" + key.getSimpleKind() + ":" + key.getSimpleName().getSimpleValue());
+	}
+	
+
+	public CacheKey createCacheKey( Kind kind, ObjectId id )
+	{
+		return new CacheKey(getCachePrefix() + "://" + prefix + ":" + kind.toString() + ":" + id.toString());
 	}
 
 	public boolean has( CacheKey cache_key )
@@ -143,8 +147,7 @@ public class StandardImmutableObjectCache
 		{
 			return default_value;
 		}
-		// @CR - Replace CacheKey creation here with call to createCacheKey(Kind kind, ObjectId id, CacheKey default_value) -PM
-		return get(new CacheKey(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId().getSimpleValue() + "://" + prefix + ":" + kind.toString() + ":" + id.toString()), default_value);
+		return get(createCacheKey(kind, id), default_value);
 	}
 
 	// CODEREVIEW I see that Panda uses getSimple and getOptional. Do you also have
@@ -234,8 +237,7 @@ public class StandardImmutableObjectCache
 		{
 			return;
 		}
-		// @CR - Replace CacheKey creation here with call to createCacheKey(Kind kind, ObjectId id, CacheKey default_value) -PM
-		CacheKey cache_key = new CacheKey(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId().getSimpleValue() + "://" + prefix + ":" + kind.toString() + ":" + id.toString());
+		CacheKey cache_key = createCacheKey(kind, id);
 		cache.delete(cache_key);
 		createAndSendEvent(CacheActivity.REMOVE, CacheMetric.REMOVE, cache_key);
 	}

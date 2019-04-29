@@ -16,8 +16,8 @@ public class TinyURLAPIIT extends IntegrationTest
 		setupEnvironment();
 
 		TinyUrlResult result = TinyURLApi.tinyURLComplex("hello", new TinyUrlResult(new ObjectId(123), "url", "tiny_url"));
-		assertEquals("hello", result.getSimpleUrl());
-		assertEquals("http://tinyurl.com/6y7", result.getSimpleTinyUrl());
+		assertEquals("url", result.getSimpleUrl());
+		assertEquals("tiny_url", result.getSimpleTinyUrl());
 	}
 
 	@Test

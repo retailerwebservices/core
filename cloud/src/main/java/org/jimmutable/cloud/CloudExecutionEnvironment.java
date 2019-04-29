@@ -167,7 +167,7 @@ public class CloudExecutionEnvironment
 
 		logger.info(String.format("ApplicationID=%s Environment=%s", APPLICATION_ID, ENV_TYPE));
 		CacheRedis redis = new CacheRedis(APPLICATION_ID, new LowLevelRedisDriver());
-		StandardImmutableObjectCache cache = new StandardImmutableObjectCache(redis, "storage cache");
+		STANDARD_IMMUTABLE_OBJECT_CACHE = new StandardImmutableObjectCache(redis, "storagecache");
 		switch (env_type)
 		{
 		// For now, staging is the same as dev
@@ -195,7 +195,7 @@ public class CloudExecutionEnvironment
 				throw new RuntimeException("Failed to instantiate the elasticsearch client!");
 			}
 
-			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), new StorageDevLocalFileSystem(false, APPLICATION_ID, cache), new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient(),redis);
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), new StorageDevLocalFileSystem(false, APPLICATION_ID, STANDARD_IMMUTABLE_OBJECT_CACHE), new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient(),redis);
 
 			break;
 		case PRODUCTION:
@@ -206,7 +206,7 @@ public class CloudExecutionEnvironment
 
 			logger.log(Level.INFO, "Starting production environment");
 
-			StorageS3 storage = new StorageS3(RegionSpecificAmazonS3ClientFactory.defaultFactory(), APPLICATION_ID, cache, false);
+			StorageS3 storage = new StorageS3(RegionSpecificAmazonS3ClientFactory.defaultFactory(), APPLICATION_ID, STANDARD_IMMUTABLE_OBJECT_CACHE, false);
 			storage.upsertBucketIfNeeded();
 
 			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), storage, new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient(), new CacheRedis(APPLICATION_ID, new LowLevelRedisDriver()));
@@ -222,10 +222,10 @@ public class CloudExecutionEnvironment
 			throw new RuntimeException(String.format("Unhandled EnvironmentType: %s! Add the environment to startup to handle it correctly.", env_type));
 
 		}
-
 		JimmutableTypeNameRegister.registerAllTypes();
 		JimmutableCloudTypeNameRegister.registerAllTypes();
 		Log4jUtil.setupListeners();
+		STANDARD_IMMUTABLE_OBJECT_CACHE.createListeners();
 
 	}
 

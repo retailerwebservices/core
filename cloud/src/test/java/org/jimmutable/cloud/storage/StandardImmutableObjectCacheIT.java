@@ -32,18 +32,6 @@ public class StandardImmutableObjectCacheIT extends IntegrationTest
 		assert(CloudExecutionEnvironment.getSimpleCurrent().getSimpleCache().has(storable)==true);
 	}
 
-	//This Method no Longer Makes Sense
-//	@Test
-//	public void testSize() {
-//		TestStorable storable = new TestStorable(new ObjectId("0000-0000-0000-0000"));
-//		StandardImmutableObjectCache simple_cache = CloudExecutionEnvironment.getSimpleCurrent().getSimpleCache();
-//		simple_cache.put(storable.getSimpleKind(), storable.getSimpleObjectId(), storable);
-//		for(int i = 0;i<100000;i++) {
-//			TestStorable not_what_we_are_looking_for = new TestStorable(ObjectId.createRandomId());
-//			simple_cache.put(new Kind("not-what-we-are-looking-for"),not_what_we_are_looking_for.getSimpleObjectId(),not_what_we_are_looking_for);
-//		}
-//		assert(simple_cache.has(storable)==false);
-//	}
 	
 	@Test
 	public void testTime() {

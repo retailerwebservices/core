@@ -411,10 +411,7 @@ public class StorageS3 extends Storage
 			client.deleteObject(new DeleteObjectRequest(bucket_name, key.toString()));
 			if ( isCacheEnabled() )
 			{
-				// @CR - Please use removeFromCache( Kind kind, ObjectId id ). I believe we can convert it to Kind and ObjectId.
-				//		 If not or it's more convenient, we can add a new method to Storage: removeFromCache( StorageKey key ).
-				//       -PM
-				cache.remove(new CacheKey(cache.getCahcePrefix() + key.getSimpleKind() + ":" + key.getSimpleName().getSimpleValue()));
+				cache.remove(cache.createCacheKey(key));
 			}
 			return true;
 		}

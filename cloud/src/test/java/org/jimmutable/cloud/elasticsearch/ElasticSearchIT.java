@@ -1,6 +1,7 @@
 package org.jimmutable.cloud.elasticsearch;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -67,80 +68,13 @@ public class ElasticSearchIT extends IntegrationTest
 	}
 
 	@Test
-	public void testSearchPaginationFirstPage()
-	{
-
-		StandardSearchRequest request = new StandardSearchRequest("day:>1970-01-01", 10, 0);
-		List<OneSearchResultWithTyping> r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex(), request, null);
-
-		assertTrue(!r1.isEmpty());
-		// if (r1 instanceof SearchResponseOK)
-		// {
-		// SearchResponseOK ok = (SearchResponseOK) r1;
-		//
-		// assertEquals(ok.getSimpleFirstResultIdx(), 0);
-		// assertEquals(ok.getSimpleHasMoreResults(), true);
-		// assertEquals(ok.getSimpleHasPreviousResults(), false);
-		// assertEquals(ok.getSimpleHTTPResponseCode(), 200);
-		// assertEquals(ok.getSimpleResults().size(), 10);
-		// assertEquals(ok.getSimpleStartOfNextPageOfResults(), 10);
-		// }
-
-	}
-
-	@Test
-	public void testSearchPaginationSecondPage()
-	{
-
-		StandardSearchRequest request = new StandardSearchRequest("day:>1970-01-01", 10, 10);
-		List<OneSearchResultWithTyping> r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex(), request, null);
-
-		assertTrue(!r1.isEmpty());
-		// if (r1 instanceof SearchResponseOK)
-		// {
-		// SearchResponseOK ok = (SearchResponseOK) r1;
-		//
-		// assertEquals(10, ok.getSimpleFirstResultIdx());
-		// assertEquals(false, ok.getSimpleHasMoreResults());
-		// assertEquals(true, ok.getSimpleHasPreviousResults());
-		// assertEquals(200, ok.getSimpleHTTPResponseCode());
-		// assertEquals(10, ok.getSimpleResults().size());
-		// assertEquals(20, ok.getSimpleStartOfNextPageOfResults());
-		//
-		// }
-
-	}
-
-	@Test
-	public void testSearchPaginationNone()
-	{
-
-		StandardSearchRequest request = new StandardSearchRequest("day:>1970-01-01", 10, 20);
-		List<OneSearchResultWithTyping> r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex(), request, null);
-
-		assertTrue(!r1.isEmpty());
-		// if (r1 instanceof SearchResponseOK)
-		// {
-		// SearchResponseOK ok = (SearchResponseOK) r1;
-		//
-		// assertEquals(20, ok.getSimpleFirstResultIdx());
-		// assertEquals(false, ok.getSimpleHasMoreResults());
-		// assertEquals(true, ok.getSimpleHasPreviousResults());
-		// assertEquals(200, ok.getSimpleHTTPResponseCode());
-		// assertEquals(0, ok.getSimpleResults().size());
-		// assertEquals(30, ok.getSimpleStartOfNextPageOfResults());
-		// }
-
-	}
-
-	@Test
 	public void testBadQuery()
 	{
 
 		StandardSearchRequest request = new StandardSearchRequest("this is a bad query!", 10, 20);
 		List<OneSearchResultWithTyping> r1 = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex(), request, null);
 
-		assertTrue(r1.isEmpty());
+		assertNull(r1);
 
 	}
 

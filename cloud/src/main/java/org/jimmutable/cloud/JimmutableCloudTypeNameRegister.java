@@ -54,6 +54,7 @@ public class JimmutableCloudTypeNameRegister
 		ObjectParseTree.registerTypeName(GetResponseOK.class);
 		ObjectParseTree.registerTypeName(SearchResponseOK.class);
 		ObjectParseTree.registerTypeName(UpsertResponseOK.class);
+		ObjectParseTree.registerTypeName(StandardMessageOnUpsert.class);
 
 		ObjectParseTree.registerTypeName(GeneralResponseError.class);
 		ObjectParseTree.registerTypeName(GetResponseError.class);
