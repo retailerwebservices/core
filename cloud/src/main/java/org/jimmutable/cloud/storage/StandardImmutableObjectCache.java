@@ -68,6 +68,8 @@ public class StandardImmutableObjectCache
 	{
 		if ( kind == null || id == null || object == null )
 			return;
+		// @CR - Replace CacheKey creation with call to createCacheKey(kind, id, null) 
+		// 		 and check for null before using it. -PM
 		put(new CacheKey(getCahcePrefix() + kind.toString() + ":" + id.toString()), object);
 	}
 
@@ -114,6 +116,13 @@ public class StandardImmutableObjectCache
 		return has(new CacheKey(getCahcePrefix() + kind.toString() + ":" + id.toString()));
 	}
 
+	// @CR - Add two public methods to create CacheKey's. That will give us a more reliable, consistent way to manage CacheKeys and prevent accidents in key creation. 
+	//		 createCacheKey(StorageKey key, CacheKey default_value) - (This one may be optional if you want to convert StorageKey to Kind and ObjectId before calling createCacheKey)
+	//		 createCacheKey(Kind kind, ObjectId id, CacheKey default_value)
+	//	   -PM
+	
+	// @CR - Also, I think that will make getCahcePrefix able to be private rather than public. That would be better encapsulation and help protect outside classes from
+	// 		 knowing too much about the internals of this class. Also, it's misspelled. -PM
 	public String getCahcePrefix()
 	{
 		return CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId().getSimpleValue() + "://" + prefix + ":";
@@ -134,6 +143,7 @@ public class StandardImmutableObjectCache
 		{
 			return default_value;
 		}
+		// @CR - Replace CacheKey creation here with call to createCacheKey(Kind kind, ObjectId id, CacheKey default_value) -PM
 		return get(new CacheKey(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId().getSimpleValue() + "://" + prefix + ":" + kind.toString() + ":" + id.toString()), default_value);
 	}
 
@@ -224,6 +234,7 @@ public class StandardImmutableObjectCache
 		{
 			return;
 		}
+		// @CR - Replace CacheKey creation here with call to createCacheKey(Kind kind, ObjectId id, CacheKey default_value) -PM
 		CacheKey cache_key = new CacheKey(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId().getSimpleValue() + "://" + prefix + ":" + kind.toString() + ":" + id.toString());
 		cache.delete(cache_key);
 		createAndSendEvent(CacheActivity.REMOVE, CacheMetric.REMOVE, cache_key);

@@ -101,6 +101,8 @@ public abstract class Storage implements IStorage
 		OutputStream out = new IOUtils.LimitBytesOutputStream(bytes, MAX_TRANSFER_BYTES_IN_BYTES);
 		if ( isCacheEnabled() )
 		{
+
+//			Instead of creating the CacheKey here, use the new method createCacheKey(StorageKey key, CacheKey default_value) from StandardImmutableObjectCache. -PM
 			byte[] byte_information = cache.get(new CacheKey(cache.getCahcePrefix() + ":" + key.getSimpleKind() + ":" + key.getSimpleName().getSimpleValue()), default_value);
 			if ( !byte_information.equals(default_value) )
 			{
@@ -205,6 +207,11 @@ public abstract class Storage implements IStorage
 	{
 		if ( isCacheEnabled() )
 		{
+			// @CR - I had an oversight in the design. I thought we could extract info from StorageKey and use the other get method:
+			//       public StandardImmutableObject get( Kind kind, ObjectId id, StandardImmutableObject default_value ).
+			// 		 Instead of creating the CacheKey here, use the new method createCacheKey from StandardImmutableObjectCache. 
+			//		 See comments in StandardImmutableObjectCache for more details.
+			//  -PM
 			return cache.get(new CacheKey(cache.getCahcePrefix() + key.getSimpleKind().toString() + ":" + key.getSimpleName().getSimpleValue()), default_value);
 		}
 		return default_value;
@@ -214,6 +221,7 @@ public abstract class Storage implements IStorage
 	{
 		if ( isCacheEnabled() )
 		{
+			// Instead of creating the CacheKey here, use the new method createCacheKey(kind, id, null) from StandardImmutableObjectCache. -PM
 			cache.put(new CacheKey(cache.getCahcePrefix() + kind.getSimpleValue() + ":" + id.getSimpleValue()), object);
 		}
 	}

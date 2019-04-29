@@ -97,6 +97,7 @@ public class StorageDevLocalFileSystem extends Storage
 	public boolean getCurrentVersionStreaming( final StorageKey key, final OutputStream sink )
 	{
 		Validator.notNull(key);
+		// @CR - The intention was for this to use getComplextCurrentVersionFromCache(key, default_value), not interact directly with the cache. -PM
 		if ( isCacheEnabled() && cache.has(new CacheKey(cache.getCahcePrefix() + key.getSimpleKind().toString() + ":" + key.getSimpleName().getSimpleValue())) )
 		{
 			try
@@ -150,6 +151,9 @@ public class StorageDevLocalFileSystem extends Storage
 			boolean successful = f.delete();
 			if ( isCacheEnabled() )
 			{
+				// @CR - Please use removeFromCache( Kind kind, ObjectId id ). I believe we can convert it to Kind and ObjectId.
+				//		 If not or it's more convenient, we can add a new method to Storage: removeFromCache( StorageKey key ).
+				//       -PM
 				CacheKey cache_key = new CacheKey(cache.getCahcePrefix() + key.getSimpleKind() + ":" + key.getSimpleName().getSimpleValue());
 				if ( successful && cache.has(cache_key) )
 				{
