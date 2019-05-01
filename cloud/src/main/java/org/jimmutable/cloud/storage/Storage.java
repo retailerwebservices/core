@@ -105,7 +105,7 @@ public abstract class Storage implements IStorage
 			byte[] byte_information = cache.get(cache.createCacheKey(key), default_value);
 			if ( (byte_information != null) && (!byte_information.equals(default_value)) )
 			{
-				return default_value;
+				return byte_information;
 			}
 		}
 

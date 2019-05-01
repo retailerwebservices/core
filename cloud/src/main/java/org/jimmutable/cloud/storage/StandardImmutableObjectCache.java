@@ -123,13 +123,13 @@ public class StandardImmutableObjectCache
 	
 	public CacheKey createCacheKey( StorageKey key)
 	{
-		return new CacheKey(getCachePrefix() + "://" + prefix + ":" + key.getSimpleKind() + ":" + key.getSimpleName().getSimpleValue());
+		return new CacheKey(getCachePrefix() +  key.getSimpleKind() + ":" + key.getSimpleName().getSimpleValue());
 	}
 	
 
 	public CacheKey createCacheKey( Kind kind, ObjectId id )
 	{
-		return new CacheKey(getCachePrefix() + "://" + prefix + ":" + kind.toString() + ":" + id.toString());
+		return new CacheKey(getCachePrefix() +  kind.toString() + ":" + id.toString());
 	}
 
 	public boolean has( CacheKey cache_key )
@@ -215,7 +215,6 @@ public class StandardImmutableObjectCache
 		byte[] bytes = cache.getBytes(reference, null);
 		if ( bytes == null )
 		{
-			logger.error(String.format("Failed to retreive %s from storage!", reference.getSimpleValue()));
 			createAndSendEvent(CacheActivity.GET, CacheMetric.MISS, reference);
 			return default_value;
 		}
@@ -240,6 +239,10 @@ public class StandardImmutableObjectCache
 		CacheKey cache_key = createCacheKey(kind, id);
 		cache.delete(cache_key);
 		createAndSendEvent(CacheActivity.REMOVE, CacheMetric.REMOVE, cache_key);
+	}
+	
+	public SignalTopicId getSimpleTopicId() {
+		return topic_id;
 	}
 
 	// we use this class in CloudExecutionEnvironment.
