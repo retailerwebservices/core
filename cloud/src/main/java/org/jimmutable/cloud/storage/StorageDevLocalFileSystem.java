@@ -19,7 +19,6 @@ import java.util.EnumSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jimmutable.cloud.ApplicationId;
-import org.jimmutable.cloud.cache.CacheKey;
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
@@ -138,13 +137,9 @@ public class StorageDevLocalFileSystem extends Storage
 		{
 			File f = new File(root.getAbsolutePath() + "/" + key.toString());
 			boolean successful = f.delete();
-			if ( isCacheEnabled() )
+			if ( successful && isCacheEnabled() )
 			{
-				CacheKey cache_key = cache.createCacheKey(key);
-				if ( successful && cache.has(cache_key) )
-				{
-					cache.remove(cache_key);
-				}
+				removeFromCache(key);
 			}
 			return successful;
 		}

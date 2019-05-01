@@ -411,7 +411,7 @@ public class StorageS3 extends Storage
 			client.deleteObject(new DeleteObjectRequest(bucket_name, key.toString()));
 			if ( isCacheEnabled() )
 			{
-				cache.remove(cache.createCacheKey(key));
+				removeFromCache(key);
 			}
 			return true;
 		}
