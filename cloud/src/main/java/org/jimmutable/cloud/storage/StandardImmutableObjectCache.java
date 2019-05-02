@@ -241,6 +241,7 @@ public class StandardImmutableObjectCache
 		createAndSendEvent(CacheActivity.REMOVE, CacheMetric.REMOVE, cache_key);
 	}
 	
+	// @CR - This can be removed if you clean up UserManager as indicated in the comments in that class. -PM
 	public SignalTopicId getSimpleTopicId() {
 		return topic_id;
 	}
