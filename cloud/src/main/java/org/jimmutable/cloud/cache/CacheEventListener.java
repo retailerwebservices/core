@@ -9,9 +9,11 @@ public class CacheEventListener implements SignalListener
 	@Override
 	public void onMessageReceived( StandardObject message )
 	{
-		// @CR - One small thing. It would be a little bit safer to add an instanceof check before casting (like in Log4JOneLevelChangeListener). -PM
-		CacheEvent event = (CacheEvent) message;
-		CacheEventUtils.log(event);
+		if ( message instanceof CacheEvent )
+		{
+			CacheEvent event = (CacheEvent) message;
+			CacheEventUtils.log(event);
+		}
 	}
 
 }
