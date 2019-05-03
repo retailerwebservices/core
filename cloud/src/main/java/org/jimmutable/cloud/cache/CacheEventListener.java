@@ -9,8 +9,11 @@ public class CacheEventListener implements SignalListener
 	@Override
 	public void onMessageReceived( StandardObject message )
 	{
-		CacheEvent event = (CacheEvent) message;
-		CacheEventUtils.log(event);
+		if ( message instanceof CacheEvent )
+		{
+			CacheEvent event = (CacheEvent) message;
+			CacheEventUtils.log(event);
+		}
 	}
 
 }

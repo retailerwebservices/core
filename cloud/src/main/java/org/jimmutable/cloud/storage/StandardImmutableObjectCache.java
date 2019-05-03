@@ -240,11 +240,5 @@ public class StandardImmutableObjectCache
 		cache.delete(cache_key);
 		createAndSendEvent(CacheActivity.REMOVE, CacheMetric.REMOVE, cache_key);
 	}
-	
-	public SignalTopicId getSimpleTopicId() {
-		return topic_id;
-	}
-
-	// we use this class in CloudExecutionEnvironment.
 
 }
