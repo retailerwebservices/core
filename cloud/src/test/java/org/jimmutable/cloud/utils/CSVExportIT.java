@@ -4,9 +4,7 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
-import org.jimmutable.cloud.EnvironmentType;
 import org.jimmutable.cloud.IntegrationTest;
 import org.jimmutable.cloud.objects.StandardChangeLogEntry;
 import org.jimmutable.cloud.servlet_utils.search.RequestExportCSV;
@@ -54,20 +52,12 @@ public class CSVExportIT extends IntegrationTest
 
 		set.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_ID.getSimpleFieldName().getSimpleName()));
 		set.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_SUBJECT.getSimpleFieldName().getSimpleName()));
-		set.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_BEFORE_ID.getSimpleFieldName().getSimpleName()));
-		set.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_AFTER_ID.getSimpleFieldName().getSimpleName()));
-		set.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_TIMESTAMP.getSimpleFieldName().getSimpleName()));
-		set.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_CHANGE_MADE_BY_USER_ID.getSimpleFieldName().getSimpleName()));
-		set.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_SHORT_DESCRIPTION.getSimpleFieldName().getSimpleName()));
-		set.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_COMMENTS.getSimpleFieldName().getSimpleName()));
-		set.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_ATTACHMENTS.getSimpleFieldName().getSimpleName()));
 
 		RequestExportCSV request = new RequestExportCSV(StandardChangeLogEntry.INDEX_DEFINITION, true, "subject:thing", set);
 
 		System.out.println(request.toJavaCode(Format.JSON_PRETTY_PRINT, "blaa"));
 
 		Set<SearchFieldId> fields = new HashSet<>();
-		fields.add(new SearchFieldId(StandardChangeLogEntry.SEARCH_FIELD_SHORT_DESCRIPTION.getSimpleFieldName().getSimpleName()));
 
 		File file = new File(System.getProperty("user.home") + "/jimmutable_dev/csv-export/exportUsersToCSV.csv");
 

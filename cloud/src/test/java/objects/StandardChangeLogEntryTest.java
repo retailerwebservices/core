@@ -65,7 +65,7 @@ public class StandardChangeLogEntryTest extends StubTest
 		AttachmentMetaData meta_data = new AttachmentMetaData(new ObjectId(123), "Description", new DownloadFileName("downloadfilename1"), "mimetype", 1L, 1);
 		AttachmentMetaData meta_data_after = new AttachmentMetaData(new ObjectId(123), "Description", new DownloadFileName("downloadfilename2"), "mimetype", 1L, 2);
 		
-		StandardChangeLogEntry standard_change_log_entry = new StandardChangeLogEntry(id, new ObjectReference(new Kind("thing"), id), 0, new ObjectId("0000-0000-0000-0001"), "Short","my comment", attachments, meta_data,meta_data_after);
+		StandardChangeLogEntry standard_change_log_entry = new StandardChangeLogEntry(id, new ObjectReference(new Kind("thing"), id), 0, new ObjectId("0000-0000-0000-0001"), "Short","my comment", attachments, meta_data.toString(),meta_data_after.toString());
 		
 		//System.out.println(standard_change_log_entry.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 		
@@ -142,8 +142,6 @@ public class StandardChangeLogEntryTest extends StubTest
 		StandardChangeLogEntry standard_change_log_entry = new StandardChangeLogEntry(id, new ObjectReference(new Kind("thing"), id), 0, new ObjectId("0000-0000-0000-0001"), "Short",null, new FieldArrayList<ObjectId>(), null,null);
 
 		assertEquals("hello", standard_change_log_entry.getOptionalComments("hello"));
-		assertEquals(new OpenGraphObjectId("123456"), standard_change_log_entry.getOptionalAfter(new OpenGraphObjectId("123456")));
-		assertEquals(new OpenGraphObjectId("123456"), standard_change_log_entry.getOptionalBefore(new OpenGraphObjectId("123456")));
 		
 	}
 }

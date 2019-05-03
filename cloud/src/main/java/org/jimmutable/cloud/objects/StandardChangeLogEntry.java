@@ -54,8 +54,10 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 	static public final FieldDefinition.String FIELD_SHORT_DESCRIPTION = new FieldDefinition.String("short_description", "");
 	static public final FieldDefinition.String FIELD_COMMENTS = new FieldDefinition.String("comments", null);
 	static public final FieldDefinition.Collection FIELD_ATTACHMENTS = new FieldDefinition.Collection("attachments", new FieldArrayList<ObjectId>());
-	static public final FieldDefinition.StandardObject FIELD_BEFORE = new FieldDefinition.StandardObject("before_object", null);
-	static public final FieldDefinition.StandardObject FIELD_AFTER = new FieldDefinition.StandardObject("after_object", null);
+	static public final FieldDefinition.StandardObject FIELD_BEFORE_OBJECT = new FieldDefinition.StandardObject("before_object", null);
+	static public final FieldDefinition.String FIELD_BEFORE = new FieldDefinition.String("before", null);
+	static public final FieldDefinition.StandardObject FIELD_AFTER_OBJECT = new FieldDefinition.StandardObject("after_object", null);
+	static public final FieldDefinition.String FIELD_AFTER = new FieldDefinition.String("after", null);
 
 	private ObjectId id;// required
 	private ObjectReference subject;// ??maybe
@@ -64,20 +66,11 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 	private String short_description;// required
 	private String comments;// optional
 	private FieldList<ObjectId> attachments = new FieldArrayList<>();
-	private StandardImmutableObject<?> before;// optional
-	private StandardImmutableObject<?> after;// optional
+	private String before;// optional
+	private String after;// optional
 
 	static public final SearchIndexFieldDefinition SEARCH_FIELD_ID = new SearchIndexFieldDefinition(FIELD_ID.getSimpleFieldName(), SearchIndexFieldType.ATOM);
 	static public final SearchIndexFieldDefinition SEARCH_FIELD_SUBJECT = new SearchIndexFieldDefinition(FIELD_SUBJECT.getSimpleFieldName(), SearchIndexFieldType.ATOM);
-
-	static public final SearchIndexFieldDefinition SEARCH_FIELD_BEFORE_ID = new SearchIndexFieldDefinition(new FieldName(String.format("%s_id", FIELD_BEFORE.getSimpleFieldName().getSimpleName())), SearchIndexFieldType.ATOM);
-	static public final SearchIndexFieldDefinition SEARCH_FIELD_AFTER_ID = new SearchIndexFieldDefinition(new FieldName(String.format("%s_id", FIELD_AFTER.getSimpleFieldName().getSimpleName())), SearchIndexFieldType.ATOM);
-
-	static public final SearchIndexFieldDefinition SEARCH_FIELD_TIMESTAMP = new SearchIndexFieldDefinition(FIELD_TIMESTAMP.getSimpleFieldName(), SearchIndexFieldType.DAY);
-	static public final SearchIndexFieldDefinition SEARCH_FIELD_CHANGE_MADE_BY_USER_ID = new SearchIndexFieldDefinition(FIELD_CHANGE_MADE_BY_USER_ID.getSimpleFieldName(), SearchIndexFieldType.ATOM);
-	static public final SearchIndexFieldDefinition SEARCH_FIELD_SHORT_DESCRIPTION = new SearchIndexFieldDefinition(FIELD_SHORT_DESCRIPTION.getSimpleFieldName(), SearchIndexFieldType.TEXT);
-	static public final SearchIndexFieldDefinition SEARCH_FIELD_COMMENTS = new SearchIndexFieldDefinition(FIELD_COMMENTS.getSimpleFieldName(), SearchIndexFieldType.TEXT);
-	static public final SearchIndexFieldDefinition SEARCH_FIELD_ATTACHMENTS = new SearchIndexFieldDefinition(FIELD_ATTACHMENTS.getSimpleFieldName(), SearchIndexFieldType.ATOM);
 
 	static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("change-log-entry"), new IndexVersion("v1"));
 
@@ -92,20 +85,13 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 
 		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_ID);
 		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_SUBJECT);
-		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_TIMESTAMP);
-		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_CHANGE_MADE_BY_USER_ID);
-		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_SHORT_DESCRIPTION);
-		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_COMMENTS);
-		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_ATTACHMENTS);
-		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_BEFORE_ID);
-		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_AFTER_ID);
 		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
 
 		INDEX_MAPPING = (SearchIndexDefinition) b.create();
 
 	}
 
-	public StandardChangeLogEntry(ObjectId id, ObjectReference subject, long timestamp, ObjectId change_made_by_user_id, String short_description, String comments, FieldList<ObjectId> attachments, StandardImmutableObject<?> old_object, StandardImmutableObject<?> new_object)
+	public StandardChangeLogEntry( ObjectId id, ObjectReference subject, long timestamp, ObjectId change_made_by_user_id, String short_description, String comments, FieldList<ObjectId> attachments, String old_object, String new_object )
 	{
 		this.id = id;
 		this.subject = subject;
@@ -119,7 +105,7 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 		complete();
 	}
 
-	public StandardChangeLogEntry(ObjectParseTree o)
+	public StandardChangeLogEntry( ObjectParseTree o )
 	{
 		this.id = o.getStringable(FIELD_ID);
 		this.subject = o.getStringable(FIELD_SUBJECT);
@@ -131,16 +117,26 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 		// correct
 		this.attachments = o.getCollection(FIELD_ATTACHMENTS, new FieldArrayList<ObjectId>(), ObjectId.CONVERTER, ObjectParseTree.OnError.SKIP);
 
+		this.before = o.getString(FIELD_BEFORE);
+		this.after = o.getString(FIELD_AFTER);
 		// wrong, this causes class cast exception when attempting to read it
-		// this.attachments = o.getCollection(FIELD_ATTACHMENTS, new
-		// FieldArrayList<ObjectId>(), ReadAs.STRING, ObjectParseTree.OnError.SKIP);
-
-		this.before = (StandardImmutableObject<?>) o.getObject(FIELD_BEFORE);
-		this.after = (StandardImmutableObject<?>) o.getObject(FIELD_AFTER);
+		// TO BE REMOVED EVENTUALLY
+		{
+			StandardImmutableObject<?> before_object = (StandardImmutableObject<?>) o.getObject(FIELD_BEFORE_OBJECT);
+			if ( before_object != null && this.before == null )
+			{
+				this.before = before_object.toString();
+			}
+			StandardImmutableObject<?> after_object = (StandardImmutableObject<?>) o.getObject(FIELD_AFTER_OBJECT);
+			if ( after_object != null && this.after == null )
+			{
+				this.after = after_object.toString();
+			}
+		}
 	}
 
 	@Override
-	public int compareTo(StandardChangeLogEntry other)
+	public int compareTo( StandardChangeLogEntry other )
 	{
 		int ret = Comparison.startCompare();
 		ret = Comparison.continueCompare(ret, getSimpleTimestamp(), other.getSimpleTimestamp());// want to sort by time
@@ -162,7 +158,7 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 	}
 
 	@Override
-	public void write(ObjectWriter writer)
+	public void write( ObjectWriter writer )
 	{
 		writer.writeStringable(FIELD_ID, getSimpleObjectId());
 		writer.writeStringable(FIELD_SUBJECT, getSimpleSubject());
@@ -170,21 +166,21 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 		writer.writeStringable(FIELD_CHANGE_MADE_BY_USER_ID, getSimpleChangeMadeByUserId());
 		writer.writeString(FIELD_SHORT_DESCRIPTION, getSimpleShortDescription());
 
-		if (getOptionalComments(null) != null)
+		if ( getOptionalComments(null) != null )
 		{
 			writer.writeString(FIELD_COMMENTS, getOptionalComments(null));
 		}
 
 		writer.writeCollection(FIELD_ATTACHMENTS, getSimpleAttachments(), WriteAs.STRING);
 
-		if (getOptionalBefore(null) != null)
+		if ( getOptionalBefore(null) != null )
 		{
-			writer.writeObject(FIELD_BEFORE, getOptionalBefore(null));
+			writer.writeObject(FIELD_BEFORE_OBJECT, getOptionalBefore(null));
 		}
 
-		if (getOptionalAfter(null) != null)
+		if ( getOptionalAfter(null) != null )
 		{
-			writer.writeObject(FIELD_AFTER, getOptionalAfter(null));
+			writer.writeObject(FIELD_AFTER_OBJECT, getOptionalAfter(null));
 		}
 
 	}
@@ -199,7 +195,7 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 		return change_made_by_user_id;
 	}
 
-	public StandardImmutableObject<?> getOptionalAfter(StandardImmutableObject<?> default_value)
+	public String getOptionalAfter( String default_value )
 	{
 		return Optional.getOptional(after, null, default_value);
 	}
@@ -209,7 +205,7 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 		return after == null;
 	}
 
-	public StandardImmutableObject<?> getOptionalBefore(StandardImmutableObject<?> default_value)
+	public String getOptionalBefore( String default_value )
 	{
 		return Optional.getOptional(before, null, default_value);
 	}
@@ -224,7 +220,7 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 		return attachments;
 	}
 
-	public String getOptionalComments(String default_value)
+	public String getOptionalComments( String default_value )
 	{
 		return Optional.getOptional(comments, null, default_value);
 	}
@@ -268,56 +264,88 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(getSimpleObjectId(), getSimpleTimestamp(), getSimpleChangeMadeByUserId(), getSimpleShortDescription(), getOptionalComments(null), getSimpleAttachments(), getOptionalBefore(null), getOptionalAfter(null));
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((after == null) ? 0 : after.hashCode());
+		result = prime * result + ((attachments == null) ? 0 : attachments.hashCode());
+		result = prime * result + ((before == null) ? 0 : before.hashCode());
+		result = prime * result + ((change_made_by_user_id == null) ? 0 : change_made_by_user_id.hashCode());
+		result = prime * result + ((comments == null) ? 0 : comments.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((short_description == null) ? 0 : short_description.hashCode());
+		result = prime * result + ((subject == null) ? 0 : subject.hashCode());
+		result = prime * result + (int) (timestamp ^ (timestamp >>> 32));
+		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals( Object obj )
 	{
-		if (!(obj instanceof StandardChangeLogEntry))
+		if ( this == obj )
+			return true;
+		if ( obj == null )
 			return false;
-
+		if ( getClass() != obj.getClass() )
+			return false;
 		StandardChangeLogEntry other = (StandardChangeLogEntry) obj;
-
-		if (!Objects.equals(getSimpleObjectId(), other.getSimpleObjectId()))
+		if ( after == null )
 		{
-			return false;
+			if ( other.after != null )
+				return false;
 		}
-		if (!Objects.equals(getSimpleSubject(), other.getSimpleSubject()))
+		else if ( !after.equals(other.after) )
+			return false;
+		if ( attachments == null )
 		{
-			return false;
+			if ( other.attachments != null )
+				return false;
 		}
-		if (!Objects.equals(getSimpleTimestamp(), other.getSimpleTimestamp()))
+		else if ( !attachments.equals(other.attachments) )
+			return false;
+		if ( before == null )
 		{
-			return false;
+			if ( other.before != null )
+				return false;
 		}
-		if (!Objects.equals(getSimpleChangeMadeByUserId(), other.getSimpleChangeMadeByUserId()))
+		else if ( !before.equals(other.before) )
+			return false;
+		if ( change_made_by_user_id == null )
 		{
-			return false;
+			if ( other.change_made_by_user_id != null )
+				return false;
 		}
-		if (!Objects.equals(getSimpleShortDescription(), other.getSimpleShortDescription()))
+		else if ( !change_made_by_user_id.equals(other.change_made_by_user_id) )
+			return false;
+		if ( comments == null )
 		{
-			return false;
+			if ( other.comments != null )
+				return false;
 		}
-		if (!Objects.equals(getOptionalComments(null), other.getOptionalComments(null)))
+		else if ( !comments.equals(other.comments) )
+			return false;
+		if ( id == null )
 		{
-			return false;
+			if ( other.id != null )
+				return false;
 		}
-
-		if (!Objects.equals(getSimpleAttachments().size(), other.getSimpleAttachments().size()))
+		else if ( !id.equals(other.id) )
+			return false;
+		if ( short_description == null )
 		{
-			return false;
+			if ( other.short_description != null )
+				return false;
 		}
-
-		if (!Objects.equals(getOptionalBefore(null), other.getOptionalBefore(null)))
+		else if ( !short_description.equals(other.short_description) )
+			return false;
+		if ( subject == null )
 		{
-			return false;
+			if ( other.subject != null )
+				return false;
 		}
-		if (!Objects.equals(getOptionalAfter(null), other.getOptionalAfter(null)))
-		{
+		else if ( !subject.equals(other.subject) )
 			return false;
-		}
-
+		if ( timestamp != other.timestamp )
+			return false;
 		return true;
 	}
 
@@ -334,50 +362,11 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 	}
 
 	@Override
-	public void writeSearchDocument(SearchDocumentWriter writer)
+	public void writeSearchDocument( SearchDocumentWriter writer )
 	{
 		writer.writeAtom(SEARCH_FIELD_ID, getSimpleObjectId().getSimpleValue());
 
 		writer.writeAtom(SEARCH_FIELD_SUBJECT, getSimpleSubject().getSimpleValue());
-
-		writer.writeTimestamp(SEARCH_FIELD_TIMESTAMP, getSimpleTimestamp());
-
-		writer.writeAtom(SEARCH_FIELD_CHANGE_MADE_BY_USER_ID, getSimpleChangeMadeByUserId().getSimpleValue());
-
-		writer.writeText(SEARCH_FIELD_SHORT_DESCRIPTION, getSimpleShortDescription());
-
-		if (getOptionalComments(null) != null)
-		{
-			writer.writeText(SEARCH_FIELD_COMMENTS, getOptionalComments(null));
-		}
-
-		FieldCollection<ObjectId> attachments = new FieldHashSet<>();
-		getSimpleAttachments().forEach(attachment ->
-		{
-			attachments.add(attachment);
-		});
-
-		writer.writeAtomObjectIdArray(SEARCH_FIELD_ATTACHMENTS, attachments);
-
-		StandardImmutableObject<?> before_object = getOptionalBefore(null);
-
-		if (before_object != null)
-		{
-			if (before_object instanceof Storable)
-			{
-				writer.writeAtom(SEARCH_FIELD_BEFORE_ID, ((Storable) before_object).getSimpleObjectId().getSimpleValue());
-			}
-		}
-
-		StandardImmutableObject<?> after_object = getOptionalAfter(null);
-
-		if (after_object != null)
-		{
-			if (after_object instanceof Storable)
-			{
-				writer.writeAtom(SEARCH_FIELD_AFTER_ID, ((Storable) after_object).getSimpleObjectId().getSimpleValue());
-			}
-		}
 
 	}
 
