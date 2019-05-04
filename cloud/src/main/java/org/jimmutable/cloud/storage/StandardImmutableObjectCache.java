@@ -68,9 +68,8 @@ public class StandardImmutableObjectCache
 	{
 		if ( kind == null || id == null || object == null )
 			return;
-		// @CR - Replace CacheKey creation with call to createCacheKey(kind, id, null)
-		// and check for null before using it. -PM
-		put(new CacheKey(getCachePrefix() + kind.toString() + ":" + id.toString()), object);
+
+		put(createCacheKey(kind, id), object);
 	}
 
 	public void put( CacheKey cache_key, StandardImmutableObject object )
@@ -113,7 +112,7 @@ public class StandardImmutableObjectCache
 	{
 		if ( kind == null || id == null )
 			return false;
-		return has(new CacheKey(getCachePrefix() + kind.toString() + ":" + id.toString()));
+		return has(createCacheKey(kind,id));
 	}
 
 	private String getCachePrefix()
