@@ -1,5 +1,7 @@
 package org.jimmutable.cloud.storage;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
@@ -25,6 +27,7 @@ public class StandardImmutableObjectCache
 	private String prefix; // required
 	private long max_allowed_entry_age_in_ms = TimeUnit.MINUTES.toMillis(20);
 	private SignalTopicId topic_id = null;
+	private List<String> kind_exclusions = new ArrayList<String>();
 
 	private static final Logger logger = LogManager.getLogger(StandardImmutableObjectCache.class);
 
@@ -43,6 +46,21 @@ public class StandardImmutableObjectCache
 		this.max_allowed_entry_age_in_ms = max_allowed_entry_age_in_ms;
 		this.topic_id = new SignalTopicId(prefix);
 
+	}
+	
+	public void addExclusion( Kind kind ) {
+		kind_exclusions.add(kind.getSimpleValue());
+	}
+	public void removeExclusion( Kind kind ) {
+		kind_exclusions.remove(kind.getSimpleValue());
+	}
+
+	public boolean isExcluded( CacheKey key ) {
+		String kind = key.getSimpleValue().split(":")[key.getSimpleValue().split(":").length-2];
+		if(kind_exclusions.contains(kind)) {
+			return true;
+		}
+		return false;
 	}
 
 	public void createListeners()
@@ -74,7 +92,7 @@ public class StandardImmutableObjectCache
 
 	public void put( CacheKey cache_key, StandardImmutableObject object )
 	{
-		if ( cache_key == null || object == null )
+		if ( cache_key == null || isExcluded(cache_key) || object == null )
 			return;
 		cache.put(cache_key, object, max_allowed_entry_age_in_ms);
 		createAndSendEvent(CacheActivity.PUT, CacheMetric.ADD, cache_key);
@@ -133,7 +151,7 @@ public class StandardImmutableObjectCache
 
 	public boolean has( CacheKey cache_key )
 	{
-		if ( cache_key == null )
+		if ( cache_key == null || isExcluded(cache_key) )
 		{
 			return false;
 		}
@@ -161,7 +179,7 @@ public class StandardImmutableObjectCache
 	// that methodology.
 	public StandardImmutableObject get( CacheKey reference, StandardImmutableObject default_value )
 	{
-		if ( reference == null )
+		if ( reference == null || isExcluded(reference))
 		{
 			createAndSendEvent(CacheActivity.GET, CacheMetric.MISS, reference);
 			return default_value;
@@ -203,7 +221,7 @@ public class StandardImmutableObjectCache
 
 	public byte[] get( CacheKey reference, byte[] default_value )
 	{
-		if ( reference == null )
+		if ( reference == null || isExcluded(reference))
 		{
 			createAndSendEvent(CacheActivity.GET, CacheMetric.MISS, reference);
 			return default_value;
@@ -225,6 +243,9 @@ public class StandardImmutableObjectCache
 
 	public void remove( CacheKey reference )
 	{
+		if(isExcluded(reference)) {
+			return;
+		}
 		cache.delete(reference);
 		createAndSendEvent(CacheActivity.REMOVE, CacheMetric.REMOVE, reference);
 	}
