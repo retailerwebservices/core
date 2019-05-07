@@ -59,6 +59,8 @@ public class StandardImmutableObjectCacheIT extends IntegrationTest
 	{
 		TestStorable storable = new TestStorable(new ObjectId("0000-0000-0000-0000"));
 		StandardImmutableObjectCache simple_cache = new StandardImmutableObjectCache(CloudExecutionEnvironment.getSimpleCurrent().getSimpleCacheService(), CloudExecutionEnvironment.getSimpleCurrent().getSimpleEnvironmentType().getSimpleCode().toLowerCase(), TimeUnit.SECONDS.toMillis(20));
+		// CR - As mentioned in StandardImmutableObjectCache, I don't think isExcluded should be private. Therefore, you can 
+		// test using the has or get methods. -PM
 		assertFalse(simple_cache.isExcluded(simple_cache.createCacheKey(storable.getSimpleKind(),storable.getSimpleObjectId())));
 		simple_cache.addExclusion(storable.getSimpleKind());
 		assertTrue(simple_cache.isExcluded(simple_cache.createCacheKey(storable.getSimpleKind(),storable.getSimpleObjectId())));

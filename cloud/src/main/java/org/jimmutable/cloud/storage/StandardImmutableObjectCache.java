@@ -55,7 +55,10 @@ public class StandardImmutableObjectCache
 		kind_exclusions.remove(kind.getSimpleValue());
 	}
 
+	// CR - I don't see the value of making this public. Outside of the IT class, what value does it provide to expose this
+	//      outside of the class? Making it private provides better encapsulation. You can test in the IT using the has or get methods. -PM
 	public boolean isExcluded( CacheKey key ) {
+		// CR - I think you need some error handling here. If the key is not in the expected format, you could end up with an invalid index. -PM
 		String kind = key.getSimpleValue().split(":")[key.getSimpleValue().split(":").length-2];
 		if(kind_exclusions.contains(kind)) {
 			return true;
@@ -179,6 +182,7 @@ public class StandardImmutableObjectCache
 	// that methodology.
 	public StandardImmutableObject get( CacheKey reference, StandardImmutableObject default_value )
 	{
+		// CR - I think if the Kind is excluded, we should not log a miss, only return the default_value. -PM
 		if ( reference == null || isExcluded(reference))
 		{
 			createAndSendEvent(CacheActivity.GET, CacheMetric.MISS, reference);
@@ -221,6 +225,7 @@ public class StandardImmutableObjectCache
 
 	public byte[] get( CacheKey reference, byte[] default_value )
 	{
+		// CR - I think if the Kind is excluded, we should not log a miss, only return the default_value. -PM
 		if ( reference == null || isExcluded(reference))
 		{
 			createAndSendEvent(CacheActivity.GET, CacheMetric.MISS, reference);
