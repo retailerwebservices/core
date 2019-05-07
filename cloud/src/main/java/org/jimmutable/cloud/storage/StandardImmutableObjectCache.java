@@ -47,21 +47,31 @@ public class StandardImmutableObjectCache
 		this.topic_id = new SignalTopicId(prefix);
 
 	}
-	
-	public void addExclusion( Kind kind ) {
+
+	public void addExclusion( Kind kind )
+	{
 		kind_exclusions.add(kind.getSimpleValue());
 	}
-	public void removeExclusion( Kind kind ) {
+
+	public void removeExclusion( Kind kind )
+	{
 		kind_exclusions.remove(kind.getSimpleValue());
 	}
 
-	// CR - I don't see the value of making this public. Outside of the IT class, what value does it provide to expose this
-	//      outside of the class? Making it private provides better encapsulation. You can test in the IT using the has or get methods. -PM
-	public boolean isExcluded( CacheKey key ) {
-		// CR - I think you need some error handling here. If the key is not in the expected format, you could end up with an invalid index. -PM
-		String kind = key.getSimpleValue().split(":")[key.getSimpleValue().split(":").length-2];
-		if(kind_exclusions.contains(kind)) {
-			return true;
+	private boolean isExcluded( CacheKey key )
+	{
+		String[] key_array = key.getSimpleValue().split(":");
+		try
+		{
+			String kind = key_array[key_array.length - 2];
+			if ( kind_exclusions.contains(kind) )
+			{
+				return true;
+			}
+		}
+		catch ( Exception e )
+		{
+			logger.warn("Problem with isExcluded", e);
 		}
 		return false;
 	}
@@ -133,23 +143,22 @@ public class StandardImmutableObjectCache
 	{
 		if ( kind == null || id == null )
 			return false;
-		return has(createCacheKey(kind,id));
+		return has(createCacheKey(kind, id));
 	}
 
 	private String getCachePrefix()
 	{
 		return CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId().getSimpleValue() + "://" + prefix + ":";
 	}
-	
-	public CacheKey createCacheKey( StorageKey key)
+
+	public CacheKey createCacheKey( StorageKey key )
 	{
-		return new CacheKey(getCachePrefix() +  key.getSimpleKind() + ":" + key.getSimpleName().getSimpleValue());
+		return new CacheKey(getCachePrefix() + key.getSimpleKind() + ":" + key.getSimpleName().getSimpleValue());
 	}
-	
 
 	public CacheKey createCacheKey( Kind kind, ObjectId id )
 	{
-		return new CacheKey(getCachePrefix() +  kind.toString() + ":" + id.toString());
+		return new CacheKey(getCachePrefix() + kind.toString() + ":" + id.toString());
 	}
 
 	public boolean has( CacheKey cache_key )
@@ -182,8 +191,11 @@ public class StandardImmutableObjectCache
 	// that methodology.
 	public StandardImmutableObject get( CacheKey reference, StandardImmutableObject default_value )
 	{
-		// CR - I think if the Kind is excluded, we should not log a miss, only return the default_value. -PM
-		if ( reference == null || isExcluded(reference))
+		if ( isExcluded(reference) )
+		{
+			return default_value;
+		}
+		if ( reference == null )
 		{
 			createAndSendEvent(CacheActivity.GET, CacheMetric.MISS, reference);
 			return default_value;
@@ -225,8 +237,11 @@ public class StandardImmutableObjectCache
 
 	public byte[] get( CacheKey reference, byte[] default_value )
 	{
-		// CR - I think if the Kind is excluded, we should not log a miss, only return the default_value. -PM
-		if ( reference == null || isExcluded(reference))
+		if ( isExcluded(reference) )
+		{
+			return default_value;
+		}
+		if ( reference == null )
 		{
 			createAndSendEvent(CacheActivity.GET, CacheMetric.MISS, reference);
 			return default_value;
@@ -248,7 +263,8 @@ public class StandardImmutableObjectCache
 
 	public void remove( CacheKey reference )
 	{
-		if(isExcluded(reference)) {
+		if ( isExcluded(reference) )
+		{
 			return;
 		}
 		cache.delete(reference);
