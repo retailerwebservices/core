@@ -60,14 +60,15 @@ public class StandardImmutableObjectCache
 
 	private boolean isExcluded( CacheKey key )
 	{
+		if ( key == null )
+		{
+			return false;
+		}
 		String[] key_array = key.getSimpleValue().split(":");
 		try
 		{
 			String kind = key_array[key_array.length - 2];
-			if ( kind_exclusions.contains(kind) )
-			{
-				return true;
-			}
+			return kind_exclusions.contains(kind);
 		}
 		catch ( Exception e )
 		{
@@ -191,13 +192,13 @@ public class StandardImmutableObjectCache
 	// that methodology.
 	public StandardImmutableObject get( CacheKey reference, StandardImmutableObject default_value )
 	{
-		if ( isExcluded(reference) )
-		{
-			return default_value;
-		}
 		if ( reference == null )
 		{
 			createAndSendEvent(CacheActivity.GET, CacheMetric.MISS, reference);
+			return default_value;
+		}
+		if ( isExcluded(reference) )
+		{
 			return default_value;
 		}
 
@@ -237,13 +238,13 @@ public class StandardImmutableObjectCache
 
 	public byte[] get( CacheKey reference, byte[] default_value )
 	{
-		if ( isExcluded(reference) )
-		{
-			return default_value;
-		}
 		if ( reference == null )
 		{
 			createAndSendEvent(CacheActivity.GET, CacheMetric.MISS, reference);
+			return default_value;
+		}
+		if ( isExcluded(reference) )
+		{
 			return default_value;
 		}
 
