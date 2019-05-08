@@ -1,5 +1,7 @@
 package org.jimmutable.cloud.storage;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
@@ -25,6 +27,7 @@ public class StandardImmutableObjectCache
 	private String prefix; // required
 	private long max_allowed_entry_age_in_ms = TimeUnit.MINUTES.toMillis(20);
 	private SignalTopicId topic_id = null;
+	private List<String> kind_exclusions = new ArrayList<String>();
 
 	private static final Logger logger = LogManager.getLogger(StandardImmutableObjectCache.class);
 
@@ -43,6 +46,35 @@ public class StandardImmutableObjectCache
 		this.max_allowed_entry_age_in_ms = max_allowed_entry_age_in_ms;
 		this.topic_id = new SignalTopicId(prefix);
 
+	}
+
+	public void addExclusion( Kind kind )
+	{
+		kind_exclusions.add(kind.getSimpleValue());
+	}
+
+	public void removeExclusion( Kind kind )
+	{
+		kind_exclusions.remove(kind.getSimpleValue());
+	}
+
+	private boolean isExcluded( CacheKey key )
+	{
+		if ( key == null )
+		{
+			return false;
+		}
+		String[] key_array = key.getSimpleValue().split(":");
+		try
+		{
+			String kind = key_array[key_array.length - 2];
+			return kind_exclusions.contains(kind);
+		}
+		catch ( Exception e )
+		{
+			logger.warn("Problem with isExcluded", e);
+		}
+		return false;
 	}
 
 	public void createListeners()
@@ -74,7 +106,7 @@ public class StandardImmutableObjectCache
 
 	public void put( CacheKey cache_key, StandardImmutableObject object )
 	{
-		if ( cache_key == null || object == null )
+		if ( cache_key == null || isExcluded(cache_key) || object == null )
 			return;
 		cache.put(cache_key, object, max_allowed_entry_age_in_ms);
 		createAndSendEvent(CacheActivity.PUT, CacheMetric.ADD, cache_key);
@@ -112,28 +144,27 @@ public class StandardImmutableObjectCache
 	{
 		if ( kind == null || id == null )
 			return false;
-		return has(createCacheKey(kind,id));
+		return has(createCacheKey(kind, id));
 	}
 
 	private String getCachePrefix()
 	{
 		return CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId().getSimpleValue() + "://" + prefix + ":";
 	}
-	
-	public CacheKey createCacheKey( StorageKey key)
+
+	public CacheKey createCacheKey( StorageKey key )
 	{
-		return new CacheKey(getCachePrefix() +  key.getSimpleKind() + ":" + key.getSimpleName().getSimpleValue());
+		return new CacheKey(getCachePrefix() + key.getSimpleKind() + ":" + key.getSimpleName().getSimpleValue());
 	}
-	
 
 	public CacheKey createCacheKey( Kind kind, ObjectId id )
 	{
-		return new CacheKey(getCachePrefix() +  kind.toString() + ":" + id.toString());
+		return new CacheKey(getCachePrefix() + kind.toString() + ":" + id.toString());
 	}
 
 	public boolean has( CacheKey cache_key )
 	{
-		if ( cache_key == null )
+		if ( cache_key == null || isExcluded(cache_key) )
 		{
 			return false;
 		}
@@ -164,6 +195,10 @@ public class StandardImmutableObjectCache
 		if ( reference == null )
 		{
 			createAndSendEvent(CacheActivity.GET, CacheMetric.MISS, reference);
+			return default_value;
+		}
+		if ( isExcluded(reference) )
+		{
 			return default_value;
 		}
 
@@ -208,6 +243,10 @@ public class StandardImmutableObjectCache
 			createAndSendEvent(CacheActivity.GET, CacheMetric.MISS, reference);
 			return default_value;
 		}
+		if ( isExcluded(reference) )
+		{
+			return default_value;
+		}
 
 		// if you did not find it in the cache go find it in storage.
 
@@ -225,6 +264,10 @@ public class StandardImmutableObjectCache
 
 	public void remove( CacheKey reference )
 	{
+		if ( isExcluded(reference) )
+		{
+			return;
+		}
 		cache.delete(reference);
 		createAndSendEvent(CacheActivity.REMOVE, CacheMetric.REMOVE, reference);
 	}

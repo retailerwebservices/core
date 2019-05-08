@@ -20,21 +20,24 @@ import org.junit.Test;
 public class StandardImmutableObjectCacheIT extends IntegrationTest
 {
 	@BeforeClass
-	public  static void setup() {
+	public static void setup()
+	{
 		setupEnvironment();
 		ObjectParseTree.registerTypeName(TestStorable.class);
-		
-	}
-	@Test
-	public void testConvenienceMethod() {
-		TestStorable storable = new TestStorable(new ObjectId("0000-0000-0000-0000"));
-		CloudExecutionEnvironment.getSimpleCurrent().getSimpleCache().put(storable.getSimpleKind(), storable.getSimpleObjectId(), storable);
-		assert(CloudExecutionEnvironment.getSimpleCurrent().getSimpleCache().has(storable)==true);
+
 	}
 
-	
 	@Test
-	public void testTime() {
+	public void testConvenienceMethod()
+	{
+		TestStorable storable = new TestStorable(new ObjectId("0000-0000-0000-0000"));
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleCache().put(storable.getSimpleKind(), storable.getSimpleObjectId(), storable);
+		assert (CloudExecutionEnvironment.getSimpleCurrent().getSimpleCache().has(storable) == true);
+	}
+
+	@Test
+	public void testTime()
+	{
 		TestStorable storable = new TestStorable(new ObjectId("0000-0000-0000-0000"));
 		StandardImmutableObjectCache simple_cache = new StandardImmutableObjectCache(CloudExecutionEnvironment.getSimpleCurrent().getSimpleCacheService(), CloudExecutionEnvironment.getSimpleCurrent().getSimpleEnvironmentType().getSimpleCode().toLowerCase(), TimeUnit.SECONDS.toMillis(20));
 		simple_cache.put(storable.getSimpleKind(), storable.getSimpleObjectId(), storable);
@@ -46,12 +49,15 @@ public class StandardImmutableObjectCacheIT extends IntegrationTest
 		{
 			fail();
 		}
-		assert(simple_cache.has(storable)==false);
+		assert (simple_cache.has(storable) == false);
 	}
 
-	private class TestStorable extends StandardImmutableObject implements Storable{
+	private class TestStorable extends StandardImmutableObject implements Storable
+	{
 		ObjectId id;
-		public TestStorable(ObjectId id) {
+
+		public TestStorable( ObjectId id )
+		{
 			this.id = id;
 		}
 
