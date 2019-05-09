@@ -2,6 +2,7 @@ package org.jimmutable.cloud.storage;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -100,7 +101,15 @@ public class StorageDevLocalFileSystem extends Storage
 		{
 			byte[] object = getComplexCurrentVersionFromCache(key, null);
 			if (object!=null) {
-				return true;
+				try
+				{
+					IOUtils.transferAllBytes(new ByteArrayInputStream(object), sink);
+					return true;
+				}
+				catch ( IOException e )
+				{
+					//we do not return false here because we want to try to get it from storage. 
+				}
 			}
 		}
 
