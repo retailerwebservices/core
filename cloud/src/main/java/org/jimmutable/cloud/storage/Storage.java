@@ -115,7 +115,11 @@ public abstract class Storage implements IStorage
 		{
 			try
 			{
-				addToCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()), (StandardImmutableObject) StandardObject.deserialize(new String(bytes.toByteArray(), "UTF8")));
+				StandardObject deserialize = StandardObject.deserialize(new String(bytes.toByteArray(), "UTF8"));
+				if ( deserialize instanceof StandardImmutableObject )
+				{
+					addToCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()), (StandardImmutableObject) deserialize);
+				}
 			}
 			catch ( Exception e )
 			{
