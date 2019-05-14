@@ -118,7 +118,7 @@ public abstract class Storage implements IStorage
 				StandardObject deserialize = StandardObject.deserialize(new String(bytes.toByteArray(), "UTF8"));
 				if ( deserialize instanceof StandardImmutableObject )
 				{
-					addToCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()), (StandardImmutableObject) deserialize);
+					addToStandardImmutableObjectCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()), (StandardImmutableObject) deserialize);
 				}
 			}
 			catch ( Exception e )
@@ -223,7 +223,7 @@ public abstract class Storage implements IStorage
 		return default_value;
 	}
 
-	protected void addToCache( Kind kind, ObjectId id, StandardImmutableObject object )// - calls cache.put to add it to the cache.
+	protected void addToStandardImmutableObjectCache( Kind kind, ObjectId id, StandardImmutableObject object )// - calls cache.put to add it to the cache.
 	{
 		if ( isCacheEnabled() )
 		{
@@ -232,7 +232,7 @@ public abstract class Storage implements IStorage
 			cache.put(cache.createCacheKey(kind, id), object);
 		}
 	}
-
+	
 	protected void removeFromCache( Kind kind, ObjectId id )// - calls cache.remove if isCacheEnabled() is true.
 	{
 		if ( isCacheEnabled() )
