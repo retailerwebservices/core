@@ -278,9 +278,7 @@ public class StandardImmutableObjectCache
 		{
 			return;
 		}
-		CacheKey cache_key = createCacheKey(kind, id);
-		cache.delete(cache_key);
-		createAndSendEvent(CacheActivity.REMOVE, CacheMetric.REMOVE, cache_key);
+		remove(this.createCacheKey(kind, id));
 	}
 
 }
