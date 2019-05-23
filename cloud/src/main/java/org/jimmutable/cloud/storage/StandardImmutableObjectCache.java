@@ -80,10 +80,7 @@ public class StandardImmutableObjectCache
 	public void createListeners()
 	{
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSignalService().startListening(this.topic_id, new CacheEventListener());
-	}// - In here, register CacheEventListener for StandardImmutableObjectCache by
-		// calling
-		// CloudExecutionEnvironment.getSimpleCurrent().getSimpleSignalService().startListening.
-		// Use the topic_id created above.
+	}
 
 	private void createAndSendEvent( CacheActivity activity, CacheMetric metric, CacheKey key )
 	{
