@@ -281,7 +281,7 @@ public class CloudExecutionEnvironment
 		}
 		catch ( Exception e )
 		{
-			logger.fatal(String.format("Could not create staging post fix for application ID %s. Dying now.", application_id.getSimpleValue()));
+			logger.fatal(String.format("Could not create staging post fix for application ID %s. Dying now.", application_id.getSimpleValue()), e);
 			return default_value;
 		}
 	}
