@@ -64,6 +64,7 @@ public class CloudExecutionEnvironment
 	private static EnvironmentType ENV_TYPE;
 	private static ApplicationId APPLICATION_ID;
 	private static StandardImmutableObjectCache STANDARD_IMMUTABLE_OBJECT_CACHE;
+	public static final String STAGING_POST_FIX = "-staging";
 
 	private CloudExecutionEnvironment(ISearch search, IStorage storage, IQueue queue_service, ISignal signal_service, IEmail email_service, ICache cache_service)
 	{
@@ -170,27 +171,26 @@ public class CloudExecutionEnvironment
 		STANDARD_IMMUTABLE_OBJECT_CACHE = new StandardImmutableObjectCache(redis, "storagecache");
 		switch (env_type)
 		{
-		// For now, staging is the same as dev
-		case STAGING:
 		case DEV:
 
 			// setup the logging level programmatically in dev and staging
-			Level level = Level.toLevel(System.getProperty(ENV_LOGGING_LEVEL), DEFAULT_LEVEL);
-			Log4jUtil.setAllLoggerLevels(level);
-			logger.trace(String.format("Logging level: %s", level));
+			Level dev_level = Level.toLevel(System.getProperty(ENV_LOGGING_LEVEL), DEFAULT_LEVEL);
+			Log4jUtil.setAllLoggerLevels(dev_level);
+			logger.trace(String.format("Logging level: %s", dev_level));
 
 			checkOs();
 
-			TransportClient client = null;
+			TransportClient dev_client = null;
 			try
 			{
-				client = new PreBuiltTransportClient(Settings.EMPTY).addTransportAddress(new TransportAddress(InetAddress.getByName(ElasticSearchEndpoint.CURRENT.getSimpleHost()), ElasticSearchEndpoint.CURRENT.getSimplePort()));
-			} catch (UnknownHostException e)
+				dev_client = new PreBuiltTransportClient(Settings.EMPTY).addTransportAddress(new TransportAddress(InetAddress.getByName(ElasticSearchEndpoint.CURRENT.getSimpleHost()), ElasticSearchEndpoint.CURRENT.getSimplePort()));
+			}
+			catch ( UnknownHostException e )
 			{
 				logger.log(Level.FATAL, "Failed to instantiate the elasticsearch client!", e);
 			}
 
-			if (client == null)
+			if (dev_client == null)
 			{
 				throw new RuntimeException("Failed to instantiate the elasticsearch client!");
 			}
@@ -198,6 +198,46 @@ public class CloudExecutionEnvironment
 			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), new StorageDevLocalFileSystem(false, APPLICATION_ID, STANDARD_IMMUTABLE_OBJECT_CACHE), new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient(),redis);
 
 			break;
+		// For now, staging is the same as dev
+		case STAGING:
+			// setup the logging level programmatically in dev and staging
+			Level staging_level = Level.toLevel(System.getProperty(ENV_LOGGING_LEVEL), DEFAULT_LEVEL);
+			Log4jUtil.setAllLoggerLevels(staging_level);
+			logger.trace(String.format("Logging level: %s", staging_level));
+
+			checkOs();
+
+			TransportClient staging_client = null;
+			try
+			{
+				staging_client = new PreBuiltTransportClient(Settings.EMPTY).addTransportAddress(new TransportAddress(InetAddress.getByName(ElasticSearchEndpoint.CURRENT.getSimpleHost()), ElasticSearchEndpoint.CURRENT.getSimplePort()));
+			}
+			catch ( UnknownHostException e )
+			{
+				logger.log(Level.FATAL, "Failed to instantiate the elasticsearch client!", e);
+			}
+
+			if (staging_client == null)
+			{
+				throw new RuntimeException("Failed to instantiate the elasticsearch client!");
+			}
+			/*
+			 * For our staging mode we still use S3, but we use a different bucket that is
+			 * meant to be synced up nightly
+			 */
+			ApplicationId staging_application_id = createStagingApplicationIDComplex(APPLICATION_ID, null);
+			if(staging_application_id == null)
+			{
+				throw new RuntimeException("Failed to create staging application ID for Storage!");
+			}
+			
+			StorageS3 staging_storage = new StorageS3(RegionSpecificAmazonS3ClientFactory.defaultFactory(), staging_application_id, STANDARD_IMMUTABLE_OBJECT_CACHE, false);
+			staging_storage.upsertBucketIfNeeded();
+			
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), staging_storage, new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient(),redis);
+
+			break;
+
 		case PRODUCTION:
 			checkOs();
 			Level prod_level = Level.toLevel(System.getProperty(ENV_LOGGING_LEVEL), DEFAULT_LEVEL);
@@ -206,10 +246,10 @@ public class CloudExecutionEnvironment
 
 			logger.log(Level.INFO, "Starting production environment");
 
-			StorageS3 storage = new StorageS3(RegionSpecificAmazonS3ClientFactory.defaultFactory(), APPLICATION_ID, STANDARD_IMMUTABLE_OBJECT_CACHE, false);
-			storage.upsertBucketIfNeeded();
+			StorageS3 production_storage = new StorageS3(RegionSpecificAmazonS3ClientFactory.defaultFactory(), APPLICATION_ID, STANDARD_IMMUTABLE_OBJECT_CACHE, false);
+			production_storage.upsertBucketIfNeeded();
 
-			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), storage, new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient(), new CacheRedis(APPLICATION_ID, new LowLevelRedisDriver()));
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), production_storage, new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient(), new CacheRedis(APPLICATION_ID, new LowLevelRedisDriver()));
 			break;
 		case STUB:
 
@@ -227,6 +267,23 @@ public class CloudExecutionEnvironment
 		Log4jUtil.setupListeners();
 		STANDARD_IMMUTABLE_OBJECT_CACHE.createListeners();
 
+	}
+	
+
+	/**
+	 * This creates a staging specific application ID for Storage.
+	 */
+	public static ApplicationId createStagingApplicationIDComplex(ApplicationId application_id, ApplicationId default_value)
+	{
+		try
+		{
+			return new ApplicationId(application_id.getSimpleValue() + STAGING_POST_FIX);
+		}
+		catch ( Exception e )
+		{
+			logger.fatal(String.format("Could not create staging post fix for application ID %s. Dying now.", application_id.getSimpleValue()));
+			return default_value;
+		}
 	}
 
 	/**
