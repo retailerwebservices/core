@@ -94,13 +94,13 @@ public class DoSearchIT
 		Date d2 =  formatter.parse(inputString);
 		
 		ObjectId id = new ObjectId("0000-0000-0000-0000");
-		StandardChangeLogEntry standard_change_log_entry = new StandardChangeLogEntry(id, new ObjectReference(new Kind("thing"), id), 0, id, "Short",null, new FieldArrayList<ObjectId>(), null,null);
+		StandardChangeLogEntry standard_change_log_entry = new StandardChangeLogEntry(id, new ObjectReference(new Kind("thing"), id), 0, id, "Short",null, new FieldArrayList<ObjectId>(), null,"");
 
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().upsert(standard_change_log_entry, Format.JSON);
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocument(standard_change_log_entry);
 
 		ObjectId id2 = new ObjectId("0000-0000-0000-0001");
-		StandardChangeLogEntry standard_change_log_entry2 = new StandardChangeLogEntry(id2, new ObjectReference(new Kind("thing"), id2), 0, id2, "Short",null, new FieldArrayList<ObjectId>(), null,null);
+		StandardChangeLogEntry standard_change_log_entry2 = new StandardChangeLogEntry(id2, new ObjectReference(new Kind("thing"), id2), 0, id2, "Short",null, new FieldArrayList<ObjectId>(), null,"");
 
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().upsert(standard_change_log_entry2, Format.JSON);
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocument(standard_change_log_entry2);

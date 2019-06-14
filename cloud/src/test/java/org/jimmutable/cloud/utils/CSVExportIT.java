@@ -27,7 +27,7 @@ public class CSVExportIT extends IntegrationTest
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertIndex(StandardChangeLogEntry.INDEX_MAPPING);
 
 		ObjectId id = new ObjectId("0000-0000-0000-0000");
-		StandardChangeLogEntry standard_change_log_entry = new StandardChangeLogEntry(id, new ObjectReference(new Kind("thing"), id), 0, new ObjectId("0000-0000-0000-0001"), "Short",null, new FieldArrayList<ObjectId>(), null,null);
+		StandardChangeLogEntry standard_change_log_entry = new StandardChangeLogEntry(id, new ObjectReference(new Kind("thing"), id), 0, new ObjectId("0000-0000-0000-0001"), "Short",null, new FieldArrayList<ObjectId>(), null,"");
 
 
 		for (int i = 0; i < 100; i++)

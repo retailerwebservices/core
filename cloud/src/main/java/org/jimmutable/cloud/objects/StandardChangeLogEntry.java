@@ -22,6 +22,7 @@ import org.jimmutable.core.fields.FieldHashSet;
 import org.jimmutable.core.fields.FieldList;
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.StandardImmutableObject;
+import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.objects.common.ObjectReference;
@@ -71,6 +72,7 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 
 	static public final SearchIndexFieldDefinition SEARCH_FIELD_ID = new SearchIndexFieldDefinition(FIELD_ID.getSimpleFieldName(), SearchIndexFieldType.ATOM);
 	static public final SearchIndexFieldDefinition SEARCH_FIELD_SUBJECT = new SearchIndexFieldDefinition(FIELD_SUBJECT.getSimpleFieldName(), SearchIndexFieldType.ATOM);
+	static public final SearchIndexFieldDefinition SEARCH_FIELD_TIMESTAMP = new SearchIndexFieldDefinition(FIELD_TIMESTAMP.getSimpleFieldName(), SearchIndexFieldType.DAY);
 
 	static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("change-log-entry"), new IndexVersion("v1"));
 
@@ -91,7 +93,7 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 
 	}
 
-	public StandardChangeLogEntry( ObjectId id, ObjectReference subject, long timestamp, ObjectId change_made_by_user_id, String short_description, String comments, FieldList<ObjectId> attachments, String old_object, String new_object )
+	public StandardChangeLogEntry( ObjectId id, ObjectReference subject, long timestamp, ObjectId change_made_by_user_id, String short_description, String comments, FieldList<ObjectId> attachments, String before, String after )
 	{
 		this.id = id;
 		this.subject = subject;
@@ -100,8 +102,8 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 		this.short_description = short_description;
 		this.comments = comments;
 		this.attachments = new FieldArrayList<>(attachments);
-		this.before = old_object;
-		this.after = new_object;
+		this.before = before;
+		this.after = after;
 		complete();
 	}
 
@@ -122,12 +124,12 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 		// wrong, this causes class cast exception when attempting to read it
 		// TO BE REMOVED EVENTUALLY
 		{
-			StandardImmutableObject<?> before_object = (StandardImmutableObject<?>) o.getObject(FIELD_BEFORE_OBJECT);
+			Object before_object = o.getObject(FIELD_BEFORE_OBJECT);
 			if ( before_object != null && this.before == null )
 			{
 				this.before = before_object.toString();
 			}
-			StandardImmutableObject<?> after_object = (StandardImmutableObject<?>) o.getObject(FIELD_AFTER_OBJECT);
+			Object after_object = o.getObject(FIELD_AFTER_OBJECT);
 			if ( after_object != null && this.after == null )
 			{
 				this.after = after_object.toString();
@@ -175,12 +177,12 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 
 		if ( getOptionalBefore(null) != null )
 		{
-			writer.writeObject(FIELD_BEFORE_OBJECT, getOptionalBefore(null));
+			writer.writeString(FIELD_BEFORE, getOptionalBefore(null));
 		}
 
 		if ( getOptionalAfter(null) != null )
 		{
-			writer.writeObject(FIELD_AFTER_OBJECT, getOptionalAfter(null));
+			writer.writeString(FIELD_AFTER, getOptionalAfter(null));
 		}
 
 	}
@@ -368,6 +370,7 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 
 		writer.writeAtom(SEARCH_FIELD_SUBJECT, getSimpleSubject().getSimpleValue());
 
+		writer.writeTimestamp(SEARCH_FIELD_TIMESTAMP, getSimpleTimestamp());
 	}
 
 	@Override

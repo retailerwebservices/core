@@ -11,11 +11,9 @@ import org.jimmutable.cloud.objects.StandardChangeLogEntry;
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.fields.FieldList;
 import org.jimmutable.core.objects.StandardObject;
-import org.jimmutable.core.objects.common.EmailAddress;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.objects.common.ObjectReference;
-import org.jimmutable.core.objects.common.OpenGraphObjectId;
 import org.jimmutable.core.serialization.Format;
 import org.junit.Test;
 
@@ -67,7 +65,7 @@ public class StandardChangeLogEntryTest extends StubTest
 		
 		StandardChangeLogEntry standard_change_log_entry = new StandardChangeLogEntry(id, new ObjectReference(new Kind("thing"), id), 0, new ObjectId("0000-0000-0000-0001"), "Short","my comment", attachments, meta_data.toString(),meta_data_after.toString());
 		
-		//System.out.println(standard_change_log_entry.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
+		System.out.println(standard_change_log_entry.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 		
 		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s"
 			     , "{"
@@ -121,16 +119,16 @@ public class StandardChangeLogEntryTest extends StubTest
 	public void testComparisonAndEquals()
 	{
 		ObjectId id = new ObjectId("0000-0000-0000-0000");
-		StandardChangeLogEntry standard_change_log_entry = new StandardChangeLogEntry(id, new ObjectReference(new Kind("thing"), id), 0, new ObjectId("0000-0000-0000-0001"), "Short","comments", new FieldArrayList<ObjectId>(), null,null);
-		StandardChangeLogEntry standard_change_log_entry2 = new StandardChangeLogEntry(id, new ObjectReference(new Kind("thing"), id), 0, new ObjectId("0000-0000-0000-0001"), "Short","comments", new FieldArrayList<ObjectId>(), null,null);
+		StandardChangeLogEntry standard_change_log_entry = new StandardChangeLogEntry(id, new ObjectReference(new Kind("thing"), id), 0, new ObjectId("0000-0000-0000-0001"), "Short","comments", new FieldArrayList<ObjectId>(), null,"");
+		StandardChangeLogEntry standard_change_log_entry2 = new StandardChangeLogEntry(id, new ObjectReference(new Kind("thing"), id), 0, new ObjectId("0000-0000-0000-0001"), "Short","comments", new FieldArrayList<ObjectId>(), null,"");
 			assertTrue(standard_change_log_entry.equals(standard_change_log_entry2));
 		assertEquals(0, standard_change_log_entry.compareTo(standard_change_log_entry2));
 		
-		standard_change_log_entry2 = new StandardChangeLogEntry(id, new ObjectReference(new Kind("thing"), id), -1, new ObjectId("0000-0000-0000-0001"), "Short","comments", new FieldArrayList<ObjectId>(), null,null);
+		standard_change_log_entry2 = new StandardChangeLogEntry(id, new ObjectReference(new Kind("thing"), id), -1, new ObjectId("0000-0000-0000-0001"), "Short","comments", new FieldArrayList<ObjectId>(), null,"");
 		assertFalse(standard_change_log_entry.equals(standard_change_log_entry2));
 		assertEquals(1, standard_change_log_entry.compareTo(standard_change_log_entry2));
 		
-		standard_change_log_entry2 = new StandardChangeLogEntry(id, new ObjectReference(new Kind("thing"), id), 1, new ObjectId("0000-0000-0000-0001"), "Short","comments", new FieldArrayList<ObjectId>(), null,null);
+		standard_change_log_entry2 = new StandardChangeLogEntry(id, new ObjectReference(new Kind("thing"), id), 1, new ObjectId("0000-0000-0000-0001"), "Short","comments", new FieldArrayList<ObjectId>(), null,"");
 		assertFalse(standard_change_log_entry.equals(standard_change_log_entry2));
 		assertEquals(-1, standard_change_log_entry.compareTo(standard_change_log_entry2));
 	}
@@ -139,7 +137,7 @@ public class StandardChangeLogEntryTest extends StubTest
 	public void testOptionalFields()
 	{
 		ObjectId id = new ObjectId("0000-0000-0000-0000");
-		StandardChangeLogEntry standard_change_log_entry = new StandardChangeLogEntry(id, new ObjectReference(new Kind("thing"), id), 0, new ObjectId("0000-0000-0000-0001"), "Short",null, new FieldArrayList<ObjectId>(), null,null);
+		StandardChangeLogEntry standard_change_log_entry = new StandardChangeLogEntry(id, new ObjectReference(new Kind("thing"), id), 0, new ObjectId("0000-0000-0000-0001"), "Short",null, new FieldArrayList<ObjectId>(), null,"");
 
 		assertEquals("hello", standard_change_log_entry.getOptionalComments("hello"));
 		
