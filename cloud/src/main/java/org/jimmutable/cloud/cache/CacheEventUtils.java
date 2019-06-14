@@ -6,11 +6,24 @@ import org.apache.logging.log4j.Logger;
 public class CacheEventUtils
 {	
 	private static final char COMMA = ',';
-	
+	/*
+	 * Cache event logging has become a bit too noisy at times in our production
+	 * logs as well as taking up a large chunk of cloud logging data we are alloted
+	 * per day, this is toggle to disable it when we're not actively monitoring
+	 * cache metrics
+	 */
+	private static final String DISABLE_CACHE_EVENT_LOGGING  = "disable_cache_event_logging";
+	private static final boolean IS_CACHE_EVENT_LOGGING_DISABLED = Boolean.getBoolean(DISABLE_CACHE_EVENT_LOGGING);
+
 	private static final Logger logger = LogManager.getLogger(CacheEventUtils.class);
 
 	public static void log( CacheEvent event )
 	{
+		if(IS_CACHE_EVENT_LOGGING_DISABLED)
+		{
+			return;
+		}
+		
 		final StringBuilder sb = new StringBuilder();
 
 		sb.append(event.getSimpleTimestampHumanReadable());

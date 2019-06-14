@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jimmutable.cloud.ApplicationId;
@@ -19,6 +20,7 @@ import org.jimmutable.cloud.storage.ObjectIdStorageKey;
 import org.jimmutable.cloud.storage.StandardImmutableObjectCache;
 import org.jimmutable.cloud.storage.Storage;
 import org.jimmutable.cloud.storage.StorageKey;
+import org.jimmutable.cloud.storage.StorageKeyExtension;
 import org.jimmutable.cloud.storage.StorageKeyName;
 import org.jimmutable.cloud.storage.StorageMetadata;
 import org.jimmutable.core.objects.StandardImmutableObject;
@@ -70,8 +72,8 @@ public class StorageS3 extends Storage
 
 		transfer_manager = TransferManagerBuilder.standard().withS3Client(client).build();
 	}
-	
-	public StorageS3( final AmazonS3ClientFactory client_factory, final ApplicationId application_id, StandardImmutableObjectCache cache , final boolean is_read_only )
+
+	public StorageS3( final AmazonS3ClientFactory client_factory, final ApplicationId application_id, StandardImmutableObjectCache cache, final boolean is_read_only )
 	{
 		super(is_read_only, cache);
 
@@ -159,10 +161,12 @@ public class StorageS3 extends Storage
 			return false;
 
 		final String log_prefix = "[upsert(" + key + ")] ";
-
+		File temp = null;
 		try
 		{
-			final File temp = File.createTempFile("storage_s3_", null);
+			temp = File.createTempFile("storage_s3_", null);
+
+			System.out.println("Temp file On Default Location: " + temp.getAbsolutePath());
 
 			LOGGER.debug(log_prefix + "Writing source to temp file");
 			try ( OutputStream fout = new BufferedOutputStream(new FileOutputStream(temp)) )
@@ -202,6 +206,9 @@ public class StorageS3 extends Storage
 				{
 					removeFromCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()));
 				}
+
+				deleteTempFile(temp);
+
 				return result;
 			}
 			catch ( Exception e )
@@ -214,6 +221,8 @@ public class StorageS3 extends Storage
 		{
 			LOGGER.catching(e);
 		}
+
+		deleteTempFile(temp);
 
 		return false;
 	}
@@ -228,18 +237,31 @@ public class StorageS3 extends Storage
 	@Override
 	public byte[] getCurrentVersion( final StorageKey key, byte[] default_value )
 	{
+		byte[] object = getComplexCurrentVersionFromCache(key, null);
+		if ( object != null )
+		{
+			return object;
+		}
 
 		Validator.notNull(key, "StorageKey");
-
 		S3Object s3_obj = null;
 		try
 		{
 			s3_obj = client.getObject(new GetObjectRequest(bucket_name, key.toString()).withRange(0, MAX_TRANSFER_BYTES_IN_BYTES));
+			byte[] obj = org.apache.commons.io.IOUtils.toByteArray(s3_obj.getObjectContent());
+
 			if ( isCacheEnabled() )
 			{
 				try
 				{
-					addToCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()), (StandardImmutableObject) StandardObject.deserialize(new String(org.apache.commons.io.IOUtils.toByteArray(s3_obj.getObjectContent()), "UTF8")));
+					if ( key.getSimpleExtension().equals(StorageKeyExtension.XML) || key.getSimpleExtension().equals(StorageKeyExtension.JSON) )
+					{
+						StandardObject standard_obj = StandardObject.deserialize(new String(obj));
+						if ( standard_obj instanceof StandardImmutableObject )
+						{
+							addToStandardImmutableObjectCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()), (StandardImmutableObject) standard_obj);
+						}
+					}
 				}
 				catch ( Exception e )
 				{
@@ -247,7 +269,7 @@ public class StorageS3 extends Storage
 				}
 			}
 
-			return org.apache.commons.io.IOUtils.toByteArray(s3_obj.getObjectContent());
+			return obj;
 		}
 		catch ( Exception e )
 		{
@@ -285,24 +307,26 @@ public class StorageS3 extends Storage
 
 		Validator.notNull(key, "StorageKey");
 
+		byte[] object = getComplexCurrentVersionFromCache(key, null);
+		if ( object != null )
+		{
+			try
+			{
+				IOUtils.transferAllBytes(new ByteArrayInputStream(object), sink);
+				return true;
+			}
+			catch ( IOException e )
+			{
+				// we do not return false here because we want to try to get it from storage.
+			}
+		}
+
 		S3Object s3_obj = null;
 		try
 		{
 			s3_obj = client.getObject(new GetObjectRequest(bucket_name, key.toString()));
-
 			org.apache.commons.io.IOUtils.copy(s3_obj.getObjectContent(), sink);
 			LOGGER.debug(String.format("Took %d millis", System.currentTimeMillis() - start));
-			if ( isCacheEnabled() )
-			{
-				try
-				{
-					addToCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()), (StandardImmutableObject) StandardObject.deserialize(new String(org.apache.commons.io.IOUtils.toByteArray(s3_obj.getObjectContent()), "UTF8")));
-				}
-				catch ( Exception e )
-				{
-					LogManager.getRootLogger().error("Failure to make into a StandardImmutableObject " + key.toString() + ". This object is not in the cache.", e);
-				}
-			}
 			return true;
 		}
 		catch ( Exception e )
@@ -343,11 +367,11 @@ public class StorageS3 extends Storage
 
 		final String log_prefix = "[getCurrentVersion(" + key + ")] ";
 
+		File temp = null;
 		try
 		{
 			final String s3_key = key.toString();
-			final File temp = File.createTempFile("storage_s3_", null);
-
+			temp = File.createTempFile("storage_s3_", null);
 			Download download = null;
 
 			try
@@ -368,14 +392,14 @@ public class StorageS3 extends Storage
 					} // give progress updates every .5 sec
 				}
 
-				LOGGER.info(log_prefix + "Progress: " + download.getProgress().getPercentTransferred()); // give the
-																											// 100
-																											// percent
-																											// before
-																											// exiting
+				/*
+				 * give the 100 percent before exiting
+				 */
+				LOGGER.info(log_prefix + "Progress: " + download.getProgress().getPercentTransferred());
 			}
 			catch ( Exception e )
 			{
+				deleteTempFile(temp);
 				LOGGER.catching(e);
 				download.abort();
 				return false;
@@ -389,7 +413,7 @@ public class StorageS3 extends Storage
 			boolean completed = TransferState.Completed == download.getState();
 
 			LOGGER.debug(String.format("Took %d millis", System.currentTimeMillis() - start));
-
+			deleteTempFile(temp);
 			return completed;
 		}
 		catch ( Exception e )
@@ -397,7 +421,29 @@ public class StorageS3 extends Storage
 			LOGGER.catching(e);
 		}
 
+		deleteTempFile(temp);
+
 		return false;
+	}
+
+	private void deleteTempFile( File temp )
+	{
+		if(temp == null || !temp.exists())
+		{
+			return;
+		}
+		
+		try
+		{
+			if ( !temp.delete() )
+			{
+				LOGGER.error("Unable to delete temp file. Ensure this isn't happening consistently");
+			}
+		}
+		catch ( Exception e )
+		{
+			LOGGER.error("Exception thrown deleting temp file. Ensure this isn't happening consistently", e);
+		}
 	}
 
 	@Override
