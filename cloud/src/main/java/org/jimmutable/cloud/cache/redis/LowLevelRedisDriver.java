@@ -606,7 +606,7 @@ public class LowLevelRedisDriver
 		{
 			try(Jedis jedis = pool.getResource();)
 			{
-				// Bulk updates require a carriage return and line feed between objects
+				// Bulk updates require a carriage return and line feed at the end of objects
 				jedis.lpush(getKey(app,queue_id), message.serialize(Format.JSON) + "\r\n");
 				
 				if ( r.nextInt(100) == 52 ) // about once per one hundred inserts, trim to 10_000 elements, for performance
