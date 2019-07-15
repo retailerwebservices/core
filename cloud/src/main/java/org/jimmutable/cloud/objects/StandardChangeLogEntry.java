@@ -87,6 +87,7 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 
 		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_ID);
 		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_SUBJECT);
+		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_TIMESTAMP);
 		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
 
 		INDEX_MAPPING = (SearchIndexDefinition) b.create();
