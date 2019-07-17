@@ -1,7 +1,6 @@
 package org.jimmutable.cloud.objects;
 
 import java.util.List;
-import java.util.Objects;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,17 +16,13 @@ import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldType;
 import org.jimmutable.cloud.storage.Storable;
 import org.jimmutable.core.fields.FieldArrayList;
-import org.jimmutable.core.fields.FieldCollection;
-import org.jimmutable.core.fields.FieldHashSet;
 import org.jimmutable.core.fields.FieldList;
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.StandardImmutableObject;
-import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.objects.common.ObjectReference;
 import org.jimmutable.core.serialization.FieldDefinition;
-import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.TypeName;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
@@ -94,9 +89,20 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 
 	}
 
-	// @CR - To save having to update all calls to this constructor, why not leave the parameters alone and call the toString() inside this method (after checking for null)? Then add a new 
-	// constructor (if necessary) with the new parameter types. -PM
-	
+	public StandardChangeLogEntry( ObjectId id, ObjectReference subject, long timestamp, ObjectId change_made_by_user_id, String short_description, String comments, FieldList<ObjectId> attachments, StandardImmutableObject<?> old_object, StandardImmutableObject<?> new_object )
+	{
+		this.id = id;
+		this.subject = subject;
+		this.timestamp = timestamp;
+		this.change_made_by_user_id = change_made_by_user_id;
+		this.short_description = short_description;
+		this.comments = comments;
+		this.attachments = new FieldArrayList<>(attachments);
+		this.before = old_object.toString();
+		this.after = new_object.toString();
+		complete();
+	}
+
 	public StandardChangeLogEntry( ObjectId id, ObjectReference subject, long timestamp, ObjectId change_made_by_user_id, String short_description, String comments, FieldList<ObjectId> attachments, String before, String after )
 	{
 		this.id = id;
