@@ -94,6 +94,9 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 
 	}
 
+	// @CR - To save having to update all calls to this constructor, why not leave the parameters alone and call the toString() inside this method (after checking for null)? Then add a new 
+	// constructor (if necessary) with the new parameter types. -PM
+	
 	public StandardChangeLogEntry( ObjectId id, ObjectReference subject, long timestamp, ObjectId change_made_by_user_id, String short_description, String comments, FieldList<ObjectId> attachments, String before, String after )
 	{
 		this.id = id;
