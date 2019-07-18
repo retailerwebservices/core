@@ -89,20 +89,6 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 
 	}
 
-	public StandardChangeLogEntry( ObjectId id, ObjectReference subject, long timestamp, ObjectId change_made_by_user_id, String short_description, String comments, FieldList<ObjectId> attachments, StandardImmutableObject<?> old_object, StandardImmutableObject<?> new_object )
-	{
-		this.id = id;
-		this.subject = subject;
-		this.timestamp = timestamp;
-		this.change_made_by_user_id = change_made_by_user_id;
-		this.short_description = short_description;
-		this.comments = comments;
-		this.attachments = new FieldArrayList<>(attachments);
-		this.before = old_object.toString();
-		this.after = new_object.toString();
-		complete();
-	}
-
 	public StandardChangeLogEntry( ObjectId id, ObjectReference subject, long timestamp, ObjectId change_made_by_user_id, String short_description, String comments, FieldList<ObjectId> attachments, String before, String after )
 	{
 		this.id = id;
