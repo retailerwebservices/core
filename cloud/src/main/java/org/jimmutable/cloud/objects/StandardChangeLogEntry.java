@@ -69,7 +69,7 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 	static public final SearchIndexFieldDefinition SEARCH_FIELD_SUBJECT = new SearchIndexFieldDefinition(FIELD_SUBJECT.getSimpleFieldName(), SearchIndexFieldType.ATOM);
 	static public final SearchIndexFieldDefinition SEARCH_FIELD_TIMESTAMP = new SearchIndexFieldDefinition(FIELD_TIMESTAMP.getSimpleFieldName(), SearchIndexFieldType.DAY);
 
-	static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("change-log-entry"), new IndexVersion("v1"));
+	static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("change-log-entry"), new IndexVersion("v2"));
 
 	static public final SearchIndexDefinition INDEX_MAPPING;
 
