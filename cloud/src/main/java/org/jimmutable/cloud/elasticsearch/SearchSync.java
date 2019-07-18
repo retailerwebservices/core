@@ -49,24 +49,35 @@ public abstract class SearchSync
 
 	public static final int MAX_REINDEX_COMPLETION_TIME_MINUTES = 120;
 	
-	private Set<Kind> kinds = new HashSet<>();
-	/**
-	 * Constructor assumes we need to setup the environment as well as use only
-	 * the kinds that are currently registered
-	 */
-	public SearchSync()
-	{
-		this.kinds = indexable_kinds.keySet();
-	}
+	private Set<Kind> kinds_to_reindex = new HashSet<>();
+	
+	private Set<Kind> kinds_to_exclude = new HashSet<>();
 	
 	/**
-	 * Constructor assumes we need to setup the environment as well as use only
-	 * the kinds that are currently registered. This allows for specific kinds
-	 * to be passed in.
+	 * Constructor assumes we need to setup the environment as well as use only the
+	 * kinds that are currently registered. This allows for specific kinds to be
+	 * passed in.
 	 */
-	public SearchSync(Set<Kind> kinds)
+	public SearchSync( Set<Kind> kinds_to_exclude, Set<Kind> kinds_to_reindex )
 	{
-		if(kinds != null) this.kinds = kinds;
+		/*
+		 * We exclude the kinds after the fact because we setup the registers for search
+		 * only when "run" is hit
+		 */
+		if ( kinds_to_exclude != null )
+		{
+			this.kinds_to_exclude = kinds_to_exclude;
+		}
+		
+		//If the passed in kinds to reindex is not set we will assume a full reindex
+		if ( kinds_to_reindex != null && !kinds_to_reindex.isEmpty())
+		{
+			this.kinds_to_reindex = kinds_to_reindex;
+		}
+		else
+		{
+			this.kinds_to_reindex = indexable_kinds.keySet();
+		}
 	}
 
 	/**
@@ -97,9 +108,9 @@ public abstract class SearchSync
 			System.exit(1);
 		}
 		logger.info("Success checking that all indices are properly configured...");
-		logger.info("Reindexing of all Kinds started...");
+		logger.info("Reindexing of Kinds started...");
 		//We want a single thread per half the kinds to ensure some form of stability with elastic search
-		int executor_threads = getSimpleKinds().size();
+		int executor_threads = getSimpleKindsToReindex().size();
 		if(executor_threads <= 1) 
 		{
 			executor_threads = 1;
@@ -111,11 +122,17 @@ public abstract class SearchSync
 		
 		ExecutorService executor = Executors.newFixedThreadPool(executor_threads);
 		//Log the kinds it is attempting to reindex
-		for(Kind kind : getSimpleKinds())
+		for(Kind kind : getSimpleKindsToReindex())
 		{
+			if(kinds_to_exclude.contains(kind))
+			{
+				logger.info("Kind \"" + kind + "\" was specified to be manually excluded from reindex.");
+				continue;
+			}
 			try
 			{
-				executor.submit(new SyncSingleKind(kind));
+				logger.info("Kind \"" + kind + "\" has started reindex.");
+				//executor.submit(new SyncSingleKind(kind));
 			}
 			catch(Exception e)
 			{
@@ -150,9 +167,14 @@ public abstract class SearchSync
 	 */
 	public abstract ApplicationId getSimpleApplicationID();
 	
-	private Set<Kind> getSimpleKinds()
+	private Set<Kind> getSimpleKindsToReindex()
 	{
-		return kinds;
+		return kinds_to_reindex;
+	}
+	
+	private Set<Kind> getSimpleKindsToExclude()
+	{
+		return kinds_to_reindex;
 	}
 	
 	/**
