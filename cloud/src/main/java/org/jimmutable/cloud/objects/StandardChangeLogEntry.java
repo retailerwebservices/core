@@ -117,20 +117,6 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 
 		this.before = o.getString(FIELD_BEFORE);
 		this.after = o.getString(FIELD_AFTER);
-		// wrong, this causes class cast exception when attempting to read it
-		// TO BE REMOVED EVENTUALLY
-		{
-			Object before_object = o.getObject(FIELD_BEFORE_OBJECT);
-			if ( before_object != null && this.before == null )
-			{
-				this.before = before_object.toString();
-			}
-			Object after_object = o.getObject(FIELD_AFTER_OBJECT);
-			if ( after_object != null && this.after == null )
-			{
-				this.after = after_object.toString();
-			}
-		}
 	}
 
 	@Override
