@@ -3,7 +3,7 @@
 
 	<groupId>org.jimmutable</groupId>
 	<artifactId>cloud</artifactId>
-	<version>0.0.57</version>
+	<version>0.0.58-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>cloud</name>
@@ -21,7 +21,7 @@
 		<url>https://github.com/jimmutable/core.git</url>
 		<connection>scm:git:https://github.com/jimmutable/core.git</connection>
 		<developerConnection>scm:git:https://github.com/jimmutable/core.git</developerConnection>
-		<tag>adrocket-0.0.57</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<licenses>
