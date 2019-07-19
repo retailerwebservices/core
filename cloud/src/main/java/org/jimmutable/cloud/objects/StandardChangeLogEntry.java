@@ -50,9 +50,7 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 	static public final FieldDefinition.String FIELD_SHORT_DESCRIPTION = new FieldDefinition.String("short_description", "");
 	static public final FieldDefinition.String FIELD_COMMENTS = new FieldDefinition.String("comments", null);
 	static public final FieldDefinition.Collection FIELD_ATTACHMENTS = new FieldDefinition.Collection("attachments", new FieldArrayList<ObjectId>());
-	static public final FieldDefinition.StandardObject FIELD_BEFORE_OBJECT = new FieldDefinition.StandardObject("before_object", null);
 	static public final FieldDefinition.String FIELD_BEFORE = new FieldDefinition.String("before", null);
-	static public final FieldDefinition.StandardObject FIELD_AFTER_OBJECT = new FieldDefinition.StandardObject("after_object", null);
 	static public final FieldDefinition.String FIELD_AFTER = new FieldDefinition.String("after", null);
 
 	private ObjectId id;// required
