@@ -132,7 +132,7 @@ public abstract class SearchSync
 			try
 			{
 				logger.info("Kind \"" + kind + "\" has started reindex.");
-				//executor.submit(new SyncSingleKind(kind));
+				executor.submit(new SyncSingleKind(kind));
 			}
 			catch(Exception e)
 			{
