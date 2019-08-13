@@ -48,6 +48,7 @@ public abstract class SearchSync
 	static private Map<Kind, SearchIndexDefinition> indexable_kinds = new ConcurrentHashMap<>();
 
 	public static final int MAX_REINDEX_COMPLETION_TIME_MINUTES = 120;
+	public static final ApplicationId APPLICATION_SERVICE_ID = new ApplicationId("search-sync");
 	
 	private Set<Kind> kinds_to_reindex = new HashSet<>();
 	
@@ -94,7 +95,7 @@ public abstract class SearchSync
 			throw new ValidationException("Unable to run script, environment_type is not set in system properties");
 		}
 		//Need environment type and application id passed in, otherwise the environment won't be setup properly
-		CloudExecutionEnvironment.startup(getSimpleApplicationID(), environment_type);
+		CloudExecutionEnvironment.startup(getSimpleApplicationID(), APPLICATION_SERVICE_ID, environment_type);
 		//Need a method to collect all the possible types
 		setupRegisters();
 		

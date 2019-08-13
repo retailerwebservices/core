@@ -39,12 +39,13 @@ public class SearchSortIntegrationTest
 {	
 	private static final Logger logger = LogManager.getLogger(SearchSortIntegrationTest.class);
 	public static final String APPLICATION_ID = "SearchSortIntegrationTest";
-	
+	public static final String APPLICATION_SERVICE_ID = "SearchSortIntegrationTest-service";
+
 	public static final Random RANDOM = new Random();
 	
 	static
 	{
-		CloudExecutionEnvironment.startup(new ApplicationId(APPLICATION_ID), EnvironmentType.DEV);
+		CloudExecutionEnvironment.startup(new ApplicationId(APPLICATION_ID), new ApplicationId(APPLICATION_SERVICE_ID), EnvironmentType.DEV);
 		
 		ObjectParseTree.registerTypeName(SearchSortObjectText.class);
 		ObjectParseTree.registerTypeName(SearchSortObjectLong.class);

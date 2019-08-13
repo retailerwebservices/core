@@ -2,6 +2,9 @@ package org.jimmutable.cloud;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -34,6 +37,7 @@ import org.jimmutable.cloud.storage.StorageDevLocalFileSystem;
 import org.jimmutable.cloud.storage.StubStorage;
 import org.jimmutable.cloud.storage.s3.RegionSpecificAmazonS3ClientFactory;
 import org.jimmutable.cloud.storage.s3.StorageS3;
+import org.jimmutable.cloud.utils.ApplicationHeartbeatUtils;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 
 /**
@@ -63,6 +67,8 @@ public class CloudExecutionEnvironment
 
 	private static EnvironmentType ENV_TYPE;
 	private static ApplicationId APPLICATION_ID;
+	private static ApplicationId APPLICATION_SUB_SERVICE_ID;
+
 	private static StandardImmutableObjectCache STANDARD_IMMUTABLE_OBJECT_CACHE;
 	public static final String STAGING_POST_FIX = "-staging";
 
@@ -84,6 +90,27 @@ public class CloudExecutionEnvironment
 	public ApplicationId getSimpleApplicationId()
 	{
 		return APPLICATION_ID;
+	}
+	
+	public ApplicationId getSimpleApplicationServiceId()
+	{
+		return APPLICATION_SUB_SERVICE_ID;
+	}
+	
+	public static void validate()
+	{
+		if ( APPLICATION_ID == null )
+		{
+			throw new RuntimeException("No Passed in APPLICATION_ID! Add the application ID to startup to handle it correctly.");
+		}
+		if ( APPLICATION_SUB_SERVICE_ID == null )
+		{
+			throw new RuntimeException("No Passed in APPLICATION_SUB_SERVICE_ID! Add the application's service ID to startup to handle it correctly.");
+		}
+		if ( ENV_TYPE == null )
+		{
+			throw new RuntimeException("No Passed in EnvironmentType! Add the environment to startup to handle it correctly.");
+		}
 	}
 
 	/**
@@ -147,13 +174,22 @@ public class CloudExecutionEnvironment
 	 * environment variables JIMMUTABLE_ENV_TYPE and JIMMUTABLE_APP_ID.
 	 *
 	 * The DEV environment variable is the default if the variable is not provided
+	 * 
+	 * @param application_id
+	 *            the overall application name that all services that make up the
+	 *            application can share
+	 * @param application_sub_service_id
+	 *            a service that is a part of the application_id. For instance if we
+	 *            have a application_id of "AdRocket", we may then also have sub
+	 *            services within "AdRocket" like "AdRocket-Web" &
+	 *            "AdRocket-Ad-Processor".
 	 *
 	 * @param default_id
 	 *            A default application id in case the environment variable is not
 	 *            set
 	 */
 	@SuppressWarnings("resource")
-	public static void startup(ApplicationId application_id, EnvironmentType env_type)
+	public static void startup(ApplicationId application_id, ApplicationId application_sub_service_id, EnvironmentType env_type)
 	{
 
 		if (CURRENT != null)
@@ -165,8 +201,11 @@ public class CloudExecutionEnvironment
 
 		ENV_TYPE = env_type;
 		APPLICATION_ID = application_id;
+		APPLICATION_SUB_SERVICE_ID = application_sub_service_id;
+		validate();
+		
+		logger.info(String.format("ApplicationID=%s APPLICATION_SUB_SERVICE_ID:%s Environment=%s", APPLICATION_ID, APPLICATION_SUB_SERVICE_ID, ENV_TYPE));
 
-		logger.info(String.format("ApplicationID=%s Environment=%s", APPLICATION_ID, ENV_TYPE));
 		CacheRedis redis = new CacheRedis(APPLICATION_ID, new LowLevelRedisDriver());
 		STANDARD_IMMUTABLE_OBJECT_CACHE = new StandardImmutableObjectCache(redis, "storagecache");
 		switch (env_type)
@@ -265,10 +304,10 @@ public class CloudExecutionEnvironment
 		JimmutableTypeNameRegister.registerAllTypes();
 		JimmutableCloudTypeNameRegister.registerAllTypes();
 		Log4jUtil.setupListeners();
-		STANDARD_IMMUTABLE_OBJECT_CACHE.createListeners();
+		ApplicationHeartbeatUtils.setupHeartbeat(application_id, application_sub_service_id);
 
+		STANDARD_IMMUTABLE_OBJECT_CACHE.createListeners();
 	}
-	
 
 	/**
 	 * This creates a staging specific application ID for Storage.
@@ -295,7 +334,7 @@ public class CloudExecutionEnvironment
 	 */
 	public static void startupStubTest(ApplicationId application_id)
 	{
-		startup(application_id, EnvironmentType.STUB);
+		startup(application_id, new ApplicationId("stub"), EnvironmentType.STUB);
 	}
 
 	/**
@@ -308,7 +347,7 @@ public class CloudExecutionEnvironment
 	 */
 	public static void startupIntegrationTest(ApplicationId application_id)
 	{
-		startup(application_id, EnvironmentType.DEV);
+		startup(application_id, new ApplicationId("integration"), EnvironmentType.DEV);
 	}
 
 	/**
