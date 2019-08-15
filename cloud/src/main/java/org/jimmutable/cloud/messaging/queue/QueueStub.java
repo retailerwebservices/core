@@ -21,4 +21,10 @@ public class QueueStub implements IQueue
 		throw new RuntimeException(ERROR_MESSAGE);
 	}
 
+	@Override
+	public int getLength( QueueId queue_id, int default_value )
+	{
+		throw new RuntimeException(ERROR_MESSAGE);
+	}
+
 }

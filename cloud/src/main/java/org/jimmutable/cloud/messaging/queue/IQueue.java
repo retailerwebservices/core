@@ -68,4 +68,6 @@ public interface IQueue
      * -JMD
 	 */
 	public void startListening(QueueId queue, QueueListener listener, int number_of_worker_threads);
+	
+	public int getLength(QueueId queue_id, int default_value);
 }
