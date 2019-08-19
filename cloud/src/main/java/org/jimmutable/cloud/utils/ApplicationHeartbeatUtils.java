@@ -24,7 +24,7 @@ public class ApplicationHeartbeatUtils
 	/*
 	 * Allows user, from any application, to check if any application's sub service
 	 * is up and running. This gives some room for cache misses by only checking if
-	 * we have recieved a heartbeat in the last 30 seconds. Even though we post
+	 * we have received a heartbeat in the last 30 seconds. Even though we post
 	 * every 10 seconds.
 	 */
 	public static boolean hasHeartbeat( ApplicationId application_id, ApplicationId application_sub_service_id )
