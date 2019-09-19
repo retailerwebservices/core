@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.apache.http.Header;
@@ -1051,12 +1052,11 @@ public class ElasticSearchRESTClient implements ISearch
 	private class BulkUpsertScanHandler implements StorageKeyHandler
 	{
 		private String index_name;
-		private BulkRequest requests;
+		private Set<IndexRequest> requests = ConcurrentHashMap.newKeySet();
 
 		private BulkUpsertScanHandler( String index_name )
 		{
 			this.index_name = index_name;
-			this.requests = new BulkRequest();
 		}
 
 		@SuppressWarnings("rawtypes")
@@ -1108,9 +1108,15 @@ public class ElasticSearchRESTClient implements ISearch
 			}
 		}
 
+		//Meant to be used after the scan completes since we need our set of IndexRequest to be able to be added in parallel
 		private BulkRequest getSimpleBulkRequest()
 		{
-			return requests;
+			BulkRequest bulk_request = new BulkRequest();
+			for(IndexRequest request : requests)
+			{
+				bulk_request.add(request);
+			}
+			return bulk_request;
 		}
 	}
 
