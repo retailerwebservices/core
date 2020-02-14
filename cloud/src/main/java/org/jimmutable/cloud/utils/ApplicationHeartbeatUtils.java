@@ -140,6 +140,6 @@ public class ApplicationHeartbeatUtils
 	{
 		ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 		ApplicationHeartbeat heartbeat_thread = new ApplicationHeartbeat(application_id, application_sub_service_id);
-		scheduler.scheduleAtFixedRate(heartbeat_thread, TimeUnit.SECONDS.toMillis(SECONDS_PER_UPDATE), SECONDS_PER_UPDATE, TimeUnit.MILLISECONDS);
+		scheduler.scheduleAtFixedRate(heartbeat_thread, 0, SECONDS_PER_UPDATE, TimeUnit.MILLISECONDS);
 	}
 }
