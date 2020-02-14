@@ -398,7 +398,7 @@ public class ElasticSearchRESTClient implements ISearch
 		}
 		catch ( Exception e )
 		{
-			e.printStackTrace();
+			logger.error("Exception thrown deleting index: ", e);
 			return false;
 		}
 	}
