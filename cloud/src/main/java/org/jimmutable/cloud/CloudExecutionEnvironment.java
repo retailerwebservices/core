@@ -2,9 +2,6 @@ package org.jimmutable.cloud;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -72,7 +69,7 @@ public class CloudExecutionEnvironment
 	private static StandardImmutableObjectCache STANDARD_IMMUTABLE_OBJECT_CACHE;
 	public static final String STAGING_POST_FIX = "-staging";
 
-	private CloudExecutionEnvironment(ISearch search, IStorage storage, IQueue queue_service, ISignal signal_service, IEmail email_service, ICache cache_service)
+	private CloudExecutionEnvironment( ISearch search, IStorage storage, IQueue queue_service, ISignal signal_service, IEmail email_service, ICache cache_service )
 	{
 		this.search = search;
 		this.storage = storage;
@@ -91,12 +88,12 @@ public class CloudExecutionEnvironment
 	{
 		return APPLICATION_ID;
 	}
-	
+
 	public ApplicationId getSimpleApplicationServiceId()
 	{
 		return APPLICATION_SUB_SERVICE_ID;
 	}
-	
+
 	public static void validate()
 	{
 		if ( APPLICATION_ID == null )
@@ -147,7 +144,7 @@ public class CloudExecutionEnvironment
 	{
 		return email_service;
 	}
-	
+
 	public ICache getSimpleCacheService()
 	{
 		return cache_service;
@@ -158,7 +155,8 @@ public class CloudExecutionEnvironment
 		try
 		{
 			return new SESClient(SESClient.getClient());
-		} catch (Exception e)
+		}
+		catch ( Exception e )
 		{
 			logger.error("Failed to created email client!", e);
 			throw new RuntimeException("Failed to created email client!");
@@ -189,10 +187,10 @@ public class CloudExecutionEnvironment
 	 *            set
 	 */
 	@SuppressWarnings("resource")
-	public static void startup(ApplicationId application_id, ApplicationId application_sub_service_id, EnvironmentType env_type)
+	public static void startup( ApplicationId application_id, ApplicationId application_sub_service_id, EnvironmentType env_type )
 	{
 
-		if (CURRENT != null)
+		if ( CURRENT != null )
 		{
 			throw new RuntimeException("Startup has already been called!");
 		}
@@ -203,12 +201,12 @@ public class CloudExecutionEnvironment
 		APPLICATION_ID = application_id;
 		APPLICATION_SUB_SERVICE_ID = application_sub_service_id;
 		validate();
-		
+
 		logger.info(String.format("ApplicationID=%s APPLICATION_SUB_SERVICE_ID:%s Environment=%s", APPLICATION_ID, APPLICATION_SUB_SERVICE_ID, ENV_TYPE));
 
 		CacheRedis redis = new CacheRedis(APPLICATION_ID, new LowLevelRedisDriver());
 		STANDARD_IMMUTABLE_OBJECT_CACHE = new StandardImmutableObjectCache(redis, "storagecache");
-		switch (env_type)
+		switch ( env_type )
 		{
 		case DEV:
 
@@ -229,12 +227,12 @@ public class CloudExecutionEnvironment
 				logger.log(Level.FATAL, "Failed to instantiate the elasticsearch client!", e);
 			}
 
-			if (dev_client == null)
+			if ( dev_client == null )
 			{
 				throw new RuntimeException("Failed to instantiate the elasticsearch client!");
 			}
 
-			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), new StorageDevLocalFileSystem(false, APPLICATION_ID, STANDARD_IMMUTABLE_OBJECT_CACHE), new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient(),redis);
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), new StorageDevLocalFileSystem(false, APPLICATION_ID, STANDARD_IMMUTABLE_OBJECT_CACHE), new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient(), redis);
 
 			break;
 		// For now, staging is the same as dev
@@ -256,7 +254,7 @@ public class CloudExecutionEnvironment
 				logger.log(Level.FATAL, "Failed to instantiate the elasticsearch client!", e);
 			}
 
-			if (staging_client == null)
+			if ( staging_client == null )
 			{
 				throw new RuntimeException("Failed to instantiate the elasticsearch client!");
 			}
@@ -265,15 +263,15 @@ public class CloudExecutionEnvironment
 			 * meant to be synced up nightly
 			 */
 			ApplicationId staging_application_id = createStagingApplicationIDComplex(APPLICATION_ID, null);
-			if(staging_application_id == null)
+			if ( staging_application_id == null )
 			{
 				throw new RuntimeException("Failed to create staging application ID for Storage!");
 			}
-			
+
 			StorageS3 staging_storage = new StorageS3(RegionSpecificAmazonS3ClientFactory.defaultFactory(), staging_application_id, STANDARD_IMMUTABLE_OBJECT_CACHE, false);
 			staging_storage.upsertBucketIfNeeded();
-			
-			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), staging_storage, new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient(),redis);
+
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), staging_storage, new QueueRedis(APPLICATION_ID), new SignalRedis(APPLICATION_ID), getSESClient(), redis);
 
 			break;
 
@@ -312,7 +310,7 @@ public class CloudExecutionEnvironment
 	/**
 	 * This creates a staging specific application ID for Storage.
 	 */
-	public static ApplicationId createStagingApplicationIDComplex(ApplicationId application_id, ApplicationId default_value)
+	public static ApplicationId createStagingApplicationIDComplex( ApplicationId application_id, ApplicationId default_value )
 	{
 		try
 		{
@@ -332,7 +330,7 @@ public class CloudExecutionEnvironment
 	 * @param application_id
 	 *            The ApplicationId
 	 */
-	public static void startupStubTest(ApplicationId application_id)
+	public static void startupStubTest( ApplicationId application_id )
 	{
 		startup(application_id, new ApplicationId("stub"), EnvironmentType.STUB);
 	}
@@ -345,7 +343,7 @@ public class CloudExecutionEnvironment
 	 * @param application_id
 	 *            The ApplicationId
 	 */
-	public static void startupIntegrationTest(ApplicationId application_id)
+	public static void startupIntegrationTest( ApplicationId application_id )
 	{
 		startup(application_id, new ApplicationId("integration"), EnvironmentType.DEV);
 	}
@@ -357,20 +355,21 @@ public class CloudExecutionEnvironment
 	 * @param default_value
 	 * @return The EnvironmentType from the system variable or the default_value
 	 */
-	public static EnvironmentType getEnvironmentTypeFromSystemProperty(EnvironmentType default_value)
+	public static EnvironmentType getEnvironmentTypeFromSystemProperty( EnvironmentType default_value )
 	{
 		String env_level = System.getProperty(ENV_TYPE_VARIABLE_NAME);
-		if (env_level == null)
+		if ( env_level == null )
 			env_level = System.getProperty(ENV_TYPE_VARIABLE_NAME.toLowerCase());
 
-		if (env_level != null)
+		if ( env_level != null )
 		{
 			EnvironmentType tmp_type = null;
 			try
 			{
 				env_level = env_level.toUpperCase();
 				tmp_type = EnvironmentType.valueOf(env_level);
-			} catch (Exception e)
+			}
+			catch ( Exception e )
 			{
 				logger.fatal(String.format("Invalid Environment type %s using default type %s", env_level, tmp_type));
 				return default_value;
@@ -386,14 +385,15 @@ public class CloudExecutionEnvironment
 	{
 		String operating_system_property = System.getProperty("os.name");
 
-		if (operating_system_property != null)
+		if ( operating_system_property != null )
 		{
 			String os = operating_system_property.toLowerCase();
-			if (os.indexOf("win") < 0 && os.indexOf("mac") < 0)
+			if ( os.indexOf("win") < 0 && os.indexOf("mac") < 0 )
 			{
 				logger.fatal(String.format("Unexpected operating system (%s) detected for %s environment!", os, ENV_TYPE));
 			}
-		} else
+		}
+		else
 		{
 			logger.fatal("Failed to detect operating system!");
 		}
@@ -414,7 +414,7 @@ public class CloudExecutionEnvironment
 	 */
 	static public CloudExecutionEnvironment getSimpleCurrent()
 	{
-		if (CURRENT == null)
+		if ( CURRENT == null )
 		{
 			throw new RuntimeException("The startup method was never called first to setup the singleton!");
 		}
