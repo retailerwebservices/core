@@ -95,11 +95,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class ElasticSearchRESTClient implements ISearch
 {
-	private static final String PRODUCTION_ELASTICSEARCH_PASSWORD = "password";
+	private static final String PRODUCTION_ELASTICSEARCH_PASSWORD = "production_elastic_password";
 
-	private static final String PRODUCTION_ELASTICSEARCH_USERNAME = "elastic";
+	private static final String PRODUCTION_ELASTICSEARCH_USERNAME = "production_elastic_username";
 
-	private static final String PRODUCTION_PATH_TO_CERT = "/path/to/cert.crt";
+	private static final String PRODUCTION_PATH_TO_CERT = "elasticsearch_path_to_cert";
 
 	private static final Logger logger = LogManager.getLogger(ElasticSearchRESTClient.class);
 
@@ -129,8 +129,10 @@ public class ElasticSearchRESTClient implements ISearch
 
 			boolean useSSL = true;
 
+			String production_elastic_username = System.getProperty(PRODUCTION_ELASTICSEARCH_USERNAME);
+			String production_elastic_password = System.getProperty(PRODUCTION_ELASTICSEARCH_PASSWORD);
 			final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-			credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(PRODUCTION_ELASTICSEARCH_USERNAME, PRODUCTION_ELASTICSEARCH_PASSWORD));
+			credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(production_elastic_username, production_elastic_password));
 
 			if ( !useSSL )
 			{ // Without TLS
@@ -145,7 +147,8 @@ public class ElasticSearchRESTClient implements ISearch
 			}
 			else
 			{ // With TLS
-				File caFile = new File(PRODUCTION_PATH_TO_CERT);
+				String production_path_to_cert = System.getProperty(PRODUCTION_PATH_TO_CERT);
+				File caFile = new File(production_path_to_cert);
 
 				try
 				{
