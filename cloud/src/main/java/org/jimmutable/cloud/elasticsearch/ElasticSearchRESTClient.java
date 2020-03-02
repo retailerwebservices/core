@@ -1,7 +1,12 @@
 package org.jimmutable.cloud.elasticsearch;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.security.KeyStore;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,10 +20,17 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import org.apache.http.Header;
+import javax.net.ssl.SSLContext;
+
 import org.apache.http.HttpHost;
-import org.apache.http.client.config.RequestConfig;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -84,6 +96,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class ElasticSearchRESTClient implements ISearch
 {
+	private static final String PRODUCTION_ELASTICSEARCH_PASSWORD = "password";
+
+	private static final String PRODUCTION_ELASTICSEARCH_USERNAME = "elastic";
+
+	private static final String PRODUCTION_PATH_TO_CERT = "/path/to/cert.crt";
+
 	private static final Logger logger = LogManager.getLogger(ElasticSearchRESTClient.class);
 
 	/**
@@ -92,11 +110,6 @@ public class ElasticSearchRESTClient implements ISearch
 	 * same version on client/server.
 	 */
 	protected volatile RestHighLevelClient high_level_rest_client;
-
-	// This value is the Base64 encoded user:pass. If someone changes the
-	// authentication this will break.
-	private final BasicHeader HEADER_BASIC_AUTH = new BasicHeader("Authorization", "Basic ZWxhc3RpYzpnVWM2clZNa1Z0MUdEeXBneHV4ZTdaalI=");
-	private final BasicHeader HEADER_CONTENT_TYPE = new BasicHeader("Content-Type", "application/json");
 
 	private String PRODUCTION_ELASTICSEARCH_HOST = "f8bfe258266ee6bd44cece0dde4326d5.us-west-2.aws.found.io";
 	private int PRODUCTION_ELASTICSEARCH_PORT = 9243;
@@ -113,16 +126,54 @@ public class ElasticSearchRESTClient implements ISearch
 		EnvironmentType type = CloudExecutionEnvironment.getEnvironmentTypeFromSystemProperty(null);
 		if ( type == EnvironmentType.PRODUCTION )
 		{
-			RestClientBuilder builder = RestClient.builder(new HttpHost(PRODUCTION_ELASTICSEARCH_HOST, PRODUCTION_ELASTICSEARCH_PORT, "https")).setRequestConfigCallback(new RestClientBuilder.RequestConfigCallback()
-			{
-				@Override
-				public RequestConfig.Builder customizeRequestConfig( RequestConfig.Builder requestConfigBuilder )
+			RestClientBuilder lowLevelClientBuilder = RestClient.builder(new HttpHost(PRODUCTION_ELASTICSEARCH_HOST, PRODUCTION_ELASTICSEARCH_PORT, "https"));
+
+			boolean useSSL = true;
+
+			final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+			credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(PRODUCTION_ELASTICSEARCH_USERNAME, PRODUCTION_ELASTICSEARCH_PASSWORD));
+
+			if ( !useSSL )
+			{ // Without TLS
+				lowLevelClientBuilder.setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback()
 				{
-					return requestConfigBuilder.setConnectTimeout(5000).setSocketTimeout(60000);
+					@Override
+					public HttpAsyncClientBuilder customizeHttpClient( HttpAsyncClientBuilder httpClientBuilder )
+					{
+						return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+					}
+				});
+			}
+			else
+			{ // With TLS
+				File caFile = new File(PRODUCTION_PATH_TO_CERT);
+
+				try
+				{
+					CertificateFactory fact = CertificateFactory.getInstance("X.509");
+					FileInputStream is = new FileInputStream(caFile);
+					X509Certificate cer = (X509Certificate) fact.generateCertificate(is);
+					KeyStore keystore = KeyStore.getInstance("JKS");
+					keystore.load(null, null);
+					keystore.setCertificateEntry("public", cer);
+
+					final SSLContext sslcontext = SSLContextBuilder.create().loadTrustMaterial(keystore, new TrustSelfSignedStrategy()).build();
+					lowLevelClientBuilder.setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback()
+					{
+						@Override
+						public HttpAsyncClientBuilder customizeHttpClient( HttpAsyncClientBuilder httpClientBuilder )
+						{
+							return httpClientBuilder.setSSLContext(sslcontext).setDefaultCredentialsProvider(credentialsProvider);
+						}
+					});
 				}
-			});
-			builder.setDefaultHeaders(new Header[] { HEADER_BASIC_AUTH, HEADER_CONTENT_TYPE }).setMaxRetryTimeoutMillis(120000);
-			high_level_rest_client = new RestHighLevelClient(builder);
+				catch ( Exception e )
+				{
+					logger.debug(e.getMessage());
+				}
+			}
+
+			high_level_rest_client = new RestHighLevelClient(lowLevelClientBuilder);
 		}
 		else
 		{
@@ -1108,11 +1159,12 @@ public class ElasticSearchRESTClient implements ISearch
 			}
 		}
 
-		//Meant to be used after the scan completes since we need our set of IndexRequest to be able to be added in parallel
+		// Meant to be used after the scan completes since we need our set of
+		// IndexRequest to be able to be added in parallel
 		private BulkRequest getSimpleBulkRequest()
 		{
 			BulkRequest bulk_request = new BulkRequest();
-			for(IndexRequest request : requests)
+			for ( IndexRequest request : requests )
 			{
 				bulk_request.add(request);
 			}
