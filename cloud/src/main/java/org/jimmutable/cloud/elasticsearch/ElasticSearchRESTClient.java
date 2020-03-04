@@ -126,7 +126,8 @@ public class ElasticSearchRESTClient implements ISearch
 		if ( type == EnvironmentType.PRODUCTION )
 		{
 			RestClientBuilder lowLevelClientBuilder = RestClient.builder(new HttpHost(PRODUCTION_ELASTICSEARCH_HOST, PRODUCTION_ELASTICSEARCH_PORT, "https"));
-
+			// @CR - Why is this here along with lines 137-148? If you want to preserve the code in case we need it again, maybe just comment it out and make a note in the
+			// comment to not delete it? Otherwise, if you really want to support the ability to turn it off, perhaps accept a system property to change it. -PM
 			boolean useSSL = true;
 
 			String production_elastic_username = System.getProperty(PRODUCTION_ELASTICSEARCH_USERNAME);
