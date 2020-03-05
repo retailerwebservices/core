@@ -126,54 +126,37 @@ public class ElasticSearchRESTClient implements ISearch
 		if ( type == EnvironmentType.PRODUCTION )
 		{
 			RestClientBuilder lowLevelClientBuilder = RestClient.builder(new HttpHost(PRODUCTION_ELASTICSEARCH_HOST, PRODUCTION_ELASTICSEARCH_PORT, "https"));
-			// @CR - Why is this here along with lines 137-148? If you want to preserve the code in case we need it again, maybe just comment it out and make a note in the
-			// comment to not delete it? Otherwise, if you really want to support the ability to turn it off, perhaps accept a system property to change it. -PM
-			boolean useSSL = true;
 
 			String production_elastic_username = System.getProperty(PRODUCTION_ELASTICSEARCH_USERNAME);
 			String production_elastic_password = System.getProperty(PRODUCTION_ELASTICSEARCH_PASSWORD);
 			final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 			credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(production_elastic_username, production_elastic_password));
 
-			if ( !useSSL )
-			{ // Without TLS
+			String production_path_to_cert = System.getProperty(PRODUCTION_PATH_TO_CERT);
+			File caFile = new File(production_path_to_cert);
+
+			try
+			{
+				CertificateFactory fact = CertificateFactory.getInstance("X.509");
+				FileInputStream is = new FileInputStream(caFile);
+				X509Certificate cer = (X509Certificate) fact.generateCertificate(is);
+				KeyStore keystore = KeyStore.getInstance("JKS");
+				keystore.load(null, null);
+				keystore.setCertificateEntry("public", cer);
+
+				final SSLContext sslcontext = SSLContextBuilder.create().loadTrustMaterial(keystore, new TrustSelfSignedStrategy()).build();
 				lowLevelClientBuilder.setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback()
 				{
 					@Override
 					public HttpAsyncClientBuilder customizeHttpClient( HttpAsyncClientBuilder httpClientBuilder )
 					{
-						return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+						return httpClientBuilder.setSSLContext(sslcontext).setDefaultCredentialsProvider(credentialsProvider);
 					}
 				});
 			}
-			else
-			{ // With TLS
-				String production_path_to_cert = System.getProperty(PRODUCTION_PATH_TO_CERT);
-				File caFile = new File(production_path_to_cert);
-
-				try
-				{
-					CertificateFactory fact = CertificateFactory.getInstance("X.509");
-					FileInputStream is = new FileInputStream(caFile);
-					X509Certificate cer = (X509Certificate) fact.generateCertificate(is);
-					KeyStore keystore = KeyStore.getInstance("JKS");
-					keystore.load(null, null);
-					keystore.setCertificateEntry("public", cer);
-
-					final SSLContext sslcontext = SSLContextBuilder.create().loadTrustMaterial(keystore, new TrustSelfSignedStrategy()).build();
-					lowLevelClientBuilder.setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback()
-					{
-						@Override
-						public HttpAsyncClientBuilder customizeHttpClient( HttpAsyncClientBuilder httpClientBuilder )
-						{
-							return httpClientBuilder.setSSLContext(sslcontext).setDefaultCredentialsProvider(credentialsProvider);
-						}
-					});
-				}
-				catch ( Exception e )
-				{
-					logger.debug(e.getMessage());
-				}
+			catch ( Exception e )
+			{
+				logger.debug(e.getMessage());
 			}
 
 			high_level_rest_client = new RestHighLevelClient(lowLevelClientBuilder);
