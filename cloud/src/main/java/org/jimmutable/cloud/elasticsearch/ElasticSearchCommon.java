@@ -33,7 +33,7 @@ public class ElasticSearchCommon
 
 	protected static final ExecutorService document_upsert_pool = (ExecutorService) new ThreadPoolExecutor(8, 8, 5, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
 
-	public static final String ELASTICSEARCH_DEFAULT_TYPE = "default";
+	public static final String ELASTICSEARCH_DEFAULT_TYPE = "mappings";
 	public static final String SORT_FIELD_NAME_JIMMUTABLE = "jimmutable_sort_field";
 
 	public static XContentBuilder getMappingBuilder( SearchIndexDefinition index, XContentBuilder default_value )
@@ -42,8 +42,7 @@ public class ElasticSearchCommon
 		try
 		{
 			mappingBuilder = jsonBuilder();
-
-			mappingBuilder.startObject().startObject(ELASTICSEARCH_DEFAULT_TYPE).startObject("properties");
+			mappingBuilder.startObject().startObject("properties");
 			for ( SearchIndexFieldDefinition field : index.getSimpleFields() )
 			{
 				mappingBuilder.startObject(field.getSimpleFieldName().getSimpleName());
@@ -53,7 +52,7 @@ public class ElasticSearchCommon
 				mappingBuilder.endObject();
 
 			}
-			mappingBuilder.endObject().endObject().endObject();
+			mappingBuilder.endObject().endObject();
 			mappingBuilder.close();
 			return mappingBuilder;
 		}
@@ -63,8 +62,7 @@ public class ElasticSearchCommon
 			return default_value;
 		}
 	}
-	
-	
+
 	protected static boolean shutdownDocumentUpsertThreadPool( int timeout_seconds )
 	{
 		long start = System.currentTimeMillis();
@@ -109,30 +107,30 @@ public class ElasticSearchCommon
 	 * @param default_value
 	 * @return
 	 */
-	static public FieldSortBuilder getSort(SortBy sort_by, FieldSortBuilder default_value)
+	static public FieldSortBuilder getSort( SortBy sort_by, FieldSortBuilder default_value )
 	{
 		SortOrder order = null;
-		if (sort_by.getSimpleDirection() == SortDirection.ASCENDING)
+		if ( sort_by.getSimpleDirection() == SortDirection.ASCENDING )
 			order = SortOrder.ASC;
-		if (sort_by.getSimpleDirection() == SortDirection.DESCENDING)
+		if ( sort_by.getSimpleDirection() == SortDirection.DESCENDING )
 			order = SortOrder.DESC;
 
-		if (order == null)
+		if ( order == null )
 			return default_value;
 
 		FieldName field_name = sort_by.getSimpleField().getSimpleFieldName();
 		String sort_on_string = field_name.getSimpleName();
 
-		if (sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.TEXT)
+		if ( sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.TEXT )
 		{
-			//Reference getSortFieldNameText for logic on calling ATOM search type here
+			// Reference getSortFieldNameText for logic on calling ATOM search type here
 			sort_on_string = getSortFieldNameText(sort_by.getSimpleField().getSimpleFieldName()) + "." + SearchIndexFieldType.ATOM.getSimpleSearchType();
 		}
-		if (sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.TIMEOFDAY)
+		if ( sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.TIMEOFDAY )
 		{
 			sort_on_string = getSortFieldNameTimeOfDay(sort_by.getSimpleField().getSimpleFieldName());
 		}
-		if (sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.INSTANT)
+		if ( sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.INSTANT )
 		{
 			sort_on_string = getSortFieldNameInstant(sort_by.getSimpleField().getSimpleFieldName());
 		}
@@ -152,7 +150,7 @@ public class ElasticSearchCommon
 	 * @param field
 	 * @return
 	 */
-	static public String getSortFieldNameText(FieldName field)
+	static public String getSortFieldNameText( FieldName field )
 	{
 		return getSortFieldNameText(field.getSimpleName());
 	}
@@ -169,7 +167,7 @@ public class ElasticSearchCommon
 	 * @param field_name
 	 * @return
 	 */
-	static public String getSortFieldNameText(String field_name)
+	static public String getSortFieldNameText( String field_name )
 	{
 		return field_name + "_" + SORT_FIELD_NAME_JIMMUTABLE + "_" + SearchIndexFieldType.ATOM.getSimpleSearchType();
 	}
@@ -181,7 +179,7 @@ public class ElasticSearchCommon
 	 * @param field
 	 * @return
 	 */
-	static public String getSortFieldNameTimeOfDay(FieldName field)
+	static public String getSortFieldNameTimeOfDay( FieldName field )
 	{
 		return getSortFieldNameTimeOfDay(field.getSimpleName());
 	}
@@ -193,7 +191,7 @@ public class ElasticSearchCommon
 	 * @param field_name
 	 * @return
 	 */
-	static public String getSortFieldNameTimeOfDay(String field_name)
+	static public String getSortFieldNameTimeOfDay( String field_name )
 	{
 		return field_name + "_" + SORT_FIELD_NAME_JIMMUTABLE + "_" + TimeOfDay.FIELD_MS_FROM_MIDNIGHT.getSimpleFieldName().getSimpleName();
 	}
@@ -205,7 +203,7 @@ public class ElasticSearchCommon
 	 * @param field
 	 * @return
 	 */
-	static public String getSortFieldNameInstant(FieldName field)
+	static public String getSortFieldNameInstant( FieldName field )
 	{
 		return getSortFieldNameInstant(field.getSimpleName());
 	}
@@ -217,7 +215,7 @@ public class ElasticSearchCommon
 	 * @param field_name
 	 * @return
 	 */
-	static public String getSortFieldNameInstant(String field_name)
+	static public String getSortFieldNameInstant( String field_name )
 	{
 		return field_name + "_" + SORT_FIELD_NAME_JIMMUTABLE + "_" + Instant.FIELD_MS_FROM_EPOCH.getSimpleFieldName().getSimpleName();
 	}

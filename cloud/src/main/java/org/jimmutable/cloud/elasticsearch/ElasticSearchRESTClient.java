@@ -757,7 +757,7 @@ public class ElasticSearchRESTClient implements ISearch
 				Response resp = high_level_rest_client.getLowLevelClient().performRequest(request);
 				String response_body = EntityUtils.toString(resp.getEntity());
 
-				JsonNode node = new ObjectMapper().readTree(response_body).findValue("mappings").findValue("default").findValue("properties");
+				JsonNode node = new ObjectMapper().readTree(response_body).findValue("mappings").findValue("properties");
 
 				Map<String, String> actual = new HashMap<String, String>();
 
