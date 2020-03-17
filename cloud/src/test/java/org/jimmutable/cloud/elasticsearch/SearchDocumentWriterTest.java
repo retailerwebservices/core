@@ -39,6 +39,7 @@ public class SearchDocumentWriterTest
 		SearchIndexFieldDefinition theText3 = new SearchIndexFieldDefinition(new FieldName("text3"), SearchIndexFieldType.TEXT);
 		SearchIndexFieldDefinition theAtom = new SearchIndexFieldDefinition(new FieldName("atom"), SearchIndexFieldType.ATOM);
 		SearchIndexFieldDefinition theDay = new SearchIndexFieldDefinition(new FieldName("day"), SearchIndexFieldType.DAY);
+		SearchIndexFieldDefinition theWeirdDay = new SearchIndexFieldDefinition(new FieldName("weirdday"), SearchIndexFieldType.DAY);
 		SearchIndexFieldDefinition theFloat = new SearchIndexFieldDefinition(new FieldName("float"), SearchIndexFieldType.FLOAT);
 		SearchIndexFieldDefinition theLong = new SearchIndexFieldDefinition(new FieldName("long"), SearchIndexFieldType.LONG);
 		SearchIndexFieldDefinition theInstant = new SearchIndexFieldDefinition(new FieldName("instant"), SearchIndexFieldType.INSTANT);
@@ -59,6 +60,7 @@ public class SearchDocumentWriterTest
 		writer.writeTextWithSubstringMatchingSupport(theText3, "abc");
 		writer.writeAtom(theAtom, "my atom");
 		writer.writeDay(theDay, new Day(new DateTime("1972-1-1")));
+		writer.writeDay(theWeirdDay, new Day("03/04/0056"));
 		writer.writeFloat(theFloat, 0.1f);
 		writer.writeLong(theLong, 100L);
 		writer.writeInstant(theInstant, new Instant(1420070400001L));
@@ -107,6 +109,7 @@ public class SearchDocumentWriterTest
 		expected.put(ElasticSearchCommon.getSortFieldNameText("text3"), "abc a b c ab bc abc");
 		expected.put("atom", "my atom");
 		expected.put("day", "1972-01-01");
+		expected.put("weirdday", "0056-03-04");
 		expected.put("float", 0.1f);
 		expected.put("long", 100L);
 		expected.put("instant", new Instant(1420070400001L).toString());
