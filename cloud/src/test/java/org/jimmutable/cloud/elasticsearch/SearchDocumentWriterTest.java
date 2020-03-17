@@ -3,12 +3,9 @@ package org.jimmutable.cloud.elasticsearch;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.fields.FieldList;
@@ -54,7 +51,6 @@ public class SearchDocumentWriterTest
 		SearchIndexFieldDefinition theBooleanArray = new SearchIndexFieldDefinition(new FieldName("boolean_array"), SearchIndexFieldType.BOOLEAN);
 		SearchIndexFieldDefinition theDayArray = new SearchIndexFieldDefinition(new FieldName("day_array"), SearchIndexFieldType.DAY);
 		SearchIndexFieldDefinition theInstantArray = new SearchIndexFieldDefinition(new FieldName("instant_array"), SearchIndexFieldType.INSTANT);
-		
 
 		SearchDocumentWriter writer = new SearchDocumentWriter();
 		writer.writeBoolean(theBoolean, true);
@@ -77,12 +73,13 @@ public class SearchDocumentWriterTest
 		longs.add(0L);
 		longs.add(1L);
 		writer.writeLongArray(theLongArray, longs);
-		
+
 		FieldList<Day> days = new FieldArrayList<>();
 		days.add(new Day(1, 1, 1980));
 		days.add(new Day(2, 29, 2000));
+		days.add(new Day("3/4/0056"));
 		writer.writeDayArray(theDayArray, days);
-		
+
 		FieldList<Instant> instants = new FieldArrayList<>();
 		instants.add(new Instant(0L));
 		instants.add(new Instant(1L));
@@ -105,7 +102,7 @@ public class SearchDocumentWriterTest
 		expected.put(ElasticSearchCommon.getSortFieldNameText("text1"), "abc");
 		expected.put("text2", "abc ab a");
 		expected.put(ElasticSearchCommon.getSortFieldNameText("text2"), "abc ab a");
-		
+
 		expected.put("text3", "abc a b c ab bc abc");
 		expected.put(ElasticSearchCommon.getSortFieldNameText("text3"), "abc a b c ab bc abc");
 		expected.put("atom", "my atom");
@@ -114,7 +111,7 @@ public class SearchDocumentWriterTest
 		expected.put("long", 100L);
 		expected.put("instant", new Instant(1420070400001L).toString());
 		expected.put(ElasticSearchCommon.getSortFieldNameInstant("instant"), 1420070400001L);
-//		expected.put("timestamp", 1420070400001L);
+		// expected.put("timestamp", 1420070400001L);
 
 		expected.put("text_array", list);
 		expected.put("atom_array", list);
@@ -124,26 +121,29 @@ public class SearchDocumentWriterTest
 		List<String> day_array_formatted = new ArrayList<>();
 		day_array_formatted.add("1980-01-01");
 		day_array_formatted.add("2000-02-29");
+		day_array_formatted.add("0056-03-04");
 		expected.put("day_array", day_array_formatted);
 		expected.put("boolean_array", booleans);
 		expected.put("instant_array", instants);
 
 		// Below is only for troubleshooting
-//		Map<String, Object> test = writer.getSimpleFieldsMap();
-//		System.out.println("Actual:" + test.toString());
-//		System.out.println("Expected:" + expected.toString());
-//		
-//		for (Map.Entry<String, Object> entry : writer.getSimpleFieldsMap().entrySet() )
-//		{
-//			Object comparison_value = expected.get(entry.getKey());
-//			if (!comparison_value.equals(entry.getValue()))
-//			{
-//				System.out.println("Not Equal: " + entry.getKey());
-//				System.out.println("Expected: \n" + comparison_value);
-//				System.out.println("Actual: \n" + entry.getValue());
-//			};
-//		}
-		
+		// Map<String, Object> test = writer.getSimpleFieldsMap();
+		// System.out.println("Actual:" + test.toString());
+		// System.out.println("Expected:" + expected.toString());
+		//
+		// for ( Map.Entry<String, Object> entry :
+		// writer.getSimpleFieldsMap().entrySet() )
+		// {
+		// Object comparison_value = expected.get(entry.getKey());
+		// if ( !comparison_value.equals(entry.getValue()) )
+		// {
+		// System.out.println("Not Equal: " + entry.getKey());
+		// System.out.println("Expected: \n" + comparison_value);
+		// System.out.println("Actual: \n" + entry.getValue());
+		// }
+		// ;
+		// }
+
 		assertEquals(expected, writer.getSimpleFieldsMap());
 
 	}

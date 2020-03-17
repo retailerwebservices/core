@@ -662,7 +662,7 @@ public class SearchDocumentWriter
 
 		for ( Day day : elements )
 		{
-			elements_as_string.add(String.format("%d-%02d-%02d", day.getSimpleYear(), day.getSimpleMonthOfYear(), day.getSimpleDayOfMonth()));
+			elements_as_string.add(String.format("%04d-%02d-%02d", day.getSimpleYear(), day.getSimpleMonthOfYear(), day.getSimpleDayOfMonth()));
 		}
 
 		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements_as_string);
