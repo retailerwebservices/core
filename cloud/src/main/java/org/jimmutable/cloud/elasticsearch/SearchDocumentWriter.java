@@ -41,22 +41,22 @@ public class SearchDocumentWriter
 	 *            The text of the field. Must not contain any null elements. Blanks
 	 *            are ignored.
 	 */
-	public void writeTextArray(SearchIndexFieldDefinition search_index_definition, FieldCollection<String> elements)
+	public void writeTextArray( SearchIndexFieldDefinition search_index_definition, FieldCollection<String> elements )
 	{
 
 		Validator.notNull(search_index_definition);
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.TEXT))
+		if ( !search_index_definition.getSimpleType().equals(SearchIndexFieldType.TEXT) )
 		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.TEXT, search_index_definition.getSimpleFieldName()));
 		}
 		Validator.notNull(elements);
 		Validator.containsNoNulls(elements);
 
-		if (elements == null)
+		if ( elements == null )
 			return;
-		if (elements.size() == 0)
+		if ( elements.size() == 0 )
 			return;
-		for (String s : elements)
+		for ( String s : elements )
 		{
 			s = s.trim();
 		}
@@ -74,22 +74,22 @@ public class SearchDocumentWriter
 	 *            The text of the field. Must not contain any null elements. Blanks
 	 *            are ignored.
 	 */
-	public void writeAtomArray(SearchIndexFieldDefinition search_index_definition, FieldCollection<String> elements)
+	public void writeAtomArray( SearchIndexFieldDefinition search_index_definition, FieldCollection<String> elements )
 	{
 
 		Validator.notNull(search_index_definition);
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.ATOM))
+		if ( !search_index_definition.getSimpleType().equals(SearchIndexFieldType.ATOM) )
 		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.ATOM, search_index_definition.getSimpleFieldName()));
 		}
 		Validator.notNull(elements);
 		Validator.containsNoNulls(elements);
 
-		if (elements == null)
+		if ( elements == null )
 			return;
-		if (elements.size() == 0)
+		if ( elements.size() == 0 )
 			return;
-		for (String s : elements)
+		for ( String s : elements )
 		{
 			s = s.trim();
 		}
@@ -107,24 +107,24 @@ public class SearchDocumentWriter
 	 *            The text of the field. Must not contain any null elements. Blanks
 	 *            are ignored.
 	 */
-	public void writeAtomObjectIdArray(SearchIndexFieldDefinition search_index_definition, FieldCollection<ObjectId> elements)
+	public void writeAtomObjectIdArray( SearchIndexFieldDefinition search_index_definition, FieldCollection<ObjectId> elements )
 	{
 
 		Validator.notNull(search_index_definition);
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.ATOM))
+		if ( !search_index_definition.getSimpleType().equals(SearchIndexFieldType.ATOM) )
 		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.ATOM, search_index_definition.getSimpleFieldName()));
 		}
 		Validator.notNull(elements);
 		Validator.containsNoNulls(elements);
 
-		if (elements == null)
+		if ( elements == null )
 			return;
-		if (elements.size() == 0)
+		if ( elements.size() == 0 )
 			return;
 
 		FieldCollection<String> ids = new FieldArrayList<String>();
-		for (ObjectId id : elements)
+		for ( ObjectId id : elements )
 		{
 			ids.add(id.getSimpleValue());
 		}
@@ -139,20 +139,20 @@ public class SearchDocumentWriter
 	 * @param elements
 	 *            The Long elements. Must not contain any null elements.
 	 */
-	public void writeLongArray(SearchIndexFieldDefinition search_index_definition, FieldCollection<Long> elements)
+	public void writeLongArray( SearchIndexFieldDefinition search_index_definition, FieldCollection<Long> elements )
 	{
 
 		Validator.notNull(search_index_definition);
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.LONG))
+		if ( !search_index_definition.getSimpleType().equals(SearchIndexFieldType.LONG) )
 		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.LONG, search_index_definition.getSimpleFieldName()));
 		}
 		Validator.notNull(elements);
 		Validator.containsNoNulls(elements);
 
-		if (elements == null)
+		if ( elements == null )
 			return;
-		if (elements.size() == 0)
+		if ( elements.size() == 0 )
 			return;
 
 		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements);
@@ -165,24 +165,23 @@ public class SearchDocumentWriter
 	 *            The SearchIndexFieldDefinition
 	 * @param elements
 	 *            The Long elements. Must not contain any null elements.
-	 * @deprecated
-	 * 			  Use writeInstantArray instead.
+	 * @deprecated Use writeInstantArray instead.
 	 */
 	@Deprecated
-	public void writeTimestampArray(SearchIndexFieldDefinition search_index_definition, FieldCollection<Long> elements)
+	public void writeTimestampArray( SearchIndexFieldDefinition search_index_definition, FieldCollection<Long> elements )
 	{
 
 		Validator.notNull(search_index_definition);
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.DAY))
+		if ( !search_index_definition.getSimpleType().equals(SearchIndexFieldType.DAY) )
 		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.DAY, search_index_definition.getSimpleFieldName()));
 		}
 		Validator.notNull(elements);
 		Validator.containsNoNulls(elements);
 
-		if (elements == null)
+		if ( elements == null )
 			return;
-		if (elements.size() == 0)
+		if ( elements.size() == 0 )
 			return;
 
 		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements);
@@ -196,20 +195,20 @@ public class SearchDocumentWriter
 	 * @param elements
 	 *            The Float elements. Must not contain any null elements.
 	 */
-	public void writeFloatArray(SearchIndexFieldDefinition search_index_definition, FieldCollection<Float> elements)
+	public void writeFloatArray( SearchIndexFieldDefinition search_index_definition, FieldCollection<Float> elements )
 	{
 
 		Validator.notNull(search_index_definition);
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.FLOAT))
+		if ( !search_index_definition.getSimpleType().equals(SearchIndexFieldType.FLOAT) )
 		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.FLOAT, search_index_definition.getSimpleFieldName()));
 		}
 		Validator.notNull(elements);
 		Validator.containsNoNulls(elements);
 
-		if (elements == null)
+		if ( elements == null )
 			return;
-		if (elements.size() == 0)
+		if ( elements.size() == 0 )
 			return;
 
 		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements);
@@ -223,20 +222,20 @@ public class SearchDocumentWriter
 	 * @param elements
 	 *            The Boolean elements. Must not contain any null elements.
 	 */
-	public void writeBooleanArray(SearchIndexFieldDefinition search_index_definition, FieldCollection<Boolean> elements)
+	public void writeBooleanArray( SearchIndexFieldDefinition search_index_definition, FieldCollection<Boolean> elements )
 	{
 
 		Validator.notNull(search_index_definition);
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.BOOLEAN))
+		if ( !search_index_definition.getSimpleType().equals(SearchIndexFieldType.BOOLEAN) )
 		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.BOOLEAN, search_index_definition.getSimpleFieldName()));
 		}
 		Validator.notNull(elements);
 		Validator.containsNoNulls(elements);
 
-		if (elements == null)
+		if ( elements == null )
 			return;
-		if (elements.size() == 0)
+		if ( elements.size() == 0 )
 			return;
 
 		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements);
@@ -253,19 +252,19 @@ public class SearchDocumentWriter
 	 *            The text of the field. Nulls and blanks are ignored.
 	 */
 	@Deprecated
-	public void writeText(FieldName name, String text)
+	public void writeText( FieldName name, String text )
 	{
 
 		Validator.notNull(name);
 
-		if (text == null)
+		if ( text == null )
 			return;
 		text = text.trim();
-		if (text.length() == 0)
+		if ( text.length() == 0 )
 			return;
 
 		fields.put(name.getSimpleName(), text);
-		
+
 		// Create a keyword for every text field
 		fields.put(ElasticSearchCommon.getSortFieldNameText(name), text);
 	}
@@ -280,11 +279,11 @@ public class SearchDocumentWriter
 	 * @param text
 	 *            The text of the field. Nulls and blanks are ignored.
 	 */
-	public void writeText(SearchIndexFieldDefinition search_index_definition, String text)
+	public void writeText( SearchIndexFieldDefinition search_index_definition, String text )
 	{
 		Validator.notNull(search_index_definition.getSimpleFieldName());
 
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.TEXT))
+		if ( !search_index_definition.getSimpleType().equals(SearchIndexFieldType.TEXT) )
 		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.TEXT, search_index_definition.getSimpleFieldName()));
 		}
@@ -301,18 +300,19 @@ public class SearchDocumentWriter
 	 *            The FieldDefinition
 	 * @param text
 	 *            The text of the field. Nulls and blanks are ignored.
-	 * @deprecated
-	 * 			Use writeText(SearchIndexFieldDefinition search_index_definition, String text) instead.
+	 * @deprecated Use writeText(SearchIndexFieldDefinition search_index_definition,
+	 *             String text) instead.
 	 */
 	@Deprecated
-	public void writeText(FieldDefinition<?> field_definition, String text)
+	public void writeText( FieldDefinition<?> field_definition, String text )
 	{
 		Validator.notNull(field_definition.getSimpleFieldName());
 		writeText(field_definition.getSimpleFieldName(), text);
 	}
 
 	/**
-	 * Deprecated in favor of writeAtom(SearchIndexFieldDefinition search_index_definition, String text).
+	 * Deprecated in favor of writeAtom(SearchIndexFieldDefinition
+	 * search_index_definition, String text).
 	 * 
 	 * A field to index structured content such as email addresses, hostnames,
 	 * status codes, zip codes or tags. They are typically used for filtering (Find
@@ -328,14 +328,14 @@ public class SearchDocumentWriter
 	 *            The (atomic) text. Nulls and blanks are ignored.
 	 */
 	@Deprecated
-	public void writeAtom(FieldName name, String text)
+	public void writeAtom( FieldName name, String text )
 	{
 		Validator.notNull(name);
 
-		if (text == null)
+		if ( text == null )
 			return;
 		text = text.trim();
-		if (text.length() == 0)
+		if ( text.length() == 0 )
 			return;
 		fields.put(name.getSimpleName(), text);
 	}
@@ -354,10 +354,10 @@ public class SearchDocumentWriter
 	 * @param text
 	 *            The (atomic) text. Nulls and blanks are ignored.
 	 */
-	public void writeAtom(SearchIndexFieldDefinition search_index_definition, String text)
+	public void writeAtom( SearchIndexFieldDefinition search_index_definition, String text )
 	{
 		Validator.notNull(search_index_definition.getSimpleFieldName());
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.ATOM))
+		if ( !search_index_definition.getSimpleType().equals(SearchIndexFieldType.ATOM) )
 		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.ATOM, search_index_definition.getSimpleFieldName()));
 		}
@@ -365,7 +365,8 @@ public class SearchDocumentWriter
 	}
 
 	/**
-	 * Deprecated. Use writeAtom(SearchIndexFieldDefinition search_index_definition, String text) instead.
+	 * Deprecated. Use writeAtom(SearchIndexFieldDefinition search_index_definition,
+	 * String text) instead.
 	 * 
 	 * A field to index structured content such as email addresses, hostnames,
 	 * status codes, zip codes or tags. They are typically used for filtering (Find
@@ -381,7 +382,7 @@ public class SearchDocumentWriter
 	 *            The (atomic) text. Nulls and blanks are ignored.
 	 */
 	@Deprecated
-	public void writeAtom(FieldDefinition<?> field_definition, String text)
+	public void writeAtom( FieldDefinition<?> field_definition, String text )
 	{
 		Validator.notNull(field_definition.getSimpleFieldName());
 		writeAtom(field_definition.getSimpleFieldName(), text);
@@ -397,7 +398,7 @@ public class SearchDocumentWriter
 	 *            true or false
 	 */
 	@Deprecated
-	public void writeBoolean(FieldName name, boolean value)
+	public void writeBoolean( FieldName name, boolean value )
 	{
 		Validator.notNull(name);
 		fields.put(name.getSimpleName(), value);
@@ -411,10 +412,10 @@ public class SearchDocumentWriter
 	 * @param value
 	 *            true or false
 	 */
-	public void writeBoolean(SearchIndexFieldDefinition search_index_definition, boolean value)
+	public void writeBoolean( SearchIndexFieldDefinition search_index_definition, boolean value )
 	{
 		Validator.notNull(search_index_definition);
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.BOOLEAN))
+		if ( !search_index_definition.getSimpleType().equals(SearchIndexFieldType.BOOLEAN) )
 		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.BOOLEAN, search_index_definition.getSimpleFieldName()));
 		}
@@ -430,7 +431,7 @@ public class SearchDocumentWriter
 	 *            true or false
 	 */
 	@Deprecated
-	public void writeBoolean(FieldDefinition<?> field_definition, boolean value)
+	public void writeBoolean( FieldDefinition<?> field_definition, boolean value )
 	{
 		Validator.notNull(field_definition);
 		writeBoolean(field_definition.getSimpleFieldName(), value);
@@ -465,11 +466,11 @@ public class SearchDocumentWriter
 	 *
 	 */
 	@Deprecated
-	public void writeTimestamp(SearchIndexFieldDefinition search_index_definition, long value)
+	public void writeTimestamp( SearchIndexFieldDefinition search_index_definition, long value )
 	{
 
 		Validator.notNull(search_index_definition);
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.DAY))
+		if ( !search_index_definition.getSimpleType().equals(SearchIndexFieldType.DAY) )
 		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.DAY));
 		}
@@ -477,7 +478,8 @@ public class SearchDocumentWriter
 	}
 
 	/**
-	 * Deprecated. Use writeLong(SearchIndexFieldDefinition search_index_definition, long value).
+	 * Deprecated. Use writeLong(SearchIndexFieldDefinition search_index_definition,
+	 * long value).
 	 * 
 	 * Add a signed 64-bit integer with a minimum value of -2^63 and a maximum value
 	 * of 2^63-1 to a document.
@@ -490,7 +492,7 @@ public class SearchDocumentWriter
 	 *            the long
 	 */
 	@Deprecated
-	public void writeLong(FieldName name, long value)
+	public void writeLong( FieldName name, long value )
 	{
 		Validator.notNull(name);
 		fields.put(name.getSimpleName(), value);
@@ -507,10 +509,10 @@ public class SearchDocumentWriter
 	 * @param value
 	 *            the long
 	 */
-	public void writeLong(SearchIndexFieldDefinition search_index_definition, long value)
+	public void writeLong( SearchIndexFieldDefinition search_index_definition, long value )
 	{
 		Validator.notNull(search_index_definition);
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.LONG))
+		if ( !search_index_definition.getSimpleType().equals(SearchIndexFieldType.LONG) )
 		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.LONG));
 		}
@@ -518,7 +520,8 @@ public class SearchDocumentWriter
 	}
 
 	/**
-	 * Deprecated. Use writeLong(SearchIndexFieldDefinition search_index_definition, long value) instead.
+	 * Deprecated. Use writeLong(SearchIndexFieldDefinition search_index_definition,
+	 * long value) instead.
 	 * 
 	 * Add a signed 64-bit integer with a minimum value of -2^63 and a maximum value
 	 * of 2^63-1 to a document.
@@ -531,14 +534,15 @@ public class SearchDocumentWriter
 	 *            the long
 	 */
 	@Deprecated
-	public void writeLong(FieldDefinition<?> field_definition, long value)
+	public void writeLong( FieldDefinition<?> field_definition, long value )
 	{
 		Validator.notNull(field_definition);
 		writeLong(field_definition.getSimpleFieldName(), value);
 	}
 
 	/**
-	 * Deprecated: Use writeFloat(SearchIndexFieldDefinition search_index_definition, float value) instead.
+	 * Deprecated: Use writeFloat(SearchIndexFieldDefinition
+	 * search_index_definition, float value) instead.
 	 * 
 	 * Add a a single-precision 32-bit IEEE 754 floating point number to a document
 	 * 
@@ -548,7 +552,7 @@ public class SearchDocumentWriter
 	 *            the float value
 	 */
 	@Deprecated
-	public void writeFloat(FieldName name, float value)
+	public void writeFloat( FieldName name, float value )
 	{
 		Validator.notNull(name);
 		fields.put(name.getSimpleName(), value);
@@ -562,11 +566,11 @@ public class SearchDocumentWriter
 	 * @param value
 	 *            the float value
 	 */
-	public void writeFloat(SearchIndexFieldDefinition search_index_definition, float value)
+	public void writeFloat( SearchIndexFieldDefinition search_index_definition, float value )
 	{
 		Validator.notNull(search_index_definition);
 
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.FLOAT))
+		if ( !search_index_definition.getSimpleType().equals(SearchIndexFieldType.FLOAT) )
 		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.FLOAT));
 		}
@@ -581,11 +585,11 @@ public class SearchDocumentWriter
 	 *            The FieldDefinition
 	 * @param value
 	 *            the float value
-	 * @deprecated
-	 * 			Use writeFloat(SearchIndexFieldDefinition search_index_definition, float value) instead.
+	 * @deprecated Use writeFloat(SearchIndexFieldDefinition
+	 *             search_index_definition, float value) instead.
 	 */
 	@Deprecated
-	public void writeFloat(FieldDefinition<?> field_definition, float value)
+	public void writeFloat( FieldDefinition<?> field_definition, float value )
 	{
 		Validator.notNull(field_definition);
 		writeFloat(field_definition.getSimpleFieldName(), value);
@@ -600,13 +604,13 @@ public class SearchDocumentWriter
 	 *            the Day value
 	 */
 	@Deprecated
-	public void writeDay(FieldName name, Day day)
+	public void writeDay( FieldName name, Day day )
 	{
 		Validator.notNull(name);
 
 		Validator.notNull(day);
 
-		fields.put(name.getSimpleName(), String.format("%d-%02d-%02d", day.getSimpleYear(), day.getSimpleMonthOfYear(), day.getSimpleDayOfMonth()));
+		fields.put(name.getSimpleName(), String.format("%04d-%02d-%02d", day.getSimpleYear(), day.getSimpleMonthOfYear(), day.getSimpleDayOfMonth()));
 
 	}
 
@@ -618,19 +622,19 @@ public class SearchDocumentWriter
 	 * @param day
 	 *            the Day value
 	 */
-	public void writeDay(SearchIndexFieldDefinition search_index_definition, Day day)
+	public void writeDay( SearchIndexFieldDefinition search_index_definition, Day day )
 	{
 		Validator.notNull(search_index_definition);
 		Validator.notNull(day);
 
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.DAY))
+		if ( !search_index_definition.getSimpleType().equals(SearchIndexFieldType.DAY) )
 		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.DAY));
 		}
 
 		writeDay(search_index_definition.getSimpleFieldName(), day);
 	}
-	
+
 	/**
 	 * Add an array of Days to a DAY field within the document.
 	 * 
@@ -639,23 +643,23 @@ public class SearchDocumentWriter
 	 * @param elements
 	 *            The Day elements. Must not contain any null elements.
 	 */
-	public void writeDayArray(SearchIndexFieldDefinition search_index_definition, FieldCollection<Day> elements)
+	public void writeDayArray( SearchIndexFieldDefinition search_index_definition, FieldCollection<Day> elements )
 	{
 		Validator.notNull(search_index_definition);
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.DAY))
+		if ( !search_index_definition.getSimpleType().equals(SearchIndexFieldType.DAY) )
 		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.DAY, search_index_definition.getSimpleFieldName()));
 		}
 		Validator.notNull(elements);
 		Validator.containsNoNulls(elements);
 
-		if (elements == null)
+		if ( elements == null )
 			return;
-		if (elements.size() == 0)
+		if ( elements.size() == 0 )
 			return;
-		
+
 		FieldCollection<String> elements_as_string = new FieldArrayList<>();
-		
+
 		for ( Day day : elements )
 		{
 			elements_as_string.add(String.format("%d-%02d-%02d", day.getSimpleYear(), day.getSimpleMonthOfYear(), day.getSimpleDayOfMonth()));
@@ -673,7 +677,7 @@ public class SearchDocumentWriter
 	 *            the Day value
 	 */
 	@Deprecated
-	public void writeDay(FieldDefinition<?> field_definition, Day day)
+	public void writeDay( FieldDefinition<?> field_definition, Day day )
 	{
 		Validator.notNull(field_definition);
 		Validator.notNull(day);
@@ -769,14 +773,14 @@ public class SearchDocumentWriter
 	 *            simply ignored.
 	 */
 	@Deprecated
-	public void writeTextWithPrefixMatchingSupport(FieldName name, String text)
+	public void writeTextWithPrefixMatchingSupport( FieldName name, String text )
 	{
 		Validator.notNull(name);
 
-		if (text == null)
+		if ( text == null )
 			return;
 		text = text.trim();
-		if (text.length() == 0)
+		if ( text.length() == 0 )
 			return;
 
 		writeText(name, SubstringUtils.writeTextWithPrefixMatchingSupport(text, 50, null));
@@ -802,10 +806,10 @@ public class SearchDocumentWriter
 	 *            The text to write. Limited to 50 characters. Nulls and blanks are
 	 *            simply ignored.
 	 */
-	public void writeTextWithPrefixMatchingSupport(SearchIndexFieldDefinition search_index_definition, String text)
+	public void writeTextWithPrefixMatchingSupport( SearchIndexFieldDefinition search_index_definition, String text )
 	{
 		Validator.notNull(search_index_definition);
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.TEXT))
+		if ( !search_index_definition.getSimpleType().equals(SearchIndexFieldType.TEXT) )
 		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.TEXT));
 		}
@@ -832,7 +836,7 @@ public class SearchDocumentWriter
 	 *            simply ignored.
 	 */
 	@Deprecated
-	public void writeTextWithPrefixMatchingSupport(FieldDefinition<?> field_definition, String text)
+	public void writeTextWithPrefixMatchingSupport( FieldDefinition<?> field_definition, String text )
 	{
 		Validator.notNull(field_definition);
 		writeTextWithPrefixMatchingSupport(field_definition.getSimpleFieldName(), text);
@@ -853,21 +857,21 @@ public class SearchDocumentWriter
 	 * @param text
 	 *            The text to write. Limited to 50 characters. Nulls and blanks are
 	 *            simply ignored.
-	 * @deprecated
-	 * 			Use writeTextWithPrefixMatchingSupport(SearchIndexFieldDefinition search_index_definition, String text) instead.
+	 * @deprecated Use writeTextWithPrefixMatchingSupport(SearchIndexFieldDefinition
+	 *             search_index_definition, String text) instead.
 	 */
 	@Deprecated
-	public void writeTextWithSubstringMatchingSupport(FieldName name, String text)
+	public void writeTextWithSubstringMatchingSupport( FieldName name, String text )
 	{
 		Validator.notNull(name);
 
-		if (text == null)
+		if ( text == null )
 			return;
 		text = text.toLowerCase().trim();
 
-		if (text.length() == 0)
+		if ( text.length() == 0 )
 			return;
-		if (text.length() > 50)
+		if ( text.length() > 50 )
 			text = text.substring(0, 50);
 
 		// TODO don't we want up to 50 chars substring?
@@ -890,11 +894,11 @@ public class SearchDocumentWriter
 	 *            The text to write. Limited to 50 characters. Nulls and blanks are
 	 *            simply ignored.
 	 */
-	public void writeTextWithSubstringMatchingSupport(SearchIndexFieldDefinition search_index_definition, String text)
+	public void writeTextWithSubstringMatchingSupport( SearchIndexFieldDefinition search_index_definition, String text )
 	{
 		Validator.notNull(search_index_definition);
 
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.TEXT))
+		if ( !search_index_definition.getSimpleType().equals(SearchIndexFieldType.TEXT) )
 		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.TEXT));
 		}
@@ -917,11 +921,13 @@ public class SearchDocumentWriter
 	 * @param text
 	 *            The text to write. Limited to 50 characters. Nulls and blanks are
 	 *            simply ignored.
-	 *            
-	 * @deprecated - Use writeTextWithSubstringMatchingSupport(SearchIndexFieldDefinition search_index_definition, String text) instead.
+	 * 
+	 * @deprecated - Use
+	 *             writeTextWithSubstringMatchingSupport(SearchIndexFieldDefinition
+	 *             search_index_definition, String text) instead.
 	 */
 	@Deprecated
-	public void writeTextWithSubstringMatchingSupport(FieldDefinition<?> field_definition, String text)
+	public void writeTextWithSubstringMatchingSupport( FieldDefinition<?> field_definition, String text )
 	{
 		Validator.notNull(field_definition);
 		writeTextWithSubstringMatchingSupport(field_definition.getSimpleFieldName(), text);
@@ -934,16 +940,17 @@ public class SearchDocumentWriter
 	 *            The name of the field
 	 * @param value
 	 *            the Instant value
-	 *            
-	 * @deprecated Use writeInstant(SearchIndexFieldDefinition search_index_definition, Instant value) instead.
+	 * 
+	 * @deprecated Use writeInstant(SearchIndexFieldDefinition
+	 *             search_index_definition, Instant value) instead.
 	 */
 	@Deprecated
-	public void writeInstant(FieldName name, Instant value)
+	public void writeInstant( FieldName name, Instant value )
 	{
 		Validator.notNull(name);
-		//TODO is this data really needed in search?
+		// TODO is this data really needed in search?
 		fields.put(name.getSimpleName(), value.toString());
-		
+
 		// Create a sort field for every Instant field
 		fields.put(ElasticSearchCommon.getSortFieldNameInstant(name), value.getSimpleMillisecondsFromEpoch());
 	}
@@ -956,11 +963,11 @@ public class SearchDocumentWriter
 	 * @param value
 	 *            the Instant value
 	 */
-	public void writeInstant(SearchIndexFieldDefinition search_index_definition, Instant value)
+	public void writeInstant( SearchIndexFieldDefinition search_index_definition, Instant value )
 	{
 		Validator.notNull(search_index_definition);
 
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.INSTANT))
+		if ( !search_index_definition.getSimpleType().equals(SearchIndexFieldType.INSTANT) )
 		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.INSTANT));
 		}
@@ -975,16 +982,16 @@ public class SearchDocumentWriter
 	 *            The FieldDefinition
 	 * @param value
 	 *            the Instant value
-	 * @deprecated
-	 * 			  Use writeInstant(SearchIndexFieldDefinition search_index_definition, Instant value) instead.
+	 * @deprecated Use writeInstant(SearchIndexFieldDefinition
+	 *             search_index_definition, Instant value) instead.
 	 */
 	@Deprecated
-	public void writeInstant(FieldDefinition<?> field_definition, Instant value)
+	public void writeInstant( FieldDefinition<?> field_definition, Instant value )
 	{
 		Validator.notNull(field_definition);
 		writeInstant(field_definition.getSimpleFieldName(), value);
 	}
-	
+
 	/**
 	 * Add an array of Instants to an INSTANT field within the document.
 	 * 
@@ -993,25 +1000,25 @@ public class SearchDocumentWriter
 	 * @param elements
 	 *            The Instant elements. Must not contain any null elements.
 	 */
-	public void writeInstantArray(SearchIndexFieldDefinition search_index_definition, FieldCollection<Instant> elements)
+	public void writeInstantArray( SearchIndexFieldDefinition search_index_definition, FieldCollection<Instant> elements )
 	{
 
 		Validator.notNull(search_index_definition);
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.INSTANT))
+		if ( !search_index_definition.getSimpleType().equals(SearchIndexFieldType.INSTANT) )
 		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.INSTANT, search_index_definition.getSimpleFieldName()));
 		}
 		Validator.notNull(elements);
 		Validator.containsNoNulls(elements);
 
-		if (elements == null)
+		if ( elements == null )
 			return;
-		if (elements.size() == 0)
+		if ( elements.size() == 0 )
 			return;
 
 		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements);
 	}
-	
+
 	/**
 	 * Add an TimeOfDay to a document
 	 * 
@@ -1019,16 +1026,16 @@ public class SearchDocumentWriter
 	 *            The name of the field
 	 * @param value
 	 *            the TimeOfDay value
-	 * @deprecated
-	 * 			Use writeTimeOfDay(SearchIndexFieldDefinition search_index_definition, TimeOfDay value) instead.
+	 * @deprecated Use writeTimeOfDay(SearchIndexFieldDefinition
+	 *             search_index_definition, TimeOfDay value) instead.
 	 */
 	@Deprecated
-	public void writeTimeOfDay(FieldName name, TimeOfDay value)
+	public void writeTimeOfDay( FieldName name, TimeOfDay value )
 	{
 		Validator.notNull(name);
-		//TODO is this data really needed in search?
+		// TODO is this data really needed in search?
 		fields.put(name.getSimpleName(), value.toString());
-		
+
 		// Create a sort field for every TimeOfDay field
 		fields.put(ElasticSearchCommon.getSortFieldNameTimeOfDay(name), value.getSimpleMillisecondsFromMidnight());
 	}
@@ -1041,11 +1048,11 @@ public class SearchDocumentWriter
 	 * @param value
 	 *            the TimeOfDay value
 	 */
-	public void writeTimeOfDay(SearchIndexFieldDefinition search_index_definition, TimeOfDay value)
+	public void writeTimeOfDay( SearchIndexFieldDefinition search_index_definition, TimeOfDay value )
 	{
 		Validator.notNull(search_index_definition);
 
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.TIMEOFDAY))
+		if ( !search_index_definition.getSimpleType().equals(SearchIndexFieldType.TIMEOFDAY) )
 		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s", search_index_definition.getTypeName(), SearchIndexFieldType.TIMEOFDAY));
 		}
@@ -1060,16 +1067,16 @@ public class SearchDocumentWriter
 	 *            The FieldDefinition
 	 * @param value
 	 *            the TimeOfDay values
-	 * @deprecated
-	 * 		Use writeTimeOfDay(SearchIndexFieldDefinition search_index_definition, TimeOfDay value) instead.
+	 * @deprecated Use writeTimeOfDay(SearchIndexFieldDefinition
+	 *             search_index_definition, TimeOfDay value) instead.
 	 */
 	@Deprecated
-	public void writeTimeOfDay(FieldDefinition<?> field_definition, TimeOfDay value)
+	public void writeTimeOfDay( FieldDefinition<?> field_definition, TimeOfDay value )
 	{
 		Validator.notNull(field_definition);
 		writeTimeOfDay(field_definition.getSimpleFieldName(), value);
 	}
-	
+
 	/**
 	 * Add an array of TimeOfDays to an TIMEOFDAY field within the document.
 	 * 
@@ -1078,28 +1085,28 @@ public class SearchDocumentWriter
 	 * @param elements
 	 *            The TimeOfDay elements. Must not contain any null elements.
 	 */
-	public void writeTimeOfDayArray(SearchIndexFieldDefinition search_index_definition, FieldCollection<TimeOfDay> elements)
+	public void writeTimeOfDayArray( SearchIndexFieldDefinition search_index_definition, FieldCollection<TimeOfDay> elements )
 	{
 
 		Validator.notNull(search_index_definition);
-		if (!search_index_definition.getSimpleType().equals(SearchIndexFieldType.TIMEOFDAY))
+		if ( !search_index_definition.getSimpleType().equals(SearchIndexFieldType.TIMEOFDAY) )
 		{
 			throw new RuntimeException(String.format("Invalid type %s, expected %s for field %s", search_index_definition.getTypeName(), SearchIndexFieldType.TIMEOFDAY, search_index_definition.getSimpleFieldName()));
 		}
 		Validator.notNull(elements);
 		Validator.containsNoNulls(elements);
 
-		if (elements == null)
+		if ( elements == null )
 			return;
-		if (elements.size() == 0)
+		if ( elements.size() == 0 )
 			return;
-		
-//		FieldCollection<Long> converted_elements = new FieldArrayList<>();
-//		
-//		for ( TimeOfDay time_of_day : elements )
-//		{
-//			converted_elements.add(time_of_day.getSimpleMillisecondsFromMidnight());
-//		}
+
+		// FieldCollection<Long> converted_elements = new FieldArrayList<>();
+		//
+		// for ( TimeOfDay time_of_day : elements )
+		// {
+		// converted_elements.add(time_of_day.getSimpleMillisecondsFromMidnight());
+		// }
 
 		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements);
 	}
