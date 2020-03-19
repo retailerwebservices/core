@@ -34,6 +34,7 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.elasticsearch.action.DocWriteRequest;
 import org.elasticsearch.action.DocWriteResponse.Result;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions;
@@ -101,7 +102,8 @@ public class ElasticSearchRESTClient implements ISearch
 
 	private static final String PRODUCTION_PATH_TO_CERT = "elasticsearch_path_to_cert";
 	
-	private static final int MAX_NO_REQUESTS_IN_BULK_REQUEST = 500;
+	// This is set to a reasonable limit. I think the actual Elasticsearch limit is based on memory size.
+	private static final int MAX_NO_REQUESTS_IN_BULK_REQUEST = 100000; 
 
 	private static final Logger logger = LogManager.getLogger(ElasticSearchRESTClient.class);
 
@@ -690,27 +692,40 @@ public class ElasticSearchRESTClient implements ISearch
 				scan_handler.getSimpleBulkRequest().requests().remove(null);
 			}
 
+			// TODO:PM - New code - a bit quick and dirty. There may be a better way upstream 
+			// from this. Also, Elasticsearch's Java High REST Client has a BulkProcessor
+			// that can flush the request based on size (bytes) or time interval.
 			logger.info("Number of requests in bulk request: " + scan_handler.getSimpleBulkRequest().requests().size());
-//			if (scan_handler.getSimpleBulkRequest().requests().size() > MAX_NO_REQUESTS_IN_BULK_REQUEST)
-//			{
-//				// TODO:PM - Break up number of requests into smaller chunks
-//			}
 			
-			BulkResponse bulk_response = high_level_rest_client.bulk(scan_handler.getSimpleBulkRequest(), RequestOptions.DEFAULT);
-			if ( bulk_response.hasFailures() )
+			if (scan_handler.getSimpleBulkRequest().requests().size() > MAX_NO_REQUESTS_IN_BULK_REQUEST)
 			{
-				logger.error("Failure for full successful bulk upsert.");
-				for ( BulkItemResponse bulkItemResponse : bulk_response )
+				if (!submitBulkRequestsInChunks(scan_handler.getSimpleBulkRequest(), index_name))
 				{
-					if ( bulkItemResponse.isFailed() )
-					{
-						BulkItemResponse.Failure failure = bulkItemResponse.getFailure();
-						logger.error("Failure on bulk upsert occurred with index " + index_name + " id " + bulkItemResponse.getId() + ". Failure msg " + failure.getMessage());
-					}
+					return false;
 				}
-
-				return false;
 			}
+			else
+			{
+				if (!submitBulkRequest(scan_handler.getSimpleBulkRequest(), index_name))
+				{
+					return false;
+				}
+			}
+//			BulkResponse bulk_response = high_level_rest_client.bulk(scan_handler.getSimpleBulkRequest(), RequestOptions.DEFAULT);
+//			if ( bulk_response.hasFailures() )
+//			{
+//				logger.error("Failure for full successful bulk upsert.");
+//				for ( BulkItemResponse bulkItemResponse : bulk_response )
+//				{
+//					if ( bulkItemResponse.isFailed() )
+//					{
+//						BulkItemResponse.Failure failure = bulkItemResponse.getFailure();
+//						logger.error("Failure on bulk upsert occurred with index " + index_name + " id " + bulkItemResponse.getId() + ". Failure msg " + failure.getMessage());
+//					}
+//				}
+//
+//				return false;
+//			}
 		}
 		catch ( Exception e )
 		{
@@ -721,6 +736,68 @@ public class ElasticSearchRESTClient implements ISearch
 		return true;
 	}
 
+	private boolean submitBulkRequestsInChunks( BulkRequest original_bulk_request , String index_name) throws Exception
+	{
+		List<DocWriteRequest<?>> subset_of_requests = new LinkedList<>();
+		
+		for ( DocWriteRequest<?> write_request : original_bulk_request.requests() )
+		{	
+			subset_of_requests.add(write_request);
+			
+			if (subset_of_requests.size() == MAX_NO_REQUESTS_IN_BULK_REQUEST)
+			{
+				if (!submitBulkRequest(createBulkRequest(subset_of_requests), index_name))
+				{
+					return false;
+				};
+				
+				subset_of_requests.clear();
+			}
+		}
+		
+		if ( !subset_of_requests.isEmpty() )
+		{
+			if (!submitBulkRequest(createBulkRequest(subset_of_requests), index_name))
+			{
+				return false;
+			};
+		}
+		
+		return true;
+	}
+
+	private BulkRequest createBulkRequest( List<DocWriteRequest<?>> write_requests )
+	{
+		BulkRequest bulk_request = new BulkRequest();
+		for ( DocWriteRequest<?> request : write_requests )
+		{
+			bulk_request.add(request);
+		}
+		
+		return bulk_request;
+	}
+	
+	private boolean submitBulkRequest(BulkRequest bulk_request, String index_name) throws Exception
+	{
+		BulkResponse bulk_response = high_level_rest_client.bulk(bulk_request, RequestOptions.DEFAULT);
+		if ( bulk_response.hasFailures() )
+		{
+			logger.error("Failure for full successful bulk upsert.");
+			for ( BulkItemResponse bulkItemResponse : bulk_response )
+			{
+				if ( bulkItemResponse.isFailed() )
+				{
+					BulkItemResponse.Failure failure = bulkItemResponse.getFailure();
+					logger.error("Failure on bulk upsert occurred with index " + index_name + " id " + bulkItemResponse.getId() + ". Failure msg " + failure.getMessage());
+				}
+			}
+
+			return false;
+		}
+		
+		return true;
+	}
+	
 	/**
 	 * Test if the index exists or not
 	 * 
