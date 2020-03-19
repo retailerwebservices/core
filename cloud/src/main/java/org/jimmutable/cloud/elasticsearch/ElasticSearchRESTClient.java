@@ -103,7 +103,7 @@ public class ElasticSearchRESTClient implements ISearch
 	private static final String PRODUCTION_PATH_TO_CERT = "elasticsearch_path_to_cert";
 	
 	// This is set to a reasonable limit. I think the actual Elasticsearch limit is based on memory size.
-	private static final int MAX_NO_REQUESTS_IN_BULK_REQUEST = 100000; 
+	private static final int MAX_NO_REQUESTS_IN_BULK_REQUEST = 10000; 
 
 	private static final Logger logger = LogManager.getLogger(ElasticSearchRESTClient.class);
 
@@ -692,40 +692,16 @@ public class ElasticSearchRESTClient implements ISearch
 				scan_handler.getSimpleBulkRequest().requests().remove(null);
 			}
 
-			// TODO:PM - New code - a bit quick and dirty. There may be a better way upstream 
-			// from this. Also, Elasticsearch's Java High REST Client has a BulkProcessor
-			// that can flush the request based on size (bytes) or time interval.
 			logger.info("Number of requests in bulk request: " + scan_handler.getSimpleBulkRequest().requests().size());
-			
-			if (scan_handler.getSimpleBulkRequest().requests().size() > MAX_NO_REQUESTS_IN_BULK_REQUEST)
+
+			// This is a bit quick and dirty. 
+			// Elasticsearch's Java High REST Client has a BulkProcessor that can flush the 
+			// request based on size (bytes) or time interval. would probably be better but
+			// I think it would require more code re-factoring to use it. -PM
+			if (!submitBulkRequestsInChunks(scan_handler.getSimpleBulkRequest(), index_name))
 			{
-				if (!submitBulkRequestsInChunks(scan_handler.getSimpleBulkRequest(), index_name))
-				{
-					return false;
-				}
+				return false;
 			}
-			else
-			{
-				if (!submitBulkRequest(scan_handler.getSimpleBulkRequest(), index_name))
-				{
-					return false;
-				}
-			}
-//			BulkResponse bulk_response = high_level_rest_client.bulk(scan_handler.getSimpleBulkRequest(), RequestOptions.DEFAULT);
-//			if ( bulk_response.hasFailures() )
-//			{
-//				logger.error("Failure for full successful bulk upsert.");
-//				for ( BulkItemResponse bulkItemResponse : bulk_response )
-//				{
-//					if ( bulkItemResponse.isFailed() )
-//					{
-//						BulkItemResponse.Failure failure = bulkItemResponse.getFailure();
-//						logger.error("Failure on bulk upsert occurred with index " + index_name + " id " + bulkItemResponse.getId() + ". Failure msg " + failure.getMessage());
-//					}
-//				}
-//
-//				return false;
-//			}
 		}
 		catch ( Exception e )
 		{
@@ -745,7 +721,7 @@ public class ElasticSearchRESTClient implements ISearch
 			subset_of_requests.add(write_request);
 			
 			if (subset_of_requests.size() == MAX_NO_REQUESTS_IN_BULK_REQUEST)
-			{
+			{	
 				if (!submitBulkRequest(createBulkRequest(subset_of_requests), index_name))
 				{
 					return false;
@@ -779,6 +755,8 @@ public class ElasticSearchRESTClient implements ISearch
 	
 	private boolean submitBulkRequest(BulkRequest bulk_request, String index_name) throws Exception
 	{
+		logger.info("Number of requests in current bulk request: " + bulk_request.requests().size());
+		
 		BulkResponse bulk_response = high_level_rest_client.bulk(bulk_request, RequestOptions.DEFAULT);
 		if ( bulk_response.hasFailures() )
 		{
