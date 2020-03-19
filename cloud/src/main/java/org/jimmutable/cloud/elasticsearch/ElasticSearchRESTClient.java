@@ -100,6 +100,8 @@ public class ElasticSearchRESTClient implements ISearch
 	private static final String PRODUCTION_ELASTICSEARCH_USERNAME = "production_elastic_username";
 
 	private static final String PRODUCTION_PATH_TO_CERT = "elasticsearch_path_to_cert";
+	
+	private static final int MAX_NO_REQUESTS_IN_BULK_REQUEST = 500;
 
 	private static final Logger logger = LogManager.getLogger(ElasticSearchRESTClient.class);
 
@@ -688,6 +690,12 @@ public class ElasticSearchRESTClient implements ISearch
 				scan_handler.getSimpleBulkRequest().requests().remove(null);
 			}
 
+			logger.info("Number of requests in bulk request: " + scan_handler.getSimpleBulkRequest().requests().size());
+//			if (scan_handler.getSimpleBulkRequest().requests().size() > MAX_NO_REQUESTS_IN_BULK_REQUEST)
+//			{
+//				// TODO:PM - Break up number of requests into smaller chunks
+//			}
+			
 			BulkResponse bulk_response = high_level_rest_client.bulk(scan_handler.getSimpleBulkRequest(), RequestOptions.DEFAULT);
 			if ( bulk_response.hasFailures() )
 			{
