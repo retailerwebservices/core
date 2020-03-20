@@ -692,7 +692,7 @@ public class ElasticSearchRESTClient implements ISearch
 				scan_handler.getSimpleBulkRequest().requests().remove(null);
 			}
 
-			logger.info("Number of requests in bulk request: " + scan_handler.getSimpleBulkRequest().requests().size());
+			logger.info(String.format("Total number of requests to submit for index %s: %d ", index_name, scan_handler.getSimpleBulkRequest().requests().size()));
 
 			// This is a bit quick and dirty. 
 			// Elasticsearch's Java High REST Client has a BulkProcessor that can flush the 
@@ -755,7 +755,7 @@ public class ElasticSearchRESTClient implements ISearch
 	
 	private boolean submitBulkRequest(BulkRequest bulk_request, String index_name) throws Exception
 	{
-		logger.info("Number of requests in current bulk request: " + bulk_request.requests().size());
+		logger.info(String.format("Number of requests in current bulk request for index %s: %d", index_name, bulk_request.requests().size()));
 		
 		BulkResponse bulk_response = high_level_rest_client.bulk(bulk_request, RequestOptions.DEFAULT);
 		if ( bulk_response.hasFailures() )
