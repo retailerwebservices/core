@@ -725,7 +725,7 @@ public class ElasticSearchRESTClient implements ISearch
 				if (!submitBulkRequest(createBulkRequest(subset_of_requests), index_name))
 				{
 					return false;
-				};
+				}
 				
 				subset_of_requests.clear();
 			}
@@ -736,7 +736,7 @@ public class ElasticSearchRESTClient implements ISearch
 			if (!submitBulkRequest(createBulkRequest(subset_of_requests), index_name))
 			{
 				return false;
-			};
+			}
 		}
 		
 		return true;
