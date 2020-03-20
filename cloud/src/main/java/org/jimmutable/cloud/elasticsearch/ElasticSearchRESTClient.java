@@ -755,7 +755,7 @@ public class ElasticSearchRESTClient implements ISearch
 	
 	private boolean submitBulkRequest(BulkRequest bulk_request, String index_name) throws Exception
 	{
-		logger.info(String.format("Number of requests in current bulk request for index %s: %d", index_name, bulk_request.requests().size()));
+		logger.debug(String.format("Number of requests in current bulk request for index %s: %d", index_name, bulk_request.requests().size()));
 		
 		BulkResponse bulk_response = high_level_rest_client.bulk(bulk_request, RequestOptions.DEFAULT);
 		if ( bulk_response.hasFailures() )
