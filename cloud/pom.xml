@@ -49,7 +49,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<elasticsearch.version>6.3.1</elasticsearch.version>
+		<elasticsearch.version>7.6.1</elasticsearch.version>
 		<log4j.version>2.8.2</log4j.version>
 		<skipITs>true</skipITs>
 		<jetty.version>9.4.6.v20170531</jetty.version>
@@ -91,16 +91,37 @@
 		<!-- START elasticsearch dependencies -->
 		<!-- Note: the transport client is expected to be deprecated in 7.0.0 and 
 			completely removed in 8.0.0 -->
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.elasticsearch.client</groupId>
 			<artifactId>transport</artifactId>
 			<version>${elasticsearch.version}</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.elasticsearch.client/elasticsearch-rest-high-level-client -->
+		https://mvnrepository.com/artifact/org.elasticsearch.client/elasticsearch-rest-high-level-client
 		<dependency>
 			<groupId>org.elasticsearch.client</groupId>
 			<artifactId>elasticsearch-rest-high-level-client</artifactId>
 			<version>${elasticsearch.version}</version>
+		</dependency> -->
+		<!-- https://mvnrepository.com/artifact/org.elasticsearch/elasticsearch -->
+		<dependency>
+    		<groupId>org.elasticsearch</groupId>
+    		<artifactId>elasticsearch</artifactId>
+    		<version>${elasticsearch.version}</version>
+		</dependency>
+		<dependency>
+    		<groupId>org.elasticsearch.client</groupId>
+    		<artifactId>elasticsearch-rest-client</artifactId>
+    		<version>${elasticsearch.version}</version>
+		</dependency>
+		<dependency>
+    		<groupId>org.elasticsearch.client</groupId>
+    		<artifactId>elasticsearch-rest-high-level-client</artifactId>
+    		<version>${elasticsearch.version}</version>
+		</dependency>
+		<dependency>
+    		<groupId>org.elasticsearch.client</groupId>
+    		<artifactId>transport</artifactId>
+    		<version>${elasticsearch.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>

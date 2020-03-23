@@ -1,7 +1,12 @@
 package org.jimmutable.cloud.elasticsearch;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.security.KeyStore;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,24 +20,28 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import org.apache.http.Header;
+import javax.net.ssl.SSLContext;
+
 import org.apache.http.HttpHost;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.message.BasicHeader;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.elasticsearch.action.DocWriteRequest;
 import org.elasticsearch.action.DocWriteResponse.Result;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions;
-import org.elasticsearch.action.admin.indices.alias.IndicesAliasesResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -46,6 +55,9 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.action.support.WriteRequest.RefreshPolicy;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.client.Request;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
@@ -84,6 +96,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class ElasticSearchRESTClient implements ISearch
 {
+	private static final String PRODUCTION_ELASTICSEARCH_PASSWORD = "production_elastic_password";
+
+	private static final String PRODUCTION_ELASTICSEARCH_USERNAME = "production_elastic_username";
+
+	private static final String PRODUCTION_PATH_TO_CERT = "elasticsearch_path_to_cert";
+	
+	// This is set to a reasonable limit. I think the actual Elasticsearch limit is based on memory size.
+	private static final int MAX_NO_REQUESTS_IN_BULK_REQUEST = 10000; 
+
 	private static final Logger logger = LogManager.getLogger(ElasticSearchRESTClient.class);
 
 	/**
@@ -92,11 +113,6 @@ public class ElasticSearchRESTClient implements ISearch
 	 * same version on client/server.
 	 */
 	protected volatile RestHighLevelClient high_level_rest_client;
-
-	// This value is the Base64 encoded user:pass. If someone changes the
-	// authentication this will break.
-	private final BasicHeader HEADER_BASIC_AUTH = new BasicHeader("Authorization", "Basic ZWxhc3RpYzpnVWM2clZNa1Z0MUdEeXBneHV4ZTdaalI=");
-	private final BasicHeader HEADER_CONTENT_TYPE = new BasicHeader("Content-Type", "application/json");
 
 	private String PRODUCTION_ELASTICSEARCH_HOST = "f8bfe258266ee6bd44cece0dde4326d5.us-west-2.aws.found.io";
 	private int PRODUCTION_ELASTICSEARCH_PORT = 9243;
@@ -113,21 +129,45 @@ public class ElasticSearchRESTClient implements ISearch
 		EnvironmentType type = CloudExecutionEnvironment.getEnvironmentTypeFromSystemProperty(null);
 		if ( type == EnvironmentType.PRODUCTION )
 		{
-			RestClientBuilder builder = RestClient.builder(new HttpHost(PRODUCTION_ELASTICSEARCH_HOST, PRODUCTION_ELASTICSEARCH_PORT, "https")).setRequestConfigCallback(new RestClientBuilder.RequestConfigCallback()
+			RestClientBuilder lowLevelClientBuilder = RestClient.builder(new HttpHost(PRODUCTION_ELASTICSEARCH_HOST, PRODUCTION_ELASTICSEARCH_PORT, "https"));
+
+			String production_elastic_username = System.getProperty(PRODUCTION_ELASTICSEARCH_USERNAME);
+			String production_elastic_password = System.getProperty(PRODUCTION_ELASTICSEARCH_PASSWORD);
+			final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+			credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(production_elastic_username, production_elastic_password));
+
+			String production_path_to_cert = System.getProperty(PRODUCTION_PATH_TO_CERT);
+			File caFile = new File(production_path_to_cert);
+
+			try
 			{
-				@Override
-				public RequestConfig.Builder customizeRequestConfig( RequestConfig.Builder requestConfigBuilder )
+				CertificateFactory fact = CertificateFactory.getInstance("X.509");
+				FileInputStream is = new FileInputStream(caFile);
+				X509Certificate cer = (X509Certificate) fact.generateCertificate(is);
+				KeyStore keystore = KeyStore.getInstance("JKS");
+				keystore.load(null, null);
+				keystore.setCertificateEntry("public", cer);
+
+				final SSLContext sslcontext = SSLContextBuilder.create().loadTrustMaterial(keystore, new TrustSelfSignedStrategy()).build();
+				lowLevelClientBuilder.setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback()
 				{
-					return requestConfigBuilder.setConnectTimeout(5000).setSocketTimeout(60000);
-				}
-			});
-			builder.setDefaultHeaders(new Header[] { HEADER_BASIC_AUTH, HEADER_CONTENT_TYPE }).setMaxRetryTimeoutMillis(120000);
-			high_level_rest_client = new RestHighLevelClient(builder);
+					@Override
+					public HttpAsyncClientBuilder customizeHttpClient( HttpAsyncClientBuilder httpClientBuilder )
+					{
+						return httpClientBuilder.setSSLContext(sslcontext).setDefaultCredentialsProvider(credentialsProvider);
+					}
+				});
+			}
+			catch ( Exception e )
+			{
+				logger.debug(e.getMessage());
+			}
+
+			high_level_rest_client = new RestHighLevelClient(lowLevelClientBuilder);
 		}
 		else
 		{
-			RestClientBuilder builder = RestClient.builder(new HttpHost(DEV_ELASTICSEARCH_HOST, DEV_ELASTICSEARCH_PORT, "http"));
-			high_level_rest_client = new RestHighLevelClient(builder);
+			high_level_rest_client = new RestHighLevelClient(RestClient.builder(new HttpHost(DEV_ELASTICSEARCH_HOST, DEV_ELASTICSEARCH_PORT, "http")));
 		}
 	}
 
@@ -176,7 +216,7 @@ public class ElasticSearchRESTClient implements ISearch
 			add_alias_action.alias(index.getSimpleIndex().getSimpleValue());
 			request.addAliasAction(add_alias_action);
 
-			IndicesAliasesResponse indicesAliasesResponse = high_level_rest_client.indices().updateAliases(request);
+			AcknowledgedResponse indicesAliasesResponse = high_level_rest_client.indices().updateAliases(request, RequestOptions.DEFAULT);
 
 			if ( !indicesAliasesResponse.isAcknowledged() )
 			{
@@ -218,7 +258,7 @@ public class ElasticSearchRESTClient implements ISearch
 		try
 		{
 			CreateIndexRequest request = new CreateIndexRequest(index_name).mapping(ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, ElasticSearchCommon.getMappingBuilder(index, null));
-			CreateIndexResponse createResponse = high_level_rest_client.indices().create(request);
+			CreateIndexResponse createResponse = high_level_rest_client.indices().create(request, RequestOptions.DEFAULT);
 
 			if ( !createResponse.isAcknowledged() )
 			{
@@ -262,7 +302,7 @@ public class ElasticSearchRESTClient implements ISearch
 			String delete_request = "/" + index.getSimpleValue() + "/" + document_id.getTypeName().getSimpleName() + "/" + document_id.getSimpleValue();
 
 			DeleteRequest del = new DeleteRequest(index.getSimpleValue(), ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_id.getSimpleValue()).setRefreshPolicy(RefreshPolicy.IMMEDIATE);
-			DeleteResponse response = high_level_rest_client.delete(del);
+			DeleteResponse response = high_level_rest_client.delete(del, RequestOptions.DEFAULT);
 
 			boolean successfully_deleted = response.getResult().equals(Result.DELETED);
 
@@ -324,7 +364,7 @@ public class ElasticSearchRESTClient implements ISearch
 		{
 			DeleteIndexRequest del = new DeleteIndexRequest(index_name);
 			del.timeout(TimeValue.timeValueMinutes(timeout_minutes));
-			DeleteIndexResponse response = high_level_rest_client.indices().delete(del);
+			AcknowledgedResponse response = high_level_rest_client.indices().delete(del, RequestOptions.DEFAULT);
 
 			if ( response.isAcknowledged() )
 			{
@@ -375,7 +415,7 @@ public class ElasticSearchRESTClient implements ISearch
 			String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
 
 			IndexRequest request = new IndexRequest(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).source(data).setRefreshPolicy(refresh_policy);
-			IndexResponse response = high_level_rest_client.index(request);
+			IndexResponse response = high_level_rest_client.index(request, RequestOptions.DEFAULT);
 
 			Level level;
 			switch ( response.getResult() )
@@ -448,7 +488,7 @@ public class ElasticSearchRESTClient implements ISearch
 			}
 
 			boolean success = true;
-			BulkResponse bulk_response = high_level_rest_client.bulk(bulk_request);
+			BulkResponse bulk_response = high_level_rest_client.bulk(bulk_request, RequestOptions.DEFAULT);
 			for ( BulkItemResponse response : bulk_response.getItems() )
 			{
 				Level level;
@@ -493,7 +533,8 @@ public class ElasticSearchRESTClient implements ISearch
 		}
 		try
 		{
-			Response resp = high_level_rest_client.getLowLevelClient().performRequest("GET", "/" + index.getSimpleValue());
+			Request request = new Request("GET", "/" + index.getSimpleValue());
+			Response resp = high_level_rest_client.getLowLevelClient().performRequest(request);
 
 			if ( resp.getStatusLine().getStatusCode() != 200 )
 			{
@@ -551,7 +592,7 @@ public class ElasticSearchRESTClient implements ISearch
 				request.addAliasAction(delete_alias_action);
 			}
 
-			IndicesAliasesResponse indicesAliasesResponse = high_level_rest_client.indices().updateAliases(request);
+			AcknowledgedResponse indicesAliasesResponse = high_level_rest_client.indices().updateAliases(request, RequestOptions.DEFAULT);
 
 			if ( !indicesAliasesResponse.isAcknowledged() )
 			{
@@ -582,7 +623,8 @@ public class ElasticSearchRESTClient implements ISearch
 		Set<String> all_indicies_with_alias = new HashSet<>();
 		try
 		{
-			Response resp = high_level_rest_client.getLowLevelClient().performRequest("GET", "/_alias/" + alias_name);
+			Request request = new Request("GET", "/_alias/" + alias_name);
+			Response resp = high_level_rest_client.getLowLevelClient().performRequest(request);
 			String response_body = EntityUtils.toString(resp.getEntity());
 
 			JsonNode node = new ObjectMapper().readTree(response_body);
@@ -650,19 +692,14 @@ public class ElasticSearchRESTClient implements ISearch
 				scan_handler.getSimpleBulkRequest().requests().remove(null);
 			}
 
-			BulkResponse bulk_response = high_level_rest_client.bulk(scan_handler.getSimpleBulkRequest());
-			if ( bulk_response.hasFailures() )
-			{
-				logger.error("Failure for full successful bulk upsert.");
-				for ( BulkItemResponse bulkItemResponse : bulk_response )
-				{
-					if ( bulkItemResponse.isFailed() )
-					{
-						BulkItemResponse.Failure failure = bulkItemResponse.getFailure();
-						logger.error("Failure on bulk upsert occurred with index " + index_name + " id " + bulkItemResponse.getId() + ". Failure msg " + failure.getMessage());
-					}
-				}
+			logger.info(String.format("Total number of requests to submit for index %s: %d ", index_name, scan_handler.getSimpleBulkRequest().requests().size()));
 
+			// This is a bit quick and dirty. 
+			// Elasticsearch's Java High REST Client has a BulkProcessor that can flush the 
+			// request based on size (bytes) or time interval. would probably be better but
+			// I think it would require more code re-factoring to use it. -PM
+			if (!submitBulkRequestsInChunks(scan_handler.getSimpleBulkRequest(), index_name))
+			{
 				return false;
 			}
 		}
@@ -675,6 +712,70 @@ public class ElasticSearchRESTClient implements ISearch
 		return true;
 	}
 
+	private boolean submitBulkRequestsInChunks( BulkRequest original_bulk_request , String index_name) throws Exception
+	{
+		List<DocWriteRequest<?>> subset_of_requests = new LinkedList<>();
+		
+		for ( DocWriteRequest<?> write_request : original_bulk_request.requests() )
+		{	
+			subset_of_requests.add(write_request);
+			
+			if (subset_of_requests.size() == MAX_NO_REQUESTS_IN_BULK_REQUEST)
+			{	
+				if (!submitBulkRequest(createBulkRequest(subset_of_requests), index_name))
+				{
+					return false;
+				}
+				
+				subset_of_requests.clear();
+			}
+		}
+		
+		if ( !subset_of_requests.isEmpty() )
+		{
+			if (!submitBulkRequest(createBulkRequest(subset_of_requests), index_name))
+			{
+				return false;
+			}
+		}
+		
+		return true;
+	}
+
+	private BulkRequest createBulkRequest( List<DocWriteRequest<?>> write_requests )
+	{
+		BulkRequest bulk_request = new BulkRequest();
+		for ( DocWriteRequest<?> request : write_requests )
+		{
+			bulk_request.add(request);
+		}
+		
+		return bulk_request;
+	}
+	
+	private boolean submitBulkRequest(BulkRequest bulk_request, String index_name) throws Exception
+	{
+		logger.debug(String.format("Number of requests in current bulk request for index %s: %d", index_name, bulk_request.requests().size()));
+		
+		BulkResponse bulk_response = high_level_rest_client.bulk(bulk_request, RequestOptions.DEFAULT);
+		if ( bulk_response.hasFailures() )
+		{
+			logger.error("Failure for full successful bulk upsert.");
+			for ( BulkItemResponse bulkItemResponse : bulk_response )
+			{
+				if ( bulkItemResponse.isFailed() )
+				{
+					BulkItemResponse.Failure failure = bulkItemResponse.getFailure();
+					logger.error("Failure on bulk upsert occurred with index " + index_name + " id " + bulkItemResponse.getId() + ". Failure msg " + failure.getMessage());
+				}
+			}
+
+			return false;
+		}
+		
+		return true;
+	}
+	
 	/**
 	 * Test if the index exists or not
 	 * 
@@ -715,10 +816,11 @@ public class ElasticSearchRESTClient implements ISearch
 
 			try
 			{
-				Response resp = high_level_rest_client.getLowLevelClient().performRequest("GET", "/" + index.getSimpleIndex().getSimpleValue());
+				Request request = new Request("GET", "/" + index.getSimpleIndex().getSimpleValue());
+				Response resp = high_level_rest_client.getLowLevelClient().performRequest(request);
 				String response_body = EntityUtils.toString(resp.getEntity());
 
-				JsonNode node = new ObjectMapper().readTree(response_body).findValue("mappings").findValue("default").findValue("properties");
+				JsonNode node = new ObjectMapper().readTree(response_body).findValue("mappings").findValue("properties");
 
 				Map<String, String> actual = new HashMap<String, String>();
 
@@ -781,7 +883,7 @@ public class ElasticSearchRESTClient implements ISearch
 
 			SearchRequest ext_request = new SearchRequest(index_name).types(ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE).source(query_builder);
 
-			SearchResponse response = high_level_rest_client.search(ext_request);
+			SearchResponse response = high_level_rest_client.search(ext_request, RequestOptions.DEFAULT);
 
 			List<OneSearchResultWithTyping> results = new LinkedList<OneSearchResultWithTyping>();
 
@@ -820,7 +922,7 @@ public class ElasticSearchRESTClient implements ISearch
 
 			int next_page = from + size;
 
-			boolean has_more_results = response.getHits().totalHits > next_page;
+			boolean has_more_results = response.getHits().getTotalHits().value > next_page;
 
 			boolean has_previous_results = from != 0;
 
@@ -835,7 +937,7 @@ public class ElasticSearchRESTClient implements ISearch
 				break;
 			}
 
-			logger.log(level, String.format("QUERY:%s INDEX:%s STATUS:%s HITS:%s TOTAL_HITS:%s MAX_RESULTS:%d START_RESULTS_AFTER:%d", request.getSimpleQueryString(), index.getSimpleValue(), response.status(), results.size(), response.getHits().totalHits, request.getSimpleMaxResults(), request.getSimpleStartResultsAfter()));
+			logger.log(level, String.format("QUERY:%s INDEX:%s STATUS:%s HITS:%s TOTAL_HITS:%s MAX_RESULTS:%d START_RESULTS_AFTER:%d", request.getSimpleQueryString(), index.getSimpleValue(), response.status(), results.size(), response.getHits().getTotalHits(), request.getSimpleMaxResults(), request.getSimpleStartResultsAfter()));
 			logger.trace(String.format("SORT:%s FIRST_RESULT_IDX:%s HAS_MORE_RESULTS:%s HAS_PREVIOUS_RESULTS:%s START_OF_NEXT_PAGE_OF_RESULTS:%s START_OF_PREVIOUS_PAGE_OF_RESULTS:%s", request.getSimpleSort().getSimpleSortOrder().stream().map(e ->
 			{
 				return String.format("%s:%s", e.getSimpleField().getSimpleFieldName().getSimpleName(), e.getSimpleDirection().getSimpleCode());
@@ -870,7 +972,7 @@ public class ElasticSearchRESTClient implements ISearch
 
 		try
 		{
-			return high_level_rest_client.search(request);
+			return high_level_rest_client.search(request, RequestOptions.DEFAULT);
 		}
 		catch ( Exception e )
 		{
@@ -890,7 +992,7 @@ public class ElasticSearchRESTClient implements ISearch
 
 		try
 		{
-			return high_level_rest_client.searchScroll(request);
+			return high_level_rest_client.searchScroll(request, RequestOptions.DEFAULT);
 
 		}
 		catch ( Exception e )
@@ -911,7 +1013,7 @@ public class ElasticSearchRESTClient implements ISearch
 
 		try
 		{
-			ClearScrollResponse resp_raw = high_level_rest_client.clearScroll(request);
+			ClearScrollResponse resp_raw = high_level_rest_client.clearScroll(request, RequestOptions.DEFAULT);
 
 			return resp_raw.isSucceeded();
 		}
@@ -997,14 +1099,14 @@ public class ElasticSearchRESTClient implements ISearch
 
 		try
 		{
-			SearchResponse scrollResp = high_level_rest_client.search(ext_request);
+			SearchResponse scrollResp = high_level_rest_client.search(ext_request, RequestOptions.DEFAULT);
 
 			do
 			{
 				String[] document;
 				for ( SearchHit hit : scrollResp.getHits().getHits() )
 				{
-					logger.info(scrollResp.getHits().totalHits);
+					logger.info(scrollResp.getHits().getTotalHits().value);
 					document = new String[sorted_header.size()];
 
 					Map<String, Object> resultMap = hit.getSourceAsMap();
@@ -1028,7 +1130,7 @@ public class ElasticSearchRESTClient implements ISearch
 					}
 				}
 
-				scrollResp = high_level_rest_client.searchScroll(new SearchScrollRequest(scrollResp.getScrollId()).scroll(TimeValue.timeValueMinutes(1)));
+				scrollResp = high_level_rest_client.searchScroll(new SearchScrollRequest(scrollResp.getScrollId()).scroll(TimeValue.timeValueMinutes(1)), RequestOptions.DEFAULT);
 
 			}
 			while ( scrollResp.getHits().getHits().length != 0 ); // Zero hits mark the end of the scroll and the
@@ -1108,11 +1210,12 @@ public class ElasticSearchRESTClient implements ISearch
 			}
 		}
 
-		//Meant to be used after the scan completes since we need our set of IndexRequest to be able to be added in parallel
+		// Meant to be used after the scan completes since we need our set of
+		// IndexRequest to be able to be added in parallel
 		private BulkRequest getSimpleBulkRequest()
 		{
 			BulkRequest bulk_request = new BulkRequest();
-			for(IndexRequest request : requests)
+			for ( IndexRequest request : requests )
 			{
 				bulk_request.add(request);
 			}
@@ -1219,7 +1322,7 @@ public class ElasticSearchRESTClient implements ISearch
 				String request_str = "/" + index_name + "/" + ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE + "/" + document_name;
 
 				IndexRequest request = new IndexRequest(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).source(data).setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
-				IndexResponse response = high_level_rest_client.index(request);
+				IndexResponse response = high_level_rest_client.index(request, RequestOptions.DEFAULT);
 			}
 			catch ( Exception e )
 			{
@@ -1249,7 +1352,7 @@ public class ElasticSearchRESTClient implements ISearch
 			request.type(ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE);
 			request.source(ElasticSearchCommon.getMappingBuilder(index, null));
 
-			PutMappingResponse put_response = high_level_rest_client.indices().putMapping(request);
+			AcknowledgedResponse put_response = high_level_rest_client.indices().putMapping(request, RequestOptions.DEFAULT);
 
 			if ( !put_response.isAcknowledged() )
 			{
