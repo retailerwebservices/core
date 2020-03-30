@@ -1,12 +1,7 @@
 package org.jimmutable.cloud.elasticsearch;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.KeyStore;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -20,16 +15,12 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import javax.net.ssl.SSLContext;
-
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
-import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -100,10 +91,9 @@ public class ElasticSearchRESTClient implements ISearch
 
 	private static final String PRODUCTION_ELASTICSEARCH_USERNAME = "production_elastic_username";
 
-	private static final String PRODUCTION_PATH_TO_CERT = "elasticsearch_path_to_cert";
-	
-	// This is set to a reasonable limit. I think the actual Elasticsearch limit is based on memory size.
-	private static final int MAX_NO_REQUESTS_IN_BULK_REQUEST = 10000; 
+	// This is set to a reasonable limit. I think the actual Elasticsearch limit is
+	// based on memory size.
+	private static final int MAX_NO_REQUESTS_IN_BULK_REQUEST = 10000;
 
 	private static final Logger logger = LogManager.getLogger(ElasticSearchRESTClient.class);
 
@@ -114,7 +104,9 @@ public class ElasticSearchRESTClient implements ISearch
 	 */
 	protected volatile RestHighLevelClient high_level_rest_client;
 
-	private String PRODUCTION_ELASTICSEARCH_HOST = "f8bfe258266ee6bd44cece0dde4326d5.us-west-2.aws.found.io";
+	private String PRODUCTION_ELASTICSEARCH_HOST = //
+			"7381bd4eeaa34c1f8e197493b45987b1.us-west-2.aws.found.io";
+	// "f8bfe258266ee6bd44cece0dde4326d5.us-west-2.aws.found.io";
 	private int PRODUCTION_ELASTICSEARCH_PORT = 9243;
 
 	private String DEV_ELASTICSEARCH_HOST = ElasticSearchEndpoint.CURRENT.getSimpleHost();
@@ -136,25 +128,15 @@ public class ElasticSearchRESTClient implements ISearch
 			final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 			credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(production_elastic_username, production_elastic_password));
 
-			String production_path_to_cert = System.getProperty(PRODUCTION_PATH_TO_CERT);
-			File caFile = new File(production_path_to_cert);
-
 			try
 			{
-				CertificateFactory fact = CertificateFactory.getInstance("X.509");
-				FileInputStream is = new FileInputStream(caFile);
-				X509Certificate cer = (X509Certificate) fact.generateCertificate(is);
-				KeyStore keystore = KeyStore.getInstance("JKS");
-				keystore.load(null, null);
-				keystore.setCertificateEntry("public", cer);
 
-				final SSLContext sslcontext = SSLContextBuilder.create().loadTrustMaterial(keystore, new TrustSelfSignedStrategy()).build();
 				lowLevelClientBuilder.setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback()
 				{
 					@Override
 					public HttpAsyncClientBuilder customizeHttpClient( HttpAsyncClientBuilder httpClientBuilder )
 					{
-						return httpClientBuilder.setSSLContext(sslcontext).setDefaultCredentialsProvider(credentialsProvider);
+						return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
 					}
 				});
 			}
@@ -694,11 +676,11 @@ public class ElasticSearchRESTClient implements ISearch
 
 			logger.info(String.format("Total number of requests to submit for index %s: %d ", index_name, scan_handler.getSimpleBulkRequest().requests().size()));
 
-			// This is a bit quick and dirty. 
-			// Elasticsearch's Java High REST Client has a BulkProcessor that can flush the 
+			// This is a bit quick and dirty.
+			// Elasticsearch's Java High REST Client has a BulkProcessor that can flush the
 			// request based on size (bytes) or time interval. would probably be better but
 			// I think it would require more code re-factoring to use it. -PM
-			if (!submitBulkRequestsInChunks(scan_handler.getSimpleBulkRequest(), index_name))
+			if ( !submitBulkRequestsInChunks(scan_handler.getSimpleBulkRequest(), index_name) )
 			{
 				return false;
 			}
@@ -712,33 +694,33 @@ public class ElasticSearchRESTClient implements ISearch
 		return true;
 	}
 
-	private boolean submitBulkRequestsInChunks( BulkRequest original_bulk_request , String index_name) throws Exception
+	private boolean submitBulkRequestsInChunks( BulkRequest original_bulk_request, String index_name ) throws Exception
 	{
 		List<DocWriteRequest<?>> subset_of_requests = new LinkedList<>();
-		
+
 		for ( DocWriteRequest<?> write_request : original_bulk_request.requests() )
-		{	
+		{
 			subset_of_requests.add(write_request);
-			
-			if (subset_of_requests.size() == MAX_NO_REQUESTS_IN_BULK_REQUEST)
-			{	
-				if (!submitBulkRequest(createBulkRequest(subset_of_requests), index_name))
+
+			if ( subset_of_requests.size() == MAX_NO_REQUESTS_IN_BULK_REQUEST )
+			{
+				if ( !submitBulkRequest(createBulkRequest(subset_of_requests), index_name) )
 				{
 					return false;
 				}
-				
+
 				subset_of_requests.clear();
 			}
 		}
-		
+
 		if ( !subset_of_requests.isEmpty() )
 		{
-			if (!submitBulkRequest(createBulkRequest(subset_of_requests), index_name))
+			if ( !submitBulkRequest(createBulkRequest(subset_of_requests), index_name) )
 			{
 				return false;
 			}
 		}
-		
+
 		return true;
 	}
 
@@ -749,14 +731,14 @@ public class ElasticSearchRESTClient implements ISearch
 		{
 			bulk_request.add(request);
 		}
-		
+
 		return bulk_request;
 	}
-	
-	private boolean submitBulkRequest(BulkRequest bulk_request, String index_name) throws Exception
+
+	private boolean submitBulkRequest( BulkRequest bulk_request, String index_name ) throws Exception
 	{
 		logger.debug(String.format("Number of requests in current bulk request for index %s: %d", index_name, bulk_request.requests().size()));
-		
+
 		BulkResponse bulk_response = high_level_rest_client.bulk(bulk_request, RequestOptions.DEFAULT);
 		if ( bulk_response.hasFailures() )
 		{
@@ -772,10 +754,10 @@ public class ElasticSearchRESTClient implements ISearch
 
 			return false;
 		}
-		
+
 		return true;
 	}
-	
+
 	/**
 	 * Test if the index exists or not
 	 * 
