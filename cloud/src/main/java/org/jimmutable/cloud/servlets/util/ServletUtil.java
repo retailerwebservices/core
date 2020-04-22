@@ -58,14 +58,15 @@ public class ServletUtil
 	 *            HttpServletResponse.SC_INTERNAL_SERVER_ERROR (500)
 	 *            </p>
 	 */
-	public static void writeSerializedResponse(HttpServletResponse response, StandardObject<?> obj, int http_status_code)
+	public static void writeSerializedResponse( HttpServletResponse response, StandardObject<?> obj, int http_status_code )
 	{
 
 		String json = "";
 		try
 		{
 			json = ObjectWriter.serialize(Format.JSON_PRETTY_PRINT, obj);
-		} catch (Exception e)
+		}
+		catch ( Exception e )
 		{
 			logger.error("Failure during serialization", e);
 			http_status_code = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
@@ -82,20 +83,22 @@ public class ServletUtil
 			PrintWriter out = response.getWriter();
 			out.write(json);
 			out.flush();
-		} catch (IOException e)
+		}
+		catch ( IOException e )
 		{
 			logger.error(e);
 		}
 	}
 
-	public static void writeSerializedResponse(HttpServletResponse response, Object obj, int http_status_code)
+	public static void writeSerializedResponse( HttpServletResponse response, Object obj, int http_status_code )
 	{
 
 		String json = "";
 		try
 		{
 			json = ObjectWriter.serialize(Format.JSON_PRETTY_PRINT, obj);
-		} catch (Exception e)
+		}
+		catch ( Exception e )
 		{
 			logger.error("Failure during serialization", e);
 			http_status_code = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
@@ -112,17 +115,18 @@ public class ServletUtil
 			PrintWriter out = response.getWriter();
 			out.write(json);
 			out.flush();
-		} catch (IOException e)
+		}
+		catch ( IOException e )
 		{
 			logger.error(e);
 		}
 	}
-	
+
 	/**
 	 * 
-	 * Common json response writer to write JSON objects from the
-	 * HttpResponse PrintWriter. This is for data that is already
-	 * in JSON format and, therefore, already serialized.
+	 * Common json response writer to write JSON objects from the HttpResponse
+	 * PrintWriter. This is for data that is already in JSON format and, therefore,
+	 * already serialized.
 	 * 
 	 * @param response
 	 *            the HttpServletResponse
@@ -169,12 +173,13 @@ public class ServletUtil
 	 *            int
 	 * @return the parsed int or default_value
 	 */
-	public static int parseIntFromString(String str, int default_int)
+	public static int parseIntFromString( String str, int default_int )
 	{
 		try
 		{
 			return Integer.parseInt(str.trim());
-		} catch (Exception e)
+		}
+		catch ( Exception e )
 		{
 		}
 		return default_int;
@@ -189,10 +194,10 @@ public class ServletUtil
 	 *            HttpServletRequest
 	 * @return true if valid, else false
 	 */
-	public static boolean isValidJSON(HttpServletRequest request, HttpServletResponse response)
+	public static boolean isValidJSON( HttpServletRequest request, HttpServletResponse response )
 	{
 
-		if (request.getContentType().equals(APPLICATION_JSON) || request.getCharacterEncoding().equals(UTF8))
+		if ( request.getContentType().equals(APPLICATION_JSON) || request.getCharacterEncoding().equals(UTF8) )
 		{
 			return true;
 		}
@@ -209,7 +214,7 @@ public class ServletUtil
 	 *            Default string if reading fails
 	 * @return the JSON as a string
 	 */
-	public static String getOptionalJSON(HttpServletRequest request, String default_value)
+	public static String getOptionalJSON( HttpServletRequest request, String default_value )
 	{
 		StringBuffer buffer = new StringBuffer();
 		String line = null;
@@ -217,11 +222,12 @@ public class ServletUtil
 		{
 			InputStream inputStream = request.getInputStream();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, UTF8));
-			while ((line = reader.readLine()) != null)
+			while ( (line = reader.readLine()) != null )
 			{
 				buffer.append(line);
 			}
-		} catch (Exception e)
+		}
+		catch ( Exception e )
 		{
 			logger.error(e);
 			return default_value;
@@ -240,15 +246,16 @@ public class ServletUtil
 	 *            Default string if reading fails
 	 * @return RequestPageData
 	 */
-	public static RequestPageData getPageDataFromPost(HttpServletRequest request, RequestPageData default_value)
+	public static RequestPageData getPageDataFromPost( HttpServletRequest request, RequestPageData default_value )
 	{
 		RequestPageData page_data = new RequestPageData();
 
-		if (ServletFileUpload.isMultipartContent(request))
+		if ( ServletFileUpload.isMultipartContent(request) )
 		{
-			request.setAttribute(Request.__MULTIPART_CONFIG_ELEMENT, MULTI_PART_CONFIG);
+			request.setAttribute(Request.MULTIPART_CONFIG_ELEMENT, MULTI_PART_CONFIG);
 			page_data = getDataFromMultipartForm(request);
-		} else
+		}
+		else
 		{
 			page_data = getJSONFromRequestBody(request);
 		}
@@ -256,7 +263,7 @@ public class ServletUtil
 		return page_data.isEmpty() ? default_value : page_data;
 	}
 
-	private static RequestPageData getDataFromMultipartForm(HttpServletRequest request)
+	private static RequestPageData getDataFromMultipartForm( HttpServletRequest request )
 	{
 		RequestPageData page_data = new RequestPageData();
 		byte[] file_bytes = null;
@@ -274,26 +281,27 @@ public class ServletUtil
 
 			FileItemIterator iter = upload.getItemIterator(request);
 
-			while (iter.hasNext())
+			while ( iter.hasNext() )
 			{
 				FileItemStream item = iter.next();
 
 				String field_name = item.getFieldName();
 				file_name = item.getName();
 				stream = item.openStream();
-				if (item.isFormField())
+				if ( item.isFormField() )
 				{
 					// JSON data
-					if (field_name == null || field_name == "")
+					if ( field_name == null || field_name == "" )
 					{
 						field_name = RequestPageData.DEFAULT_JSON_ELEMENT;
 					}
 					raw_json = new String(getBytesFromInputStream(stream, new byte[0]), StandardCharsets.UTF_8);
 					page_data.addElement(new PageDataElement(field_name, raw_json));
-				} else
+				}
+				else
 				{
 					// File data
-					if (field_name == null || field_name == "")
+					if ( field_name == null || field_name == "" )
 					{
 						field_name = RequestPageData.DEFAULT_FILE_ELEMENT;
 					}
@@ -307,7 +315,8 @@ public class ServletUtil
 				// field_name = null;
 				stream.close();
 			}
-		} catch (FileUploadException | IOException e)
+		}
+		catch ( FileUploadException | IOException e )
 		{
 			logger.error(e);
 			// Replace page with an empty one
@@ -317,19 +326,20 @@ public class ServletUtil
 		return page_data;
 	}
 
-	private static byte[] getBytesFromInputStream(InputStream is, byte[] default_value)
+	private static byte[] getBytesFromInputStream( InputStream is, byte[] default_value )
 	{
 		try
 		{
 			return IOUtils.toByteArray(is);
-		} catch (IOException e)
+		}
+		catch ( IOException e )
 		{
 			logger.error(e);
 			return default_value;
 		}
 	}
 
-	private static RequestPageData getJSONFromRequestBody(HttpServletRequest request)
+	private static RequestPageData getJSONFromRequestBody( HttpServletRequest request )
 	{
 		RequestPageData page_data = new RequestPageData();
 		String raw_json = "";
@@ -338,7 +348,8 @@ public class ServletUtil
 		{
 			raw_json = request.getReader().lines().collect(Collectors.joining());
 			page_data.addElement(new PageDataElement(RequestPageData.DEFAULT_JSON_ELEMENT, raw_json));
-		} catch (Exception e)
+		}
+		catch ( Exception e )
 		{
 			logger.error(e);
 		}
@@ -356,20 +367,21 @@ public class ServletUtil
 	 *            Default string if reading fails
 	 * @return RequestPageData
 	 */
-	public static void handlePageDataFromPost(HttpServletRequest request, PageDataHandler handler)
+	public static void handlePageDataFromPost( HttpServletRequest request, PageDataHandler handler )
 	{
-		if (ServletFileUpload.isMultipartContent(request))
+		if ( ServletFileUpload.isMultipartContent(request) )
 		{
-			request.setAttribute(Request.__MULTIPART_CONFIG_ELEMENT, MULTI_PART_CONFIG);
+			request.setAttribute(Request.MULTIPART_CONFIG_ELEMENT, MULTI_PART_CONFIG);
 			parseDataFromMultipartFormWithHandler(request, handler);
-		} else
+		}
+		else
 		{
 			parseJSONFromRequestBodyWithHandler(request, handler);
 		}
 
 	}
 
-	private static void parseJSONFromRequestBodyWithHandler(HttpServletRequest request, PageDataHandler handler)
+	private static void parseJSONFromRequestBodyWithHandler( HttpServletRequest request, PageDataHandler handler )
 	{
 		String raw_json = "";
 
@@ -377,14 +389,15 @@ public class ServletUtil
 		{
 			raw_json = request.getReader().lines().collect(Collectors.joining());
 			handler.handle(new VisitedPageDataElement(VisitedPageDataElement.DEFAULT_JSON_ELEMENT, raw_json));
-		} catch (Exception e)
+		}
+		catch ( Exception e )
 		{
 			logger.error(e);
 			handler.onError("Default JSON not found in request");
 		}
 	}
 
-	private static void parseDataFromMultipartFormWithHandler(HttpServletRequest request, PageDataHandler handler)
+	private static void parseDataFromMultipartFormWithHandler( HttpServletRequest request, PageDataHandler handler )
 	{
 		String file_name = null;
 		String raw_json = "";
@@ -400,26 +413,27 @@ public class ServletUtil
 
 			FileItemIterator iter = upload.getItemIterator(request);
 
-			while (iter.hasNext())
+			while ( iter.hasNext() )
 			{
 				FileItemStream item = iter.next();
 
 				String field_name = item.getFieldName();
 				file_name = item.getName();
 				stream = item.openStream();
-				if (item.isFormField())
+				if ( item.isFormField() )
 				{
 					// JSON data
-					if (field_name == null || field_name == "")
+					if ( field_name == null || field_name == "" )
 					{
 						field_name = VisitedPageDataElement.DEFAULT_JSON_ELEMENT;
 					}
 					raw_json = new String(getBytesFromInputStream(stream, new byte[0]), StandardCharsets.UTF_8);
 					handler.handle(new VisitedPageDataElement(field_name, raw_json));
-				} else
+				}
+				else
 				{
 					// File data
-					if (field_name == null || field_name == "")
+					if ( field_name == null || field_name == "" )
 					{
 						field_name = VisitedPageDataElement.DEFAULT_FILE_ELEMENT;
 					}
@@ -429,38 +443,41 @@ public class ServletUtil
 				}
 				stream.close();
 			}
-		} catch (FileUploadException | IOException e)
+		}
+		catch ( FileUploadException | IOException e )
 		{
 			logger.error(e);
 		}
 
 	}
 
-	public static boolean upsertStorableIndexable(StandardImmutableObject<?> obj)
+	public static boolean upsertStorableIndexable( StandardImmutableObject<?> obj )
 	{
 
-		if (obj == null)
+		if ( obj == null )
 		{
 			return false;
 		}
 
 		boolean status = false;
 
-		if (obj instanceof Storable)
+		if ( obj instanceof Storable )
 		{
 			Storable storable = (Storable) obj;
 			status = CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().upsert(storable, Format.JSON_PRETTY_PRINT);
-		} else
+		}
+		else
 		{
 			logger.error("Not a storable");
 			return false;
 		}
 
-		if (obj instanceof Indexable)
+		if ( obj instanceof Indexable )
 		{
 			Indexable indexable = (Indexable) obj;
 			status = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocument(indexable);
-		} else
+		}
+		else
 		{
 			logger.error("Not an indexable");
 			return false;
