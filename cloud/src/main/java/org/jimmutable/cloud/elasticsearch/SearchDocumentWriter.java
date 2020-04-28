@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.fields.FieldCollection;
+import org.jimmutable.core.fields.FieldHashSet;
+import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.objects.common.Day;
 import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.objects.common.time.Instant;
@@ -28,6 +30,17 @@ public class SearchDocumentWriter
 	public SearchDocumentWriter()
 	{
 		fields = new HashMap<String, Object>();
+	}
+
+	public FieldCollection<String> convertArrayToCollection( FieldHashSet<Stringable> list )
+	{
+		FieldCollection<String> toReturn = new FieldArrayList<String>();
+		for ( Stringable string : list )
+		{
+			toReturn.add(string.getSimpleValue());
+		}
+		return toReturn;
+
 	}
 
 	/**
