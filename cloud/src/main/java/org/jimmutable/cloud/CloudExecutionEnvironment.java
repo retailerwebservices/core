@@ -59,6 +59,7 @@ public class CloudExecutionEnvironment
 	// System properties
 	private static final String ENV_TYPE_VARIABLE_NAME = "JIMMUTABLE_ENV_TYPE";
 	private static final String ENV_LOGGING_LEVEL = "JIMMUTABLE_LOGGING_LEVEL";
+	private static final String DISABLE_STANDARD_IMMUTABLE_OBJECT_CACHE = "DISABLE_STANDARD_IMMUTABLE_OBJECT_CACHE";
 
 	private static final Level DEFAULT_LEVEL = Level.INFO;
 
@@ -202,18 +203,23 @@ public class CloudExecutionEnvironment
 		APPLICATION_SUB_SERVICE_ID = application_sub_service_id;
 		validate();
 
+		// setup the logging level programmatically
+		Level level = Level.toLevel(System.getProperty(ENV_LOGGING_LEVEL), DEFAULT_LEVEL);
+		Log4jUtil.setAllLoggerLevels(level);
+		logger.trace(String.format("Logging level: %s", level));
+
 		logger.info(String.format("ApplicationID=%s APPLICATION_SUB_SERVICE_ID:%s Environment=%s", APPLICATION_ID, APPLICATION_SUB_SERVICE_ID, ENV_TYPE));
 
 		CacheRedis redis = new CacheRedis(APPLICATION_ID, new LowLevelRedisDriver());
-		STANDARD_IMMUTABLE_OBJECT_CACHE = new StandardImmutableObjectCache(redis, "storagecache");
+
+		// Pulls from system property DISABLE_STANDARD_IMMUTABLE_OBJECT_CACHE, default
+		// is to leave it enabled unless flag passed in.
+		boolean should_disable_sio_cache = shouldDisableSIOCacheFromSystemProperty();
+		STANDARD_IMMUTABLE_OBJECT_CACHE = new StandardImmutableObjectCache(redis, "storagecache", StandardImmutableObjectCache.DEFAULT_ALLOWED_ENTRY_AGE_IN_MS, should_disable_sio_cache);
+
 		switch ( env_type )
 		{
 		case DEV:
-
-			// setup the logging level programmatically in dev and staging
-			Level dev_level = Level.toLevel(System.getProperty(ENV_LOGGING_LEVEL), DEFAULT_LEVEL);
-			Log4jUtil.setAllLoggerLevels(dev_level);
-			logger.trace(String.format("Logging level: %s", dev_level));
 
 			checkOs();
 
@@ -237,10 +243,6 @@ public class CloudExecutionEnvironment
 			break;
 		// For now, staging is the same as dev
 		case STAGING:
-			// setup the logging level programmatically in dev and staging
-			Level staging_level = Level.toLevel(System.getProperty(ENV_LOGGING_LEVEL), DEFAULT_LEVEL);
-			Log4jUtil.setAllLoggerLevels(staging_level);
-			logger.trace(String.format("Logging level: %s", staging_level));
 
 			checkOs();
 
@@ -277,9 +279,6 @@ public class CloudExecutionEnvironment
 
 		case PRODUCTION:
 			checkOs();
-			Level prod_level = Level.toLevel(System.getProperty(ENV_LOGGING_LEVEL), DEFAULT_LEVEL);
-			Log4jUtil.setAllLoggerLevels(prod_level);
-			logger.trace(String.format("Logging level: %s", prod_level));
 
 			logger.log(Level.INFO, "Starting production environment");
 
@@ -299,6 +298,7 @@ public class CloudExecutionEnvironment
 			throw new RuntimeException(String.format("Unhandled EnvironmentType: %s! Add the environment to startup to handle it correctly.", env_type));
 
 		}
+
 		JimmutableTypeNameRegister.registerAllTypes();
 		JimmutableCloudTypeNameRegister.registerAllTypes();
 		Log4jUtil.setupListeners();
@@ -379,6 +379,28 @@ public class CloudExecutionEnvironment
 
 		}
 		return default_value;
+	}
+
+	/**
+	 * Gets if user wants the standard immutable object cache fully disabled at
+	 * startup. This means redis will store zero standard immutable object data by
+	 * default and every fetch from storage will be directly from Storage. Made
+	 * mostly to ease development. Cache should always be ON by default.
+	 * 
+	 * Pass in "-DDISABLE_STANDARD_IMMUTABLE_OBJECT_CACHE=true" to turn it off.
+	 */
+	private static boolean shouldDisableSIOCacheFromSystemProperty()
+	{
+		String disable_cache_prop = System.getProperty(DISABLE_STANDARD_IMMUTABLE_OBJECT_CACHE);
+		if ( disable_cache_prop == null )
+			disable_cache_prop = System.getProperty(DISABLE_STANDARD_IMMUTABLE_OBJECT_CACHE.toLowerCase());
+
+		if ( disable_cache_prop == null )
+		{
+			return false;
+		}
+
+		return "TRUE".equalsIgnoreCase(disable_cache_prop);
 	}
 
 	private static void checkOs()

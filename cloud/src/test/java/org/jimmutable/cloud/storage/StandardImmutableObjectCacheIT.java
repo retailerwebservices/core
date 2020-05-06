@@ -39,7 +39,7 @@ public class StandardImmutableObjectCacheIT extends IntegrationTest
 	public void testTime()
 	{
 		TestStorable storable = new TestStorable(new ObjectId("0000-0000-0000-0000"));
-		StandardImmutableObjectCache simple_cache = new StandardImmutableObjectCache(CloudExecutionEnvironment.getSimpleCurrent().getSimpleCacheService(), CloudExecutionEnvironment.getSimpleCurrent().getSimpleEnvironmentType().getSimpleCode().toLowerCase(), TimeUnit.SECONDS.toMillis(20));
+		StandardImmutableObjectCache simple_cache = new StandardImmutableObjectCache(CloudExecutionEnvironment.getSimpleCurrent().getSimpleCacheService(), CloudExecutionEnvironment.getSimpleCurrent().getSimpleEnvironmentType().getSimpleCode().toLowerCase(), TimeUnit.SECONDS.toMillis(20), false);
 		simple_cache.put(storable.getSimpleKind(), storable.getSimpleObjectId(), storable);
 		try
 		{

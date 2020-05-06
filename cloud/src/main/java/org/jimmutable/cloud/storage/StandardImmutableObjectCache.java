@@ -23,29 +23,25 @@ import org.jimmutable.core.serialization.reader.ObjectParseTree;
 @SuppressWarnings("rawtypes")
 public class StandardImmutableObjectCache
 {
+	public static final long DEFAULT_ALLOWED_ENTRY_AGE_IN_MS = TimeUnit.MINUTES.toMillis(20);
 	private ICache cache;
 	private String prefix; // required
-	private long max_allowed_entry_age_in_ms = TimeUnit.MINUTES.toMillis(20);
+	private long max_allowed_entry_age_in_ms;
 	private SignalTopicId topic_id = null;
 	private List<String> kind_exclusions = new ArrayList<String>();
+	private boolean is_cache_disabled = false;
 
 	private static final Logger logger = LogManager.getLogger(StandardImmutableObjectCache.class);
 
-	public StandardImmutableObjectCache( ICache cache, String prefix )
-	{
-		this.cache = cache;
-		this.prefix = prefix;
-		this.topic_id = new SignalTopicId(prefix);
-
-	}
-
-	public StandardImmutableObjectCache( ICache cache, String prefix, long max_allowed_entry_age_in_ms )// - replaces value in this.max_allowed_entry_age_in_ms.
+	public StandardImmutableObjectCache( ICache cache, String prefix, long max_allowed_entry_age_in_ms, boolean is_cache_disabled )// - replaces value in this.max_allowed_entry_age_in_ms.
 	{
 		this.cache = cache;
 		this.prefix = prefix;
 		this.max_allowed_entry_age_in_ms = max_allowed_entry_age_in_ms;
 		this.topic_id = new SignalTopicId(prefix);
-
+		this.is_cache_disabled = is_cache_disabled;
+		
+		logger.info(String.format("Starting up with StandardImmutableObjectCache set to be %s", (this.is_cache_disabled ? "disabled" : "enabled")));
 	}
 
 	public void addExclusion( Kind kind )
@@ -77,6 +73,11 @@ public class StandardImmutableObjectCache
 		return false;
 	}
 
+	public boolean isCacheDisabled()
+	{
+		return is_cache_disabled;
+	}
+
 	public void createListeners()
 	{
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSignalService().startListening(this.topic_id, new CacheEventListener());
@@ -103,8 +104,9 @@ public class StandardImmutableObjectCache
 
 	public void put( CacheKey cache_key, StandardImmutableObject object )
 	{
-		if ( cache_key == null || isExcluded(cache_key) || object == null )
+		if ( cache_key == null || isCacheDisabled() || isExcluded(cache_key) || object == null )
 			return;
+
 		cache.put(cache_key, object, max_allowed_entry_age_in_ms);
 		createAndSendEvent(CacheActivity.PUT, CacheMetric.ADD, cache_key);
 	}
@@ -161,7 +163,7 @@ public class StandardImmutableObjectCache
 
 	public boolean has( CacheKey cache_key )
 	{
-		if ( cache_key == null || isExcluded(cache_key) )
+		if ( cache_key == null || isCacheDisabled() || isExcluded(cache_key) )
 		{
 			return false;
 		}
@@ -194,7 +196,7 @@ public class StandardImmutableObjectCache
 			createAndSendEvent(CacheActivity.GET, CacheMetric.MISS, reference);
 			return default_value;
 		}
-		if ( isExcluded(reference) )
+		if ( isCacheDisabled() || isExcluded(reference) )
 		{
 			return default_value;
 		}
@@ -240,7 +242,7 @@ public class StandardImmutableObjectCache
 			createAndSendEvent(CacheActivity.GET, CacheMetric.MISS, reference);
 			return default_value;
 		}
-		if ( isExcluded(reference) )
+		if ( isCacheDisabled() || isExcluded(reference) )
 		{
 			return default_value;
 		}
@@ -261,7 +263,7 @@ public class StandardImmutableObjectCache
 
 	public void remove( CacheKey reference )
 	{
-		if ( isExcluded(reference) )
+		if ( isCacheDisabled() || isExcluded(reference) )
 		{
 			return;
 		}
@@ -277,5 +279,4 @@ public class StandardImmutableObjectCache
 		}
 		remove(this.createCacheKey(kind, id));
 	}
-
 }
