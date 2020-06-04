@@ -19,6 +19,7 @@ import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.util.EntityUtils;
@@ -113,7 +114,10 @@ public class ElasticSearchRESTClient implements ISearch
 	// This is the default dev REST port, there isn't a way to get this through the
 	// API as far as I can tell for now
 	private int DEV_ELASTICSEARCH_PORT = 9200;
-
+	
+    public static final int FIVE_SECOND_CONNECT_TIMEOUT_MILLIS = 5000;
+    public static final int SIXTY_SECOND_SOCKET_TIMEOUT_MILLIS = 60000;
+    
 	public ElasticSearchRESTClient()
 	{
 		// Once we deprecate the TransportClient in dev, we can simply add a
@@ -122,7 +126,6 @@ public class ElasticSearchRESTClient implements ISearch
 		if ( type == EnvironmentType.PRODUCTION )
 		{
 			RestClientBuilder lowLevelClientBuilder = RestClient.builder(new HttpHost(PRODUCTION_ELASTICSEARCH_HOST, PRODUCTION_ELASTICSEARCH_PORT, "https"));
-
 			String production_elastic_username = System.getProperty(PRODUCTION_ELASTICSEARCH_USERNAME);
 			String production_elastic_password = System.getProperty(PRODUCTION_ELASTICSEARCH_PASSWORD);
 			final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
@@ -130,13 +133,21 @@ public class ElasticSearchRESTClient implements ISearch
 
 			try
 			{
-
 				lowLevelClientBuilder.setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback()
 				{
 					@Override
 					public HttpAsyncClientBuilder customizeHttpClient( HttpAsyncClientBuilder httpClientBuilder )
 					{
 						return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+					}
+				});
+				
+				lowLevelClientBuilder.setRequestConfigCallback(new RestClientBuilder.RequestConfigCallback()
+				{
+					@Override
+					public RequestConfig.Builder customizeRequestConfig( RequestConfig.Builder requestConfigBuilder )
+					{
+						return requestConfigBuilder.setConnectTimeout(FIVE_SECOND_CONNECT_TIMEOUT_MILLIS).setSocketTimeout(SIXTY_SECOND_SOCKET_TIMEOUT_MILLIS);
 					}
 				});
 			}
@@ -915,7 +926,7 @@ public class ElasticSearchRESTClient implements ISearch
 				level = Level.INFO;
 				break;
 			default:
-				level = Level.WARN;
+				level = Level.ERROR;
 				break;
 			}
 
