@@ -10,8 +10,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.servlet_utils.get.GetResponseError;
 import org.jimmutable.cloud.servlets.common.DoGetGenericBytes;
@@ -21,6 +19,8 @@ import org.jimmutable.cloud.storage.StorageKey;
 import org.jimmutable.cloud.storage.StorageKeyExtension;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Gets the avatar if available, else gets the default image
@@ -37,7 +37,7 @@ public class DoGetAvatar extends DoGetGenericBytes
 	private static final long serialVersionUID = 2620487493656375394L;
 	public static final Kind KIND = new Kind("avatars");
 	public static final StorageKeyExtension EXTENSION = StorageKeyExtension.PNG;
-	static private final Logger logger = LogManager.getLogger(DoGetAvatar.class);
+	static private final Logger logger = LoggerFactory.getLogger(DoGetAvatar.class);
 
 	@Override
 	protected Logger getLogger()
@@ -58,7 +58,7 @@ public class DoGetAvatar extends DoGetGenericBytes
 	}
 
 	@Override
-	protected HttpServletResponse setHeader(HttpServletRequest request, HttpServletResponse response)
+	protected HttpServletResponse setHeader( HttpServletRequest request, HttpServletResponse response )
 	{
 		response.setContentType("image/png");
 
@@ -69,21 +69,21 @@ public class DoGetAvatar extends DoGetGenericBytes
 	}
 
 	@Override
-	protected void idNotFound(HttpServletRequest request, HttpServletResponse response)
+	protected void idNotFound( HttpServletRequest request, HttpServletResponse response )
 	{
 		getDefaultImage(request, response);
 	}
 
 	@Override
-	protected void bytesNotFound(HttpServletRequest request, HttpServletResponse response)
+	protected void bytesNotFound( HttpServletRequest request, HttpServletResponse response )
 	{
 		getDefaultImage(request, response);
 	}
 
-	private void getDefaultImage(HttpServletRequest request, HttpServletResponse response)
+	private void getDefaultImage( HttpServletRequest request, HttpServletResponse response )
 	{
 		String default_image = request.getParameter("default-image");
-		if (default_image == null || default_image.equals(""))
+		if ( default_image == null || default_image.equals("") )
 		{
 			logger.error("Missing required parameter default_image");
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -111,34 +111,37 @@ public class DoGetAvatar extends DoGetGenericBytes
 			byte[] buffer = new byte[4096];
 			int n;
 
-			while ((n = is.read(buffer)) > 0)
+			while ( (n = is.read(buffer)) > 0 )
 			{
 				os.write(buffer, 0, n);
 			}
 
 			os.flush();
 
-		} catch (Exception e)
+		}
+		catch ( Exception e )
 		{
-			logger.error(e);
+			logger.error("Exception", e);
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			return;
-		} finally
+		}
+		finally
 		{
 
 			try
 			{
-				if (is != null)
+				if ( is != null )
 				{
 					is.close();
 				}
-				if (os != null)
+				if ( os != null )
 				{
 					os.close();
 				}
-			} catch (IOException e)
+			}
+			catch ( IOException e )
 			{
-				logger.error(e);
+				logger.error("Exception", e);
 			}
 
 		}
