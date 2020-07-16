@@ -162,12 +162,6 @@ public class StorageS3 extends Storage
 
 		
 		final String log_prefix = "[upsert(" + key + ")] ";
-		if ( isCacheEnabled() )
-		{
-			LOGGER.info(log_prefix + "Test - Removing Object from cache early : " + key.getSimpleName());
-			removeFromCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()));
-		}
-
 		File temp = null;
 		try
 		{
@@ -209,10 +203,10 @@ public class StorageS3 extends Storage
 																										// exiting
 
 				boolean result = TransferState.Completed == upload.getState();
-//				if ( result && isCacheEnabled() )
-//				{
-//					removeFromCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()));
-//				}
+				if ( result && isCacheEnabled() )
+				{
+					removeFromCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()));
+				}
 
 				deleteTempFile(temp);
 

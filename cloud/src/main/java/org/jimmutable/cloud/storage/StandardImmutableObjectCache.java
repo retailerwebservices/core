@@ -263,7 +263,7 @@ public class StandardImmutableObjectCache
 
 	public void remove( CacheKey reference )
 	{
-		if ( isCacheDisabled() || isExcluded(reference) )
+		if ( isCacheDisabled() )
 		{
 			return;
 		}
