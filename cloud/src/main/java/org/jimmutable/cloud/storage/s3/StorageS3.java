@@ -160,6 +160,11 @@ public class StorageS3 extends Storage
 		if ( isReadOnly() )
 			return false;
 
+		if ( isCacheEnabled() )
+		{
+			removeFromCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()));
+		}
+		
 		final String log_prefix = "[upsert(" + key + ")] ";
 		File temp = null;
 		try
@@ -202,10 +207,10 @@ public class StorageS3 extends Storage
 																										// exiting
 
 				boolean result = TransferState.Completed == upload.getState();
-				if ( result && isCacheEnabled() )
-				{
-					removeFromCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()));
-				}
+//				if ( result && isCacheEnabled() )
+//				{
+//					removeFromCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()));
+//				}
 
 				deleteTempFile(temp);
 
