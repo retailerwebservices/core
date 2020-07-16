@@ -160,12 +160,14 @@ public class StorageS3 extends Storage
 		if ( isReadOnly() )
 			return false;
 
-		if ( isCacheEnabled() )
-		{
-			removeFromCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()));
-		}
 		
 		final String log_prefix = "[upsert(" + key + ")] ";
+		if ( isCacheEnabled() )
+		{
+			LOGGER.info(log_prefix + "Test - Removing Object from cache early : " + key.getSimpleName());
+			removeFromCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()));
+		}
+
 		File temp = null;
 		try
 		{
