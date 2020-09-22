@@ -18,39 +18,19 @@ public class StorageUtils
 	static private final Logger logger = LogManager.getLogger(StorageUtils.class);
 	static private final String CHARSET_NAME = "UTF8";
 
-	/**
-	 * Generic method to take the error handling out of hand when trying to get an
-	 * object out of storage. If anything fails on retrieving from storage this will
-	 * return the default_value.
-	 */
-	public static StandardObject<?> getOptionalFromStorage(Kind kind, ObjectId id, StandardObject<?> default_value)
+	public static boolean doesExist( Storable object, boolean default_value )
 	{
-		try
-		{
-			Validator.notNull(kind, "Kind");
-			Validator.notNull(id, "Id");
-		} catch (ValidationException e)
-		{
-			logger.error(String.format("A required field was null for Kind:%s Id:%s!", kind, id), e);
-			return default_value;
-		}
+		return CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().exists(object, default_value);
+	}
 
-		try
-		{
-			byte[] bytes = CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(new ObjectIdStorageKey(kind, id, StorageKeyExtension.JSON), null);
+	public static boolean doesExist( StorageKey key, boolean default_value )
+	{
+		return CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().exists(key, default_value);
+	}
 
-			if (bytes == null)
-			{
-				logger.error(String.format("No bytes returned from storage for Kind:%s Id:%s!", kind, id));
-				return default_value;
-			}
-
-			return StandardObject.deserialize(new String(bytes, CHARSET_NAME));
-		} catch (Exception e)
-		{
-			logger.error(String.format("Failed to deserialize from storage for Kind:%s Id:%s!", kind, id), e);
-			return default_value;
-		}
+	public static boolean doesExist( Kind kind, ObjectId id, boolean default_value )
+	{
+		return doesExist(new ObjectIdStorageKey(kind, id, StorageKeyExtension.JSON), default_value);
 	}
 
 	/**
@@ -59,14 +39,15 @@ public class StorageUtils
 	 * return the default_value.
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T extends StandardObject<T>> T getOptional(Kind kind, ObjectId id, T default_value)
+	public static <T extends StandardObject<T>> T getOptional( Kind kind, ObjectId id, T default_value )
 	{
 
 		try
 		{
 			Validator.notNull(kind, "Kind");
 			Validator.notNull(id, "Id");
-		} catch (ValidationException e)
+		}
+		catch ( ValidationException e )
 		{
 			logger.error(String.format("A required field was null for Kind:%s Id:%s!", kind, id), e);
 			return default_value;
@@ -77,7 +58,7 @@ public class StorageUtils
 
 			byte[] bytes = CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(new ObjectIdStorageKey(kind, id, StorageKeyExtension.JSON), null);
 
-			if (bytes == null)
+			if ( bytes == null )
 			{
 
 				logger.error(String.format("No bytes returned from storage for Kind:%s Id:%s!", kind, id));
@@ -85,7 +66,8 @@ public class StorageUtils
 			}
 
 			return (T) StandardObject.deserialize(new String(bytes, CHARSET_NAME));
-		} catch (Exception e)
+		}
+		catch ( Exception e )
 		{
 			logger.error(String.format("Failed to deserialize from storage for Kind:%s Id:%s!", kind, id), e);
 			return default_value;
@@ -100,12 +82,13 @@ public class StorageUtils
 	 * @param default_value
 	 * @return
 	 */
-	public static File writeToTempFile(StorageKey key, File default_value)
+	public static File writeToTempFile( StorageKey key, File default_value )
 	{
 		try
 		{
 			Validator.notNull(key, "Storage Key");
-		} catch (Exception e)
+		}
+		catch ( Exception e )
 		{
 			logger.error("Null Storage Key");
 			return default_value;
@@ -122,22 +105,25 @@ public class StorageUtils
 			tmp_file.deleteOnExit();
 
 			fos = new FileOutputStream(tmp_file);
-			if (CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersionStreaming(key, fos))
+			if ( CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersionStreaming(key, fos) )
 			{
 				logger.info(String.format("Created temporary file %s", tmp_file.getAbsolutePath()));
 				return tmp_file;
 			}
-		} catch (IOException e)
+		}
+		catch ( IOException e )
 		{
 			logger.error(String.format("Failed to write %s.%s to temp file!", prefix, suffix), e);
-		} finally
+		}
+		finally
 		{
-			if (fos != null)
+			if ( fos != null )
 			{
 				try
 				{
 					fos.close();
-				} catch (IOException e)
+				}
+				catch ( IOException e )
 				{
 					logger.error(String.format("Failed to close FileOutputStream while writing %s.%s to temp file!", prefix, suffix), e);
 				}
