@@ -16,7 +16,7 @@
 		<appengine.maven.plugin.version>1.0.0</appengine.maven.plugin.version>
 		<pubsub.version>0.20.1-beta</pubsub.version>
 		<guava.version>20.0</guava.version>
-		<junit.version>3.8.1</junit.version>
+		<junit.version>4.13.1</junit.version>
 		<google.auth.version>0.7.1</google.auth.version>
 	</properties>
 
