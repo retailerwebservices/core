@@ -160,6 +160,7 @@ public class StorageS3 extends Storage
 		if ( isReadOnly() )
 			return false;
 
+		
 		final String log_prefix = "[upsert(" + key + ")] ";
 		File temp = null;
 		try

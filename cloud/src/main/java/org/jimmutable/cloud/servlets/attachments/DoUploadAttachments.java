@@ -23,9 +23,9 @@ import org.jimmutable.cloud.servlets.util.PageDataElement;
 import org.jimmutable.cloud.servlets.util.RequestPageData;
 import org.jimmutable.cloud.servlets.util.ServletUtil;
 import org.jimmutable.cloud.storage.ObjectIdStorageKey;
-import org.jimmutable.cloud.storage.StandardImmutableObjectCache;
 import org.jimmutable.cloud.storage.StorageKey;
 import org.jimmutable.cloud.storage.StorageKeyExtension;
+import org.jimmutable.cloud.storage.StorageUtils;
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.fields.FieldList;
 import org.jimmutable.core.objects.StandardObject;
@@ -135,7 +135,7 @@ public class DoUploadAttachments extends HttpServlet
 
 			StorageKey key = new ObjectIdStorageKey(StandardChangeLogEntry.KIND, id, StorageKeyExtension.JSON);
 
-			if ( CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().exists(key, false) )
+			if ( StorageUtils.doesExist(key, false) )
 			{
 				String json = new String(CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(key, null), "UTF-8");
 
