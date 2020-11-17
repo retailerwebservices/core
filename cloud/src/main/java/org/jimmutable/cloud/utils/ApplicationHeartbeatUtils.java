@@ -4,8 +4,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.cache.CacheKey;
@@ -13,7 +13,7 @@ import org.jimmutable.cloud.cache.CacheKey;
 public class ApplicationHeartbeatUtils
 {
 	public static final int SECONDS_PER_UPDATE = 10;
-	private static Logger logger = LogManager.getLogger(ApplicationHeartbeatUtils.class);
+	private static Logger logger = LoggerFactory.getLogger(ApplicationHeartbeatUtils.class);
 
 	protected static CacheKey createHeartbeatCacheKey( ApplicationId application_id, ApplicationId application_sub_service_id )
 	{

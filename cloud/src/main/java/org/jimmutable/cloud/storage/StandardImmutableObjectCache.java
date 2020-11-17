@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.cache.CacheActivity;
 import org.jimmutable.cloud.cache.CacheEvent;
@@ -31,7 +31,7 @@ public class StandardImmutableObjectCache
 	private List<String> kind_exclusions = new ArrayList<String>();
 	private boolean is_cache_disabled = false;
 
-	private static final Logger logger = LogManager.getLogger(StandardImmutableObjectCache.class);
+	private static final Logger logger = LoggerFactory.getLogger(StandardImmutableObjectCache.class);
 
 	public StandardImmutableObjectCache( ICache cache, String prefix, long max_allowed_entry_age_in_ms, boolean is_cache_disabled )// - replaces value in this.max_allowed_entry_age_in_ms.
 	{

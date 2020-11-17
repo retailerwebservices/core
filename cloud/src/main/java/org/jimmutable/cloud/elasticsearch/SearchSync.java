@@ -10,8 +10,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.EnvironmentType;
@@ -44,7 +44,7 @@ import org.jimmutable.core.objects.common.Kind;
  */
 public abstract class SearchSync
 {
-	private static final Logger logger = LogManager.getLogger(SearchSync.class);
+	private static final Logger logger = LoggerFactory.getLogger(SearchSync.class);
 	static private Map<Kind, SearchIndexDefinition> indexable_kinds = new ConcurrentHashMap<>();
 
 	public static final int MAX_REINDEX_COMPLETION_TIME_MINUTES = 120;
@@ -105,7 +105,7 @@ public abstract class SearchSync
 		boolean reindexing_allowed = AppAdminUtil.indicesProperlyConfigured();
 		if (!reindexing_allowed)
 		{
-			logger.fatal("Failed check out properly configured indices.. Exiting now...");
+			logger.error("Failed check out properly configured indices.. Exiting now...");
 			System.exit(1);
 		}
 		logger.info("Success checking that all indices are properly configured...");

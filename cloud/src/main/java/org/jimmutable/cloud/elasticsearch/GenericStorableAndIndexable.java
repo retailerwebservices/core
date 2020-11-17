@@ -3,8 +3,8 @@ package org.jimmutable.cloud.elasticsearch;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.storage.Storable;
 import org.jimmutable.cloud.storage.StorageKey;
@@ -18,7 +18,7 @@ import org.jimmutable.core.objects.StandardObject;
 public class GenericStorableAndIndexable<T>
 {
 	
-	private static final Logger logger = LogManager.getLogger(GenericStorableAndIndexable.class);
+	private static final Logger logger = LoggerFactory.getLogger(GenericStorableAndIndexable.class);
 	private T object;
 
 	@SuppressWarnings("unchecked")

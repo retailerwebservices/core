@@ -24,8 +24,8 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.elasticsearch.action.DocWriteRequest;
 import org.elasticsearch.action.DocWriteResponse.Result;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
@@ -96,7 +96,7 @@ public class ElasticSearchRESTClient implements ISearch
 	// based on memory size.
 	private static final int MAX_NO_REQUESTS_IN_BULK_REQUEST = 10000;
 
-	private static final Logger logger = LogManager.getLogger(ElasticSearchRESTClient.class);
+	private static final Logger logger = LoggerFactory.getLogger(ElasticSearchRESTClient.class);
 
 	/**
 	 * The RestClient replaces the TransportClient that we used previously. The
@@ -168,7 +168,7 @@ public class ElasticSearchRESTClient implements ISearch
 	{
 		if ( index == null )
 		{
-			logger.fatal("Cannot upsert a null Index");
+			logger.error("Cannot upsert a null Index");
 			return false;
 		}
 
@@ -189,14 +189,14 @@ public class ElasticSearchRESTClient implements ISearch
 	{
 		if ( index == null )
 		{
-			logger.fatal("Cannot create a null Index");
+			logger.error("Cannot create a null Index");
 			return false;
 		}
 
 		String timestamp_index_name = createTimestampIndex(index, null);
 		if ( timestamp_index_name == null )
 		{
-			logger.fatal("Cannot create a timestamp Index for index " + index);
+			logger.error("Cannot create a timestamp Index for index " + index);
 			return false;
 		}
 
@@ -213,14 +213,14 @@ public class ElasticSearchRESTClient implements ISearch
 
 			if ( !indicesAliasesResponse.isAcknowledged() )
 			{
-				logger.fatal(String.format("Alias addition not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
+				logger.error(String.format("Alias addition not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
 				return false;
 			}
 
 		}
 		catch ( Exception e )
 		{
-			logger.fatal("Alias creation failure for index " + index.getSimpleIndex().getSimpleValue(), e);
+			logger.error("Alias creation failure for index " + index.getSimpleIndex().getSimpleValue(), e);
 			return false;
 		}
 
@@ -242,7 +242,7 @@ public class ElasticSearchRESTClient implements ISearch
 	{
 		if ( index == null )
 		{
-			logger.fatal("Cannot create a null Index");
+			logger.error("Cannot create a null Index");
 			return default_value;
 		}
 
@@ -255,7 +255,7 @@ public class ElasticSearchRESTClient implements ISearch
 
 			if ( !createResponse.isAcknowledged() )
 			{
-				logger.fatal(String.format("Index Creation not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
+				logger.error(String.format("Index Creation not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
 				return default_value;
 			}
 
@@ -263,12 +263,12 @@ public class ElasticSearchRESTClient implements ISearch
 		}
 		catch ( Exception e )
 		{
-			logger.log(Level.FATAL, String.format("Failed to generate mapping json for index %s", index.getSimpleIndex().getSimpleValue()), e);
+			logger.error(String.format("Failed to generate mapping json for index %s", index.getSimpleIndex().getSimpleValue()), e);
 			// The indices can successfully be created but then has other issues. We will
 			// try to delete if so.
 			if ( !deleteWithRetry(index_name) )
 			{
-				logger.log(Level.ERROR, String.format("Failed to delete possibly left over empty index %s", index_name));
+				logger.error(String.format("Failed to delete possibly left over empty index %s", index_name));
 			}
 			return default_value;
 		}
@@ -286,7 +286,7 @@ public class ElasticSearchRESTClient implements ISearch
 	{
 		if ( index == null || document_id == null )
 		{
-			logger.fatal("Null index or document id");
+			logger.error("Null index or document id");
 			return false;
 		}
 
@@ -312,7 +312,7 @@ public class ElasticSearchRESTClient implements ISearch
 		}
 		catch ( Exception e )
 		{
-			logger.error(e);
+			logger.error("Error", e);
 			return false;
 		}
 	}
@@ -349,7 +349,7 @@ public class ElasticSearchRESTClient implements ISearch
 	{
 		if ( index_name == null )
 		{
-			logger.fatal("Cannot delete a null Index");
+			logger.error("Cannot delete a null Index");
 			return false;
 		}
 
@@ -410,21 +410,11 @@ public class ElasticSearchRESTClient implements ISearch
 			IndexRequest request = new IndexRequest(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).source(data).setRefreshPolicy(refresh_policy);
 			IndexResponse response = high_level_rest_client.index(request, RequestOptions.DEFAULT);
 
-			Level level;
-			switch ( response.getResult() )
+			//Expected results, otherwise log an error
+			if(response.getResult() != Result.CREATED || response.getResult() != Result.UPDATED)
 			{
-			case CREATED:
-				level = Level.DEBUG;
-				break;
-			case UPDATED:
-				level = Level.DEBUG;
-				break;
-			default:
-				level = Level.FATAL;
-				break;
+				logger.error( String.format("%s %s/%s/%s %s", response.getResult().name(), index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name, data));
 			}
-
-			logger.log(level, String.format("%s %s/%s/%s %s", response.getResult().name(), index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name, data));
 
 			boolean success = response.getResult().equals(Result.CREATED) || response.getResult().equals(Result.UPDATED);
 			return success;
@@ -487,24 +477,17 @@ public class ElasticSearchRESTClient implements ISearch
 				Level level;
 				if ( response.isFailed() )
 				{
-					level = Level.ERROR;
+					logger.error(String.format("%s %s/%s/", response.getResponse(), response.getId(), (response.isFailed() ? response.getFailure().getMessage() : "")));
 					success = false;
 				}
-
-				else
-				{
-					level = Level.DEBUG;
-				}
-
-				logger.log(level, String.format("%s %s/%s/", response.getResponse(), response.getId(), (response.isFailed() ? response.getFailure().getMessage() : "")));
-
 			}
+			
 
 			return success;
 		}
 		catch ( Exception e )
 		{
-			logger.log(Level.FATAL, String.format("Failure during upsert operation of documents!"), e);
+			logger.error(String.format("Failure during upsert operation of documents!"), e);
 			return false;
 		}
 	}
@@ -521,7 +504,7 @@ public class ElasticSearchRESTClient implements ISearch
 	{
 		if ( index == null )
 		{
-			logger.fatal("Cannot check the existence of a null Index");
+			logger.error("Cannot check the existence of a null Index");
 			return false;
 		}
 		try
@@ -589,7 +572,7 @@ public class ElasticSearchRESTClient implements ISearch
 
 			if ( !indicesAliasesResponse.isAcknowledged() )
 			{
-				logger.fatal(String.format("Alias addition not acknowledged for index %s", index_name));
+				logger.error(String.format("Alias addition not acknowledged for index %s", index_name));
 				return false;
 			}
 
@@ -698,7 +681,7 @@ public class ElasticSearchRESTClient implements ISearch
 		}
 		catch ( Exception e )
 		{
-			logger.log(Level.FATAL, String.format("Failed to execute bulk reindex upsert for index %s", index_name), e);
+			logger.error(String.format("Failed to execute bulk reindex upsert for index %s", index_name), e);
 			return false;
 		}
 
@@ -781,7 +764,7 @@ public class ElasticSearchRESTClient implements ISearch
 	{
 		if ( index == null )
 		{
-			logger.fatal("Cannot check the existence of a null Index");
+			logger.error("Cannot check the existence of a null Index");
 			return false;
 		}
 
@@ -840,7 +823,7 @@ public class ElasticSearchRESTClient implements ISearch
 			}
 			catch ( Exception e )
 			{
-				logger.log(Level.FATAL, String.format("Failed to get the index mapping for index %s", index.getSimpleIndex().getSimpleValue()), e);
+				logger.error(String.format("Failed to get the index mapping for index %s", index.getSimpleIndex().getSimpleValue()), e);
 			}
 		}
 
@@ -913,30 +896,7 @@ public class ElasticSearchRESTClient implements ISearch
 				results.add(new OneSearchResultWithTyping(map));
 			});
 
-			int next_page = from + size;
-
-			boolean has_more_results = response.getHits().getTotalHits().value > next_page;
-
-			boolean has_previous_results = from != 0;
-
-			Level level;
-			switch ( response.status() )
-			{
-			case OK:
-				level = Level.INFO;
-				break;
-			default:
-				level = Level.ERROR;
-				break;
-			}
-
-			logger.log(level, String.format("QUERY:%s INDEX:%s STATUS:%s HITS:%s TOTAL_HITS:%s MAX_RESULTS:%d START_RESULTS_AFTER:%d", request.getSimpleQueryString(), index.getSimpleValue(), response.status(), results.size(), response.getHits().getTotalHits(), request.getSimpleMaxResults(), request.getSimpleStartResultsAfter()));
-			logger.trace(String.format("SORT:%s FIRST_RESULT_IDX:%s HAS_MORE_RESULTS:%s HAS_PREVIOUS_RESULTS:%s START_OF_NEXT_PAGE_OF_RESULTS:%s START_OF_PREVIOUS_PAGE_OF_RESULTS:%s", request.getSimpleSort().getSimpleSortOrder().stream().map(e ->
-			{
-				return String.format("%s:%s", e.getSimpleField().getSimpleFieldName().getSimpleName(), e.getSimpleDirection().getSimpleCode());
-			}).collect(Collectors.toList()), from, has_more_results, has_previous_results, next_page, from));
-			logger.trace(results.toString());
-
+			logger.info(String.format("QUERY:%s INDEX:%s STATUS:%s HITS:%s TOTAL_HITS:%s MAX_RESULTS:%d START_RESULTS_AFTER:%d", request.getSimpleQueryString(), index.getSimpleValue(), response.status(), results.size(), response.getHits().getTotalHits(), request.getSimpleMaxResults(), request.getSimpleStartResultsAfter()));
 			return results;
 
 		}
@@ -1099,7 +1059,6 @@ public class ElasticSearchRESTClient implements ISearch
 				String[] document;
 				for ( SearchHit hit : scrollResp.getHits().getHits() )
 				{
-					logger.info(scrollResp.getHits().getTotalHits().value);
 					document = new String[sorted_header.size()];
 
 					Map<String, Object> resultMap = hit.getSourceAsMap();
@@ -1118,7 +1077,7 @@ public class ElasticSearchRESTClient implements ISearch
 					}
 					catch ( IOException e )
 					{
-						logger.error(e);
+						logger.error("Error writing documents", e);
 						return false;
 					}
 				}
@@ -1199,7 +1158,7 @@ public class ElasticSearchRESTClient implements ISearch
 			}
 			catch ( Exception e )
 			{
-				logger.log(Level.FATAL, String.format("Failure during operation of Document id:%s on Index:%s", indexable.getSimpleSearchDocumentId().getSimpleValue(), indexable.getSimpleSearchIndexDefinition().getSimpleValue()), e);
+				logger.error(String.format("Failure during operation of Document id:%s on Index:%s", indexable.getSimpleSearchDocumentId().getSimpleValue(), indexable.getSimpleSearchIndexDefinition().getSimpleValue()), e);
 			}
 		}
 
@@ -1237,7 +1196,7 @@ public class ElasticSearchRESTClient implements ISearch
 		}
 		catch ( Exception e )
 		{
-			logger.log(Level.FATAL, "Failure during thread pool execution!", e);
+			logger.error("Failure during thread pool execution!", e);
 			return false;
 		}
 
@@ -1262,7 +1221,7 @@ public class ElasticSearchRESTClient implements ISearch
 			}
 			catch ( Exception e )
 			{
-				logger.log(Level.FATAL, "Failure during upsert operation!", e);
+				logger.error("Failure during upsert operation!", e);
 			}
 		}
 	}
@@ -1286,7 +1245,7 @@ public class ElasticSearchRESTClient implements ISearch
 		}
 		catch ( Exception e )
 		{
-			logger.log(Level.FATAL, "Failure during thread pool execution!", e);
+			logger.error( "Failure during thread pool execution!", e);
 			return false;
 		}
 
@@ -1319,7 +1278,7 @@ public class ElasticSearchRESTClient implements ISearch
 			}
 			catch ( Exception e )
 			{
-				logger.log(Level.FATAL, "Failure during upsert operation!", e);
+				logger.error( "Failure during upsert operation!", e);
 			}
 		}
 	}
@@ -1329,13 +1288,13 @@ public class ElasticSearchRESTClient implements ISearch
 	{
 		if ( index == null )
 		{
-			logger.fatal("Null index");
+			logger.error("Null index");
 			return false;
 		}
 
 		if ( !indexExists(index) )
 		{
-			logger.fatal(String.format("Index %s does not exist!", index.getSimpleIndex().getSimpleValue()));
+			logger.error(String.format("Index %s does not exist!", index.getSimpleIndex().getSimpleValue()));
 			return false;
 		}
 
@@ -1349,13 +1308,13 @@ public class ElasticSearchRESTClient implements ISearch
 
 			if ( !put_response.isAcknowledged() )
 			{
-				logger.fatal(String.format("Put Mappings result not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
+				logger.error(String.format("Put Mappings result not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
 				return false;
 			}
 		}
 		catch ( Exception e )
 		{
-			logger.log(Level.FATAL, String.format("Failed to generate mapping json for index %s", index.getSimpleIndex().getSimpleValue()), e);
+			logger.error(String.format("Failed to generate mapping json for index %s", index.getSimpleIndex().getSimpleValue()), e);
 			return false;
 		}
 

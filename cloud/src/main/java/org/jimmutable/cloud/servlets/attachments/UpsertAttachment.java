@@ -7,8 +7,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.attachments.AttachmentMetaData;
 import org.jimmutable.cloud.attachments.DownloadFileName;
@@ -40,7 +40,7 @@ public class UpsertAttachment extends HttpServlet
 	 */
 	private static final long serialVersionUID = -1157627097469022285L;
 
-	static private final Logger logger = LogManager.getLogger(UpsertAttachment.class);
+	static private final Logger logger = LoggerFactory.getLogger(UpsertAttachment.class);
 	static public final Kind KIND = new Kind("attachment");
 
 	@Override

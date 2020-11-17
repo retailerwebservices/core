@@ -5,8 +5,8 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
@@ -28,7 +28,7 @@ import org.jimmutable.core.serialization.Format;
 
 public class TinyURLApi
 {
-	private static final Logger logger = LogManager.getLogger(TinyURLApi.class);
+	private static final Logger logger = LoggerFactory.getLogger(TinyURLApi.class);
 	
 	private static final String tiny_url_master_string = "http://tinyurl.com/api-create.php?url=";
 
@@ -52,7 +52,7 @@ public class TinyURLApi
 			}
 			catch ( Exception e )
 			{
-				logger.error(e);
+				logger.error("Error getting tinyURL", e);
 				return default_value;
 			}
 		}
@@ -71,7 +71,7 @@ public class TinyURLApi
 			}
 			catch ( Exception e )
 			{
-				logger.error(e);
+				logger.error("Error with TinyURL", e);
 				return default_value;
 			}
 		}

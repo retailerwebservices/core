@@ -8,8 +8,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
@@ -29,7 +29,7 @@ import org.jimmutable.core.serialization.FieldName;
  */
 public class ElasticSearchCommon
 {
-	private static final Logger logger = LogManager.getLogger(ElasticSearchCommon.class);
+	private static final Logger logger = LoggerFactory.getLogger(ElasticSearchCommon.class);
 
 	protected static final ExecutorService document_upsert_pool = (ExecutorService) new ThreadPoolExecutor(8, 8, 5, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
 
@@ -58,7 +58,7 @@ public class ElasticSearchCommon
 		}
 		catch ( Exception e )
 		{
-			logger.log(Level.ERROR, String.format("Failed to generate mapping json for index %s", index.getSimpleIndex().getSimpleValue()), e);
+			logger.error(String.format("Failed to generate mapping json for index %s", index.getSimpleIndex().getSimpleValue()), e);
 			return default_value;
 		}
 	}
@@ -77,7 +77,7 @@ public class ElasticSearchCommon
 		}
 		catch ( InterruptedException e )
 		{
-			logger.log(Level.FATAL, "Shutdown of runnable pool was interrupted!", e);
+			logger.error("Shutdown of runnable pool was interrupted!", e);
 		}
 
 		if ( !terminated )

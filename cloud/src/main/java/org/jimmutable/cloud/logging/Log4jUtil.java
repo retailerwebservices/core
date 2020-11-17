@@ -1,8 +1,8 @@
 package org.jimmutable.cloud.logging;
 
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -47,23 +47,23 @@ public class Log4jUtil
 	{
 		Validator.notNull(level);
 
-		// for some reason the default configuration level gets set this way...
-		Configurator.setRootLevel(level);
-
-		LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-		Configuration conf = ctx.getConfiguration();
-	
-//		conf.getRootLogger().setLevel(Level.OFF);
-
-		
-		conf.getLoggers().forEach((k, v) -> {
-			conf.getLoggerConfig(k).setLevel(level);
-		});
-		ctx.updateLoggers(conf);
-
-		Logger log = LogManager.getLogger(LogManager.ROOT_LOGGER_NAME);
-
-		log.info(String.format("Updated logging levels to %s", log.getLevel()));
+//		// for some reason the default configuration level gets set this way...
+//		Configurator.setRootLevel(level);
+//
+//		LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+//		Configuration conf = ctx.getConfiguration();
+//	
+////		conf.getRootLogger().setLevel(Level.OFF);
+//
+//		
+//		conf.getLoggers().forEach((k, v) -> {
+//			conf.getLoggerConfig(k).setLevel(level);
+//		});
+//		ctx.updateLoggers(conf);
+//
+//		Logger log = LoggerFactory.getLogger(LogManager.ROOT_LOGGER_NAME);
+//
+//		log.info(String.format("Updated logging levels to %s", log.getLevel()));
 	
 	}
 

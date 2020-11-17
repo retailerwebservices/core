@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.Properties;
 
-import org.apache.logging.log4j.LogManager;
+import org.slf4j.LoggerFactory;
 import org.jimmutable.core.utils.FileUtils;
 import org.jimmutable.core.utils.Validator;
 
@@ -103,7 +103,6 @@ public class PropertiesReader
 		}
 		catch(Exception e)
 		{
-			LogManager.getRootLogger().error("Error parsing property: "+property_name, e);
 			return default_value;
 		}
 	}
@@ -126,7 +125,6 @@ public class PropertiesReader
 		}
 		catch(Exception e)
 		{
-			LogManager.getRootLogger().error("Error parsing property: "+property_name, e);
 			e.printStackTrace();
 			return default_value;
 		}

@@ -16,8 +16,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.attachments.AttachmentMetaData;
 import org.jimmutable.cloud.servlet_utils.common_objects.GeneralResponseError;
@@ -33,7 +33,7 @@ public class DoGetAttachments extends HttpServlet
 	 */
 	private static final long serialVersionUID = -3700301389300549786L;
 
-	private static final Logger logger = LogManager.getLogger(DoGetAttachments.class);
+	private static final Logger logger = LoggerFactory.getLogger(DoGetAttachments.class);
 
 	private void addToZipFile(ObjectIdStorageKey storage_key, ZipOutputStream zos) throws IOException
 	{
@@ -182,7 +182,7 @@ public class DoGetAttachments extends HttpServlet
 					out.flush();
 				} catch (IOException e)
 				{
-					logger.error(e);
+					logger.error("Error streaming", e);
 					ServletUtil.writeSerializedResponse(response, new GeneralResponseError(e.getMessage()), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 					return;
 				} finally

@@ -12,8 +12,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.servlet_utils.common_objects.GeneralResponseError;
 import org.jimmutable.cloud.servlets.util.ServletUtil;
@@ -38,7 +38,7 @@ public class DoGetFile extends HttpServlet
 
 	private static final long serialVersionUID = 2891584232341507953L;
 
-	private static Logger logger = LogManager.getLogger(DoGetFile.class);
+	private static Logger logger = LoggerFactory.getLogger(DoGetFile.class);
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -111,7 +111,7 @@ public class DoGetFile extends HttpServlet
 
 			} catch (IOException e)
 			{
-				logger.error(e);
+				logger.error("IOError", e);
 				ServletUtil.writeSerializedResponse(response, new GeneralResponseError(e.getMessage()), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				return;
 			}
@@ -142,7 +142,7 @@ public class DoGetFile extends HttpServlet
 					out.flush();
 				} catch (IOException e)
 				{
-					logger.error(e);
+					logger.error("Error flushing bytes", e);
 					ServletUtil.writeSerializedResponse(response, new GeneralResponseError(e.getMessage()), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 					return;
 				}

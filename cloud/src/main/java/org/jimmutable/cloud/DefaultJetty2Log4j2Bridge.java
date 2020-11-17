@@ -1,26 +1,27 @@
 package org.jimmutable.cloud;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.eclipse.jetty.util.log.AbstractLogger;
-import org.eclipse.jetty.util.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 
 /**
  * User: Robert Franz Date: 2015-08-24 Time: 20:35
  */
 public class DefaultJetty2Log4j2Bridge extends AbstractLogger
 {
-	private org.apache.logging.log4j.Logger logger;
+	private static  Logger logger;
 	private String name;
 
 	public DefaultJetty2Log4j2Bridge(String name)
 	{
 		this.name = name;
-		logger = LogManager.getLogger(name);
+		logger = LoggerFactory.getLogger(name);
 	}
 
 	@Override
-	protected Logger newLogger(String fullname)
+	protected org.eclipse.jetty.util.log.Logger newLogger(String fullname)
 	{
 		return new DefaultJetty2Log4j2Bridge(fullname);
 	}
@@ -37,7 +38,7 @@ public class DefaultJetty2Log4j2Bridge extends AbstractLogger
 
 	public void warn(Throwable thrown)
 	{
-		logger.catching(Level.WARN, thrown);
+		logger.warn(thrown.toString());
 	}
 
 	public void warn(String msg, Throwable thrown)
@@ -52,7 +53,7 @@ public class DefaultJetty2Log4j2Bridge extends AbstractLogger
 
 	public void info(Throwable thrown)
 	{
-		logger.catching(Level.INFO, thrown);
+		logger.info(thrown.toString());
 	}
 
 	public void info(String msg, Throwable thrown)
@@ -77,7 +78,7 @@ public class DefaultJetty2Log4j2Bridge extends AbstractLogger
 
 	public void debug(Throwable thrown)
 	{
-		logger.catching(Level.DEBUG, thrown);
+		logger.debug(thrown.toString());
 	}
 
 	public void debug(String msg, Throwable thrown)
@@ -87,6 +88,6 @@ public class DefaultJetty2Log4j2Bridge extends AbstractLogger
 
 	public void ignore(Throwable ignored)
 	{
-		logger.catching(Level.TRACE, ignored);
+		logger.trace(ignored.toString());
 	}
 }

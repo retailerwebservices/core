@@ -11,8 +11,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.apache.commons.io.input.CloseShieldInputStream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.cache.CacheKey;
 import org.jimmutable.cloud.storage.GenericStorageKey;
@@ -49,7 +49,7 @@ import com.amazonaws.services.s3.transfer.Upload;
 
 public class StorageS3 extends Storage
 {
-	static private final Logger LOGGER = LogManager.getLogger(StorageS3.class);
+	static private final Logger LOGGER = LoggerFactory.getLogger(StorageS3.class);
 
 	static private final String BUCKET_NAME_PREFIX = "jimmutable-app-";
 
@@ -114,7 +114,7 @@ public class StorageS3 extends Storage
 		}
 		catch ( Exception e )
 		{
-			LOGGER.catching(e);
+			LOGGER.error("Exception on existance check", e);
 			return default_value;
 		}
 	}
@@ -145,7 +145,7 @@ public class StorageS3 extends Storage
 		}
 		catch ( Exception e )
 		{
-			LOGGER.catching(e);
+			LOGGER.error("Exception on upsert", e);
 			return false;
 		}
 	}
@@ -214,13 +214,13 @@ public class StorageS3 extends Storage
 			}
 			catch ( Exception e )
 			{
-				LOGGER.catching(e);
+				LOGGER.error("Exception on streaming upsert", e);
 				upload.abort();
 			}
 		}
 		catch ( Exception e )
 		{
-			LOGGER.catching(e);
+			LOGGER.error("Exception on temp file streaming", e);
 		}
 
 		deleteTempFile(temp);
@@ -266,7 +266,7 @@ public class StorageS3 extends Storage
 				}
 				catch ( Exception e )
 				{
-					LogManager.getRootLogger().error("Failure to make into a StandardImmutableObject " + key.toString() + ". This object is not in the cache.", e);
+					LOGGER.trace("Exception retrieving object", e);
 				}
 			}
 
@@ -401,7 +401,7 @@ public class StorageS3 extends Storage
 			catch ( Exception e )
 			{
 				deleteTempFile(temp);
-				LOGGER.catching(e);
+				LOGGER.info("Exception on streaming retrieval from S3", e);
 				download.abort();
 				return false;
 			}
@@ -419,7 +419,7 @@ public class StorageS3 extends Storage
 		}
 		catch ( Exception e )
 		{
-			LOGGER.catching(e);
+			LOGGER.error("Exception on streaming retrieval from S3", e);
 		}
 
 		deleteTempFile(temp);
@@ -464,7 +464,7 @@ public class StorageS3 extends Storage
 		}
 		catch ( Exception e )
 		{
-			LOGGER.catching(e);
+			LOGGER.error("Deletion exception", e);
 			return false;
 		}
 	}
@@ -496,7 +496,7 @@ public class StorageS3 extends Storage
 		}
 		catch ( Exception e )
 		{
-			LOGGER.catching(e);
+			LOGGER.error("Meta data retrieval exception", e);
 			return default_value;
 		}
 	}

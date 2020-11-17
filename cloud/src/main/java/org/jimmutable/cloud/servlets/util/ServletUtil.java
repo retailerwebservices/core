@@ -18,8 +18,8 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.entity.ContentType;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.eclipse.jetty.server.Request;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.elasticsearch.Indexable;
@@ -32,7 +32,7 @@ import org.jimmutable.core.serialization.writer.ObjectWriter;
 
 public class ServletUtil
 {
-	private static final Logger logger = LogManager.getLogger(ServletUtil.class);
+	private static final Logger logger = LoggerFactory.getLogger(ServletUtil.class);
 
 	public static final String APPLICATION_JSON = ContentType.APPLICATION_JSON.getMimeType();
 	public static final String UTF8 = StandardCharsets.UTF_8.name();
@@ -86,7 +86,7 @@ public class ServletUtil
 		}
 		catch ( IOException e )
 		{
-			logger.error(e);
+			logger.error("Error writing response", e);
 		}
 	}
 
@@ -118,7 +118,7 @@ public class ServletUtil
 		}
 		catch ( IOException e )
 		{
-			logger.error(e);
+			logger.error("Error writing response", e);
 		}
 	}
 
@@ -159,7 +159,7 @@ public class ServletUtil
 		}
 		catch ( IOException e )
 		{
-			logger.error(e);
+			logger.error("error writing JSON response", e);
 		}
 	}
 
@@ -218,10 +218,11 @@ public class ServletUtil
 	{
 		StringBuffer buffer = new StringBuffer();
 		String line = null;
+		BufferedReader reader = null;
 		try
 		{
 			InputStream inputStream = request.getInputStream();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, UTF8));
+			reader = new BufferedReader(new InputStreamReader(inputStream, UTF8));
 			while ( (line = reader.readLine()) != null )
 			{
 				buffer.append(line);
@@ -229,8 +230,22 @@ public class ServletUtil
 		}
 		catch ( Exception e )
 		{
-			logger.error(e);
+			logger.error("Error searching for JSON in request", e);
 			return default_value;
+		}
+		finally
+		{
+			if(reader != null)
+			{
+				try
+				{
+					reader.close();
+				}
+				catch ( IOException e )
+				{
+					logger.error("Error closing reader", e);
+				}
+			}
 		}
 
 		return buffer.toString();
@@ -318,7 +333,7 @@ public class ServletUtil
 		}
 		catch ( FileUploadException | IOException e )
 		{
-			logger.error(e);
+			logger.error("Error getting multipart data", e);
 			// Replace page with an empty one
 			page_data = new RequestPageData();
 		}
@@ -334,7 +349,7 @@ public class ServletUtil
 		}
 		catch ( IOException e )
 		{
-			logger.error(e);
+			logger.error("error getting bytes from input stream", e);
 			return default_value;
 		}
 	}
@@ -351,7 +366,7 @@ public class ServletUtil
 		}
 		catch ( Exception e )
 		{
-			logger.error(e);
+			logger.error("Error getting JSON from request", e);
 		}
 
 		return page_data;
@@ -392,7 +407,7 @@ public class ServletUtil
 		}
 		catch ( Exception e )
 		{
-			logger.error(e);
+			logger.error("Error parsing JSON from request body with handler", e);
 			handler.onError("Default JSON not found in request");
 		}
 	}
@@ -446,7 +461,7 @@ public class ServletUtil
 		}
 		catch ( FileUploadException | IOException e )
 		{
-			logger.error(e);
+			logger.error("Error getting multipart data", e);
 		}
 
 	}

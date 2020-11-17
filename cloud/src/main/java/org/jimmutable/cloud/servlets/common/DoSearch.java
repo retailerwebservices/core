@@ -12,8 +12,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.elasticsearch.IndexDefinition;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
@@ -31,7 +31,7 @@ public abstract class DoSearch extends HttpServlet
 
 	public static final List<String> DEFAULT_TIME_KEYWORDS = Arrays.asList("scheduled_start", "scheduled_stop", "start", "stop");
 
-	private static Logger logger = LogManager.getLogger(DoSearch.class);
+	private static Logger logger = LoggerFactory.getLogger(DoSearch.class);
 
 	/**
 	 * 
@@ -85,7 +85,7 @@ public abstract class DoSearch extends HttpServlet
 		}
 		catch ( Exception e )
 		{
-			logger.error(e);
+			logger.error("Error getting search", e);
 		}
 
 		getAdditionalParameters(request);
@@ -169,7 +169,7 @@ public abstract class DoSearch extends HttpServlet
 		}
 		catch ( Exception e )
 		{
-			logger.error(e);
+			logger.error("Error getting search", e);
 		}
 
 		try
@@ -216,59 +216,57 @@ public abstract class DoSearch extends HttpServlet
 		{
 			return search_string;
 		}
-		else
+		
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+		formatter.setTimeZone(TimeZone.getTimeZone("EST"));
+		String[] clauses = search_string.split(" AND");
+		StringJoiner refined_search_string = new StringJoiner(" AND");
+		for ( String clause : clauses )
 		{
-			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-			formatter.setTimeZone(TimeZone.getTimeZone("EST"));
-			String[] clauses = search_string.split(" AND");
-			StringJoiner refined_search_string = new StringJoiner(" AND");
-			for ( String clause : clauses )
-			{
-				boolean inclusive = false;
-				if ( clause.contains(">") || clause.contains("<") )
-				{ // if we need to do any faffing about with ranges.
-					String split_string = ":>";
-					if ( clause.contains("=") )
-					{
-						clause = clause.replace("=", "");
-						inclusive = true;
-					}
-					if ( clause.contains("<") )
-					{
-						split_string = ":<";
-					}
-					String[] clause_breakdown = clause.split(split_string, 2);
-					try
-					{
-						String date_string = clause_breakdown[1].replace('T', ' ');
-						if ( !date_string.contains(":") )
-						{
-							date_string = date_string + " 0:00";
-						}
-						Date date = formatter.parse(date_string);
-						if ( inclusive )
-						{
-							refined_search_string.add("(" + clause_breakdown[0] + split_string + date.getTime() + " OR " + clause_breakdown[0] + ":" + date.getTime() + ")");
-						}
-						else
-						{
-							refined_search_string.add(clause_breakdown[0] + split_string + date.getTime());
-						}
-
-					}
-					catch ( ParseException e )
-					{
-						logger.error(e);
-					}
-				}
-				else
+			boolean inclusive = false;
+			if ( clause.contains(">") || clause.contains("<") )
+			{ // if we need to do any faffing about with ranges.
+				String split_string = ":>";
+				if ( clause.contains("=") )
 				{
-					refined_search_string.add(clause);
+					clause = clause.replace("=", "");
+					inclusive = true;
+				}
+				if ( clause.contains("<") )
+				{
+					split_string = ":<";
+				}
+				String[] clause_breakdown = clause.split(split_string, 2);
+				try
+				{
+					String date_string = clause_breakdown[1].replace('T', ' ');
+					if ( !date_string.contains(":") )
+					{
+						date_string = date_string + " 0:00";
+					}
+					Date date = formatter.parse(date_string);
+					if ( inclusive )
+					{
+						refined_search_string.add("(" + clause_breakdown[0] + split_string + date.getTime() + " OR " + clause_breakdown[0] + ":" + date.getTime() + ")");
+					}
+					else
+					{
+						refined_search_string.add(clause_breakdown[0] + split_string + date.getTime());
+					}
+
+				}
+				catch ( ParseException e )
+				{
+					logger.error("parse exception with input", e);
 				}
 			}
-
-			return refined_search_string.toString();
+			else
+			{
+				refined_search_string.add(clause);
+			}
 		}
+
+		return refined_search_string.toString();
 	}
 
 	public List<String> getListOfTimeKeywords()

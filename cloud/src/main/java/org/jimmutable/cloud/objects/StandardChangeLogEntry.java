@@ -2,8 +2,8 @@ package org.jimmutable.cloud.objects;
 
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.elasticsearch.IndexDefinition;
 import org.jimmutable.cloud.elasticsearch.IndexId;
@@ -71,7 +71,7 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 
 	static public final SearchIndexDefinition INDEX_MAPPING;
 
-	static public final Logger logger = LogManager.getLogger(StandardChangeLogEntry.class);
+	static public final Logger logger = LoggerFactory.getLogger(StandardChangeLogEntry.class);
 
 	static
 	{

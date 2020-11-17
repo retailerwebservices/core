@@ -4,8 +4,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.servlet_utils.get.GetResponseError;
 import org.jimmutable.cloud.servlet_utils.get.GetResponseOK;
 import org.jimmutable.cloud.servlets.util.ServletUtil;
@@ -24,7 +24,7 @@ public class GetInstant12Hour extends HttpServlet
 	 */
 	private static final long serialVersionUID = 3724321354668706713L;
 
-	private static final Logger logger = LogManager.getLogger(GetInstant12Hour.class);
+	private static final Logger logger = LoggerFactory.getLogger(GetInstant12Hour.class);
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -53,7 +53,7 @@ public class GetInstant12Hour extends HttpServlet
 			day = new Day(request.getParameter("day"));// required mm/dd/yyyy
 		} catch (Exception e)
 		{
-			logger.error(e);
+			logger.error("error parsing day", e);
 			ServletUtil.writeSerializedResponse(response, default_instant, GetResponseError.HTTP_STATUS_CODE_ERROR);
 			return;
 		}
@@ -73,7 +73,7 @@ public class GetInstant12Hour extends HttpServlet
 			Validator.max(hours, 12l);
 		} catch (ValidationException e)
 		{
-			logger.error(e);
+			logger.error("Error validating hours", e);
 			ServletUtil.writeSerializedResponse(response, default_instant, GetResponseError.HTTP_STATUS_CODE_ERROR);
 			return;
 		}
@@ -101,7 +101,7 @@ public class GetInstant12Hour extends HttpServlet
 			Validator.max(minutes, 59l);
 		} catch (ValidationException e)
 		{
-			logger.error(e);
+			logger.error("Error validating minutes", e);
 			ServletUtil.writeSerializedResponse(response, default_instant, GetResponseError.HTTP_STATUS_CODE_ERROR);
 			return;
 		}
@@ -120,7 +120,7 @@ public class GetInstant12Hour extends HttpServlet
 			Validator.max(seconds, 59l);
 		} catch (ValidationException e)
 		{
-			logger.error(e);
+			logger.error("Error validating seconds", e);
 			ServletUtil.writeSerializedResponse(response, default_instant, GetResponseError.HTTP_STATUS_CODE_ERROR);
 			return;
 		}
@@ -131,7 +131,7 @@ public class GetInstant12Hour extends HttpServlet
 			timezone = new TimezoneID(request.getParameter("timezone"));
 		} catch (Exception e)
 		{
-			logger.error(e);
+			logger.error("Error validating tz", e);
 			ServletUtil.writeSerializedResponse(response, default_instant, GetResponseError.HTTP_STATUS_CODE_ERROR);
 			return;
 		}
@@ -143,7 +143,7 @@ public class GetInstant12Hour extends HttpServlet
 			ServletUtil.writeSerializedResponse(response, instant, GetResponseOK.HTTP_STATUS_CODE_OK);
 		} catch (Exception e)
 		{
-			logger.error(e);
+			logger.error("Error sending instant", e);
 			ServletUtil.writeSerializedResponse(response, default_instant, GetResponseError.HTTP_STATUS_CODE_ERROR);
 		}
 

@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.EnvironmentType;
@@ -37,7 +37,7 @@ import org.joda.time.DateTime;
 
 public class SearchSortIntegrationTest
 {	
-	private static final Logger logger = LogManager.getLogger(SearchSortIntegrationTest.class);
+	private static final Logger logger = LoggerFactory.getLogger(SearchSortIntegrationTest.class);
 	public static final String APPLICATION_ID = "SearchSortIntegrationTest";
 	public static final String APPLICATION_SERVICE_ID = "SearchSortIntegrationTest-service";
 

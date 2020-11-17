@@ -6,8 +6,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.elasticsearch.IndexDefinition;
 import org.jimmutable.cloud.servlet_utils.common_objects.GeneralResponseError;
 import org.jimmutable.cloud.servlet_utils.common_objects.GeneralResponseOK;
@@ -26,7 +26,7 @@ public abstract class ExportCSV extends HttpServlet
 	 * 
 	 */
 	private static final long serialVersionUID = -2733106032413089932L;
-	private static final Logger logger = LogManager.getLogger(ExportCSV.class);
+	private static final Logger logger = LoggerFactory.getLogger(ExportCSV.class);
 
 	public static final File TEMP_DIR = new File(System.getProperty("java.io.tmpdir"));
 	public static final char DELIM = '@';

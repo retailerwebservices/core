@@ -5,8 +5,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.function.Consumer;
 
-import org.apache.logging.log4j.LogManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jimmutable.cloud.cache.CacheKey;
+import org.jimmutable.cloud.storage.s3.StorageS3;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Kind;
@@ -35,6 +37,7 @@ public abstract class Storage implements IStorage
 	static public final int MAX_TRANSFER_BYTES_IN_MB = 25;
 	static public final int MAX_TRANSFER_BYTES_IN_BYTES = MAX_TRANSFER_BYTES_IN_MB * 1024 * 1024;
 	protected StandardImmutableObjectCache cache = null;
+	static private final Logger LOGGER = LoggerFactory.getLogger(Storage.class);
 
 	// Storage instance = null;
 	private boolean is_readonly = false;
@@ -123,7 +126,7 @@ public abstract class Storage implements IStorage
 			}
 			catch ( Exception e )
 			{
-				LogManager.getRootLogger().error("Failure to make into a StandardImmutableObject " + key.toString() + ". This object is not in the cache.", e);
+				LOGGER.error("Failure to make into a StandardImmutableObject " + key.toString() + ". This object is not in the cache.", e);
 			}
 			return bytes.toByteArray();
 		}
@@ -144,7 +147,7 @@ public abstract class Storage implements IStorage
 		}
 		catch ( Exception e )
 		{
-			LogManager.getRootLogger().error("Failure to list object " + obj, e);
+			LOGGER.error("Failure to list object " + obj, e);
 			return default_value;
 		}
 	}

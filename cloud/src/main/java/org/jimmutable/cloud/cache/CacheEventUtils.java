@@ -1,7 +1,7 @@
 package org.jimmutable.cloud.cache;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 public class CacheEventUtils
 {	
@@ -15,7 +15,7 @@ public class CacheEventUtils
 	private static final String ENABLE_CACHE_EVENT_LOGGING  = "enable_cache_event_logging";
 	private static final boolean IS_CACHE_EVENT_LOGGING_ENABLED = Boolean.getBoolean(ENABLE_CACHE_EVENT_LOGGING);
 
-	private static final Logger logger = LogManager.getLogger(CacheEventUtils.class);
+	private static final Logger logger = LoggerFactory.getLogger(CacheEventUtils.class);
 
 	public static void log( CacheEvent event )
 	{

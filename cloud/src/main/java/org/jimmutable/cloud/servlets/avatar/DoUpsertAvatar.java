@@ -15,8 +15,8 @@ import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.servlet_utils.common_objects.GeneralResponseError;
 import org.jimmutable.cloud.servlet_utils.upsert.UpsertResponseOK;
@@ -54,7 +54,7 @@ public class DoUpsertAvatar extends HttpServlet
 	 */
 	private static final long serialVersionUID = -7176239844643933368L;
 
-	static private final Logger logger = LogManager.getLogger(DoUpsertAvatar.class);
+	static private final Logger logger = LoggerFactory.getLogger(DoUpsertAvatar.class);
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -137,7 +137,7 @@ public class DoUpsertAvatar extends HttpServlet
 			type = Optional.getOptional(URLConnection.guessContentTypeFromStream(is), null, type);
 		} catch (IOException e)
 		{
-			logger.error(e);
+			logger.error("Error guessing type", e);
 		}
 
 		if (type.equals("image/png"))
@@ -213,7 +213,7 @@ public class DoUpsertAvatar extends HttpServlet
 			is.close();
 		} catch (IOException e)
 		{
-			logger.error(e);
+			logger.error("Error closing input stream", e);
 		}
 
 		return to_return;

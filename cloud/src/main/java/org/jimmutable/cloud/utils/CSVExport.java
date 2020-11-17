@@ -7,8 +7,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.elasticsearch.IndexDefinition;
 import org.jimmutable.cloud.servlet_utils.search.RequestExportCSV;
@@ -25,7 +25,7 @@ public class CSVExport
 	// static private final int SEARCH_MAX = 10000;
 	static private final CsvPreference CSV_PREFERENCE = CsvPreference.STANDARD_PREFERENCE;
 
-	static private final Logger logger = LogManager.getLogger(CSVExport.class);
+	static private final Logger logger = LoggerFactory.getLogger(CSVExport.class);
 
 	private static void writeAllToCSV(List<SearchFieldId> sorted_header, IndexDefinition index, String query_string, ICsvListWriter list_writer, CellProcessor[] cell_processors)
 	{
@@ -162,7 +162,7 @@ public class CSVExport
 
 		} catch (IOException e)
 		{
-			logger.error(e);
+			logger.error("Error", e);
 		} finally
 		{
 			if (list_writer != null)
@@ -173,7 +173,7 @@ public class CSVExport
 					return true;
 				} catch (IOException e)
 				{
-					logger.error(e);
+					logger.error("Error closing stream", e);
 				}
 			}
 		}

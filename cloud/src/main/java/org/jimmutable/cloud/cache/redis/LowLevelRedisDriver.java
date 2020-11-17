@@ -15,8 +15,8 @@ import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.threading.DaemonThreadFactory;
 import org.jimmutable.core.utils.NetUtils;
 import org.jimmutable.core.utils.Validator;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -39,7 +39,7 @@ public class LowLevelRedisDriver
 {
 	static public final String DEFAULT_HOST = "localhost";
 	static public final int DEFAULT_PORT_REDIS = 6379;
-	static public final Logger logger = LogManager.getLogger(LowLevelRedisDriver.class);
+	static public final Logger logger = LoggerFactory.getLogger(LowLevelRedisDriver.class);
 	
 	private JedisPool pool;
 	

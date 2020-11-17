@@ -1,7 +1,7 @@
 package org.jimmutable.cloud.elasticsearch;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.common.Kind;
@@ -17,7 +17,7 @@ import org.jimmutable.core.objects.common.Kind;
  */
 public class SyncSingleKind implements Runnable
 {
-	private static final Logger logger = LogManager.getLogger(SyncSingleKind.class);
+	private static final Logger logger = LoggerFactory.getLogger(SyncSingleKind.class);
 
 
 	private Kind kind; //Required and must be both Indexable and Storable for any actions to be taken

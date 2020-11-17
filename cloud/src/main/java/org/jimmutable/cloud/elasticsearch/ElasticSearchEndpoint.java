@@ -3,8 +3,8 @@ package org.jimmutable.cloud.elasticsearch;
 import java.util.Objects;
 
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import org.jimmutable.core.objects.TransientImmutableObject;
 import org.jimmutable.core.utils.Comparison;
@@ -19,7 +19,7 @@ import org.jimmutable.core.utils.Validator;
 public class ElasticSearchEndpoint extends TransientImmutableObject<ElasticSearchEndpoint>
 {
 
-	private static final Logger logger = LogManager.getLogger(ElasticSearchEndpoint.class);
+	private static final Logger logger = LoggerFactory.getLogger(ElasticSearchEndpoint.class);
 
 	private String host;
 	private int port;
@@ -44,7 +44,7 @@ public class ElasticSearchEndpoint extends TransientImmutableObject<ElasticSearc
 					tmp_port = Integer.parseInt(host_port[1]);
 				} catch (NumberFormatException e)
 				{
-					logger.log(Level.FATAL, "Port is not a valid integer", e);
+					logger.error("Port is not a valid integer", e);
 				}
 			}
 		}

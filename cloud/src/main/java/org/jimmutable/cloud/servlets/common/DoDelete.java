@@ -6,8 +6,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.elasticsearch.IndexDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchDocumentId;
@@ -26,7 +26,7 @@ public abstract class DoDelete extends HttpServlet
 	 * 
 	 */
 	private static final long serialVersionUID = 5725723116550684397L;
-	private static final Logger logger = LogManager.getLogger(DoDeleteSearchDocument.class);
+	private static final Logger logger = LoggerFactory.getLogger(DoDeleteSearchDocument.class);
 
 	@Override
 	protected void doDelete(HttpServletRequest request, HttpServletResponse response)
@@ -67,7 +67,7 @@ public abstract class DoDelete extends HttpServlet
 			return CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().delete(key);
 		} catch (Exception e)
 		{
-			logger.error(e);
+			logger.error("Error deleting storage key", e);
 			return false;
 		}
 
@@ -87,7 +87,7 @@ public abstract class DoDelete extends HttpServlet
 			return CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().deleteDocument(getIndexDefinition(), document_id);
 		} catch (Exception e)
 		{
-			logger.error(e);
+			logger.error("Error deleting search key", e);
 			return false;
 		}
 	}

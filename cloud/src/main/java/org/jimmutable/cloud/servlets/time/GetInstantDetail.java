@@ -4,8 +4,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.servlet_utils.get.GetResponseError;
 import org.jimmutable.cloud.servlet_utils.get.GetResponseOK;
 import org.jimmutable.cloud.servlets.util.ServletUtil;
@@ -22,7 +22,7 @@ public class GetInstantDetail extends HttpServlet
 	 */
 	private static final long serialVersionUID = -4849652062291860991L;
 
-	private static final Logger logger = LogManager.getLogger(GetInstantDetail.class);
+	private static final Logger logger = LoggerFactory.getLogger(GetInstantDetail.class);
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -34,7 +34,7 @@ public class GetInstantDetail extends HttpServlet
 			instant = new Instant(Long.parseLong(request.getParameter("ms_from_epoch")));
 		} catch (Exception e)
 		{
-			logger.error(e);
+			logger.error("Error parsing instant", e);
 			ServletUtil.writeSerializedResponse(response, new GetResponseError(String.format("Invalid ms_from_epoch: %s", e.getMessage())), GetResponseError.HTTP_STATUS_CODE_ERROR);
 			return;
 		}
@@ -45,7 +45,7 @@ public class GetInstantDetail extends HttpServlet
 			timezone_id = new TimezoneID(request.getParameter("timezone_id"));
 		} catch (Exception e)
 		{
-			logger.error(e);
+			logger.error("Error parsing timezone_id", e);
 			ServletUtil.writeSerializedResponse(response, new GetResponseError(String.format("Invalid timezone_id: %s", e.getMessage())), GetResponseError.HTTP_STATUS_CODE_ERROR);
 			return;
 		}
@@ -77,7 +77,7 @@ public class GetInstantDetail extends HttpServlet
 			ServletUtil.writeSerializedResponse(response, (InstantDetails) b.create(), GetResponseOK.HTTP_STATUS_CODE_OK);
 		} catch (Exception e)
 		{
-			logger.error(e);
+			logger.error("Error creating instant details", e);
 			ServletUtil.writeSerializedResponse(response, new GetResponseError(String.format(e.getMessage())), GetResponseError.HTTP_STATUS_CODE_ERROR);
 		}
 

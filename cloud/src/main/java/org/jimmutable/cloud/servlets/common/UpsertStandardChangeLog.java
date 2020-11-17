@@ -6,8 +6,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.objects.StandardChangeLogEntry;
 import org.jimmutable.cloud.servlet_utils.common_objects.GeneralResponseError;
@@ -36,7 +36,7 @@ public class UpsertStandardChangeLog extends HttpServlet
 	 * 
 	 */
 	private static final long serialVersionUID = -4783836176047064994L;
-	static private final Logger logger = LogManager.getLogger(UpsertStandardChangeLog.class);
+	static private final Logger logger = LoggerFactory.getLogger(UpsertStandardChangeLog.class);
 
 	@Override
 	protected void doPost( HttpServletRequest request, HttpServletResponse response )

@@ -2,8 +2,8 @@ package org.jimmutable.cloud.email;
 
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.core.utils.Validator;
 
 import com.amazonaws.regions.Regions;
@@ -25,7 +25,7 @@ import com.amazonaws.services.simpleemail.model.SendEmailResult;
 public class SESClient implements IEmail
 {
 
-	private static final Logger logger = LogManager.getLogger(SESClient.class);
+	private static final Logger logger = LoggerFactory.getLogger(SESClient.class);
 
 	private AmazonSimpleEmailService client;
 

@@ -8,8 +8,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.attachments.AttachmentMetaData;
 import org.jimmutable.cloud.attachments.DownloadFileName;
@@ -43,7 +43,7 @@ public class DoUploadAttachments extends HttpServlet
 	 *
 	 */
 	private static final long serialVersionUID = -5235981695936464860L;
-	static private final Logger logger = LogManager.getLogger(DoUpsertAvatar.class);
+	static private final Logger logger = LoggerFactory.getLogger(DoUpsertAvatar.class);
 
 	@Override
 	public void doPost( HttpServletRequest request, HttpServletResponse response ) throws IOException
@@ -83,7 +83,7 @@ public class DoUploadAttachments extends HttpServlet
 					}
 					catch ( Exception e )
 					{
-						logger.error(e);
+						logger.error("Error", e);
 					}
 
 					ObjectIdStorageKey key = null;
@@ -93,7 +93,7 @@ public class DoUploadAttachments extends HttpServlet
 					}
 					catch ( Exception e )
 					{
-						logger.error(e);
+						logger.error("Error", e);
 					}
 
 					if ( CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().upsert(key, file, false) )
@@ -123,7 +123,7 @@ public class DoUploadAttachments extends HttpServlet
 				}
 				catch ( Exception e )
 				{
-					logger.error(e);
+					logger.error("Error", e);
 				}
 			}
 		}
@@ -163,7 +163,7 @@ public class DoUploadAttachments extends HttpServlet
 		}
 		catch ( Exception e )
 		{
-			logger.error(e);
+			logger.error("Error", e);
 			ServletUtil.writeSerializedResponse(response, new GeneralResponseError("Failed to upsert new changelog entry"), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			return;
 		}

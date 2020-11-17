@@ -6,8 +6,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.attachments.AttachmentMetaData;
 import org.jimmutable.cloud.attachments.DownloadFileName;
@@ -43,7 +43,7 @@ public class DoUpsertChangeLog extends HttpServlet
 	 * 
 	 */
 	private static final long serialVersionUID = -8771597079214512255L;
-	static private final Logger logger = LogManager.getLogger(DoUpsertChangeLog.class);
+	static private final Logger logger = LoggerFactory.getLogger(DoUpsertChangeLog.class);
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -115,7 +115,7 @@ public class DoUpsertChangeLog extends HttpServlet
 							extension = new StorageKeyExtension(file_name.substring(extension_delim).toLowerCase());
 						} catch (Exception e)
 						{
-							logger.error(e);
+							logger.error("Error", e);
 						}
 
 						ObjectIdStorageKey key = null;
@@ -124,7 +124,7 @@ public class DoUpsertChangeLog extends HttpServlet
 							key = new ObjectIdStorageKey(KIND, ObjectId.createRandomId(), extension);
 						} catch (Exception e)
 						{
-							logger.error(e);
+							logger.error("Error", e);
 						}
 
 						AttachmentMetaData meta_data = null;
@@ -133,7 +133,7 @@ public class DoUpsertChangeLog extends HttpServlet
 							meta_data = new AttachmentMetaData(key.getSimpleObjectId(), file_name, new DownloadFileName(file_name), extension.getSimpleMimeType(), System.currentTimeMillis(), new Long(bytes.length));
 						} catch (Exception e)
 						{
-							logger.error(e);
+							logger.error("Error", e);
 						}
 
 						if (CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().upsert(key, bytes, false) && CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().upsert(meta_data, Format.JSON_PRETTY_PRINT))
@@ -165,7 +165,7 @@ public class DoUpsertChangeLog extends HttpServlet
 				}
 			} catch (Exception e)
 			{
-				logger.warn(e);
+				logger.error("Error", e);
 			}
 
 			try
@@ -178,7 +178,7 @@ public class DoUpsertChangeLog extends HttpServlet
 				}
 			} catch (Exception e)
 			{
-				logger.warn(e);
+				logger.warn("Error", e);
 			}
 
 			ServletUtil.writeSerializedResponse(response, new GeneralResponseOK("Success"), HttpServletResponse.SC_OK);

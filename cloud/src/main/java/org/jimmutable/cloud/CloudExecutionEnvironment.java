@@ -4,8 +4,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
@@ -46,7 +46,7 @@ import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
  */
 public class CloudExecutionEnvironment
 {
-	private static Logger logger = LogManager.getLogger(CloudExecutionEnvironment.class);
+	private static Logger logger = LoggerFactory.getLogger(CloudExecutionEnvironment.class);
 	private static CloudExecutionEnvironment CURRENT;
 
 	private ISearch search;
@@ -230,7 +230,7 @@ public class CloudExecutionEnvironment
 			}
 			catch ( UnknownHostException e )
 			{
-				logger.log(Level.FATAL, "Failed to instantiate the elasticsearch client!", e);
+				logger.error("Failed to instantiate the elasticsearch client!", e);
 			}
 
 			if ( dev_client == null )
@@ -253,7 +253,7 @@ public class CloudExecutionEnvironment
 			}
 			catch ( UnknownHostException e )
 			{
-				logger.log(Level.FATAL, "Failed to instantiate the elasticsearch client!", e);
+				logger.error("Failed to instantiate the elasticsearch client!", e);
 			}
 
 			if ( staging_client == null )
@@ -280,7 +280,7 @@ public class CloudExecutionEnvironment
 		case PRODUCTION:
 			checkOs();
 
-			logger.log(Level.INFO, "Starting production environment");
+			logger.info("Starting production environment");
 
 			StorageS3 production_storage = new StorageS3(RegionSpecificAmazonS3ClientFactory.defaultFactory(), APPLICATION_ID, STANDARD_IMMUTABLE_OBJECT_CACHE, false);
 			production_storage.upsertBucketIfNeeded();
@@ -318,7 +318,7 @@ public class CloudExecutionEnvironment
 		}
 		catch ( Exception e )
 		{
-			logger.fatal(String.format("Could not create staging post fix for application ID %s. Dying now.", application_id.getSimpleValue()), e);
+			logger.error(String.format("Could not create staging post fix for application ID %s. Dying now.", application_id.getSimpleValue()), e);
 			return default_value;
 		}
 	}
@@ -371,7 +371,7 @@ public class CloudExecutionEnvironment
 			}
 			catch ( Exception e )
 			{
-				logger.fatal(String.format("Invalid Environment type %s using default type %s", env_level, tmp_type));
+				logger.error(String.format("Invalid Environment type %s using default type %s", env_level, tmp_type));
 				return default_value;
 			}
 
@@ -410,14 +410,14 @@ public class CloudExecutionEnvironment
 		if ( operating_system_property != null )
 		{
 			String os = operating_system_property.toLowerCase();
-			if ( os.indexOf("win") < 0 && os.indexOf("mac") < 0 )
+			if ( os.indexOf("win") < 0 && os.indexOf("mac") < 0 && os.indexOf("linux") < 0)
 			{
-				logger.fatal(String.format("Unexpected operating system (%s) detected for %s environment!", os, ENV_TYPE));
+				logger.error(String.format("Unexpected operating system (%s) detected for %s environment!", os, ENV_TYPE));
 			}
 		}
 		else
 		{
-			logger.fatal("Failed to detect operating system!");
+			logger.error("Failed to detect operating system!");
 		}
 	}
 

@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.StandardObject;
@@ -15,7 +15,7 @@ import org.jimmutable.core.utils.Validator;
 
 public class StorageUtils
 {
-	static private final Logger logger = LogManager.getLogger(StorageUtils.class);
+	static private final Logger logger = LoggerFactory.getLogger(StorageUtils.class);
 	static private final String CHARSET_NAME = "UTF8";
 
 	public static boolean doesExist( Storable object, boolean default_value )

@@ -17,8 +17,8 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.EnumSet;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.core.objects.Builder;
 import org.jimmutable.core.objects.common.Kind;
@@ -33,7 +33,7 @@ public class StorageDevLocalFileSystem extends Storage
 	 * on our local machine.
 	 */
 	private File root;
-	private static final Logger logger = LogManager.getLogger(StorageDevLocalFileSystem.class);
+	private static final Logger logger = LoggerFactory.getLogger(StorageDevLocalFileSystem.class);
 
 	public StorageDevLocalFileSystem( boolean is_readonly, ApplicationId applicationId )
 	{

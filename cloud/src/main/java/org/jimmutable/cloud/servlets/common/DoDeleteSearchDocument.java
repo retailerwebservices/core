@@ -4,8 +4,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.elasticsearch.IndexDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchDocumentId;
@@ -21,7 +21,7 @@ public abstract class DoDeleteSearchDocument extends HttpServlet
 	 * 
 	 */
 	private static final long serialVersionUID = -8209943369568153719L;
-	private static final Logger logger = LogManager.getLogger( DoDeleteSearchDocument.class);
+	private static final Logger logger = LoggerFactory.getLogger( DoDeleteSearchDocument.class);
 	
 
 	@Override

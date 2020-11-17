@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 public class RequestPageData
 {
-	private static final Logger logger = LogManager.getLogger(RequestPageData.class);
+	private static final Logger logger = LoggerFactory.getLogger(RequestPageData.class);
 	
 	public static String DEFAULT_JSON_ELEMENT = "json";
 	public static String DEFAULT_FILE_ELEMENT = "file";

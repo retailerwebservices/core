@@ -1,8 +1,8 @@
 package org.jimmutable.cloud.utils;
 
 import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchSync;
@@ -10,7 +10,7 @@ import org.jimmutable.core.objects.common.Kind;
 
 public class AppAdminUtil
 {
-	private static final Logger logger = LogManager.getLogger(AppAdminUtil.class);
+	private static final Logger logger = LoggerFactory.getLogger(AppAdminUtil.class);
 
 	public static boolean indicesProperlyConfigured()
 	{
@@ -40,7 +40,7 @@ public class AppAdminUtil
 				if (!CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexProperlyConfigured(index))
 				{
 
-					logger.fatal(String.format("The index %s is not properly configured! You must rebuild or recreate this index using the reindex utility. The app will not start until all indices are properly mapped.", index.getSimpleIndex().getSimpleValue()));
+					logger.error(String.format("The index %s is not properly configured! You must rebuild or recreate this index using the reindex utility. The app will not start until all indices are properly mapped.", index.getSimpleIndex().getSimpleValue()));
 					startup_allowed = false;
 				}
 			}
