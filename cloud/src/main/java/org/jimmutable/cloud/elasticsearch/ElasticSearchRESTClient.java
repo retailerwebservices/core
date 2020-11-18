@@ -411,7 +411,7 @@ public class ElasticSearchRESTClient implements ISearch
 			IndexResponse response = high_level_rest_client.index(request, RequestOptions.DEFAULT);
 
 			//Expected results, otherwise log an error
-			if(response.getResult() != Result.CREATED || response.getResult() != Result.UPDATED)
+			if(response.getResult() != Result.CREATED && response.getResult() != Result.UPDATED)
 			{
 				logger.error( String.format("%s %s/%s/%s %s", response.getResult().name(), index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name, data));
 			}

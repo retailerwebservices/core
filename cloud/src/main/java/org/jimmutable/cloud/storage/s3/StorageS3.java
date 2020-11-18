@@ -167,8 +167,6 @@ public class StorageS3 extends Storage
 		{
 			temp = File.createTempFile("storage_s3_", null);
 
-			System.out.println("Temp file On Default Location: " + temp.getAbsolutePath());
-
 			LOGGER.debug(log_prefix + "Writing source to temp file");
 			try ( OutputStream fout = new BufferedOutputStream(new FileOutputStream(temp)) )
 			{
