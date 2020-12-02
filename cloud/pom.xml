@@ -52,7 +52,7 @@
 		<elasticsearch.version>7.6.1</elasticsearch.version>
 		<log4j.version>2.13.3</log4j.version>
 		<skipITs>true</skipITs>
-		<jetty.version>9.4.28.v20200408</jetty.version>
+		<jetty.version>9.4.35.v20201120</jetty.version>
 	</properties>
 
 	<dependencyManagement>
