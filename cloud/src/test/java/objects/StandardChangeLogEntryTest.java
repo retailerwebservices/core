@@ -55,7 +55,8 @@ public class StandardChangeLogEntryTest extends StubTest
 
 		StandardChangeLogEntry standard_change_log_entry = new StandardChangeLogEntry(id, new ObjectReference(new Kind("thing"), id), 0, new ObjectId("0000-0000-0000-0001"), "Short", "my comment", attachments, meta_data.toString(), meta_data_after.toString());
 
-		System.out.println(standard_change_log_entry.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
+		// System.out.println(standard_change_log_entry.toJavaCode(Format.JSON_PRETTY_PRINT,
+		// "obj"));
 
 		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s", "{", "  \"type_hint\" : \"change_log_entry\",", "  \"id\" : \"0000-0000-0000-0000\",", "  \"subject\" : \"thing:0000-0000-0000-0000\",", "  \"timestamp\" : 0,", "  \"changemadebyuserid\" : \"0000-0000-0000-0001\",", "  \"short_description\" : \"Short\",", "  \"comments\" : \"my comment\",", "  \"attachments\" : [ \"0000-0000-0000-0005\", \"0000-0000-0000-0006\", \"0000-0000-0000-0007\" ],", "  \"before\" : \"{\\n  \\\"type_hint\\\" : \\\"com.digitalpanda.objects.attatchments.attachmentmetadata\\\",\\n  \\\"id\\\" : \\\"0000-0000-0000-007b\\\",\\n  \\\"description\\\" : \\\"Description\\\",\\n  \\\"filename\\\" : {\\n    \\\"type_hint\\\" : \\\"string\\\",\\n    \\\"primitive_value\\\" : \\\"downloadfilename1\\\"\\n  },\\n  \\\"mimetype\\\" : \\\"mimetype\\\",\\n  \\\"lastmodifiedtime\\\" : 1,\\n  \\\"size\\\" : 1\\n}\",", "  \"after\" : \"{\\n  \\\"type_hint\\\" : \\\"com.digitalpanda.objects.attatchments.attachmentmetadata\\\",\\n  \\\"id\\\" : \\\"0000-0000-0000-007b\\\",\\n  \\\"description\\\" : \\\"Description\\\",\\n  \\\"filename\\\" : {\\n    \\\"type_hint\\\" : \\\"string\\\",\\n    \\\"primitive_value\\\" : \\\"downloadfilename2\\\"\\n  },\\n  \\\"mimetype\\\" : \\\"mimetype\\\",\\n  \\\"lastmodifiedtime\\\" : 1,\\n  \\\"size\\\" : 2\\n}\"", "}");
 

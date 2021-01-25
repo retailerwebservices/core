@@ -6,44 +6,36 @@ import static org.junit.Assert.assertTrue;
 
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
-import org.jimmutable.cloud.StubTest;
-import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
-import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
-import org.jimmutable.cloud.servlet_utils.search.AdvancedSearchComboBoxChoice;
-import org.jimmutable.cloud.servlet_utils.search.IncludeFieldInView;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
-import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
-import org.jimmutable.core.serialization.reader.ObjectParseTree;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class AdvancedSearchComboBoxChoiceTest
 {
 
-	
 	@BeforeClass
 	public static void setUp()
 	{
-		
+
 		try
 		{
 			CloudExecutionEnvironment.startupStubTest(new ApplicationId("stub"));
-		} catch (RuntimeException e)
+		}
+		catch ( RuntimeException e )
 		{
 
 		}
 
 	}
-	
+
 	@Test
 	public void testUserSerialization()
 	{
 		AdvancedSearchComboBoxChoice field = new AdvancedSearchComboBoxChoice("Name", "Jim");
 		String serialized_value = field.serialize(Format.JSON_PRETTY_PRINT);
 
-		System.out.println(field.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
+		// System.out.println(field.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 		assertEquals("{\n" + "  \"type_hint\" : \"advancedsearchcomboboxchoice\",\n" + "  \"label\" : \"Name\",\n" + "  \"value\" : \"Jim\"\n" + "}", serialized_value);
 
 		String obj_string = String.format("%s\n%s\n%s\n%s\n%s", "{", "  \"type_hint\" : \"advancedsearchcomboboxchoice\",", "  \"label\" : \"Name\",", "  \"value\" : \"Jim\"", "}");
@@ -64,11 +56,11 @@ public class AdvancedSearchComboBoxChoiceTest
 
 		field_modified = new AdvancedSearchComboBoxChoice("Name", "Trevor");
 		assertFalse(field.equals(field_modified));
-		assertTrue(0>field.compareTo(field_modified));
+		assertTrue(0 > field.compareTo(field_modified));
 
 		field_modified = new AdvancedSearchComboBoxChoice("Name", "Aaron");
 		assertFalse(field.equals(field_modified));
-		assertTrue(0<field.compareTo(field_modified));
+		assertTrue(0 < field.compareTo(field_modified));
 	}
 
 }

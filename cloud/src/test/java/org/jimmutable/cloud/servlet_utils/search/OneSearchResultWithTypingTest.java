@@ -12,7 +12,6 @@ import org.jimmutable.core.fields.FieldHashMap;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Day;
 import org.jimmutable.core.serialization.FieldName;
-import org.jimmutable.core.serialization.Format;
 import org.junit.Test;
 
 public class OneSearchResultWithTypingTest extends StubTest
@@ -236,7 +235,7 @@ public class OneSearchResultWithTypingTest extends StubTest
 		try
 		{
 			result = new OneSearchResultWithTyping(input_data);
-			System.out.println(result.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
+			// System.out.println(result.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 		}
 		catch ( Exception e )
 		{
