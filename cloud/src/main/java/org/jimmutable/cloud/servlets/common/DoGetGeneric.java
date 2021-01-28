@@ -33,14 +33,15 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 	private static final long serialVersionUID = 8993193171889935131L;
 
 	@Override
-	public void doGet(HttpServletRequest request, HttpServletResponse response)
+	public void doGet( HttpServletRequest request, HttpServletResponse response )
 	{
 
 		ObjectId id = null;
 		try
 		{
 			id = new ObjectId(request.getParameter(getId()));
-		} catch (Exception e)
+		}
+		catch ( Exception e )
 		{
 			String error_message = String.format("Invalid ObjectId from parameter:%s", getId());
 			getLogger().error(error_message, e);
@@ -52,7 +53,8 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 		try
 		{
 			key = new ObjectIdStorageKey(getKind(), id, getExtension());
-		} catch (Exception e)
+		}
+		catch ( Exception e )
 		{
 			String error_message = String.format("Failed to create valid StorageKey from Kind:%s Parameter:%s Extension:%s", getKind().getSimpleValue(), getId(), getExtension());
 			getLogger().error(error_message, e);
@@ -62,7 +64,7 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 
 		byte[] bytes = CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersion(key, null);
 
-		if (bytes == null)
+		if ( bytes == null )
 		{
 			String error_message = String.format("%s/%s.%s not found in storage!", key.getSimpleKind().getSimpleValue(), key.getSimpleName().getSimpleValue(), key.getSimpleExtension().getSimpleValue());
 			getLogger().error(error_message);
@@ -77,7 +79,7 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 			handleSuccessfulRetrieval(obj);
 			more_specific_data = getMoreSpecificData(obj, request, null);
 		}
-		catch (Exception e)
+		catch ( Exception e )
 		{
 			String error_message = String.format("Failed to deserialize %s/%s.%s from storage!", key.getSimpleKind().getSimpleValue(), key.getSimpleName().getSimpleValue(), key.getSimpleExtension().getSimpleValue());
 			getLogger().error(error_message, e);
@@ -85,11 +87,11 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 			return;
 		}
 
-		if (more_specific_data != null)
+		if ( more_specific_data != null )
 		{
-			ServletUtil.writeSerializedResponse(response, more_specific_data, GetResponseOK.HTTP_STATUS_CODE_OK);
-			return;
-		} else
+			handlePassingBackMoreSpecificInformation(response, more_specific_data);
+		}
+		else
 		{
 			String error_message = String.format("Failed to create object please contact an admin");
 			getLogger().error(error_message);
@@ -110,13 +112,18 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 	 *            Object returned if failure
 	 * @return the new Object
 	 */
-	protected Object getMoreSpecificData(T obj, HttpServletRequest request, Object default_value)
+	protected Object getMoreSpecificData( T obj, HttpServletRequest request, Object default_value )
 	{
-		if (obj == null)
+		if ( obj == null )
 		{
 			return default_value;
 		}
 		return obj;
+	}
+
+	protected void handlePassingBackMoreSpecificInformation( HttpServletResponse response, Object more_specific_data )
+	{
+		ServletUtil.writeSerializedResponse(response, more_specific_data, GetResponseOK.HTTP_STATUS_CODE_OK);
 	}
 
 	protected StorageKeyExtension getExtension()
@@ -130,13 +137,13 @@ public abstract class DoGetGeneric<T extends Storable> extends HttpServlet
 		// to be overriddden if more specific data is needed.
 		return "id";
 	}
-		
+
 	abstract protected Logger getLogger();
 
 	abstract protected Kind getKind();
 
-	protected void handleSuccessfulRetrieval(Object value)
-	{		
+	protected void handleSuccessfulRetrieval( Object value )
+	{
 		return;
 	}
 }

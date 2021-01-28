@@ -10,11 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.commons.io.input.CloseShieldInputStream;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
 import org.jimmutable.cloud.ApplicationId;
-import org.jimmutable.cloud.cache.CacheKey;
 import org.jimmutable.cloud.storage.GenericStorageKey;
 import org.jimmutable.cloud.storage.ObjectIdStorageKey;
 import org.jimmutable.cloud.storage.StandardImmutableObjectCache;
@@ -30,6 +26,8 @@ import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.utils.IOUtils;
 //import org.jimmutable.core.utils.IOUtils;
 import org.jimmutable.core.utils.Validator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
@@ -85,7 +83,17 @@ public class StorageS3 extends Storage
 		transfer_manager = TransferManagerBuilder.standard().withS3Client(client).build();
 	}
 
+	public AmazonS3Client getSimpleClient()
+	{
+		return client;
+	}
+
 	public void upsertBucketIfNeeded()
+	{
+		upsertBucketIfNeeded(bucket_name);
+	}
+
+	public void upsertBucketIfNeeded( String bucket_name )
 	{
 		if ( !client.doesBucketExist(bucket_name) )
 		{
@@ -160,7 +168,6 @@ public class StorageS3 extends Storage
 		if ( isReadOnly() )
 			return false;
 
-		
 		final String log_prefix = "[upsert(" + key + ")] ";
 		File temp = null;
 		try
@@ -427,11 +434,11 @@ public class StorageS3 extends Storage
 
 	private void deleteTempFile( File temp )
 	{
-		if(temp == null || !temp.exists())
+		if ( temp == null || !temp.exists() )
 		{
 			return;
 		}
-		
+
 		try
 		{
 			if ( !temp.delete() )
