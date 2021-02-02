@@ -116,6 +116,11 @@ public class StorageS3 extends Storage
 	@Override
 	public boolean exists( final StorageKey key, final boolean default_value )
 	{
+		return exists(bucket_name, key, default_value);
+	}
+
+	public boolean exists( String bucket_name, final StorageKey key, final boolean default_value )
+	{
 		try
 		{
 			return client.doesObjectExist(bucket_name, key.toString());
@@ -131,6 +136,12 @@ public class StorageS3 extends Storage
 	// be able to detect dynamically on read.
 	@Override
 	public boolean upsert( StorageKey key, byte[] bytes, boolean hint_content_likely_to_be_compressible )
+	{
+		return upsert(bucket_name, key, bytes, hint_content_likely_to_be_compressible);
+	}
+
+	public boolean upsert( String bucket_name, StorageKey key, byte[] bytes, boolean hint_content_likely_to_be_compressible )
+
 	{
 		Validator.max(bytes.length, MAX_TRANSFER_BYTES_IN_BYTES);
 
@@ -162,6 +173,11 @@ public class StorageS3 extends Storage
 	// be able to detect dynamically on read.
 	@Override
 	public boolean upsertStreaming( final StorageKey key, final InputStream source, final boolean hint_content_likely_to_be_compressible )
+	{
+		return upsertStreaming(bucket_name, key, source, hint_content_likely_to_be_compressible);
+	}
+
+	public boolean upsertStreaming( String bucket_name, final StorageKey key, final InputStream source, final boolean hint_content_likely_to_be_compressible )
 	{
 		Validator.notNull(key, source);
 
@@ -243,6 +259,11 @@ public class StorageS3 extends Storage
 	@Override
 	public byte[] getCurrentVersion( final StorageKey key, byte[] default_value )
 	{
+		return getCurrentVersion(bucket_name, key, default_value);
+	}
+
+	public byte[] getCurrentVersion( String bucket_name, final StorageKey key, byte[] default_value )
+	{
 		byte[] object = getComplexCurrentVersionFromCache(key, null);
 		if ( object != null )
 		{
@@ -308,6 +329,11 @@ public class StorageS3 extends Storage
 	@Override
 	public boolean getCurrentVersionStreaming( final StorageKey key, final OutputStream sink )
 	{
+		return getCurrentVersionStreaming(bucket_name, key, sink);
+	}
+
+	public boolean getCurrentVersionStreaming( String bucket_name, final StorageKey key, final OutputStream sink )
+	{
 
 		long start = System.currentTimeMillis();
 
@@ -366,6 +392,11 @@ public class StorageS3 extends Storage
 	 */
 	@Override
 	public boolean getThreadedCurrentVersionStreaming( final StorageKey key, final OutputStream sink )
+	{
+		return getThreadedCurrentVersionStreaming(bucket_name, key, sink);
+	}
+
+	public boolean getThreadedCurrentVersionStreaming( String bucket_name, final StorageKey key, final OutputStream sink )
 	{
 
 		long start = System.currentTimeMillis();
@@ -455,6 +486,11 @@ public class StorageS3 extends Storage
 	@Override
 	public boolean delete( final StorageKey key )
 	{
+		return delete(bucket_name, key);
+	}
+
+	public boolean delete( String bucket_name, final StorageKey key )
+	{
 		if ( isReadOnly() )
 			return false;
 
@@ -476,6 +512,11 @@ public class StorageS3 extends Storage
 
 	@Override
 	public StorageMetadata getObjectMetadata( final StorageKey key, final StorageMetadata default_value )
+	{
+		return getObjectMetadata(bucket_name, key, default_value);
+	}
+
+	public StorageMetadata getObjectMetadata( String bucket_name, final StorageKey key, final StorageMetadata default_value )
 	{
 		try
 		{
