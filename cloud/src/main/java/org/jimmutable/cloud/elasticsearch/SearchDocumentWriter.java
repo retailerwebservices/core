@@ -1,5 +1,6 @@
 package org.jimmutable.cloud.elasticsearch;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -119,7 +120,7 @@ public class SearchDocumentWriter
 	 *            The text of the field. Must not contain any null elements. Blanks
 	 *            are ignored.
 	 */
-	public void writeAtomObjectIdArray( SearchIndexFieldDefinition search_index_definition, FieldCollection<ObjectId> elements )
+	public void writeAtomObjectIdArray( SearchIndexFieldDefinition search_index_definition, Collection<ObjectId> elements )
 	{
 
 		Validator.notNull(search_index_definition);
