@@ -363,7 +363,7 @@ public class StorageS3 extends Storage
 		}
 		catch ( Exception e )
 		{
-			LOGGER.error(String.format("Failed to retrieve %s from S3!", key.toString()), e);
+			LOGGER.error(String.format("Failed to retrieve %s from S3!", key.toString()));
 		}
 		finally
 		{
