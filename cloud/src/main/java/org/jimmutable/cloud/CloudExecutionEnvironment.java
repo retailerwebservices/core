@@ -303,8 +303,33 @@ public class CloudExecutionEnvironment
 		JimmutableCloudTypeNameRegister.registerAllTypes();
 		Log4jUtil.setupListeners();
 		ApplicationHeartbeatUtils.setupHeartbeat(application_id, application_sub_service_id);
-
+		setDefaultUncaughtExceptionHandler();
+		
 		STANDARD_IMMUTABLE_OBJECT_CACHE.createListeners();
+	}
+
+	/*
+	 * This is an implementation of an uncaught exception handler so that these
+	 * types of exceptions bubble up into our cloud logging solution as we expect
+	 * rather than going to sys.err.
+	 */
+	private static void setDefaultUncaughtExceptionHandler()
+	{
+		try
+		{
+			Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler()
+			{
+				@Override
+				public void uncaughtException( Thread t, Throwable e )
+				{
+					logger.error("Uncaught exception detected in thread " + t, e);
+				}
+			});
+		}
+		catch ( SecurityException e )
+		{
+			logger.error("Could not set the Default Uncaught Exception Handler", e);
+		}
 	}
 
 	/**
