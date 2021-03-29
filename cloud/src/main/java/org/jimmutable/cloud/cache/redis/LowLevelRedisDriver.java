@@ -25,6 +25,7 @@ import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 /**
  * Low level driver class for Redis.
@@ -150,7 +151,17 @@ public class LowLevelRedisDriver
 			
 			try(Jedis jedis = pool.getResource();)
 			{
-				String result = jedis.set(cache_key_bytes, data);
+				String result = null;
+				try
+				{
+					result = jedis.set(cache_key_bytes, data);
+				}
+				catch (Exception e)
+				{
+					// If the set operation fails, skip the time-to-live setting also
+					logger.error(String.format("Redis set operation for cache key %s failed.", key.getSimpleValue()), e);
+					return;
+				}
 				
 				if ( max_ttl > 0 )
 				{ 
