@@ -1,5 +1,6 @@
 package org.jimmutable.cloud.cache.redis;
 
+import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
@@ -149,12 +150,21 @@ public class LowLevelRedisDriver
 			
 			try(Jedis jedis = pool.getResource();)
 			{
-				jedis.set(cache_key_bytes, data);
+				String result = jedis.set(cache_key_bytes, data);
 				
 				if ( max_ttl > 0 )
 				{ 
 					max_ttl /= 1000;
-					jedis.expire(cache_key_bytes, (int)max_ttl);
+					try
+					{
+						jedis.expire(cache_key_bytes, (int)max_ttl);
+					}
+					catch (Exception e)
+					{
+						String msg = String.format("Attempt to expire Redis cache key %s failed.", key.getSimpleValue());
+						msg += String.format(" Preceeding Redis set operation result was %s", result != null ? result : "null");
+						logger.error(msg, e);
+					}
 				}
 			}
 		}
