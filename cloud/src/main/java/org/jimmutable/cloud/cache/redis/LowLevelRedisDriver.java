@@ -151,31 +151,22 @@ public class LowLevelRedisDriver
 			
 			try(Jedis jedis = pool.getResource();)
 			{
-				String result = null;
 				try
 				{
-					result = jedis.set(cache_key_bytes, data);
+					if ( max_ttl > 0 )
+					{
+						long ttl_seconds = max_ttl / 1000;
+						String result = jedis.setex(cache_key_bytes, (int) ttl_seconds, data);
+						logger.info("result:" + result);
+					}
+					else
+					{
+						jedis.set(cache_key_bytes, data);
+					}
 				}
 				catch (Exception e)
 				{
-					// If the set operation fails, skip the time-to-live setting also
 					logger.error(String.format("Redis set operation for cache key %s failed.", key.getSimpleValue()), e);
-					return;
-				}
-				
-				if ( max_ttl > 0 )
-				{ 
-					max_ttl /= 1000;
-					try
-					{
-						jedis.expire(cache_key_bytes, (int)max_ttl);
-					}
-					catch (Exception e)
-					{
-						String msg = String.format("Attempt to expire Redis cache key %s failed.", key.getSimpleValue());
-						msg += String.format(" Preceeding Redis set operation result was %s", result != null ? result : "null");
-						logger.error(msg, e);
-					}
 				}
 			}
 		}
