@@ -156,8 +156,7 @@ public class LowLevelRedisDriver
 					if ( max_ttl > 0 )
 					{
 						long ttl_seconds = max_ttl / 1000;
-						String result = jedis.setex(cache_key_bytes, (int) ttl_seconds, data);
-						logger.info("result:" + result);
+						jedis.setex(cache_key_bytes, (int) ttl_seconds, data);
 					}
 					else
 					{
