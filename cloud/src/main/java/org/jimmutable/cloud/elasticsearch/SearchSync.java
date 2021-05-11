@@ -48,6 +48,7 @@ public abstract class SearchSync
 
 	public static final int MAX_REINDEX_COMPLETION_TIME_MINUTES = 240;
 	public static final ApplicationId APPLICATION_SERVICE_ID = new ApplicationId("search-sync");
+	private static final NumberFormat TIME_FORMAT = new DecimalFormat("#0.00000");
 
 	private Set<Kind> kinds_to_reindex = new HashSet<>();
 
@@ -110,16 +111,16 @@ public abstract class SearchSync
 		}
 		logger.info("Success checking that all indices are properly configured...");
 		logger.info("Reindexing of Kinds started...");
-		// We want a single thread per half the kinds to ensure some form of stability
+		// We want a single thread per 1/3 the kinds to ensure some form of stability
 		// with elastic search
 		int executor_threads = getSimpleKindsToReindex().size();
-		if ( executor_threads <= 1 )
+		if ( executor_threads <= 3 )
 		{
 			executor_threads = 1;
 		}
 		else
 		{
-			executor_threads /= 2;
+			executor_threads /= 3;
 		}
 
 		ExecutorService executor = Executors.newFixedThreadPool(executor_threads);
@@ -153,8 +154,7 @@ public abstract class SearchSync
 
 		long end = System.currentTimeMillis();
 		logger.info("Reindexing of all Kinds finished");
-		NumberFormat formatter = new DecimalFormat("#0.00000");
-		logger.info("Reindexing of all Kinds execution time was " + formatter.format((end - start) / 1000d) + " seconds");
+		logger.info("Reindexing of all Kinds execution time was " + TIME_FORMAT.format((end - start) / 1000d) + " seconds");
 	}
 
 	/**

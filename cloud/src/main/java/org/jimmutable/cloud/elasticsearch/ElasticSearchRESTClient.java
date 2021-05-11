@@ -2,6 +2,8 @@ package org.jimmutable.cloud.elasticsearch;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,8 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -24,9 +27,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Level;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
-import org.elasticsearch.action.DocWriteRequest;
 import org.elasticsearch.action.DocWriteResponse.Result;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions;
@@ -35,6 +35,7 @@ import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.bulk.BulkItemResponse;
+import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
@@ -54,6 +55,8 @@ import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.unit.ByteSizeUnit;
+import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryShardException;
@@ -73,6 +76,8 @@ import org.jimmutable.cloud.storage.StorageKeyHandler;
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.serialization.FieldName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.ICsvListWriter;
 
@@ -94,8 +99,7 @@ public class ElasticSearchRESTClient implements ISearch
 
 	// This is set to a reasonable limit. I think the actual Elasticsearch limit is
 	// based on memory size.
-	private static final int MAX_NO_REQUESTS_IN_BULK_REQUEST = 10000;
-
+	private static final int MAX_NO_REQUESTS_IN_BULK_REQUEST = 3000;
 	private static final Logger logger = LoggerFactory.getLogger(ElasticSearchRESTClient.class);
 
 	/**
@@ -114,10 +118,10 @@ public class ElasticSearchRESTClient implements ISearch
 	// This is the default dev REST port, there isn't a way to get this through the
 	// API as far as I can tell for now
 	private int DEV_ELASTICSEARCH_PORT = 9200;
-	
-    public static final int FIVE_SECOND_CONNECT_TIMEOUT_MILLIS = 5000;
-    public static final int SIXTY_SECOND_SOCKET_TIMEOUT_MILLIS = 60000;
-    
+
+	public static final int FIVE_SECOND_CONNECT_TIMEOUT_MILLIS = 5000;
+	public static final int SIXTY_SECOND_SOCKET_TIMEOUT_MILLIS = 60000;
+
 	public ElasticSearchRESTClient()
 	{
 		// Once we deprecate the TransportClient in dev, we can simply add a
@@ -130,7 +134,6 @@ public class ElasticSearchRESTClient implements ISearch
 			String production_elastic_password = System.getProperty(PRODUCTION_ELASTICSEARCH_PASSWORD);
 			final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 			credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(production_elastic_username, production_elastic_password));
-
 			try
 			{
 				lowLevelClientBuilder.setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback()
@@ -141,7 +144,7 @@ public class ElasticSearchRESTClient implements ISearch
 						return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
 					}
 				});
-				
+
 				lowLevelClientBuilder.setRequestConfigCallback(new RestClientBuilder.RequestConfigCallback()
 				{
 					@Override
@@ -160,7 +163,25 @@ public class ElasticSearchRESTClient implements ISearch
 		}
 		else
 		{
-			high_level_rest_client = new RestHighLevelClient(RestClient.builder(new HttpHost(DEV_ELASTICSEARCH_HOST, DEV_ELASTICSEARCH_PORT, "http")));
+			RestClientBuilder lowLevelClientBuilder = RestClient.builder(new HttpHost(DEV_ELASTICSEARCH_HOST, DEV_ELASTICSEARCH_PORT, "http"));
+			try
+			{
+
+				lowLevelClientBuilder.setRequestConfigCallback(new RestClientBuilder.RequestConfigCallback()
+				{
+					@Override
+					public RequestConfig.Builder customizeRequestConfig( RequestConfig.Builder requestConfigBuilder )
+					{
+						return requestConfigBuilder.setConnectTimeout(FIVE_SECOND_CONNECT_TIMEOUT_MILLIS).setSocketTimeout(SIXTY_SECOND_SOCKET_TIMEOUT_MILLIS);
+					}
+				});
+			}
+			catch ( Exception e )
+			{
+				logger.debug(e.getMessage());
+			}
+
+			high_level_rest_client = new RestHighLevelClient(lowLevelClientBuilder);
 		}
 	}
 
@@ -178,11 +199,8 @@ public class ElasticSearchRESTClient implements ISearch
 			logger.info(String.format("No upsert needed for index %s", index.getSimpleIndex().getSimpleValue()));
 			return true;
 		}
-		else
-		{
-			// index is new
-			return createIndex(index);
-		}
+		// index is new
+		return createIndex(index);
 	}
 
 	private boolean createIndex( SearchIndexDefinition index )
@@ -410,10 +428,10 @@ public class ElasticSearchRESTClient implements ISearch
 			IndexRequest request = new IndexRequest(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).source(data).setRefreshPolicy(refresh_policy);
 			IndexResponse response = high_level_rest_client.index(request, RequestOptions.DEFAULT);
 
-			//Expected results, otherwise log an error
-			if(response.getResult() != Result.CREATED && response.getResult() != Result.UPDATED)
+			// Expected results, otherwise log an error
+			if ( response.getResult() != Result.CREATED && response.getResult() != Result.UPDATED )
 			{
-				logger.error( String.format("%s %s/%s/%s %s", response.getResult().name(), index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name, data));
+				logger.error(String.format("%s %s/%s/%s %s", response.getResult().name(), index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name, data));
 			}
 
 			boolean success = response.getResult().equals(Result.CREATED) || response.getResult().equals(Result.UPDATED);
@@ -481,7 +499,6 @@ public class ElasticSearchRESTClient implements ISearch
 					success = false;
 				}
 			}
-			
 
 			return success;
 		}
@@ -627,126 +644,51 @@ public class ElasticSearchRESTClient implements ISearch
 	 * 
 	 * @return true on success
 	 */
-
 	private boolean syncSearchAndStorage( Kind kind, String index_name )
 	{
 		// This handles the initial scanning of storage to get all the requests. It
-		// blocks so once successfully finished we will have all of the requests ready
-		// for a bulk request.
-		BulkUpsertScanHandler scan_handler = new BulkUpsertScanHandler(index_name);
-		if ( !CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().scan(kind, scan_handler, 10) )
+		// blocks until all requests have been given to our bulk processor for ES. It
+		// does not mean that all requests will be done once the lock is released so we
+		// wait until the processor closes before continuing.
+		BulkElasticSearchUpsertScanHandler scan_handler = new BulkElasticSearchUpsertScanHandler(index_name);
+		if ( !CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().scan(kind, scan_handler, 20) )
 		{
 			logger.warn("Storage Scanner for Kind " + kind + " was unable to successfully run. This Kind may not be fully re-indexed or there may currently not be any entries of Kind in Storage. The index will not be swapped on the alias.");
 			return false;
 		}
 
+		boolean is_bulk_processor_closed = false;
 		try
 		{
-
-			if ( scan_handler.getSimpleBulkRequest().requests().isEmpty() )
-			{
-				logger.info("No documents were found in Storage for index " + index_name);
-				return false;
-			}
-
-			/*
-			 * This error handling is treating the symptoms of a problem and not the
-			 * underlying cause. Rather than just allowing a null request to be added to the
-			 * list, we should be stopping the behavior from where it originally came. Once
-			 * that is fixed, this while loop should be removed.
-			 * 
-			 * ANSWER- Even if we fix the issues that caused the null requests to be
-			 * generated, there is no guarantee that a null request might not slip into the
-			 * requests in the future do to changes. We should keep this here as a defensive
-			 * measure, because null requests absolutely kill the reindexer. We should also
-			 * should keep the log message so we can go look for what created then null
-			 * request.
-			 */
-			while ( scan_handler.getSimpleBulkRequest().requests().contains(null) )
-			{
-				logger.info("HEY WE HAVE A NULL REQUEST for index: " + index_name);
-				scan_handler.getSimpleBulkRequest().requests().remove(null);
-			}
-
-			logger.info(String.format("Total number of requests to submit for index %s: %d ", index_name, scan_handler.getSimpleBulkRequest().requests().size()));
-
-			// This is a bit quick and dirty.
-			// Elasticsearch's Java High REST Client has a BulkProcessor that can flush the
-			// request based on size (bytes) or time interval. would probably be better but
-			// I think it would require more code re-factoring to use it. -PM
-			if ( !submitBulkRequestsInChunks(scan_handler.getSimpleBulkRequest(), index_name) )
-			{
-				return false;
-			}
+			is_bulk_processor_closed = scan_handler.getSimpleBulkProcessor().awaitClose(SearchSync.MAX_REINDEX_COMPLETION_TIME_MINUTES - 1, TimeUnit.MINUTES);
 		}
 		catch ( Exception e )
 		{
-			logger.error(String.format("Failed to execute bulk reindex upsert for index %s", index_name), e);
+			logger.error("Failure to close bulk ES client for index name " + index_name, e);
+		}
+
+		if ( !is_bulk_processor_closed )
+		{
+			try
+			{
+				scan_handler.getSimpleBulkProcessor().close();
+			}
+			catch ( Exception e2 )
+			{
+				logger.error("2nd failure to close bulk ES client for index name " + index_name, e2);
+			}
+		}
+		logger.info(String.format("Total number of requests successfully submited to index %s: %d. Failures: %d ", index_name, scan_handler.getSimpleSuccessfullyUpsertedDocumentCount(), scan_handler.getSimpleFailedUpsertDocumentCount()));
+
+		if ( scan_handler.hasElasticSearchUpsertFailures() )
+		{
+			logger.error(String.format("Failed to execute bulk reindex upsert for index %s due to failures to upsert", index_name));
 			return false;
 		}
 
-		return true;
-	}
-
-	private boolean submitBulkRequestsInChunks( BulkRequest original_bulk_request, String index_name ) throws Exception
-	{
-		List<DocWriteRequest<?>> subset_of_requests = new LinkedList<>();
-
-		for ( DocWriteRequest<?> write_request : original_bulk_request.requests() )
+		if ( !is_bulk_processor_closed )
 		{
-			subset_of_requests.add(write_request);
-
-			if ( subset_of_requests.size() == MAX_NO_REQUESTS_IN_BULK_REQUEST )
-			{
-				if ( !submitBulkRequest(createBulkRequest(subset_of_requests), index_name) )
-				{
-					return false;
-				}
-
-				subset_of_requests.clear();
-			}
-		}
-
-		if ( !subset_of_requests.isEmpty() )
-		{
-			if ( !submitBulkRequest(createBulkRequest(subset_of_requests), index_name) )
-			{
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	private BulkRequest createBulkRequest( List<DocWriteRequest<?>> write_requests )
-	{
-		BulkRequest bulk_request = new BulkRequest();
-		for ( DocWriteRequest<?> request : write_requests )
-		{
-			bulk_request.add(request);
-		}
-
-		return bulk_request;
-	}
-
-	private boolean submitBulkRequest( BulkRequest bulk_request, String index_name ) throws Exception
-	{
-		logger.debug(String.format("Number of requests in current bulk request for index %s: %d", index_name, bulk_request.requests().size()));
-
-		BulkResponse bulk_response = high_level_rest_client.bulk(bulk_request, RequestOptions.DEFAULT);
-		if ( bulk_response.hasFailures() )
-		{
-			logger.error("Failure for full successful bulk upsert.");
-			for ( BulkItemResponse bulkItemResponse : bulk_response )
-			{
-				if ( bulkItemResponse.isFailed() )
-				{
-					BulkItemResponse.Failure failure = bulkItemResponse.getFailure();
-					logger.error("Failure on bulk upsert occurred with index " + index_name + " id " + bulkItemResponse.getId() + ". Failure msg " + failure.getMessage());
-				}
-			}
-
-			return false;
+			logger.error(String.format("Failed to close bulk processor %s", index_name));
 		}
 
 		return true;
@@ -1103,14 +1045,71 @@ public class ElasticSearchRESTClient implements ISearch
 	 * set our Kind's Indexable to match that of the Object deserialized if not yet
 	 * set. Then attempt to upsert the single Object's search document into Search.
 	 */
-	private class BulkUpsertScanHandler implements StorageKeyHandler
+	private class BulkElasticSearchUpsertScanHandler implements StorageKeyHandler
 	{
 		private String index_name;
-		private Set<IndexRequest> requests = ConcurrentHashMap.newKeySet();
+		private AtomicInteger successful_upsert_document_count = new AtomicInteger();
+		private AtomicInteger failed_upsert_document_count = new AtomicInteger();
 
-		private BulkUpsertScanHandler( String index_name )
+		private BulkProcessor bulk_processor;
+		private AtomicBoolean has_failures = new AtomicBoolean();
+
+		private BulkElasticSearchUpsertScanHandler( String index_name )
 		{
 			this.index_name = index_name;
+			BulkProcessor.Listener listener = createBulkProcessorListener();
+			BulkProcessor.Builder builder = BulkProcessor.builder(( request, bulkListener ) -> high_level_rest_client.bulkAsync(request, RequestOptions.DEFAULT, bulkListener), listener);
+			builder.setBulkActions(MAX_NO_REQUESTS_IN_BULK_REQUEST);
+			builder.setBulkSize(new ByteSizeValue(15L, ByteSizeUnit.MB));
+			this.bulk_processor = builder.build();
+		}
+
+		private BulkProcessor.Listener createBulkProcessorListener()
+		{
+			return new BulkProcessor.Listener()
+			{
+				@Override
+				public void beforeBulk( long executionId, BulkRequest request )
+				{
+
+				}
+
+				// For successful execution only
+				@Override
+				public void afterBulk( long executionId, BulkRequest request, BulkResponse response )
+				{
+					int success_count = 0;
+					int failure_count = 0;
+					for ( BulkItemResponse bulk_item_response : response )
+					{
+						if ( bulk_item_response.isFailed() )
+						{
+							BulkItemResponse.Failure failure = bulk_item_response.getFailure();
+							logger.error("Failure on bulk upsert occurred with index " + index_name + " id " + bulk_item_response.getId() + ". Failure msg " + failure.getMessage());
+							failure_count++;
+						}
+						else
+						{
+							success_count++;
+						}
+					}
+
+					// Update shared variable across threads only once per bulk upsert to reduce
+					// overhead of locking for the atomic variable
+					if ( failure_count != 0 )
+					{
+						failed_upsert_document_count.addAndGet(failure_count);
+					}
+					successful_upsert_document_count.addAndGet(success_count);
+				}
+
+				@Override
+				public void afterBulk( long executionId, BulkRequest request, Throwable failure )
+				{
+					logger.error("Failure for full successful bulk upsert for index name " + index_name, failure);
+					has_failures.set(true);
+				}
+			};
 		}
 
 		@SuppressWarnings("rawtypes")
@@ -1150,10 +1149,10 @@ public class ElasticSearchRESTClient implements ISearch
 			{
 				String document_name = indexable.getSimpleSearchDocumentId().getSimpleValue();
 
-				IndexRequest request = new IndexRequest(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).source(data);
+				IndexRequest request = new IndexRequest(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).source(data).timeout("5m");
 				if ( request != null )
 				{
-					requests.add(request);
+					bulk_processor.add(request);
 				}
 			}
 			catch ( Exception e )
@@ -1162,16 +1161,24 @@ public class ElasticSearchRESTClient implements ISearch
 			}
 		}
 
-		// Meant to be used after the scan completes since we need our set of
-		// IndexRequest to be able to be added in parallel
-		private BulkRequest getSimpleBulkRequest()
+		private boolean hasElasticSearchUpsertFailures()
 		{
-			BulkRequest bulk_request = new BulkRequest();
-			for ( IndexRequest request : requests )
-			{
-				bulk_request.add(request);
-			}
-			return bulk_request;
+			return failed_upsert_document_count.get() != 0;
+		}
+
+		private int getSimpleSuccessfullyUpsertedDocumentCount()
+		{
+			return successful_upsert_document_count.get();
+		}
+
+		private int getSimpleFailedUpsertDocumentCount()
+		{
+			return failed_upsert_document_count.get();
+		}
+
+		private BulkProcessor getSimpleBulkProcessor()
+		{
+			return bulk_processor;
 		}
 	}
 
@@ -1245,7 +1252,7 @@ public class ElasticSearchRESTClient implements ISearch
 		}
 		catch ( Exception e )
 		{
-			logger.error( "Failure during thread pool execution!", e);
+			logger.error("Failure during thread pool execution!", e);
 			return false;
 		}
 
@@ -1270,15 +1277,12 @@ public class ElasticSearchRESTClient implements ISearch
 			{
 				String index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
 				String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
-
-				String request_str = "/" + index_name + "/" + ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE + "/" + document_name;
-
 				IndexRequest request = new IndexRequest(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).source(data).setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
-				IndexResponse response = high_level_rest_client.index(request, RequestOptions.DEFAULT);
+				high_level_rest_client.index(request, RequestOptions.DEFAULT);
 			}
 			catch ( Exception e )
 			{
-				logger.error( "Failure during upsert operation!", e);
+				logger.error("Failure during upsert operation!", e);
 			}
 		}
 	}
