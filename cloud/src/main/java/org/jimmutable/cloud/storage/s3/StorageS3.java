@@ -155,6 +155,16 @@ public class StorageS3 extends Storage
 		return upsert(bucket_name, obj.createStorageKey(), ObjectWriter.serialize(format, obj).getBytes(), true);
 	}
 
+	public boolean upsert( String bucket_name, StorageKey key, Storable obj, Format format )
+	{
+		Validator.notNull(obj);
+
+		if ( isReadOnly() )
+			return false;
+
+		return upsert(bucket_name, key, ObjectWriter.serialize(format, obj).getBytes(), true);
+	}
+
 	// TODO Use hint_content_likely_to_be_compressible to auto-gzip contents. Must
 	// be able to detect dynamically on read.
 	@Override
