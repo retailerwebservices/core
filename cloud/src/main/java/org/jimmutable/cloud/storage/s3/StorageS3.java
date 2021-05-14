@@ -14,6 +14,7 @@ import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.storage.GenericStorageKey;
 import org.jimmutable.cloud.storage.ObjectIdStorageKey;
 import org.jimmutable.cloud.storage.StandardImmutableObjectCache;
+import org.jimmutable.cloud.storage.Storable;
 import org.jimmutable.cloud.storage.Storage;
 import org.jimmutable.cloud.storage.StorageKey;
 import org.jimmutable.cloud.storage.StorageKeyExtension;
@@ -23,6 +24,8 @@ import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
+import org.jimmutable.core.serialization.Format;
+import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.utils.IOUtils;
 //import org.jimmutable.core.utils.IOUtils;
 import org.jimmutable.core.utils.Validator;
@@ -130,6 +133,36 @@ public class StorageS3 extends Storage
 			LOGGER.error("Exception on existance check", e);
 			return default_value;
 		}
+	}
+
+	public boolean upsert( Storable obj, Format format )
+	{
+		Validator.notNull(obj);
+
+		if ( isReadOnly() )
+			return false;
+
+		return upsert(obj.createStorageKey(), ObjectWriter.serialize(format, obj).getBytes(), true);
+	}
+
+	public boolean upsert( String bucket_name, Storable obj, Format format )
+	{
+		Validator.notNull(obj);
+
+		if ( isReadOnly() )
+			return false;
+
+		return upsert(bucket_name, obj.createStorageKey(), ObjectWriter.serialize(format, obj).getBytes(), true);
+	}
+
+	public boolean upsert( String bucket_name, StorageKey key, Storable obj, Format format )
+	{
+		Validator.notNull(obj);
+
+		if ( isReadOnly() )
+			return false;
+
+		return upsert(bucket_name, key, ObjectWriter.serialize(format, obj).getBytes(), true);
 	}
 
 	// TODO Use hint_content_likely_to_be_compressible to auto-gzip contents. Must
