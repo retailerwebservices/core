@@ -97,9 +97,7 @@ public class ElasticSearchRESTClient implements ISearch
 
 	private static final String PRODUCTION_ELASTICSEARCH_USERNAME = "production_elastic_username";
 
-	// This is set to a reasonable limit. I think the actual Elasticsearch limit is
-	// based on memory size.
-	private static final int MAX_NO_REQUESTS_IN_BULK_REQUEST = 3000;
+	private static final int MAX_NO_REQUESTS_IN_BULK_REQUEST = 2000;
 	private static final Logger logger = LoggerFactory.getLogger(ElasticSearchRESTClient.class);
 
 	/**
@@ -1060,7 +1058,6 @@ public class ElasticSearchRESTClient implements ISearch
 			BulkProcessor.Listener listener = createBulkProcessorListener();
 			BulkProcessor.Builder builder = BulkProcessor.builder(( request, bulkListener ) -> high_level_rest_client.bulkAsync(request, RequestOptions.DEFAULT, bulkListener), listener);
 			builder.setBulkActions(MAX_NO_REQUESTS_IN_BULK_REQUEST);
-			builder.setBulkSize(new ByteSizeValue(15L, ByteSizeUnit.MB));
 			this.bulk_processor = builder.build();
 		}
 
