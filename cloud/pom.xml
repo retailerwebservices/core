@@ -3,7 +3,7 @@
 
 	<groupId>org.jimmutable</groupId>
 	<artifactId>cloud</artifactId>
-	<version>0.0.91-SNAPSHOT</version>
+	<version>0.0.92-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>cloud</name>
