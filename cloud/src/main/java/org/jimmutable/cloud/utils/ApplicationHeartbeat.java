@@ -19,15 +19,25 @@ public class ApplicationHeartbeat implements Runnable
 	{
 		this.application_id = application_id;
 		this.application_sub_service_id = application_sub_service_id;
-		runStartbeat();
+		// Kick off the beginning marker
+		sendStartbeat();
+		// Kick off an initial heartbeat
+		sendHeartbeat();
 	}
-	
+
 	/*
 	 * This just gives us a marker for when this application first started
 	 */
-	private void runStartbeat()
+	private void sendStartbeat()
 	{
 		CacheKey application_cache_key = ApplicationHeartbeatUtils.createStartbeatCacheKey(application_id, application_sub_service_id);
+		String current_time = Long.toString(System.currentTimeMillis());
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleCacheService().put(application_cache_key, current_time);
+	}
+
+	private void sendHeartbeat()
+	{
+		CacheKey application_cache_key = ApplicationHeartbeatUtils.createHeartbeatCacheKey(application_id, application_sub_service_id);
 		String current_time = Long.toString(System.currentTimeMillis());
 		CloudExecutionEnvironment.getSimpleCurrent().getSimpleCacheService().put(application_cache_key, current_time);
 	}
@@ -35,9 +45,7 @@ public class ApplicationHeartbeat implements Runnable
 	@Override
 	public void run()
 	{
-		CacheKey application_cache_key = ApplicationHeartbeatUtils.createHeartbeatCacheKey(application_id, application_sub_service_id);
-		String current_time = Long.toString(System.currentTimeMillis());
-		CloudExecutionEnvironment.getSimpleCurrent().getSimpleCacheService().put(application_cache_key, current_time);
+		sendHeartbeat();
 	}
 
 }
