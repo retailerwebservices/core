@@ -42,6 +42,7 @@ public class LowLevelRedisDriver
 	static public final String DEFAULT_HOST = "localhost";
 	static public final int DEFAULT_PORT_REDIS = 6379;
 	static public final Logger logger = LoggerFactory.getLogger(LowLevelRedisDriver.class);
+	static public final int SOCKET_TIMEOUT = 4000;
 	
 	private JedisPool pool;
 	
@@ -65,7 +66,7 @@ public class LowLevelRedisDriver
 		
 		logger.info("[LowLevelRedisDriver.init] starting LowLevelRedisDriver on host: " + host + ", port: " + port);
 		
-		pool = new JedisPool(config, host, port);
+		pool = new JedisPool(config, host, port, SOCKET_TIMEOUT);
 		cache = new RedisCache();
 		queue = new RedisQueue();
 		signal = new RedisSignal();
@@ -364,7 +365,7 @@ public class LowLevelRedisDriver
 						}
 					}
 					
-					cursor = result.getStringCursor();
+					cursor = result.getCursor();
 					if ( cursor.equals("0") ) break;
 				}
 			}
@@ -451,7 +452,14 @@ public class LowLevelRedisDriver
 			{
 				try(Jedis jedis = pool.getResource();)
 				{
-					jedis.publish(getRedisTopicString(app,topic), message.serialize(Format.JSON));
+					try
+					{
+						jedis.publish(getRedisTopicString(app,topic), message.serialize(Format.JSON));
+					}
+					catch(Exception e)
+					{
+						logger.error("Error publishing Signal. Params, app: {} topic: {} message: {}", app, topic, message, e);
+					}
 				}
 			}
 		}
@@ -488,7 +496,7 @@ public class LowLevelRedisDriver
 					}
 					catch(Exception e)
 					{
-						e.printStackTrace();
+						logger.error("Error subscribing to Signal. Params, app: {} topic: {}", app, topic, e);
 					}
 					
 					try { Thread.sleep(1000); } catch(Exception e) {}
@@ -518,7 +526,7 @@ public class LowLevelRedisDriver
 				}
 				catch(Exception e)
 				{
-					e.printStackTrace();
+					logger.error("Error getting message to Subscriber to Signal. message: {}", message, e);
 				}
 			}
 		}
@@ -698,14 +706,12 @@ public class LowLevelRedisDriver
 							try { Thread.sleep(500); } catch(Exception e) {}
 							continue;
 						}
-						else
-						{
-							listener.onMessageReceived(message);
-						}
+						
+						listener.onMessageReceived(message);
 					}
 					catch(Exception e)
 					{
-						e.printStackTrace();
+						logger.error("Error message to listening to Queue.", e);
 					}
 				}
 			}

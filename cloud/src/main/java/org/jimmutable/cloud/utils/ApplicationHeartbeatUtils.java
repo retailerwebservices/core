@@ -1,5 +1,6 @@
 package org.jimmutable.cloud.utils;
 
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -12,7 +13,7 @@ import org.jimmutable.cloud.cache.CacheKey;
 
 public class ApplicationHeartbeatUtils
 {
-	public static final int SECONDS_PER_UPDATE = 10;
+	public static final int SECONDS_PER_UPDATE = 20;
 	private static Logger logger = LoggerFactory.getLogger(ApplicationHeartbeatUtils.class);
 
 	protected static CacheKey createHeartbeatCacheKey( ApplicationId application_id, ApplicationId application_sub_service_id )
@@ -34,8 +35,8 @@ public class ApplicationHeartbeatUtils
 	/*
 	 * Allows user, from any application, to check if any application's sub service
 	 * is up and running. This gives some room for cache misses by only checking if
-	 * we have received a heartbeat in the last 30 seconds. Even though we post
-	 * every 10 seconds.
+	 * we have received a heartbeat in the last x seconds. Even though we post
+	 * every y seconds.
 	 */
 	public static boolean hasHeartbeat( ApplicationId application_id, ApplicationId application_sub_service_id )
 	{
@@ -48,10 +49,10 @@ public class ApplicationHeartbeatUtils
 		}
 
 		long last_heartbeat_timestamp = Long.valueOf(last_heartbeat_timestamp_string);
-		long thirty_seconds_ago = System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(SECONDS_PER_UPDATE * 3);
-		if ( last_heartbeat_timestamp < thirty_seconds_ago )
+		long sixty_seconds_ago = System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(SECONDS_PER_UPDATE * 3);
+		if ( last_heartbeat_timestamp < sixty_seconds_ago )
 		{
-			logger.error(String.format("No submitted heartbeats in the last 30 seconds for application_id:%s and application_sub_service_id:%s", application_id, application_sub_service_id));
+			logger.error(String.format("No submitted heartbeats in the last 60 seconds for application_id:%s and application_sub_service_id:%s", application_id, application_sub_service_id));
 			return false;
 		}
 
@@ -121,10 +122,10 @@ public class ApplicationHeartbeatUtils
 		 * We only want to state an applications run time after it's last reported
 		 * heartbeat has had at least 3 chances to give us its latest heartbeat.
 		 */
-		long thirty_seconds_ago = System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(SECONDS_PER_UPDATE * 3);
-		if ( last_heartbeat.longValue() > thirty_seconds_ago )
+		long sixty_seconds_ago = System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(SECONDS_PER_UPDATE * 3);
+		if ( last_heartbeat.longValue() > sixty_seconds_ago )
 		{
-			logger.error(String.format("Service is likely still running since last heartbeat was less than 30 seconds ago for application_id:%s and application_sub_service_id:%s", application_id, application_sub_service_id));
+			logger.error(String.format("Service is likely still running since last heartbeat was less than 60 seconds ago for application_id:%s and application_sub_service_id:%s", application_id, application_sub_service_id));
 			return on_still_running;
 		}
 
@@ -140,6 +141,11 @@ public class ApplicationHeartbeatUtils
 	{
 		ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 		ApplicationHeartbeat heartbeat_thread = new ApplicationHeartbeat(application_id, application_sub_service_id);
-		scheduler.scheduleAtFixedRate(heartbeat_thread, 0, SECONDS_PER_UPDATE, TimeUnit.MILLISECONDS);
+
+		/*
+		 * Start our heartbeat thread with a random delay so if we have multiple of the
+		 * same service they aren't stepping on each other constantly with heartbeats.
+		 */
+		scheduler.scheduleAtFixedRate(heartbeat_thread, new Random().nextInt(59), SECONDS_PER_UPDATE, TimeUnit.SECONDS);
 	}
 }
