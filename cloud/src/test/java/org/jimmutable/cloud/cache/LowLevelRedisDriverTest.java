@@ -68,46 +68,51 @@ public class LowLevelRedisDriverTest extends StubTest
 		// Test fan out
 		{
 			QueueId queue_id = new QueueId("fan-out-test");
-			
+
 			redis.getSimpleQueue().clear(app, queue_id);
 			assertTrue(redis.getSimpleQueue().getQueueLength(app, queue_id, 0) == 0);
-			
+
 			for ( int i = 0; i < 1_000; i++ )
 				redis.getSimpleQueue().submit(app, queue_id, new StandardMessageOnUpsert(new Kind("foo"), new ObjectId(i)));
-			
+
 			assertTrue(redis.getSimpleQueue().getQueueLength(app, queue_id, 0) == 1_000);
-			
+
 			TestListener one = new TestListener(10);
 			TestListener two = new TestListener(10);
 			TestListener three = new TestListener(10);
 			TestListener four = new TestListener(10);
-			
+
 			redis.getSimpleQueue().startListening(app, queue_id, one, 1);
 			redis.getSimpleQueue().startListening(app, queue_id, two, 1);
 			redis.getSimpleQueue().startListening(app, queue_id, three, 1);
 			redis.getSimpleQueue().startListening(app, queue_id, four, 2);
-			
+
 			System.out.println("Testing fan out");
 			for ( int i = 0; i < 16; i++ )
 			{
-				try { Thread.currentThread().sleep(250); } catch(Exception e) {}
-				
-				System.out.println( 
-							String.format("%d, %d, %d, %d", one.ids.size(), two.ids.size(), three.ids.size(), four.ids.size())
-						);
+				try
+				{
+					Thread.currentThread().sleep(250);
+				}
+				catch ( Exception e )
+				{
+				}
+
+				System.out.println(String.format("%d, %d, %d, %d", one.ids.size(), two.ids.size(), three.ids.size(), four.ids.size()));
 			}
-			
+
 			System.out.println();
-			
+
 			assertTrue(redis.getSimpleQueue().getQueueLength(app, queue_id, 0) == 0);
-			assertTrue(one.ids.size()+two.ids.size()+three.ids.size()+four.ids.size() > 980);
-			
+			assertTrue(one.ids.size() + two.ids.size() + three.ids.size() + four.ids.size() > 980);
+
 			assertTrue(four.ids.size() > one.ids.size());
 			assertTrue(four.ids.size() > two.ids.size());
 			assertTrue(four.ids.size() > three.ids.size());
 		}
-		
-		//Test fan out with blocking work as well as listeners added after work has begun
+
+		// Test fan out with blocking work as well as listeners added after work has
+		// begun
 		{
 			QueueId queue_id = new QueueId("fan-out-blocking-test");
 
@@ -132,7 +137,7 @@ public class LowLevelRedisDriverTest extends StubTest
 			{
 				e1.printStackTrace();
 			}
-			
+
 			BlockingTestListener three = new BlockingTestListener(200);
 			BlockingTestListener four = new BlockingTestListener(200);
 			System.out.println("Work waiting on queue " + redis.getSimpleQueue().getQueueLength(app, queue_id, 0));
@@ -163,8 +168,7 @@ public class LowLevelRedisDriverTest extends StubTest
 			assertTrue(three.ids.size() < two.ids.size());
 
 		}
-		
-		
+
 	}
 
 	@Test
@@ -212,13 +216,13 @@ public class LowLevelRedisDriverTest extends StubTest
 		assertTrue(listener2.ids.contains(new ObjectId(2)));
 		assertTrue(listener2.ids.contains(new ObjectId(10)));
 	}
-	
+
 	static private class BlockingTestListener implements SignalListener, QueueListener
 	{
 		private Set<ObjectId> ids = new ConcurrentHashSet<>();
-		
+
 		private AtomicInteger currently_working = new AtomicInteger();
-		
+
 		private long sleep_time;
 
 		public BlockingTestListener( long sleep_time )
@@ -236,12 +240,12 @@ public class LowLevelRedisDriverTest extends StubTest
 
 			while ( currently_working.get() > 5 )
 			{
-				//System.out.println(ids.size());
-				//System.out.println("STUCK!");
+				// System.out.println(ids.size());
+				// System.out.println("STUCK!");
 			}
-			
+
 			currently_working.getAndIncrement();
-			
+
 			ids.add(upsert_message.getSimpleObjectId());
 
 			if ( sleep_time > 0 )
@@ -252,7 +256,7 @@ public class LowLevelRedisDriverTest extends StubTest
 				catch ( Exception e )
 				{
 				}
-			
+
 			currently_working.getAndDecrement();
 		}
 	}
@@ -260,7 +264,7 @@ public class LowLevelRedisDriverTest extends StubTest
 	static private class TestListener implements SignalListener, QueueListener
 	{
 		private Set<ObjectId> ids = new HashSet();
-		
+
 		private long sleep_time;
 
 		public TestListener( long sleep_time )
@@ -275,7 +279,7 @@ public class LowLevelRedisDriverTest extends StubTest
 				return;
 
 			StandardMessageOnUpsert upsert_message = (StandardMessageOnUpsert) message;
-			
+
 			ids.add(upsert_message.getSimpleObjectId());
 
 			if ( sleep_time > 0 )
@@ -286,7 +290,7 @@ public class LowLevelRedisDriverTest extends StubTest
 				catch ( Exception e )
 				{
 				}
-			
+
 		}
 	}
 
@@ -422,8 +426,19 @@ public class LowLevelRedisDriverTest extends StubTest
 			redis.getSimpleCache().scan(app, new CacheKey("scan-test://"), op);
 
 			assertTrue(op.keys.size() == scan_test.size());
-
 			assertTrue(op.keys.containsAll(scan_test));
+
+			// Confirm they all have been deleted so the next test is clean and we can
+			// confirm our deletion logic works
+			for ( int i = 0; i < 10_000; i++ )
+			{
+				CacheKey key = new CacheKey("scan-test://" + i);
+				redis.getSimpleCache().delete(app, key);
+			}
+
+			op = new AccumulateKeyScanOp();
+			redis.getSimpleCache().scan(app, new CacheKey("scan-test://"), op);
+			assertTrue(op.keys.isEmpty());
 		}
 
 		// Test that a key actually expires

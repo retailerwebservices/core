@@ -40,7 +40,7 @@ public class StandardImmutableObjectCache
 		this.max_allowed_entry_age_in_ms = max_allowed_entry_age_in_ms;
 		this.topic_id = new SignalTopicId(prefix);
 		this.is_cache_disabled = is_cache_disabled;
-		
+
 		logger.info(String.format("Starting up with StandardImmutableObjectCache set to be %s", (this.is_cache_disabled ? "disabled" : "enabled")));
 	}
 
@@ -78,20 +78,26 @@ public class StandardImmutableObjectCache
 		return is_cache_disabled;
 	}
 
+	// Disabled while troubleshooting issues with our Signal service 5/21/21.
 	public void createListeners()
 	{
-		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSignalService().startListening(this.topic_id, new CacheEventListener());
+		// CloudExecutionEnvironment.getSimpleCurrent().getSimpleSignalService().startListening(this.topic_id,
+		// new CacheEventListener());
 	}
 
+	// Disabled while troubleshooting issues with our Signal service 5/21/21.
 	private void createAndSendEvent( CacheActivity activity, CacheMetric metric, CacheKey key )
 	{
-		Builder b = new Builder(CacheEvent.TYPE_NAME);
-		b.set(CacheEvent.FIELD_ACTIVITY, activity);
-		b.set(CacheEvent.FIELD_METRIC, metric);
-		b.set(CacheEvent.FIELD_KEY, key);
-		b.set(CacheEvent.FIELD_TIMESTAMP, System.currentTimeMillis());
-		CacheEvent cache_event = b.create();
-		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSignalService().sendAsync(topic_id, cache_event);
+
+		// Builder b = new Builder(CacheEvent.TYPE_NAME);
+		// b.set(CacheEvent.FIELD_ACTIVITY, activity);
+		// b.set(CacheEvent.FIELD_METRIC, metric);
+		// b.set(CacheEvent.FIELD_KEY, key);
+		// b.set(CacheEvent.FIELD_TIMESTAMP, System.currentTimeMillis());
+		// CacheEvent cache_event = b.create();
+		//
+		// CloudExecutionEnvironment.getSimpleCurrent().getSimpleSignalService().sendAsync(topic_id,
+		// cache_event);
 	}
 
 	public void put( Kind kind, ObjectId id, StandardImmutableObject object )
