@@ -111,16 +111,16 @@ public abstract class SearchSync
 		}
 		logger.info("Success checking that all indices are properly configured...");
 		logger.info("Reindexing of Kinds started...");
-		// We want a single thread per 1/3 the kinds to ensure some form of stability
+		// We want a single thread per 1/4 the kinds to ensure some form of stability
 		// with elastic search
 		int executor_threads = getSimpleKindsToReindex().size();
-		if ( executor_threads <= 3 )
+		if ( executor_threads <= 4 )
 		{
-			executor_threads = 1;
+			executor_threads = 2;
 		}
 		else
 		{
-			executor_threads /= 3;
+			executor_threads /= 4;
 		}
 
 		ExecutorService executor = Executors.newFixedThreadPool(executor_threads);
