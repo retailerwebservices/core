@@ -2,8 +2,6 @@ package org.jimmutable.cloud.elasticsearch;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -55,8 +53,6 @@ import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.unit.ByteSizeUnit;
-import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryShardException;
@@ -424,7 +420,22 @@ public class ElasticSearchRESTClient implements ISearch
 			String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
 
 			IndexRequest request = new IndexRequest(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).source(data).setRefreshPolicy(refresh_policy);
-			IndexResponse response = high_level_rest_client.index(request, RequestOptions.DEFAULT);
+			IndexResponse response = null;
+			try
+			{
+				response = high_level_rest_client.index(request, RequestOptions.DEFAULT);
+			}
+			catch ( Exception e )
+			{
+				logger.error("Failed to Index!", e);
+				return false;
+			}
+
+			if ( response == null )
+			{
+				logger.error("Failed to Index!");
+				return false;
+			}
 
 			// Expected results, otherwise log an error
 			if ( response.getResult() != Result.CREATED && response.getResult() != Result.UPDATED )
