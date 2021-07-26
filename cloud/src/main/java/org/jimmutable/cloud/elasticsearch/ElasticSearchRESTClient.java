@@ -427,13 +427,13 @@ public class ElasticSearchRESTClient implements ISearch
 			}
 			catch ( Exception e )
 			{
-				logger.error("Failed to Index!", e);
+				logger.error("Exception thrown deleting index while upserting", e);
 				return false;
 			}
 
 			if ( response == null )
 			{
-				logger.error("Failed to Index!");
+				logger.error("Response was null from index while upserting");
 				return false;
 			}
 
@@ -574,11 +574,12 @@ public class ElasticSearchRESTClient implements ISearch
 	private boolean updateAlias( SearchIndexDefinition definition, String index_name )
 	{
 		Set<String> old_indices = getCurrentIndiciesFromAliasNameComplex(definition.getSimpleIndex().getSimpleValue(), null);
-		if(old_indices == null)
+		if ( old_indices == null )
 		{
 			logger.error(String.format("Old aliases not found for index name %s. Should always have index created by startup process. Not reindexing.", index_name));
-			//Something went wrong with the request. In the past this has been caused by ES being under high load and returning the wrong values:
-			//https://stackoverflow.com/questions/49054451/atomic-alias-swap-fails-with-index-not-found-exception-on-a-totally-unrelated-in
+			// Something went wrong with the request. In the past this has been caused by ES
+			// being under high load and returning the wrong values:
+			// https://stackoverflow.com/questions/49054451/atomic-alias-swap-fails-with-index-not-found-exception-on-a-totally-unrelated-in
 			return false;
 		}
 
