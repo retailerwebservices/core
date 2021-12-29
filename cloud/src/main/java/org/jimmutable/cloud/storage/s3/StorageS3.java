@@ -3,6 +3,7 @@ package org.jimmutable.cloud.storage.s3;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -66,7 +67,8 @@ public class StorageS3 extends Storage
 	{
 		super(is_read_only);
 
-		bucket_name = BUCKET_NAME_PREFIX + application_id;
+		bucket_name = BUCKET_NAME_PREFIX
+				+ application_id;
 
 		Validator.notNull(client_factory);
 		client = client_factory.create();
@@ -78,7 +80,8 @@ public class StorageS3 extends Storage
 	{
 		super(is_read_only, cache);
 
-		bucket_name = BUCKET_NAME_PREFIX + application_id;
+		bucket_name = BUCKET_NAME_PREFIX
+				+ application_id;
 
 		Validator.notNull(client_factory);
 		client = client_factory.create();
@@ -100,14 +103,16 @@ public class StorageS3 extends Storage
 	{
 		if ( !client.doesBucketExist(bucket_name) )
 		{
-			LOGGER.info("creating bucket: " + bucket_name);
+			LOGGER.info("creating bucket: "
+					+ bucket_name);
 
 			CreateBucketRequest request = new CreateBucketRequest(bucket_name, RegionSpecificAmazonS3ClientFactory.DEFAULT_REGION);
 			client.createBucket(request);
 		}
 		else
 		{
-			LOGGER.info("using storage bucket: " + bucket_name);
+			LOGGER.info("using storage bucket: "
+					+ bucket_name);
 		}
 	}
 
@@ -217,13 +222,16 @@ public class StorageS3 extends Storage
 		if ( isReadOnly() )
 			return false;
 
-		final String log_prefix = "[upsert(" + key + ")] ";
+		final String log_prefix = "[upsert("
+				+ key
+				+ ")] ";
 		File temp = null;
 		try
 		{
 			temp = File.createTempFile("storage_s3_", null);
 
-			LOGGER.debug(log_prefix + "Writing source to temp file");
+			LOGGER.debug(log_prefix
+					+ "Writing source to temp file");
 			try ( OutputStream fout = new BufferedOutputStream(new FileOutputStream(temp)) )
 			{
 				IOUtils.transferAllBytes(source, fout);
@@ -237,11 +245,15 @@ public class StorageS3 extends Storage
 			{
 				upload = transfer_manager.upload(bucket_name, s3_key, temp);
 
-				LOGGER.info(log_prefix + "Upload: " + upload.getDescription());
+				LOGGER.info(log_prefix
+						+ "Upload: "
+						+ upload.getDescription());
 
 				while ( !upload.isDone() )
 				{
-					LOGGER.debug(log_prefix + "Progress: " + upload.getProgress().getPercentTransferred());
+					LOGGER.debug(log_prefix
+							+ "Progress: "
+							+ upload.getProgress().getPercentTransferred());
 					try
 					{
 						Thread.sleep(TRANSFER_MANAGER_POLLING_INTERVAL_MS);
@@ -251,10 +263,12 @@ public class StorageS3 extends Storage
 					} // give progress updates every .5 sec
 				}
 
-				LOGGER.debug(log_prefix + "Progress: " + upload.getProgress().getPercentTransferred()); // give the 100
-																										// percent
-																										// before
-																										// exiting
+				LOGGER.debug(log_prefix
+						+ "Progress: "
+						+ upload.getProgress().getPercentTransferred()); // give the 100
+																			// percent
+																			// before
+																			// exiting
 
 				boolean result = TransferState.Completed == upload.getState();
 				if ( result && isCacheEnabled() )
@@ -391,7 +405,8 @@ public class StorageS3 extends Storage
 		{
 			s3_obj = client.getObject(new GetObjectRequest(bucket_name, key.toString()));
 			org.apache.commons.io.IOUtils.copy(s3_obj.getObjectContent(), sink);
-			LOGGER.debug(String.format("Took %d millis", System.currentTimeMillis() - start));
+			LOGGER.debug(String.format("Took %d millis", System.currentTimeMillis()
+					- start));
 			return true;
 		}
 		catch ( Exception e )
@@ -404,9 +419,10 @@ public class StorageS3 extends Storage
 			{
 				try
 				{
+					com.amazonaws.util.IOUtils.drainInputStream(s3_obj.getObjectContent());
 					s3_obj.close();
 				}
-				catch ( IOException e )
+				catch ( Exception e )
 				{
 					LOGGER.error(String.format("Failed to close S3Object when reading %s!", key.toString()), e);
 				}
@@ -435,7 +451,9 @@ public class StorageS3 extends Storage
 		long start = System.currentTimeMillis();
 		Validator.notNull(key, sink);
 
-		final String log_prefix = "[getCurrentVersion(" + key + ")] ";
+		final String log_prefix = "[getCurrentVersion("
+				+ key
+				+ ")] ";
 
 		File temp = null;
 		try
@@ -448,11 +466,15 @@ public class StorageS3 extends Storage
 			{
 				download = transfer_manager.download(bucket_name, s3_key, temp);
 
-				LOGGER.debug(log_prefix + "Download: " + download.getDescription());
+				LOGGER.debug(log_prefix
+						+ "Download: "
+						+ download.getDescription());
 
 				while ( !download.isDone() )
 				{
-					LOGGER.debug(log_prefix + "Progress: " + download.getProgress().getPercentTransferred());
+					LOGGER.debug(log_prefix
+							+ "Progress: "
+							+ download.getProgress().getPercentTransferred());
 					try
 					{
 						Thread.sleep(TRANSFER_MANAGER_POLLING_INTERVAL_MS);
@@ -465,7 +487,9 @@ public class StorageS3 extends Storage
 				/*
 				 * give the 100 percent before exiting
 				 */
-				LOGGER.info(log_prefix + "Progress: " + download.getProgress().getPercentTransferred());
+				LOGGER.info(log_prefix
+						+ "Progress: "
+						+ download.getProgress().getPercentTransferred());
 			}
 			catch ( Exception e )
 			{
@@ -475,14 +499,16 @@ public class StorageS3 extends Storage
 				return false;
 			}
 
-			LOGGER.debug(log_prefix + "Writing temp file to sink");
+			LOGGER.debug(log_prefix
+					+ "Writing temp file to sink");
 			try ( InputStream fin = new BufferedInputStream(new FileInputStream(temp)) )
 			{
 				IOUtils.transferAllBytes(fin, sink);
 			}
 			boolean completed = TransferState.Completed == download.getState();
 
-			LOGGER.debug(String.format("Took %d millis", System.currentTimeMillis() - start));
+			LOGGER.debug(String.format("Took %d millis", System.currentTimeMillis()
+					- start));
 			deleteTempFile(temp);
 			return completed;
 		}
@@ -601,10 +627,12 @@ public class StorageS3 extends Storage
 
 			if ( hasPrefix() )
 			{
-				root += "/" + getOptionalPrefix(null);
+				root += "/"
+						+ getOptionalPrefix(null);
 			}
 
-			ListObjectsRequest request = new ListObjectsRequest(bucket_name, root + "/", null, null, -1);
+			ListObjectsRequest request = new ListObjectsRequest(bucket_name, root
+					+ "/", null, null, -1);
 
 			while ( true )
 			{
@@ -615,8 +643,9 @@ public class StorageS3 extends Storage
 				for ( S3ObjectSummary summary : object_listing.getObjectSummaries() )
 				{
 					final String key = summary.getKey(); // The full S3 key, also the StorageKey
-					final String full_key_name = key.substring(root.length() + 1); // The "filename" without the
-																					// backslash
+					final String full_key_name = key.substring(root.length()
+							+ 1); // The "filename" without the
+									// backslash
 					// This would be the folder of the Kind we are looking at
 					if ( full_key_name.isEmpty() )
 						continue;
