@@ -1,7 +1,8 @@
 package org.jimmutable.cloud.logging;
 
-import org.apache.logging.log4j.Level;
+//import org.apache.logging.log4j.Level;
 import org.jimmutable.core.exceptions.ValidationException;
+import org.slf4j.event.Level;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -39,7 +40,7 @@ public class LogLevelTest extends TestCase
     	//From string for all level values
     	for(Level entry : Level.values())
     	{
-        	assertToString(entry.name(), entry.name(),Level.getLevel(entry.name()));
+        	assertToString(entry.name(), entry.name(), Level.valueOf(entry.name()));
     	}
     }
     

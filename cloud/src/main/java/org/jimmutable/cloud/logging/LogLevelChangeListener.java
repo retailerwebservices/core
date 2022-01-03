@@ -11,7 +11,8 @@ public class LogLevelChangeListener implements SignalListener
 		if ( message instanceof LogLevelMessageOnChange )
 		{
 			LogLevelMessageOnChange log_level_message = (LogLevelMessageOnChange) message;
-			Log4jUtil.setAllLoggerLevels(log_level_message.getSimpleLogLevel().getSimpleLevel());
+//			Log4jUtil.setAllLoggerLevels(log_level_message.getSimpleLogLevel().getSimpleLevel());
+			Slf4jUtil.setAllLoggerLevels(log_level_message.getSimpleLogLevel().getSimpleLevel());
 		}
 	}
 

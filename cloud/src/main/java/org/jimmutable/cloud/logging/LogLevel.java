@@ -1,9 +1,9 @@
 package org.jimmutable.cloud.logging;
 
-import org.apache.logging.log4j.Level;
 import org.jimmutable.core.exceptions.ValidationException;
 import org.jimmutable.core.objects.Stringable;
 import org.jimmutable.core.utils.Validator;
+import org.slf4j.event.Level;
 
 /**
  * This is just a wrapper for log4j.Level that extends StandardObject to match
@@ -26,6 +26,7 @@ public class LogLevel extends Stringable
 	public void normalize()
 	{
 		normalizeTrim();
+		normalizeUpperCase();
 	}
 
 	@Override
@@ -33,11 +34,20 @@ public class LogLevel extends Stringable
 	{
 		Validator.notNull(getSimpleValue());
 		
-		Level cur_level = Level.toLevel(getSimpleValue(), null);
-		if (cur_level == null)
+//		org.apache.logging.log4j.Level.toLevel(getSimpleValue(), null);
+		Level cur_level = null;
+		try
 		{
-			throw new ValidationException(String.format("Could not convert log level " + getSimpleValue() + " to a valid log4j Level"));
+			 cur_level = Level.valueOf(getSimpleValue());
 		}
+		catch (Exception e)
+		{
+			throw new ValidationException(String.format("Could not convert log level " + getSimpleValue() + " to a valid Logging Level"));
+		}
+//		if (cur_level == null)
+//		{
+//			throw new ValidationException(String.format("Could not convert log level " + getSimpleValue() + " to a valid Logging Level"));
+//		}
 		
 		this.level = cur_level;
 	}

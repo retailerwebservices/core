@@ -1,12 +1,14 @@
 package org.jimmutable.cloud.logging;
 
-import org.apache.logging.log4j.Level;
+//import org.apache.logging.log4j.Level;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 import org.slf4j.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.selector.BasicContextSelector;
+//import org.apache.logging.log4j.Level;
+//import org.apache.logging.log4j.core.LoggerContext;
+//import org.apache.logging.log4j.core.config.Configuration;
+//import org.apache.logging.log4j.core.config.Configurator;
+//import org.apache.logging.log4j.core.selector.BasicContextSelector;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.messaging.signal.SignalTopicId;
 import org.jimmutable.cloud.storage.UpsertListener;
@@ -19,6 +21,7 @@ import org.jimmutable.core.utils.Validator;
  * @author trevorbox
  *
  */
+@Deprecated
 public class Log4jUtil
 {
 
