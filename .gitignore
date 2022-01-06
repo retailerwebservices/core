@@ -32,3 +32,5 @@ app_engine_example/WEB-INF/appengine-generated/indexes/dGVzdA/ZGV2LWluZGV4..P
 jimmutable-log4j2.properties
 *.class
 cloud/target/
+.classpath
+org.eclipse.jdt.core.prefs
