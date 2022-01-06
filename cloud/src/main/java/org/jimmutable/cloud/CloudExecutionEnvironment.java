@@ -5,7 +5,6 @@ import java.net.UnknownHostException;
 
 //import org.apache.logging.log4j.Level;
 import org.slf4j.LoggerFactory;
-import org.slf4j.event.Level;
 import org.slf4j.Logger;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
@@ -22,8 +21,6 @@ import org.jimmutable.cloud.elasticsearch.StubSearch;
 import org.jimmutable.cloud.email.EmailStub;
 import org.jimmutable.cloud.email.IEmail;
 import org.jimmutable.cloud.email.SESClient;
-import org.jimmutable.cloud.logging.Log4jUtil;
-import org.jimmutable.cloud.logging.Slf4jUtil;
 import org.jimmutable.cloud.messaging.queue.IQueue;
 import org.jimmutable.cloud.messaging.queue.QueueRedis;
 import org.jimmutable.cloud.messaging.queue.QueueStub;
@@ -60,10 +57,7 @@ public class CloudExecutionEnvironment
 
 	// System properties
 	private static final String ENV_TYPE_VARIABLE_NAME = "JIMMUTABLE_ENV_TYPE";
-	private static final String ENV_LOGGING_LEVEL = "JIMMUTABLE_LOGGING_LEVEL";
 	private static final String DISABLE_STANDARD_IMMUTABLE_OBJECT_CACHE = "DISABLE_STANDARD_IMMUTABLE_OBJECT_CACHE";
-
-	private static final Level DEFAULT_LEVEL = Level.INFO;
 
 	private static EnvironmentType ENV_TYPE;
 	private static ApplicationId APPLICATION_ID;
@@ -204,21 +198,6 @@ public class CloudExecutionEnvironment
 		APPLICATION_ID = application_id;
 		APPLICATION_SUB_SERVICE_ID = application_sub_service_id;
 		validate();
-
-		// setup the logging level programmatically
-//		Level level = Level.toLevel(System.getProperty(ENV_LOGGING_LEVEL), DEFAULT_LEVEL);
-		Level level = null;
-		try
-		{
-			level = Level.valueOf(System.getProperty(ENV_LOGGING_LEVEL));
-		}
-		catch (Exception e)
-		{
-			level = DEFAULT_LEVEL;
-		}
-//		Log4jUtil.setAllLoggerLevels(level);
-		Slf4jUtil.setAllLoggerLevels(level);
-		logger.trace(String.format("Logging level: %s", level));
 
 		logger.info(String.format("ApplicationID=%s APPLICATION_SUB_SERVICE_ID:%s Environment=%s", APPLICATION_ID, APPLICATION_SUB_SERVICE_ID, ENV_TYPE));
 
