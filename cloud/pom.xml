@@ -142,6 +142,12 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.30</version>
 		</dependency>
+		<!-- needed for Elasticsearch, this does not open us up to log4j vulnerabilities since we use Logback as noted here: https://www.slf4j.org/log4shell.html -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-to-slf4j</artifactId>
+			<version>2.17.1</version>
+		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
@@ -197,11 +203,8 @@
 			<version>${jetty.version}</version>
 		</dependency>
 		<!-- LOGGING DEPENDENCIES -->
-		<!-- <dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-api</artifactId>
-			<version>${log4j.version}</version>
-		</dependency> -->
+		<!-- <dependency> <groupId>org.apache.logging.log4j</groupId> <artifactId>log4j-api</artifactId> 
+			<version>${log4j.version}</version> </dependency> -->
 		<dependency>
 			<groupId>commons-fileupload</groupId>
 			<artifactId>commons-fileupload</artifactId>
@@ -215,7 +218,7 @@
 		</dependency>
 	</dependencies>
 
-	
+
 
 	<reporting>
 		<plugins>
@@ -234,8 +237,8 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-        		<artifactId>maven-dependency-plugin</artifactId>
-        		<version>3.2.0</version>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.2.0</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
