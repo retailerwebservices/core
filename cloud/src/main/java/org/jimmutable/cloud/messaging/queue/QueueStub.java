@@ -31,7 +31,7 @@ public class QueueStub implements IQueue
 	}
 
 	@Override
-	public void clearLowLevelRedisDriver( QueueId queue_id, int default_value )
+	public void clearLowLevelRedisDriver( QueueId queue_id )
 	{
 		throw new RuntimeException(ERROR_MESSAGE);
 

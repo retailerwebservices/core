@@ -76,5 +76,5 @@ public interface IQueue
 	 * @param queue_id
 	 * @param default_value
 	 */
-	public void clearLowLevelRedisDriver( QueueId queue_id, int default_value );
+	public void clearLowLevelRedisDriver( QueueId queue_id );
 }

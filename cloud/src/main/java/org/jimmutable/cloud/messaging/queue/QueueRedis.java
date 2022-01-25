@@ -68,7 +68,7 @@ public class QueueRedis implements IQueue
 		return redis.getSimpleQueue().getQueueLength(app, queue_id, default_value);
 	}
 
-	public void clearLowLevelRedisDriver( QueueId queue_id, int default_value )
+	public void clearLowLevelRedisDriver( QueueId queue_id )
 	{
 		redis.getSimpleQueue().clear(app, queue_id);
 	}
