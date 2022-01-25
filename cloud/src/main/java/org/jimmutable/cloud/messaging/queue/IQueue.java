@@ -35,8 +35,8 @@ public interface IQueue
 	 *            The message to send. A null message does nothing.
 	 */
 	@SuppressWarnings("rawtypes")
-    public void submitAsync(QueueId queue, StandardObject message);
-	
+	public void submitAsync( QueueId queue, StandardObject message );
+
 	/**
 	 * Submit a message to the specified queue. Function does not return until the
 	 * message has been sent or an error occurs.
@@ -49,8 +49,8 @@ public interface IQueue
 	 * @return True if the message was submitted without error, false otherwise
 	 */
 	@SuppressWarnings("rawtypes")
-    public boolean submit(QueueId queue, StandardObject message);
-	
+	public boolean submit( QueueId queue, StandardObject message );
+
 	/**
 	 * Start listening for messages on a specified queue
 	 * 
@@ -62,12 +62,19 @@ public interface IQueue
 	 *            The number of worker threads to process messages with
 	 */
 	/*
-     * CODEREVIEW
-     * So Queue will manage the underlying thread pool?
-     * If so, that's fine, but it should be explicit.
-     * -JMD
+	 * CODEREVIEW So Queue will manage the underlying thread pool? If so, that's
+	 * fine, but it should be explicit. -JMD
 	 */
-	public void startListening(QueueId queue, QueueListener listener, int number_of_worker_threads);
-	
-	public int getLength(QueueId queue_id, int default_value);
+	public void startListening( QueueId queue, QueueListener listener, int number_of_worker_threads );
+
+	public int getLength( QueueId queue_id, int default_value );
+
+	/**
+	 * ONLY TO BE USED IN EMERGENCIES This method exists in the case that we need to
+	 * clear the redis queue because it is hung up.
+	 * 
+	 * @param queue_id
+	 * @param default_value
+	 */
+	public void clearLowLevelRedisDriver( QueueId queue_id, int default_value );
 }
