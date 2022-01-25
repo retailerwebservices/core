@@ -5,7 +5,7 @@
 
 	<groupId>org.jimmutable</groupId>
 	<artifactId>cloud</artifactId>
-	<version>0.0.98-SNAPSHOT</version>
+	<version>0.0.99-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>cloud</name>
@@ -51,7 +51,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<elasticsearch.version>7.11.2</elasticsearch.version>
+		<elasticsearch.version>7.16.2</elasticsearch.version>
 		<log4j.version>2.15.0</log4j.version>
 		<skipITs>true</skipITs>
 		<jetty.version>9.4.38.v20210224</jetty.version>
@@ -135,11 +135,7 @@
 			<artifactId>transport</artifactId>
 			<version>${elasticsearch.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-core</artifactId>
-			<version>${log4j.version}</version>
-		</dependency>
+
 
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -151,11 +147,7 @@
 			<artifactId>logback-classic</artifactId>
 			<version>1.2.3</version>
 		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>log4j-over-slf4j</artifactId>
-			<version>1.7.30</version>
-		</dependency>
+
 
 		<!-- END elasticsearch dependencies -->
 		<dependency>
@@ -205,11 +197,11 @@
 			<version>${jetty.version}</version>
 		</dependency>
 		<!-- LOGGING DEPENDENCIES -->
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
 			<version>${log4j.version}</version>
-		</dependency>
+		</dependency> -->
 		<dependency>
 			<groupId>commons-fileupload</groupId>
 			<artifactId>commons-fileupload</artifactId>
@@ -240,6 +232,11 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+        		<artifactId>maven-dependency-plugin</artifactId>
+        		<version>3.2.0</version>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
