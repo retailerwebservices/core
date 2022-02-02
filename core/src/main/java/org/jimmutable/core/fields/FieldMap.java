@@ -176,6 +176,14 @@ abstract public class FieldMap<K,V> implements Map<K,V>, Field
 		
 		return entrySet().equals(other.entrySet());
 	}
+
+	@Override
+    public int hashCode() {
+        int h = 0;
+        for (Entry<K, V> entry : entrySet())
+            h += entry.hashCode();
+        return h;
+    }
 	
 	@Override
 	public String toString() 
