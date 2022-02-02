@@ -3,7 +3,7 @@
 
 	<groupId>org.jimmutable</groupId>
 	<artifactId>cloud</artifactId>
-	<version>0.0.100-SNAPSHOT</version>
+	<version>0.0.102-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>cloud</name>
@@ -77,7 +77,7 @@
 		<dependency>
 			<groupId>org.jimmutable</groupId>
 			<artifactId>core</artifactId>
-			<version>0.0.14</version>
+			<version>0.0.15</version>
 		</dependency>
 
 		<!--Version number is defined by aws-java-sdk-bom -->
