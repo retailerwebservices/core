@@ -102,7 +102,7 @@ public abstract class Storage implements IStorage
 	{
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		OutputStream out = new IOUtils.LimitBytesOutputStream(bytes, MAX_TRANSFER_BYTES_IN_BYTES);
-		if ( isCacheEnabled() )
+		if ( isCacheEnabled() && !cache.isExcluded(cache.createCacheKey(key)) )
 		{
 
 			byte[] byte_information = cache.get(cache.createCacheKey(key), default_value);
@@ -116,17 +116,20 @@ public abstract class Storage implements IStorage
 
 		if ( result )
 		{
-			try
+			if ( isCacheEnabled() && !cache.isExcluded(cache.createCacheKey(key)) )
 			{
-				StandardObject deserialize = StandardObject.deserialize(new String(bytes.toByteArray(), "UTF8"));
-				if ( deserialize instanceof StandardImmutableObject )
+				try
 				{
-					addToStandardImmutableObjectCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()), (StandardImmutableObject) deserialize);
+					StandardObject deserialize = StandardObject.deserialize(new String(bytes.toByteArray(), "UTF8"));
+					if ( deserialize instanceof StandardImmutableObject )
+					{
+						addToStandardImmutableObjectCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()), (StandardImmutableObject) deserialize);
+					}
 				}
-			}
-			catch ( Exception e )
-			{
-				LOGGER.error("Failure to make into a StandardImmutableObject " + key.toString() + ". This object is not in the cache.", e);
+				catch ( Exception e )
+				{
+					LOGGER.error("Failure to make into a StandardImmutableObject " + key.toString() + ". This object is not in the cache.", e);
+				}
 			}
 			return bytes.toByteArray();
 		}
@@ -235,7 +238,7 @@ public abstract class Storage implements IStorage
 			cache.put(cache.createCacheKey(kind, id), object);
 		}
 	}
-	
+
 	protected void removeFromCache( Kind kind, ObjectId id )// - calls cache.remove if isCacheEnabled() is true.
 	{
 		if ( isCacheEnabled() )
