@@ -54,7 +54,7 @@ public class StandardImmutableObjectCache
 		kind_exclusions.remove(kind.getSimpleValue());
 	}
 
-	private boolean isExcluded( CacheKey key )
+	public boolean isExcluded( CacheKey key )
 	{
 		if ( key == null )
 		{
