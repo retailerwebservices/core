@@ -87,6 +87,14 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 
 	}
 
+	/*
+	 * ALERT ONLY FOR MODELMAPPER!
+	 */
+	public StandardChangeLogEntry()
+	{
+
+	}
+
 	public StandardChangeLogEntry( ObjectId id, ObjectReference subject, long timestamp, ObjectId change_made_by_user_id, String short_description, String comments, FieldList<ObjectId> attachments, String before, String after )
 	{
 		this.id = id;
