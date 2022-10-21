@@ -14,6 +14,7 @@ public enum EnvironmentType implements StandardEnum
 {
 
 	DEV("dev"),
+	INTEGRATION("integration"),
 	STAGING("staging"),
 	PRODUCTION("production"),
 	UNKNOWN("unknown"),

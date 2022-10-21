@@ -37,21 +37,25 @@ public class StorageDevLocalFileSystem extends Storage
 
 	public StorageDevLocalFileSystem( boolean is_readonly, ApplicationId applicationId )
 	{
-		super(is_readonly);
-		root = new File(System.getProperty("user.home") + "/jimmutable_dev/" + applicationId);
+		this(is_readonly, applicationId, System.getProperty("user.home"), null);
 	}
 
 	public StorageDevLocalFileSystem( boolean is_readonly, ApplicationId applicationId, StandardImmutableObjectCache cache )
 	{
+		this(is_readonly, applicationId, System.getProperty("user.home"), cache);
+	}
+
+	public StorageDevLocalFileSystem( boolean is_readonly, ApplicationId applicationId, String user_home, StandardImmutableObjectCache cache )
+	{
 		super(is_readonly, cache);
-		root = new File(System.getProperty("user.home") + "/jimmutable_dev/" + applicationId);
+		root = new File(user_home + "/jimmutable_dev/" + applicationId);
 	}
 
 	/**
 	 * @param key
-	 *            of the Storable object that we are looking for.
+	 *                          of the Storable object that we are looking for.
 	 * @param default_value
-	 *            to be returned if object is not found
+	 *                          to be returned if object is not found
 	 * @return true if object is found, else Default_value
 	 */
 	@Override
@@ -100,7 +104,8 @@ public class StorageDevLocalFileSystem extends Storage
 		if ( isCacheEnabled() )
 		{
 			byte[] object = getComplexCurrentVersionFromCache(key, null);
-			if (object!=null) {
+			if ( object != null )
+			{
 				try
 				{
 					IOUtils.transferAllBytes(new ByteArrayInputStream(object), sink);
@@ -108,7 +113,7 @@ public class StorageDevLocalFileSystem extends Storage
 				}
 				catch ( IOException e )
 				{
-					//we do not return false here because we want to try to get it from storage. 
+					// we do not return false here because we want to try to get it from storage.
 				}
 			}
 		}
@@ -131,7 +136,7 @@ public class StorageDevLocalFileSystem extends Storage
 
 	/**
 	 * @param key
-	 *            StorageKey associated with StorageObject
+	 *                StorageKey associated with StorageObject
 	 * @return true if Storage Object existed and was deleted, false otherwise
 	 */
 	@Override
