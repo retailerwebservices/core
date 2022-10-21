@@ -1,20 +1,9 @@
 package org.jimmutable.cloud;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
-//import org.apache.logging.log4j.Level;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.TransportAddress;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.jimmutable.cloud.cache.CacheRedis;
 import org.jimmutable.cloud.cache.CacheStub;
 import org.jimmutable.cloud.cache.ICache;
 import org.jimmutable.cloud.cache.redis.LowLevelRedisDriver;
-import org.jimmutable.cloud.elasticsearch.ElasticSearchEndpoint;
 import org.jimmutable.cloud.elasticsearch.ElasticSearchRESTClient;
 import org.jimmutable.cloud.elasticsearch.ISearch;
 import org.jimmutable.cloud.elasticsearch.StubSearch;
@@ -35,6 +24,9 @@ import org.jimmutable.cloud.storage.s3.RegionSpecificAmazonS3ClientFactory;
 import org.jimmutable.cloud.storage.s3.StorageS3;
 import org.jimmutable.cloud.utils.ApplicationHeartbeatUtils;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
+import org.slf4j.Logger;
+//import org.apache.logging.log4j.Level;
+import org.slf4j.LoggerFactory;
 
 /**
  * Configures environment and application specific setting, to be used by other
@@ -212,46 +204,18 @@ public class CloudExecutionEnvironment
 		switch ( env_type )
 		{
 		case DEV:
+			checkOs();
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), new StorageDevLocalFileSystem(false, APPLICATION_ID, STANDARD_IMMUTABLE_OBJECT_CACHE), new QueueRedis(APPLICATION_ID, redis_driver), new SignalRedis(APPLICATION_ID, redis_driver), getSESClient(), redis);
+			break;
+		case INTEGRATION:
 
 			checkOs();
-
-			TransportClient dev_client = null;
-			try
-			{
-				dev_client = new PreBuiltTransportClient(Settings.EMPTY).addTransportAddress(new TransportAddress(InetAddress.getByName(ElasticSearchEndpoint.CURRENT.getSimpleHost()), ElasticSearchEndpoint.CURRENT.getSimplePort()));
-			}
-			catch ( UnknownHostException e )
-			{
-				logger.error("Failed to instantiate the elasticsearch client!", e);
-			}
-
-			if ( dev_client == null )
-			{
-				throw new RuntimeException("Failed to instantiate the elasticsearch client!");
-			}
-
 			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), new StorageDevLocalFileSystem(false, APPLICATION_ID, STANDARD_IMMUTABLE_OBJECT_CACHE), new QueueRedis(APPLICATION_ID, redis_driver), new SignalRedis(APPLICATION_ID, redis_driver), getSESClient(), redis);
-
 			break;
 		// For now, staging is the same as dev
 		case STAGING:
 
 			checkOs();
-
-			TransportClient staging_client = null;
-			try
-			{
-				staging_client = new PreBuiltTransportClient(Settings.EMPTY).addTransportAddress(new TransportAddress(InetAddress.getByName(ElasticSearchEndpoint.CURRENT.getSimpleHost()), ElasticSearchEndpoint.CURRENT.getSimplePort()));
-			}
-			catch ( UnknownHostException e )
-			{
-				logger.error("Failed to instantiate the elasticsearch client!", e);
-			}
-
-			if ( staging_client == null )
-			{
-				throw new RuntimeException("Failed to instantiate the elasticsearch client!");
-			}
 			/*
 			 * For our staging mode we still use S3, but we use a different bucket that is
 			 * meant to be synced up nightly
