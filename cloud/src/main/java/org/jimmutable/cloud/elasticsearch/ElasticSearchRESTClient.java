@@ -28,10 +28,7 @@ import org.apache.logging.log4j.Level;
 import org.elasticsearch.action.DocWriteResponse.Result;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -53,6 +50,9 @@ import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.client.indices.CreateIndexResponse;
+import org.elasticsearch.client.indices.PutMappingRequest;
 import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryShardException;
@@ -62,7 +62,6 @@ import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.EnvironmentType;
-import org.jimmutable.cloud.cache.redis.LowLevelRedisDriver;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 import org.jimmutable.cloud.servlet_utils.search.SortBy;
@@ -272,7 +271,7 @@ public class ElasticSearchRESTClient implements ISearch
 
 		try
 		{
-			CreateIndexRequest request = new CreateIndexRequest(index_name).mapping(ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, ElasticSearchCommon.getMappingBuilder(index, null));
+			CreateIndexRequest request = new CreateIndexRequest(index_name).mapping(ElasticSearchCommon.getMappingBuilder(index, null));
 			CreateIndexResponse createResponse = high_level_rest_client.indices().create(request, RequestOptions.DEFAULT);
 
 			if ( !createResponse.isAcknowledged() )
@@ -316,7 +315,7 @@ public class ElasticSearchRESTClient implements ISearch
 		{
 			String delete_request = "/" + index.getSimpleValue() + "/" + document_id.getTypeName().getSimpleName() + "/" + document_id.getSimpleValue();
 
-			DeleteRequest del = new DeleteRequest(index.getSimpleValue(), ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_id.getSimpleValue()).setRefreshPolicy(RefreshPolicy.IMMEDIATE);
+			DeleteRequest del = new DeleteRequest(index.getSimpleValue(), document_id.getSimpleValue()).setRefreshPolicy(RefreshPolicy.IMMEDIATE);
 			DeleteResponse response = high_level_rest_client.delete(del, RequestOptions.DEFAULT);
 
 			boolean successfully_deleted = response.getResult().equals(Result.DELETED);
@@ -429,7 +428,7 @@ public class ElasticSearchRESTClient implements ISearch
 			String index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
 			String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
 
-			IndexRequest request = new IndexRequest(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).source(data).setRefreshPolicy(refresh_policy);
+			IndexRequest request = new IndexRequest(index_name).id(document_name).source(data).setRefreshPolicy(refresh_policy);
 			IndexResponse response = null;
 			try
 			{
@@ -503,7 +502,7 @@ public class ElasticSearchRESTClient implements ISearch
 				Map<String, Object> data = writer.getSimpleFieldsMap();
 				String index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
 				String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
-				bulk_request.add(new IndexRequest().index(index_name).type(ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE).id(document_name).source(data));
+				bulk_request.add(new IndexRequest().index(index_name).id(document_name).source(data));
 
 			}
 
@@ -826,8 +825,7 @@ public class ElasticSearchRESTClient implements ISearch
 				query_builder.sort(sort_builder);
 			}
 
-			SearchRequest ext_request = new SearchRequest(index_name).types(ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE).source(query_builder);
-
+			SearchRequest ext_request = new SearchRequest(index_name).source(query_builder);
 			SearchResponse response = high_level_rest_client.search(ext_request, RequestOptions.DEFAULT);
 
 			List<OneSearchResultWithTyping> results = new LinkedList<OneSearchResultWithTyping>();
@@ -1017,7 +1015,7 @@ public class ElasticSearchRESTClient implements ISearch
 
 		SearchSourceBuilder query_builder = new SearchSourceBuilder().query(QueryBuilders.queryStringQuery(query_string)).sort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC).size(1_000);
 
-		SearchRequest ext_request = new SearchRequest(index_name).types(ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE).scroll(TimeValue.timeValueMinutes(1)).source(query_builder);
+		SearchRequest ext_request = new SearchRequest(index_name).scroll(TimeValue.timeValueMinutes(1)).source(query_builder);
 
 		try
 		{
@@ -1176,7 +1174,7 @@ public class ElasticSearchRESTClient implements ISearch
 				Map<String, Object> data = writer.getSimpleFieldsMap();
 				String document_name = indexable.getSimpleSearchDocumentId().getSimpleValue();
 
-				IndexRequest request = new IndexRequest(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).source(data).timeout("5m");
+				IndexRequest request = new IndexRequest(index_name).id(document_name).source(data).timeout("5m");
 				if ( request != null )
 				{
 					bulk_processor.add(request);
@@ -1305,7 +1303,7 @@ public class ElasticSearchRESTClient implements ISearch
 			{
 				String index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
 				String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
-				IndexRequest request = new IndexRequest(index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name).source(data).setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
+				IndexRequest request = new IndexRequest(index_name).id(document_name).source(data).setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
 				high_level_rest_client.index(request, RequestOptions.DEFAULT);
 			}
 			catch ( Exception e )
@@ -1333,7 +1331,6 @@ public class ElasticSearchRESTClient implements ISearch
 		try
 		{
 			PutMappingRequest request = new PutMappingRequest(index.getSimpleIndex().getSimpleValue());
-			request.type(ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE);
 			request.source(ElasticSearchCommon.getMappingBuilder(index, null));
 
 			AcknowledgedResponse put_response = high_level_rest_client.indices().putMapping(request, RequestOptions.DEFAULT);

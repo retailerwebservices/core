@@ -21,7 +21,9 @@ import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -40,7 +42,13 @@ public class ElasticSearchRESTIT extends IntegrationTest
 	public static void setup()
 	{
 		setupEnvironment();
+		ObjectParseTree.registerTypeName(TestLibraryPatron.class);
+		SearchSync.registerIndexableKind(TestLibraryPatron.class);
+	}
 
+	@Before
+	public void seedTestData()
+	{
 		elastic_search = new ElasticSearchRESTClient();
 		elastic_search.upsertIndex(MyIndexable.SEARCH_INDEX_DEFINITION);
 
@@ -48,15 +56,23 @@ public class ElasticSearchRESTIT extends IntegrationTest
 		{
 			elastic_search.upsertDocumentAsync(new MyIndexable(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex(), new SearchDocumentId(String.format("doc%s", i))));
 		}
+	}
 
-		try
+	@After
+	public void removeTestData()
+	{
+		for ( int i = 0; i < 20; i++ )
 		{
-			Thread.sleep(5_000);
+			elastic_search.deleteDocument(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex(), new SearchDocumentId(String.format("doc%s", i)));
 		}
-		catch ( InterruptedException e )
-		{
-			e.printStackTrace();
-		}
+	}
+
+	@AfterClass
+	public static void shutdown()
+	{
+
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().shutdownDocumentUpsertThreadPool(3);
+		elastic_search.shutdownDocumentUpsertThreadPool(3);
 	}
 
 	private static TestLibraryPatron patron_in_storage_and_search;
@@ -66,9 +82,6 @@ public class ElasticSearchRESTIT extends IntegrationTest
 	@Test
 	public void testReindex()
 	{
-		ObjectParseTree.registerTypeName(TestLibraryPatron.class);
-		SearchSync.registerIndexableKind(TestLibraryPatron.class);
-
 		// Setup new index if needed
 		elastic_search.upsertIndex(TestLibraryPatron.INDEX_MAPPING);
 
@@ -100,7 +113,7 @@ public class ElasticSearchRESTIT extends IntegrationTest
 
 		try
 		{
-			for ( OneSearchResultWithTyping entry :  response )
+			for ( OneSearchResultWithTyping entry : response )
 			{
 				FieldMap<FieldName, FieldArrayList<String>> map = entry.getSimpleContents();
 
@@ -137,30 +150,6 @@ public class ElasticSearchRESTIT extends IntegrationTest
 		assertTrue(elastic_search.deleteDocument(TestLibraryPatron.INDEX_DEFINITION, patron_in_storage_and_search.getSimpleSearchDocumentId()));
 	}
 
-	// @Test
-	// public void testSearchPaginationSecondPage()
-	// {
-	// StandardSearchRequest request = new StandardSearchRequest("day:>1970-01-01",
-	// 10, 10);
-	// JSONServletResponse r1 =
-	// elastic_search.search(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex(),
-	// request);
-	//
-	// assertTrue(r1 instanceof SearchResponseOK);
-	// if (r1 instanceof SearchResponseOK)
-	// {
-	// SearchResponseOK ok = (SearchResponseOK) r1;
-	//
-	// assertEquals(10, ok.getSimpleFirstResultIdx());
-	// assertEquals(false, ok.getSimpleHasMoreResults());
-	// assertEquals(true, ok.getSimpleHasPreviousResults());
-	// assertEquals(200, ok.getSimpleHTTPResponseCode());
-	// assertEquals(10, ok.getSimpleResults().size());
-	// assertEquals(20, ok.getSimpleStartOfNextPageOfResults());
-	// assertEquals(0, ok.getSimpleStartOfPreviousPageOfResults());
-	// }
-	// }
-
 	@Test
 	public void putAllFieldMappings()
 	{
@@ -180,43 +169,14 @@ public class ElasticSearchRESTIT extends IntegrationTest
 
 	}
 
-	// @Test
-	// public void testSearchPaginationNone()
-	// {
-	//
-	// StandardSearchRequest request = new StandardSearchRequest("day:>1970-01-01",
-	// 10, 20);
-	// JSONServletResponse r1 =
-	// elastic_search.search(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex(),
-	// request);
-	//
-	// assertTrue(r1 instanceof SearchResponseOK);
-	// if (r1 instanceof SearchResponseOK)
-	// {
-	// SearchResponseOK ok = (SearchResponseOK) r1;
-	//
-	// assertEquals(20, ok.getSimpleFirstResultIdx());
-	// assertEquals(false, ok.getSimpleHasMoreResults());
-	// assertEquals(true, ok.getSimpleHasPreviousResults());
-	// assertEquals(200, ok.getSimpleHTTPResponseCode());
-	// assertEquals(0, ok.getSimpleResults().size());
-	// assertEquals(30, ok.getSimpleStartOfNextPageOfResults());
-	// assertEquals(10, ok.getSimpleStartOfPreviousPageOfResults());
-	// }
-	//
-	// }
+	@Test
+	public void testBadQuery()
+	{
+		StandardSearchRequest request = new StandardSearchRequest("this is a bad query!", 10, 20);
+		List<OneSearchResultWithTyping> r1 = elastic_search.search(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex(), request, null);
 
-	// @Test
-	// public void testBadQuery()
-	// {
-	// StandardSearchRequest request = new StandardSearchRequest("this is a bad
-	// query!", 10, 20);
-	// JSONServletResponse r1 =
-	// elastic_search.search(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex(),
-	// request);
-	//
-	// assertTrue(r1 instanceof SearchResponseError);
-	// }
+		assertTrue(r1 == null);
+	}
 
 	@Test
 	public void SearchIndexDefinitionExists()
@@ -230,48 +190,4 @@ public class ElasticSearchRESTIT extends IntegrationTest
 		assertTrue(elastic_search.indexExists(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex()));
 	}
 
-	// @Test
-	// public void testSearchPaginationFirstPage()
-	// {
-	// StandardSearchRequest request = new StandardSearchRequest("day:>1970-01-01",
-	// 10, 0);
-	// JSONServletResponse r1 =
-	// elastic_search.search(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex(),
-	// request);
-	//
-	// assertTrue(r1 instanceof SearchResponseOK);
-	// if (r1 instanceof SearchResponseOK)
-	// {
-	// SearchResponseOK ok = (SearchResponseOK) r1;
-	//
-	// assertEquals(ok.getSimpleFirstResultIdx(), 0);
-	// assertEquals(ok.getSimpleHasMoreResults(), true);
-	// assertEquals(ok.getSimpleHasPreviousResults(), false);
-	// assertEquals(ok.getSimpleHTTPResponseCode(), 200);
-	// assertEquals(ok.getSimpleResults().size(), 10);
-	// assertEquals(ok.getSimpleStartOfNextPageOfResults(), 10);
-	// assertEquals(ok.getSimpleStartOfPreviousPageOfResults(), -1);
-	// }
-	// }
-
-	@AfterClass
-	public static void shutdown()
-	{
-		for ( int i = 0; i < 20; i++ )
-		{
-			elastic_search.deleteDocument(MyIndexable.SEARCH_INDEX_DEFINITION.getSimpleIndex(), new SearchDocumentId(String.format("doc%s", i)));
-		}
-
-		try
-		{
-			Thread.sleep(2_000);
-		}
-		catch ( InterruptedException e )
-		{
-			e.printStackTrace();
-		}
-
-		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().shutdownDocumentUpsertThreadPool(3);
-		elastic_search.shutdownDocumentUpsertThreadPool(3);
-	}
 }
