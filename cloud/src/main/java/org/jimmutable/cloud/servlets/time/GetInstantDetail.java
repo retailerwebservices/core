@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.jimmutable.cloud.servlet_utils.get.GetResponseError;
 import org.jimmutable.cloud.servlet_utils.get.GetResponseOK;
 import org.jimmutable.cloud.servlets.util.ServletUtil;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.common.TimezoneID;
 import org.jimmutable.core.objects.common.time.Instant;
 import org.jimmutable.core.objects.common.time.InstantDetails;
@@ -52,7 +52,7 @@ public class GetInstantDetail extends HttpServlet
 
 		try
 		{
-			Builder b = new Builder(InstantDetails.TYPE_NAME);
+			JimmutableBuilder b = new JimmutableBuilder(InstantDetails.TYPE_NAME);
 			b.set(InstantDetails.FIELD_SUCCESS, true); // since our servlet will either return an instant or not this is
 														// always set to true
 			b.set(InstantDetails.FIELD_MS_FROM_EPOCH, instant.getSimpleMillisecondsFromEpoch());

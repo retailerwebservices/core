@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.TimezoneID;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
@@ -27,7 +27,7 @@ public class InstantDetailsTest
 
 		Instant i = new Instant(0);
 
-		Builder b = new Builder(InstantDetails.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(InstantDetails.TYPE_NAME);
 		b.set(InstantDetails.FIELD_SUCCESS, true);
 		b.set(InstantDetails.FIELD_MS_FROM_EPOCH, i.getSimpleMillisecondsFromEpoch());
 

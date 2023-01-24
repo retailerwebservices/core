@@ -14,7 +14,7 @@ import org.jimmutable.cloud.storage.ObjectIdStorageKey;
 import org.jimmutable.cloud.storage.StorageKeyExtension;
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.fields.FieldMap;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.common.Day;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
@@ -155,7 +155,7 @@ public class ElasticSearchRESTIT extends IntegrationTest
 	{
 		assertTrue(elastic_search.putAllFieldMappings(MyIndexable.SEARCH_INDEX_DEFINITION));
 
-		Builder b = new Builder(MyIndexable.SEARCH_INDEX_DEFINITION);
+		JimmutableBuilder b = new JimmutableBuilder(MyIndexable.SEARCH_INDEX_DEFINITION);
 
 		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("test1"), SearchIndexFieldType.TEXT));
 		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("test2"), SearchIndexFieldType.INSTANT));

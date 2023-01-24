@@ -10,7 +10,7 @@ import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.storage.ObjectIdStorageKey;
 import org.jimmutable.cloud.storage.StorageKeyExtension;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.common.Day;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
@@ -29,7 +29,7 @@ public class ElasticSearchStressTestIT extends IntegrationTest
 
 		setupEnvironment();
 
-		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
 
 		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(TestLibraryPatron.FIELD_FIRST_NAME.getSimpleFieldName(), SearchIndexFieldType.TEXT));
 		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(TestLibraryPatron.FIELD_LAST_NAME.getSimpleFieldName(), SearchIndexFieldType.TEXT));

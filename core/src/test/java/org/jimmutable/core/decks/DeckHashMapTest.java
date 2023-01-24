@@ -6,7 +6,7 @@ import java.util.List;
 import org.jimmutable.core.examples.book.BindingType;
 import org.jimmutable.core.examples.book.Book;
 import org.jimmutable.core.examples.book.BookDeckMap;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 
@@ -45,7 +45,7 @@ public class DeckHashMapTest extends TestCase
 		test_books.add(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
 		test_books.add(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
 
-		Builder builder = new Builder(BookDeckMap.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(BookDeckMap.TYPE_NAME);
 
 		builder.addMapEntry(BookDeckMap.FIELD_BOOKS, "jim_first_book", test_books.get(0));
 		builder.addMapEntry(BookDeckMap.FIELD_BOOKS, "jim_second_book", test_books.get(1));
@@ -61,7 +61,7 @@ public class DeckHashMapTest extends TestCase
 
 		// now test an "append" builder...
 
-		builder = new Builder(first_library);
+		builder = new JimmutableBuilder(first_library);
 
 		builder.addMapEntry(BookDeckMap.FIELD_BOOKS, "jim_first_book", test_books.get(2));
 		builder.addMapEntry(BookDeckMap.FIELD_BOOKS, "jim_third_book", test_books.get(3));
@@ -96,7 +96,7 @@ public class DeckHashMapTest extends TestCase
 		test_books.add(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
 		test_books.add(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
 
-		Builder builder = new Builder(BookDeckMap.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(BookDeckMap.TYPE_NAME);
 
 		builder.addMapEntry(BookDeckMap.FIELD_BOOKS, "jim_first_book", test_books.get(2));
 		builder.addMapEntry(BookDeckMap.FIELD_BOOKS, "jim_second_book", test_books.get(1));
@@ -125,7 +125,7 @@ public class DeckHashMapTest extends TestCase
 		test_books.add(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
 		test_books.add(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
 
-		Builder builder = new Builder(BookDeckMap.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(BookDeckMap.TYPE_NAME);
 
 		builder.addMapEntry(BookDeckMap.FIELD_BOOKS, "jim_first_book", test_books.get(2));
 		builder.addMapEntry(BookDeckMap.FIELD_BOOKS, "jim_second_book", test_books.get(1));

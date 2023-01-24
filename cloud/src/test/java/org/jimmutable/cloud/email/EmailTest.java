@@ -5,7 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.jimmutable.cloud.StubTest;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.EmailAddress;
 import org.junit.Test;
@@ -17,7 +17,7 @@ public class EmailTest extends StubTest
 
 	static
 	{
-		Builder b = new Builder(Email.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(Email.TYPE_NAME);
 		b.set(Email.FIELD_FROM_NAME, "Someone");
 		b.set(Email.FIELD_FROM, new EmailAddress("someone@retailerwebservices.com"));
 		b.set(Email.FIELD_SUBJECT, "subject");
@@ -50,7 +50,7 @@ public class EmailTest extends StubTest
 	@Test
 	public void optional()
 	{
-		Builder b = new Builder(base_email);
+		JimmutableBuilder b = new JimmutableBuilder(base_email);
 		b.add(Email.FIELD_BCC, "bcc@retailerwebservices.com");
 		b.add(Email.FIELD_CC, "cc@retailerwebservices.com");
 		b.add(Email.FIELD_REPLY_TO, "reply_to@retailerwebservices.com");

@@ -19,7 +19,7 @@ import org.jimmutable.cloud.servlets.util.RequestPageData;
 import org.jimmutable.cloud.servlets.util.ServletUtil;
 import org.jimmutable.cloud.storage.ObjectIdStorageKey;
 import org.jimmutable.cloud.storage.StorageKeyExtension;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
@@ -69,7 +69,7 @@ public class DoUpsertChangeLog extends HttpServlet
 
 			// logger.info(entry.toJavaCode(Format.JSON_PRETTY_PRINT, "entry"));
 
-			Builder b = new Builder(StandardChangeLogEntry.TYPE_NAME);
+			JimmutableBuilder b = new JimmutableBuilder(StandardChangeLogEntry.TYPE_NAME);
 
 			b.set(StandardChangeLogEntry.FIELD_ID, entry.getSimpleObjectId());
 			b.set(StandardChangeLogEntry.FIELD_SUBJECT, entry.getSimpleSubject());

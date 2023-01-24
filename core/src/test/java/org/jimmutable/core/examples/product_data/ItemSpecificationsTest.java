@@ -1,6 +1,6 @@
 package org.jimmutable.core.examples.product_data;
 
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 
@@ -32,7 +32,7 @@ public class ItemSpecificationsTest extends TestCase
 
 	public void testBuilder()
 	{
-		Builder builder = new Builder(ItemSpecifications.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(ItemSpecifications.TYPE_NAME);
 
 		try
 		{
@@ -58,7 +58,7 @@ public class ItemSpecificationsTest extends TestCase
 
 		assertTrue(no_specs.getSimpleAttributes().isEmpty());
 
-		builder = new Builder(no_specs);
+		builder = new JimmutableBuilder(no_specs);
 
 		builder.addMapEntry(ItemSpecifications.FIELD_ATTRIBUTES, new ItemAttribute("BRAND"), "foo");
 		builder.addMapEntry(ItemSpecifications.FIELD_ATTRIBUTES, new ItemAttribute("BRAND"), "bar");
