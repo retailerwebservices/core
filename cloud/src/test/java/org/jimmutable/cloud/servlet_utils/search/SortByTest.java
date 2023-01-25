@@ -7,7 +7,7 @@ import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldType;
 import org.jimmutable.core.exceptions.SerializeException;
 import org.jimmutable.core.exceptions.ValidationException;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
@@ -29,14 +29,14 @@ public class SortByTest
 	@Test
 	public void valid()
 	{
-		Builder b = new Builder(SortBy.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(SortBy.TYPE_NAME);
 
 		b.set(SortBy.FIELD_FIELD, new SearchIndexFieldDefinition(new FieldName("fboolean"), SearchIndexFieldType.BOOLEAN));
-		b.set(SortBy.FIELD_DIRECTION,  SortDirection.ASCENDING);
+		b.set(SortBy.FIELD_DIRECTION, SortDirection.ASCENDING);
 
 		SortBy sort_by = (SortBy) b.create();
 
-		//System.out.println(sort_by.toJavaCode(Format.JSON_PRETTY_PRINT, "sort_by"));
+		// System.out.println(sort_by.toJavaCode(Format.JSON_PRETTY_PRINT, "sort_by"));
 
 		assertNotNull(sort_by);
 		assertEquals(SortDirection.ASCENDING, sort_by.getSimpleDirection());
@@ -47,21 +47,21 @@ public class SortByTest
 	@Test(expected = ValidationException.class)
 	public void nullField()
 	{
-		Builder b = new Builder(SortBy.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(SortBy.TYPE_NAME);
 
 		b.set(SortBy.FIELD_FIELD, new SearchIndexFieldDefinition(null, SearchIndexFieldType.TEXT));
-		b.set(SortBy.FIELD_DIRECTION,  null);
+		b.set(SortBy.FIELD_DIRECTION, null);
 	}
 
 	@Test(expected = SerializeException.class)
 	public void serializationException()
 	{
-		Builder b = new Builder(SortBy.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(SortBy.TYPE_NAME);
 
 		b.set(SortBy.FIELD_FIELD, new SearchIndexFieldDefinition(new FieldName("fboolean"), SearchIndexFieldType.BOOLEAN));
 
 		// Intentionally omitted
-		// b.set(SortBy.FIELD_DIRECTION,  SortDirection.ASCENDING);
+		// b.set(SortBy.FIELD_DIRECTION, SortDirection.ASCENDING);
 
 		b.create();
 
@@ -70,22 +70,9 @@ public class SortByTest
 	@Test
 	public void serialize()
 	{
-		String sort_by_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s"
-			     , "{"
-			     , "  \"type_hint\" : \"org.jimmutable.cloud.servlet_utils.search.SortBy\","
-			     , "  \"field\" : {"
-			     , "    \"type_hint\" : \"org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition\","
-			     , "    \"name\" : {"
-			     , "      \"type_hint\" : \"jimmutable.FieldName\","
-			     , "      \"name\" : \"fboolean\""
-			     , "    },"
-			     , "    \"type\" : \"boolean\""
-			     , "  },"
-			     , "  \"direction\" : \"ascending\""
-			     , "}"
-			);
+		String sort_by_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s", "{", "  \"type_hint\" : \"org.jimmutable.cloud.servlet_utils.search.SortBy\",", "  \"field\" : {", "    \"type_hint\" : \"org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition\",", "    \"name\" : {", "      \"type_hint\" : \"jimmutable.FieldName\",", "      \"name\" : \"fboolean\"", "    },", "    \"type\" : \"boolean\"", "  },", "  \"direction\" : \"ascending\"", "}");
 
-		SortBy sort_by = (SortBy)StandardObject.deserialize(sort_by_string);
+		SortBy sort_by = (SortBy) StandardObject.deserialize(sort_by_string);
 		assertNotNull(sort_by);
 		assertEquals(SortDirection.ASCENDING, sort_by.getSimpleDirection());
 		assertEquals("fboolean", sort_by.getSimpleField().getSimpleFieldName().getSimpleName());

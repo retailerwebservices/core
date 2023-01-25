@@ -6,7 +6,7 @@ import java.util.List;
 import org.jimmutable.core.examples.book.BindingType;
 import org.jimmutable.core.examples.book.Book;
 import org.jimmutable.core.examples.book.BookDeckSet;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 
@@ -45,7 +45,7 @@ public class DeckHashSetTest extends TestCase
 		test_books.add(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
 		test_books.add(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
 
-		Builder builder = new Builder(BookDeckSet.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(BookDeckSet.TYPE_NAME);
 
 		builder.add(BookDeckSet.FIELD_BOOKS, test_books.get(0));
 		builder.add(BookDeckSet.FIELD_BOOKS, test_books.get(1));
@@ -59,7 +59,7 @@ public class DeckHashSetTest extends TestCase
 
 		// now test an "append" builder...
 
-		builder = new Builder(first_library);
+		builder = new JimmutableBuilder(first_library);
 
 		builder.add(BookDeckSet.FIELD_BOOKS, test_books.get(2));
 		builder.add(BookDeckSet.FIELD_BOOKS, test_books.get(3));
@@ -88,7 +88,7 @@ public class DeckHashSetTest extends TestCase
 		test_books.add(new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
 		test_books.add(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
 
-		Builder builder = new Builder(BookDeckSet.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(BookDeckSet.TYPE_NAME);
 
 		builder.add(BookDeckSet.FIELD_BOOKS, test_books.get(0));
 		builder.add(BookDeckSet.FIELD_BOOKS, test_books.get(1));
@@ -111,7 +111,7 @@ public class DeckHashSetTest extends TestCase
 		test_books.add(new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
 		test_books.add(new Book("O Lost", 1211, "1123234234", BindingType.TRADE_PAPER_BACK, "Thomas Wolfe"));
 
-		Builder builder = new Builder(BookDeckSet.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(BookDeckSet.TYPE_NAME);
 
 		builder.add(BookDeckSet.FIELD_BOOKS, test_books.get(0));
 		builder.add(BookDeckSet.FIELD_BOOKS, test_books.get(1));

@@ -15,7 +15,7 @@ import org.jimmutable.cloud.servlet_utils.search.RequestExportCSV;
 import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 import org.jimmutable.cloud.servlets.util.ServletUtil;
 import org.jimmutable.cloud.utils.CSVExport;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.serialization.reader.HandReader;
 import org.jimmutable.core.utils.Validator;
 
@@ -61,7 +61,7 @@ public abstract class ExportCSV extends HttpServlet
 		try
 		{
 
-			Builder b = new Builder(RequestExportCSV.TYPE_NAME);
+			JimmutableBuilder b = new JimmutableBuilder(RequestExportCSV.TYPE_NAME);
 
 			b.set(RequestExportCSV.FIELD_INDEX, index_definition);
 			b.set(RequestExportCSV.FIELD_EXPORT_ALL_DOCUMENTS, r.readBoolean("export_all_documents", null));

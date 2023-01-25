@@ -3,7 +3,7 @@ package org.jimmutable.cloud.storage;
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.JimmutableCloudTypeNameRegister;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardObject;
 
 import junit.framework.Test;
@@ -45,11 +45,11 @@ public class StorageMetadataTest extends TestCase
 
 	public void testBuilder()
 	{
-		Builder builder = null;
+		JimmutableBuilder builder = null;
 		
 		// quick failure test
 		{
-			builder = new Builder(StorageMetadata.TYPE_NAME);
+			builder = new JimmutableBuilder(StorageMetadata.TYPE_NAME);
 			try
 			{
 				builder.create();
@@ -63,7 +63,7 @@ public class StorageMetadataTest extends TestCase
 		
 		// failure for negative nums
 		{
-			builder = new Builder(StorageMetadata.TYPE_NAME);
+			builder = new JimmutableBuilder(StorageMetadata.TYPE_NAME);
 			builder.set(StorageMetadata.FIELD_LAST_MODIFIED, 0);
 			builder.set(StorageMetadata.FIELD_SIZE, -1);
 			
@@ -80,7 +80,7 @@ public class StorageMetadataTest extends TestCase
 		
 		// test not setting etag
 		{
-			builder = new Builder(StorageMetadata.TYPE_NAME);
+			builder = new JimmutableBuilder(StorageMetadata.TYPE_NAME);
 			builder.set(StorageMetadata.FIELD_LAST_MODIFIED, LAST_MODIFIED);
 			builder.set(StorageMetadata.FIELD_SIZE, SIZE);
 			
@@ -94,7 +94,7 @@ public class StorageMetadataTest extends TestCase
 		
 		// test setting etag
 		{
-			builder = new Builder(StorageMetadata.TYPE_NAME);
+			builder = new JimmutableBuilder(StorageMetadata.TYPE_NAME);
 			builder.set(StorageMetadata.FIELD_LAST_MODIFIED, LAST_MODIFIED);
 			builder.set(StorageMetadata.FIELD_SIZE, SIZE);
 			builder.set(StorageMetadata.FIELD_ETAG, ETAG);

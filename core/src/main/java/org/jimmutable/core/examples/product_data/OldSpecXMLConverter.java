@@ -9,7 +9,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
 
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.Format;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
@@ -36,7 +36,7 @@ public class OldSpecXMLConverter
 		XMLStreamReader reader = factory.createXMLStreamReader(new BufferedReader(new FileReader(src)));
 
 		StringBuilder char_buffer = new StringBuilder();
-		Builder builder = new Builder(ItemSpecifications.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(ItemSpecifications.TYPE_NAME);
 		
 		String brand = null, pn = null;
 		
@@ -54,7 +54,7 @@ public class OldSpecXMLConverter
 				
 				if ( reader.getLocalName().equalsIgnoreCase("product_specs") )
 				{
-					builder = new Builder(ItemSpecifications.TYPE_NAME);
+					builder = new JimmutableBuilder(ItemSpecifications.TYPE_NAME);
 					brand = null;
 					pn = null;
 				}

@@ -3,7 +3,7 @@ package org.jimmutable.cloud.elasticsearch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.jimmutable.core.exceptions.SerializeException;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
@@ -25,7 +25,7 @@ public class SearchIndexFieldDefinitionTest
 	public void valid()
 	{
 
-		Builder b = new Builder(SearchIndexFieldDefinition.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(SearchIndexFieldDefinition.TYPE_NAME);
 
 		b.set(SearchIndexFieldDefinition.FIELD_FIELD_NAME, new FieldName("spaghetti"));
 		b.set(SearchIndexFieldDefinition.FIELD_SEARCH_INDEX_FIELD_TYPE, SearchIndexFieldType.ATOM);
@@ -42,7 +42,7 @@ public class SearchIndexFieldDefinitionTest
 	public void inValidNullType()
 	{
 
-		Builder b = new Builder(SearchIndexFieldDefinition.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(SearchIndexFieldDefinition.TYPE_NAME);
 
 		b.set(SearchIndexFieldDefinition.FIELD_FIELD_NAME, new FieldName("spaghetti"));
 		b.set(SearchIndexFieldDefinition.FIELD_SEARCH_INDEX_FIELD_TYPE, null);
@@ -54,7 +54,7 @@ public class SearchIndexFieldDefinitionTest
 	@Test(expected = SerializeException.class)
 	public void inValidNullFieldName()
 	{
-		Builder b = new Builder(SearchIndexFieldDefinition.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(SearchIndexFieldDefinition.TYPE_NAME);
 
 		b.set(SearchIndexFieldDefinition.FIELD_FIELD_NAME, null);
 		b.set(SearchIndexFieldDefinition.FIELD_SEARCH_INDEX_FIELD_TYPE, SearchIndexFieldType.ATOM);
@@ -64,7 +64,7 @@ public class SearchIndexFieldDefinitionTest
 	@Test(expected = SerializeException.class)
 	public void notSet()
 	{
-		Builder b = new Builder(SearchIndexFieldDefinition.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(SearchIndexFieldDefinition.TYPE_NAME);
 		b.create();
 	}
 

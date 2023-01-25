@@ -7,7 +7,7 @@ import org.jimmutable.cloud.elasticsearch.SearchDocumentId;
 import org.jimmutable.cloud.elasticsearch.SearchDocumentWriter;
 import org.jimmutable.cloud.storage.Storable;
 import org.jimmutable.cloud.storage.ObjectIdStorageKey;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.objects.common.Day;
 import org.jimmutable.core.objects.common.Kind;
@@ -83,7 +83,7 @@ final public class TestLibraryPatron extends StandardImmutableObject<TestLibrary
 	static
 	{
 
-		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
 
 		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_OBJECT_ID);
 		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_FIRST_NAME);

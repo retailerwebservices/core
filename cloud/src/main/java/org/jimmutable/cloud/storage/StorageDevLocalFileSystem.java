@@ -20,7 +20,7 @@ import java.util.EnumSet;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import org.jimmutable.cloud.ApplicationId;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.utils.IOUtils;
@@ -182,7 +182,7 @@ public class StorageDevLocalFileSystem extends Storage
 		long last_modified = f.lastModified();
 		long size = f.length();
 
-		Builder builder = new Builder(StorageMetadata.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(StorageMetadata.TYPE_NAME);
 		builder.set(StorageMetadata.FIELD_LAST_MODIFIED, last_modified);
 		builder.set(StorageMetadata.FIELD_SIZE, size);
 

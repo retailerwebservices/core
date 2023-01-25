@@ -2,7 +2,7 @@ package org.jimmutable.core.objects.common.time;
 
 import static org.junit.Assert.assertEquals;
 
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.Day;
 import org.jimmutable.core.objects.common.TimezoneID;
@@ -66,7 +66,7 @@ public class InstantTest
 	public void serialize()
 	{
 
-		Builder b = new Builder(Instant.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(Instant.TYPE_NAME);
 		b.set(Instant.FIELD_MS_FROM_EPOCH, 1516057366987l);
 		Instant instant = (Instant) b.create();
 

@@ -11,11 +11,11 @@ import org.jimmutable.core.utils.Validator;
 
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 
-public class Builder
+public class JimmutableBuilder
 {
 	private ObjectParseTree under_construction;
 
-	public Builder( TypeName type_name )
+	public JimmutableBuilder( TypeName type_name )
 	{
 		Validator.notNull(type_name);
 
@@ -27,7 +27,7 @@ public class Builder
 		under_construction.add(type_hint);
 	}
 
-	public Builder( StandardObject src )
+	public JimmutableBuilder( StandardObject src )
 	{
 		Validator.notNull(src);
 		TokenBuffer token_buffer = ObjectWriter.serializeToTokenBuffer(src);

@@ -14,7 +14,7 @@ import org.jimmutable.cloud.cache.CacheKey;
 import org.jimmutable.cloud.cache.CacheMetric;
 import org.jimmutable.cloud.cache.ICache;
 import org.jimmutable.cloud.messaging.signal.SignalTopicId;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
@@ -89,7 +89,7 @@ public class StandardImmutableObjectCache
 	private void createAndSendEvent( CacheActivity activity, CacheMetric metric, CacheKey key )
 	{
 
-		// Builder b = new Builder(CacheEvent.TYPE_NAME);
+		// JimmutableBuilder b = new JimmutableBuilder(CacheEvent.TYPE_NAME);
 		// b.set(CacheEvent.FIELD_ACTIVITY, activity);
 		// b.set(CacheEvent.FIELD_METRIC, metric);
 		// b.set(CacheEvent.FIELD_KEY, key);

@@ -20,7 +20,7 @@ import org.jimmutable.cloud.servlets.util.VisitedPageDataElement;
 import org.jimmutable.cloud.storage.ObjectIdStorageKey;
 import org.jimmutable.cloud.storage.StorageKeyExtension;
 import org.jimmutable.cloud.storage.StorageMetadata;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.serialization.Format;
@@ -89,7 +89,7 @@ public class UpsertAttachment extends HttpServlet
 
 							AttachmentMetaData attachment_metadata = null;
 
-							Builder b = new Builder(AttachmentMetaData.TYPE_NAME);
+							JimmutableBuilder b = new JimmutableBuilder(AttachmentMetaData.TYPE_NAME);
 							b.set(AttachmentMetaData.FIELD_DESCRIPTION, file_name);
 							b.set(AttachmentMetaData.FIELD_LAST_MODIFIED_TIME, storage_metadata.getSimpleLastModified());
 							b.set(AttachmentMetaData.FIELD_MIME_TYPE, extension.getSimpleMimeType());

@@ -1,6 +1,6 @@
 package org.jimmutable.core.objects.common;
 
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 
@@ -41,7 +41,7 @@ public class PhoneNumberDeckTest extends TestCase
 		PhoneNumber mobile = new PhoneNumber("1231231234", PhoneNumberType.MOBILE);
 		PhoneNumber work = new PhoneNumber("1111111111", PhoneNumberType.WORK);
 
-		Builder phone_deck_builder = new Builder(PhoneNumberDeck.TYPE_NAME);
+		JimmutableBuilder phone_deck_builder = new JimmutableBuilder(PhoneNumberDeck.TYPE_NAME);
 		phone_deck_builder.add(PhoneNumberDeck.FIELD_PHONE_NUMBERS, mobile);
 		phone_deck_builder.add(PhoneNumberDeck.FIELD_PHONE_NUMBERS, work);
 		PhoneNumberDeck deck = phone_deck_builder.create();

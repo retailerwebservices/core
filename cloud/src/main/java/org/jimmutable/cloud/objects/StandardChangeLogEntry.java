@@ -17,7 +17,7 @@ import org.jimmutable.cloud.elasticsearch.SearchIndexFieldType;
 import org.jimmutable.cloud.storage.Storable;
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.fields.FieldList;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
@@ -76,7 +76,7 @@ public class StandardChangeLogEntry extends StandardImmutableObject<StandardChan
 	static
 	{
 
-		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
 
 		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_ID);
 		b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_SUBJECT);

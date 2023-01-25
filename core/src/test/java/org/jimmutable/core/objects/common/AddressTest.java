@@ -1,6 +1,6 @@
 package org.jimmutable.core.objects.common;
 
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
@@ -31,7 +31,7 @@ public class AddressTest extends TestCase
 
 	public void testBuilder()
 	{
-		Builder builder = new Builder(Address.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(Address.TYPE_NAME);
 
 		try
 		{
@@ -76,7 +76,7 @@ public class AddressTest extends TestCase
 		assertTrue(no_specs.getSimpleCountry() == CountryCode.US);
 
 		// Test Valid Canadian Address with optional fields
-		builder = new Builder(Address.TYPE_NAME);
+		builder = new JimmutableBuilder(Address.TYPE_NAME);
 
 		builder.set(Address.FIELD_NAME, "Bob Smith");
 		builder.set(Address.FIELD_LINE1, "2713 Bridgeport Rd.");
@@ -103,7 +103,7 @@ public class AddressTest extends TestCase
 		// "obj"));
 
 		// Test optional fields
-		builder = new Builder(Address.TYPE_NAME);
+		builder = new JimmutableBuilder(Address.TYPE_NAME);
 		builder.set(Address.FIELD_LINE1, "123 Main St");
 		builder.set(Address.FIELD_CITY, "Phoenix");
 		builder.set(Address.FIELD_STATE, "AZ");
@@ -117,7 +117,7 @@ public class AddressTest extends TestCase
 		assertTrue(addr_with_lat_long.getOptionalLatitude(999999999) == 10.03F);
 		assertTrue(addr_with_lat_long.getOptionalLongitude(999999999) == 18.323F);
 
-		builder = new Builder(Address.TYPE_NAME);
+		builder = new JimmutableBuilder(Address.TYPE_NAME);
 		builder.set(Address.FIELD_LINE1, "123 Main St");
 		builder.set(Address.FIELD_CITY, "Phoenix");
 		builder.set(Address.FIELD_STATE, "AZ");

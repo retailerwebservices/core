@@ -23,7 +23,7 @@ import org.jimmutable.cloud.servlet_utils.search.Sort;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.servlets.util.RequestPageData;
 import org.jimmutable.cloud.servlets.util.ServletUtil;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.serialization.reader.HandReader;
 
 public abstract class DoSearch extends HttpServlet

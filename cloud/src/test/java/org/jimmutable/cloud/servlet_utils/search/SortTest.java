@@ -8,7 +8,7 @@ import static org.junit.Assert.assertTrue;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldType;
 import org.jimmutable.core.exceptions.ValidationException;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.FieldName;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
@@ -31,7 +31,7 @@ public class SortTest
 	@Test
 	public void valid()
 	{
-		Builder b = new Builder(Sort.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(Sort.TYPE_NAME);
 		b.add(Sort.FIELD_SORT_ORDER, new SortBy(new SearchIndexFieldDefinition(new FieldName("fboolean"), SearchIndexFieldType.BOOLEAN), SortDirection.ASCENDING));
 		b.add(Sort.FIELD_SORT_ORDER, new SortBy(new SearchIndexFieldDefinition(new FieldName("ftext"), SearchIndexFieldType.TEXT), SortDirection.DESCENDING));
 		b.add(Sort.FIELD_SORT_ORDER, new SortBy(new SearchIndexFieldDefinition(new FieldName("fatom"), SearchIndexFieldType.ATOM), SortDirection.ASCENDING));
@@ -57,7 +57,7 @@ public class SortTest
 	@Test(expected = ValidationException.class)
 	public void nullSortBy()
 	{
-		Builder b = new Builder(Sort.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(Sort.TYPE_NAME);
 
 		b.add(Sort.FIELD_SORT_ORDER, new SortBy(new SearchIndexFieldDefinition(new FieldName("fboolean"), SearchIndexFieldType.BOOLEAN), SortDirection.ASCENDING));
 		b.add(Sort.FIELD_SORT_ORDER, new SortBy(new SearchIndexFieldDefinition(null, SearchIndexFieldType.TEXT), SortDirection.DESCENDING));
@@ -66,7 +66,7 @@ public class SortTest
 	@Test
 	public void emptyFields()
 	{
-		Builder b = new Builder(Sort.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(Sort.TYPE_NAME);
 
 		Sort def = (Sort) b.create();
 
