@@ -77,7 +77,7 @@
 		<dependency>
 			<groupId>org.jimmutable</groupId>
 			<artifactId>core</artifactId>
-			<version>0.0.16-SNAPSHOT</version>
+			<version>0.0.16</version>
 		</dependency>
 
 		<!--Version number is defined by aws-java-sdk-bom -->
