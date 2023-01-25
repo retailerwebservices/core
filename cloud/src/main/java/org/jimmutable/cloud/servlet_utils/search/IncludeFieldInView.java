@@ -9,7 +9,7 @@ import org.jimmutable.cloud.elasticsearch.IndexVersion;
 import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldType;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.TypeName;

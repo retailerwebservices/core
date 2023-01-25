@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jimmutable.core.exceptions.ValidationException;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 import org.junit.BeforeClass;
@@ -263,7 +263,7 @@ public class TimeOfDayTest
 	@Test
 	public void serialize()
 	{
-		Builder b = new Builder(TimeOfDay.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(TimeOfDay.TYPE_NAME);
 		b.set(TimeOfDay.FIELD_MS_FROM_MIDNIGHT, 82860000);
 		TimeOfDay tod = (TimeOfDay) b.create();
 

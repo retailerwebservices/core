@@ -3,7 +3,7 @@ package org.jimmutable.cloud.cache;
 import static org.junit.Assert.assertEquals;
 
 import org.jimmutable.cloud.StubTest;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardObject;
 import org.junit.Test;
 
@@ -14,7 +14,7 @@ public class CacheEventTest extends StubTest
 
 	static
 	{
-		Builder b = new Builder(CacheEvent.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(CacheEvent.TYPE_NAME);
 		b.set(CacheEvent.FIELD_KEY, new CacheKey("h://ello"));
 		b.set(CacheEvent.FIELD_TIMESTAMP, 1000000000000l);
 		b.set(CacheEvent.FIELD_ACTIVITY, CacheActivity.GET);

@@ -191,12 +191,12 @@ public class BuilderTest extends TestCase
 
 	public void testListOfStrings()
 	{
-		Builder builder;
+		JimmutableBuilder builder;
 		TestObject obj;
 
 		// Empty list
 		{
-			builder = new Builder(TestObject.TYPE_NAME);
+			builder = new JimmutableBuilder(TestObject.TYPE_NAME);
 			obj = (TestObject) builder.create();
 
 			assertTrue(obj != null);
@@ -205,7 +205,7 @@ public class BuilderTest extends TestCase
 
 		// One element
 		{
-			builder = new Builder(TestObject.TYPE_NAME);
+			builder = new JimmutableBuilder(TestObject.TYPE_NAME);
 			builder.add(TestObject.FIELD_MY_LIST_OF_STRINGS, "foo");
 
 			obj = (TestObject) builder.create();
@@ -217,7 +217,7 @@ public class BuilderTest extends TestCase
 
 		// Multiple element(s)
 		{
-			builder = new Builder(TestObject.TYPE_NAME);
+			builder = new JimmutableBuilder(TestObject.TYPE_NAME);
 			builder.add(TestObject.FIELD_MY_LIST_OF_STRINGS, "foo");
 			builder.add(TestObject.FIELD_MY_LIST_OF_STRINGS, "foo");
 			builder.add(TestObject.FIELD_MY_LIST_OF_STRINGS, "bar");
@@ -233,7 +233,7 @@ public class BuilderTest extends TestCase
 
 		// Null test
 		{
-			builder = new Builder(TestObject.TYPE_NAME);
+			builder = new JimmutableBuilder(TestObject.TYPE_NAME);
 			builder.add(TestObject.FIELD_MY_LIST_OF_STRINGS, "foo");
 			builder.add(TestObject.FIELD_MY_LIST_OF_STRINGS, (String) null);
 			builder.add(TestObject.FIELD_MY_LIST_OF_STRINGS, "bar");
@@ -252,9 +252,9 @@ public class BuilderTest extends TestCase
 		// test a builder's create a modified version of an existing object
 		// functionality...
 
-		Builder builder;
+		JimmutableBuilder builder;
 
-		builder = new Builder(TestObject.TYPE_NAME);
+		builder = new JimmutableBuilder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_FLOAT, 3.14159f);
 
 		TestObject first = (TestObject) builder.create();
@@ -262,7 +262,7 @@ public class BuilderTest extends TestCase
 		assertTrue(first != null);
 		assertEquals(first.my_float, 3.14159f);
 
-		builder = new Builder(first);
+		builder = new JimmutableBuilder(first);
 		builder.set(TestObject.FIELD_MY_STRING, "foo");
 
 		TestObject second = (TestObject) builder.create();
@@ -378,7 +378,7 @@ public class BuilderTest extends TestCase
 		testOneBook(null);
 
 		{
-			Builder builder = new Builder(Book.TYPE_NAME);
+			JimmutableBuilder builder = new JimmutableBuilder(Book.TYPE_NAME);
 			builder.set(Book.FIELD_TITLE, "Of Mice and Men");
 			builder.add(Book.FIELD_AUTHORS, "John Steinbeck");
 			builder.set(Book.FIELD_BINDING, BindingType.TRADE_PAPER_BACK);
@@ -394,12 +394,12 @@ public class BuilderTest extends TestCase
 	}
 
 	public void testSerilizationforSilent() {
-		Builder builder = new Builder(TestObject.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(TestObject.TYPE_NAME);
 
 		builder.set(TestObject.FIELD_MY_STRING, "This Should fail!");
 		assertNull(builder.createSilent(null));
 		
-		Builder other_builder = new Builder(TestObject.TYPE_NAME);
+		JimmutableBuilder other_builder = new JimmutableBuilder(TestObject.TYPE_NAME);
 
 		other_builder.set(TestObject.FIELD_MY_STRING, "This Should Not fail!");
 		
@@ -408,7 +408,7 @@ public class BuilderTest extends TestCase
 	}
 	
 	public void testSerilizationforNotSilent() {
-		Builder builder = new Builder(TestObject.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(TestObject.TYPE_NAME);
 		Boolean fail = true;
 		builder.set(TestObject.FIELD_MY_STRING, "This Should fail!");
 		try {
@@ -429,7 +429,7 @@ public class BuilderTest extends TestCase
 	
 	public void testStringIntMap()
 	{
-		Builder builder = new Builder(TestObject.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(TestObject.TYPE_NAME);
 
 		builder.addMapEntry(TestObject.FIELD_MY_STRING_INT_MAP, "foo", 2);
 		builder.addMapEntry(TestObject.FIELD_MY_STRING_INT_MAP, "bar", 17);
@@ -457,7 +457,7 @@ public class BuilderTest extends TestCase
 		Book of_mice_and_men, the_great_divorce, the_screwtape_letters;
 
 		{
-			Builder builder = new Builder(Book.TYPE_NAME);
+			JimmutableBuilder builder = new JimmutableBuilder(Book.TYPE_NAME);
 			builder.set(Book.FIELD_TITLE, "Of Mice and Men");
 			builder.add(Book.FIELD_AUTHORS, "John Steinbeck");
 			builder.set(Book.FIELD_BINDING, BindingType.TRADE_PAPER_BACK);
@@ -470,7 +470,7 @@ public class BuilderTest extends TestCase
 		}
 
 		{
-			Builder builder = new Builder(Book.TYPE_NAME);
+			JimmutableBuilder builder = new JimmutableBuilder(Book.TYPE_NAME);
 			builder.set(Book.FIELD_TITLE, "The Great Divorce");
 			builder.add(Book.FIELD_AUTHORS, "C.S. Lewis");
 			builder.set(Book.FIELD_BINDING, BindingType.TRADE_PAPER_BACK);
@@ -483,7 +483,7 @@ public class BuilderTest extends TestCase
 		}
 
 		{
-			Builder builder = new Builder(Book.TYPE_NAME);
+			JimmutableBuilder builder = new JimmutableBuilder(Book.TYPE_NAME);
 			builder.set(Book.FIELD_TITLE, "The Screwtape Letters");
 			builder.add(Book.FIELD_AUTHORS, "C.S. Lewis");
 			builder.set(Book.FIELD_BINDING, BindingType.TRADE_PAPER_BACK);
@@ -495,7 +495,7 @@ public class BuilderTest extends TestCase
 			assertTrue(the_screwtape_letters != null);
 		}
 
-		Builder builder = new Builder(TestObject.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(TestObject.TYPE_NAME);
 
 		builder.addMapEntry(TestObject.FIELD_MY_INT_BOOK_MAP, 17, of_mice_and_men);
 
@@ -522,7 +522,7 @@ public class BuilderTest extends TestCase
 
 	public void testOneString( String value )
 	{
-		Builder builder = new Builder(TestObject.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_STRING, value);
 
 		TestObject obj = (TestObject) builder.create();
@@ -533,7 +533,7 @@ public class BuilderTest extends TestCase
 
 	public void testOneEnum( BindingType value )
 	{
-		Builder builder = new Builder(TestObject.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_ENUM, value);
 
 		TestObject obj = (TestObject) builder.create();
@@ -544,7 +544,7 @@ public class BuilderTest extends TestCase
 
 	public void testOneStringable( BrandCode value )
 	{
-		Builder builder = new Builder(TestObject.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_STRINGABLE, value);
 
 		TestObject obj = (TestObject) builder.create();
@@ -555,7 +555,7 @@ public class BuilderTest extends TestCase
 
 	public void testOneDouble( double value )
 	{
-		Builder builder = new Builder(TestObject.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_DOUBLE, value);
 
 		TestObject obj = (TestObject) builder.create();
@@ -566,7 +566,7 @@ public class BuilderTest extends TestCase
 
 	public void testOneFloat( float value )
 	{
-		Builder builder = new Builder(TestObject.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_FLOAT, value);
 
 		TestObject obj = (TestObject) builder.create();
@@ -577,7 +577,7 @@ public class BuilderTest extends TestCase
 
 	public void testOneLong( long value )
 	{
-		Builder builder = new Builder(TestObject.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_LONG, value);
 
 		TestObject obj = (TestObject) builder.create();
@@ -588,7 +588,7 @@ public class BuilderTest extends TestCase
 
 	public void testOneInt( int value )
 	{
-		Builder builder = new Builder(TestObject.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_INT, value);
 
 		TestObject obj = (TestObject) builder.create();
@@ -599,7 +599,7 @@ public class BuilderTest extends TestCase
 
 	public void testOneShort( short value )
 	{
-		Builder builder = new Builder(TestObject.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_SHORT, value);
 
 		TestObject obj = (TestObject) builder.create();
@@ -610,7 +610,7 @@ public class BuilderTest extends TestCase
 
 	public void testOneByte( byte value )
 	{
-		Builder builder = new Builder(TestObject.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_BYTE, value);
 
 		TestObject obj = (TestObject) builder.create();
@@ -621,7 +621,7 @@ public class BuilderTest extends TestCase
 
 	public void testOneChar( char value )
 	{
-		Builder builder = new Builder(TestObject.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_CHAR, value);
 
 		TestObject obj = (TestObject) builder.create();
@@ -632,7 +632,7 @@ public class BuilderTest extends TestCase
 
 	public void testOneBoolean( boolean value )
 	{
-		Builder builder = new Builder(TestObject.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_BOOLEAN, value);
 
 		TestObject obj = (TestObject) builder.create();
@@ -643,7 +643,7 @@ public class BuilderTest extends TestCase
 
 	public void testOneBook( Book value )
 	{
-		Builder builder = new Builder(TestObject.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(TestObject.TYPE_NAME);
 		builder.set(TestObject.FIELD_MY_BOOK, value);
 
 		TestObject obj = (TestObject) builder.create();

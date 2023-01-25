@@ -2,7 +2,7 @@ package org.jimmutable.cloud.elasticsearch;
 
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.fields.FieldList;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.common.Day;
 import org.jimmutable.core.serialization.FieldName;
 import org.joda.time.DateTime;
@@ -39,7 +39,7 @@ public class MyIndexable implements Indexable
 
 	static
 	{
-		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
 
 		b.add(SearchIndexDefinition.FIELD_FIELDS, theBoolean);
 		b.add(SearchIndexDefinition.FIELD_FIELDS, theText);

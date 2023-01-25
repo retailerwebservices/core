@@ -23,7 +23,7 @@ import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldType;
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.fields.FieldCollection;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.objects.common.Day;
 import org.jimmutable.core.objects.common.time.Instant;
@@ -199,7 +199,7 @@ public class SearchSortIntegrationTest
 		
 		static
 		{
-			Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+			JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
 
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
@@ -324,7 +324,7 @@ public class SearchSortIntegrationTest
 		
 		static
 		{
-			Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+			JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
 
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
@@ -462,7 +462,7 @@ public class SearchSortIntegrationTest
 		
 		static
 		{
-			Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+			JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
 
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
@@ -604,7 +604,7 @@ public class SearchSortIntegrationTest
 		
 		static
 		{
-			Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+			JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
 
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
@@ -761,7 +761,7 @@ public class SearchSortIntegrationTest
 		
 		static
 		{
-			Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+			JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
 
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
@@ -892,7 +892,7 @@ public class SearchSortIntegrationTest
 		
 		static
 		{
-			Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+			JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
 
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
@@ -1037,7 +1037,7 @@ public class SearchSortIntegrationTest
 		
 		static
 		{
-			Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+			JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
 
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
@@ -1163,7 +1163,7 @@ public class SearchSortIntegrationTest
 		
 		static
 		{
-			Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+			JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
 
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
@@ -1301,7 +1301,7 @@ public class SearchSortIntegrationTest
 		
 		static
 		{
-			Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+			JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
 
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
@@ -1428,7 +1428,7 @@ public class SearchSortIntegrationTest
 		
 		static
 		{
-			Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+			JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
 
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
@@ -1568,7 +1568,7 @@ public class SearchSortIntegrationTest
 		
 		static
 		{
-			Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+			JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
 
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
@@ -1695,7 +1695,7 @@ public class SearchSortIntegrationTest
 		
 		static
 		{
-			Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+			JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
 
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
@@ -1836,7 +1836,7 @@ public class SearchSortIntegrationTest
 		
 		static
 		{
-			Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+			JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
 
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
@@ -1963,7 +1963,7 @@ public class SearchSortIntegrationTest
 		
 		static
 		{
-			Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+			JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
 
 			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
 			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);

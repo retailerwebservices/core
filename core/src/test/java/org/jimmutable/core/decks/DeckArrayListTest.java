@@ -6,7 +6,7 @@ import java.util.List;
 import org.jimmutable.core.examples.book.BindingType;
 import org.jimmutable.core.examples.book.Book;
 import org.jimmutable.core.examples.book.BookDeckList;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 
@@ -41,7 +41,7 @@ public class DeckArrayListTest extends TestCase
 		List<String> authors = new ArrayList();
 		authors.add("John Steinbeck");
 
-		Builder builder = new Builder(BookDeckList.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(BookDeckList.TYPE_NAME);
 
 		builder.add(BookDeckList.FIELD_CONTENTS, new Book("Grapes of Wrath", 1211, "33242347234", BindingType.TRADE_PAPER_BACK, authors));
 		builder.add(BookDeckList.FIELD_CONTENTS, new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, authors));
@@ -57,7 +57,7 @@ public class DeckArrayListTest extends TestCase
 
 		// now test an "append" builder...
 
-		builder = new Builder(first_library);
+		builder = new JimmutableBuilder(first_library);
 
 		authors = new ArrayList();
 		authors.add("Thomas Wolfe");
@@ -99,7 +99,7 @@ public class DeckArrayListTest extends TestCase
 		assertEquals(obj.getSimpleContents().get(2).getSimpleTitle(), "O LOST");
 
 		// Full test
-		Builder builder = new Builder(BookDeckList.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(BookDeckList.TYPE_NAME);
 
 		builder.add(BookDeckList.FIELD_CONTENTS, new Book("Grapes of Wrath", 1211, "33242347234", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
 		builder.add(BookDeckList.FIELD_CONTENTS, new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
@@ -123,7 +123,7 @@ public class DeckArrayListTest extends TestCase
 		assertEquals(obj.getSimpleContents().get(2).getSimpleTitle(), "O LOST");
 
 		// Full test
-		Builder builder = new Builder(BookDeckList.TYPE_NAME);
+		JimmutableBuilder builder = new JimmutableBuilder(BookDeckList.TYPE_NAME);
 
 		builder.add(BookDeckList.FIELD_CONTENTS, new Book("Grapes of Wrath", 1211, "33242347234", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));
 		builder.add(BookDeckList.FIELD_CONTENTS, new Book("Of Mice and Men", 1211, "32423423711", BindingType.TRADE_PAPER_BACK, "John Steinbeck"));

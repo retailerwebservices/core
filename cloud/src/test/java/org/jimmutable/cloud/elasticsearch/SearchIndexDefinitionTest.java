@@ -7,7 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.jimmutable.core.exceptions.SerializeException;
 import org.jimmutable.core.exceptions.ValidationException;
-import org.jimmutable.core.objects.Builder;
+import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.serialization.FieldName;
 
@@ -32,7 +32,7 @@ public class SearchIndexDefinitionTest
 	public void valid()
 	{
 
-		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
 
 		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("fboolean"), SearchIndexFieldType.BOOLEAN));
 		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("ftext"), SearchIndexFieldType.TEXT));
@@ -65,7 +65,7 @@ public class SearchIndexDefinitionTest
 	public void nullSearchIndexFeildDefintion()
 	{
 
-		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
 
 		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("spaghetti"), SearchIndexFieldType.BOOLEAN));
 		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(null, SearchIndexFieldType.TEXT));
@@ -76,7 +76,7 @@ public class SearchIndexDefinitionTest
 	public void emptyFields()
 	{
 
-		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
 
 		b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, new IndexDefinition("foo_bar_v2"));
 
@@ -93,7 +93,7 @@ public class SearchIndexDefinitionTest
 	public void serializationException()
 	{
 
-		Builder b = new Builder(SearchIndexDefinition.TYPE_NAME);
+		JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
 
 		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("spaghetti"), SearchIndexFieldType.BOOLEAN));
 		b.add(SearchIndexDefinition.FIELD_FIELDS, new SearchIndexFieldDefinition(new FieldName("meatballs"), SearchIndexFieldType.TEXT));
