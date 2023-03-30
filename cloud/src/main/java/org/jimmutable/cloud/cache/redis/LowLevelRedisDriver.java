@@ -25,8 +25,8 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisPubSub;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.params.ScanParams;
+import redis.clients.jedis.resps.ScanResult;
 
 /**
  * Low level driver class for Redis.
@@ -71,7 +71,10 @@ public class LowLevelRedisDriver
 		config.setMinIdle(MIN_TOTAL_IDLE);
 		config.setTestOnBorrow(false);
 
-		logger.info("[LowLevelRedisDriver.init] starting LowLevelRedisDriver on host: " + host + ", port: " + port);
+		logger.info("[LowLevelRedisDriver.init] starting LowLevelRedisDriver on host: "
+				+ host
+				+ ", port: "
+				+ port);
 
 		pool = new JedisPool(config, host, port, SOCKET_TIMEOUT);
 		cache = new RedisCache();
@@ -272,7 +275,8 @@ public class LowLevelRedisDriver
 					}
 					catch ( Exception e )
 					{
-						logger.error(String.format("Redis delete operation for cache key %s failed on attempt %d.", key.getSimpleValue()), attempt + 1, e);
+						logger.error(String.format("Redis delete operation for cache key %s failed on attempt %d.", key.getSimpleValue()), attempt
+								+ 1, e);
 					}
 				}
 				catch ( Exception e )
@@ -406,7 +410,10 @@ public class LowLevelRedisDriver
 				ScanParams params = new ScanParams();
 
 				if ( prefix != null )
-					params = params.match(app + "/" + prefix + "*");
+					params = params.match(app
+							+ "/"
+							+ prefix
+							+ "*");
 
 				params.count(100);
 
@@ -420,7 +427,8 @@ public class LowLevelRedisDriver
 					{
 						try
 						{
-							key = key.substring(app_str.length() + 1);
+							key = key.substring(app_str.length()
+									+ 1);
 
 							operation.performOperation(LowLevelRedisDriver.this, new CacheKey(key));
 						}
@@ -498,7 +506,9 @@ public class LowLevelRedisDriver
 
 		private String getRedisTopicString( ApplicationId app, SignalTopicId topic )
 		{
-			return app + "/" + topic;
+			return app
+					+ "/"
+					+ topic;
 		}
 
 		@SuppressWarnings("rawtypes")
@@ -629,7 +639,10 @@ public class LowLevelRedisDriver
 
 		private String getKey( ApplicationId app, QueueId queue_id )
 		{
-			return "$queue/" + app + "/" + queue_id;
+			return "$queue/"
+					+ app
+					+ "/"
+					+ queue_id;
 		}
 
 		/**
@@ -703,7 +716,8 @@ public class LowLevelRedisDriver
 			try ( Jedis jedis = pool.getResource(); )
 			{
 				// Bulk updates require a carriage return and line feed at the end of objects
-				jedis.lpush(getKey(app, queue_id), message.serialize(Format.JSON) + "\r\n");
+				jedis.lpush(getKey(app, queue_id), message.serialize(Format.JSON)
+						+ "\r\n");
 
 				if ( r.nextInt(100) == 52 ) // about once per one hundred inserts, trim to 10_000 elements, for performance
 				{
@@ -843,7 +857,8 @@ public class LowLevelRedisDriver
 				logger.error("Could not get active/idle counts", e);
 			}
 
-			int total = active + idle;
+			int total = active
+					+ idle;
 			String log = String.format("JedisPool: Active=%d, Idle=%d, Waiters=%d, total=%d, maxTotal=%d, minIdle=%d, maxIdle=%d", active, idle, pool.getNumWaiters(), total, MAX_TOTAL_CONS, MAX_IDLE_CONS, MAX_TOTAL_CONS);
 
 			return log;
