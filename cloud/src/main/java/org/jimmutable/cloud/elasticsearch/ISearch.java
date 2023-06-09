@@ -5,11 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.elasticsearch.action.search.ClearScrollRequest;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchScrollRequest;
-import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
@@ -17,6 +12,12 @@ import org.jimmutable.cloud.storage.IStorage;
 import org.jimmutable.core.objects.common.Kind;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.ICsvListWriter;
+
+import co.elastic.clients.elasticsearch.core.ClearScrollRequest;
+import co.elastic.clients.elasticsearch.core.ScrollRequest;
+import co.elastic.clients.elasticsearch.core.ScrollResponse;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
 
 /**
  * Any class that implements Search should have the following implementations
@@ -103,7 +104,7 @@ public interface ISearch
 	 *            {@link ISearch#search(IndexDefinition index, SearchRequest request)}
 	 * @return SearchResponse with all matching searches
 	 */
-	public SearchResponse searchRaw( SearchRequest request );
+	public SearchResponse<Indexable> searchRaw( SearchRequest request );
 
 	public List<OneSearchResultWithTyping> search( IndexDefinition index, StandardSearchRequest request, List<OneSearchResultWithTyping> default_value );
 
@@ -197,7 +198,7 @@ public interface ISearch
 	 */
 	public boolean putAllFieldMappings( SearchIndexDefinition index );
 
-	public SearchResponse searchScrollRaw( SearchScrollRequest request );
+	public ScrollResponse<Indexable> searchScrollRaw( ScrollRequest request );
 
 	boolean clearScrollRaw( ClearScrollRequest request );
 

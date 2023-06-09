@@ -2,22 +2,26 @@ package org.jimmutable.cloud.elasticsearch;
 
 import static org.elasticsearch.xcontent.XContentFactory.jsonBuilder;
 
+import java.io.ByteArrayInputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
-import org.elasticsearch.xcontent.XContentBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
+import org.elasticsearch.xcontent.XContentBuilder;
 import org.jimmutable.cloud.servlet_utils.search.SortBy;
 import org.jimmutable.cloud.servlet_utils.search.SortDirection;
 import org.jimmutable.core.objects.common.time.Instant;
 import org.jimmutable.core.objects.common.time.TimeOfDay;
 import org.jimmutable.core.serialization.FieldName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import co.elastic.clients.elasticsearch._types.mapping.SourceField;
+import co.elastic.clients.elasticsearch._types.mapping.TypeMapping;
 
 /**
  * TODO Once we're ready to fully deprecate the TransportClient used in Dev, the
@@ -60,6 +64,30 @@ public class ElasticSearchCommon
 			logger.error(String.format("Failed to generate mapping json for index %s", index.getSimpleIndex().getSimpleValue()), e);
 			return default_value;
 		}
+	}
+
+	public static TypeMapping getMappingBuilderTypeMapping( SearchIndexDefinition index, TypeMapping default_value )
+	{
+		XContentBuilder content_builder = getMappingBuilder(index, null);
+		if ( content_builder == null )
+		{
+			return default_value;
+		}
+		String json = content_builder.getOutputStream().toString();
+		return new TypeMapping.Builder().withJson(new ByteArrayInputStream(json.getBytes())).build();
+
+	}
+
+	public static SourceField getMappingBuilderSourceField( SearchIndexDefinition index, SourceField default_value )
+	{
+		XContentBuilder content_builder = getMappingBuilder(index, null);
+		if ( content_builder == null )
+		{
+			return default_value;
+		}
+		String json = content_builder.getOutputStream().toString();
+		return new SourceField.Builder().withJson(new ByteArrayInputStream(json.getBytes())).build();
+
 	}
 
 	protected static boolean shutdownDocumentUpsertThreadPool( int timeout_seconds )
