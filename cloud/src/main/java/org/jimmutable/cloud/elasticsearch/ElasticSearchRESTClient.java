@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.http.HttpHost;
@@ -46,7 +48,9 @@ import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.ICsvListWriter;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch._types.ElasticsearchException;
+import co.elastic.clients.elasticsearch._helpers.bulk.BulkIngester;
+import co.elastic.clients.elasticsearch._helpers.bulk.BulkListener;
+import co.elastic.clients.elasticsearch._types.ErrorCause;
 import co.elastic.clients.elasticsearch._types.FieldSort;
 import co.elastic.clients.elasticsearch._types.Refresh;
 import co.elastic.clients.elasticsearch._types.Result;
@@ -68,7 +72,6 @@ import co.elastic.clients.elasticsearch.core.ScrollResponse;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem;
-import co.elastic.clients.elasticsearch.core.bulk.IndexOperation;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest;
 import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
@@ -104,10 +107,6 @@ public class ElasticSearchRESTClient implements ISearch
 	private static final String PRODUCTION_ELASTICSEARCH_PASSWORD = "production_elastic_password";
 
 	private static final String PRODUCTION_ELASTICSEARCH_USERNAME = "production_elastic_username";
-
-	private static final String ELASTICSEARCH_PASSWORD = "elastic_password";
-
-	private static final String ELASTICSEARCH_USERNAME = "elastic_username";
 
 	private static final int MAX_NO_REQUESTS_IN_BULK_REQUEST = 2000;
 	private static final Logger logger = LoggerFactory.getLogger(ElasticSearchRESTClient.class);
@@ -291,11 +290,6 @@ public class ElasticSearchRESTClient implements ISearch
 		{
 
 			CreateIndexRequest request = CreateIndexRequest.of(i -> i.index(index_name)//
-					// .settings(new
-					// IndexSettings.Builder().shards(1).numberOfReplicas("1").build())
-					// .masterTimeout(new
-					// Time.Builder().time(TimeValue.timeValueMinutes(5).getMillis()
-					// + "ms").build())//
 					.mappings(ElasticSearchCommon.getMappingBuilderTypeMapping(index, null)));//
 
 			CreateIndexResponse createResponse = esClient.indices().create(request);
@@ -594,10 +588,6 @@ public class ElasticSearchRESTClient implements ISearch
 		}
 		try
 		{
-			// Request request = new Request("GET", "/"
-			// + index.getSimpleValue());
-			// high_level_rest_client.getLowLevelClient().performRequest(request);
-			// Existrequests exist_request = Existrequest
 			ExistsRequest exist_request = ExistsRequest.of(i -> i.index(index.getSimpleValue()));
 			BooleanResponse resp = esClient.indices().exists(exist_request);
 
@@ -643,7 +633,6 @@ public class ElasticSearchRESTClient implements ISearch
 		// Has to be atomic so if it fails we don't add a new alias
 		try
 		{
-			// IndicesAliasesRequest request = new IndicesAliasesRequest();
 
 			UpdateAliasesRequest.Builder request_builder = new UpdateAliasesRequest.Builder();
 
@@ -655,17 +644,10 @@ public class ElasticSearchRESTClient implements ISearch
 			// deletes old indices for (String index : indices_to_delete) { AliasActions
 			for ( String old_index : old_indices )
 			{
-				// Action delete_alias_action = new
-				// AliasActions(AliasActions.Type.REMOVE_INDEX);
-				// delete_alias_action.index(old_index);
+
 				actions.add(new Action.Builder().remove(new RemoveAction.Builder().index(old_index).build()).build());
 
-				// actions.add(delete_alias_action);
 			}
-
-			// AcknowledgedResponse indicesAliasesResponse =
-			// high_level_rest_client.indices().updateAliases(request,
-			// RequestOptions.DEFAULT);
 
 			request_builder.actions(actions);
 			UpdateAliasesResponse indicesAliasesResponse = esClient.indices().updateAliases(request_builder.build());
@@ -734,34 +716,14 @@ public class ElasticSearchRESTClient implements ISearch
 					+ " was unable to successfully run. This Kind may not be fully re-indexed or there may currently not be any entries of Kind in Storage. The index will not be swapped on the alias.");
 			return false;
 		}
-		BulkResponse result;
-		try
-		{
-			result = esClient.bulk(scan_handler.getSimpleOps());
-		}
-		catch ( ElasticsearchException e )
-		{
-			logger.error(String.format("Failed to execute bulk reindex upsert for index %s due to failures to upsert", index_name), e);
-			return false;
-		}
-		catch ( IOException e )
-		{
-			logger.error(String.format("Failed to execute bulk reindex upsert for index %s due to failures to upsert", index_name), e);
-			return false;
-		}
+		scan_handler.injestor.close();
 
 		logger.info(String.format("Total number of requests successfully submited to index %s: %d. Failures: %d ", index_name, scan_handler.getSimpleSuccessfullyUpsertedDocumentCount(), scan_handler.getSimpleFailedUpsertDocumentCount()));
 
-		if ( scan_handler.hasElasticSearchUpsertFailures() || result == null || result.errors() )
+		if ( scan_handler.hasElasticSearchUpsertFailures() )
 		{
 			logger.error(String.format("Failed to execute bulk reindex upsert for index %s due to failures to upsert", index_name));
-			if ( result != null )
-			{
-				for ( BulkResponseItem item : result.items() )
-				{
-					logger.error(item.toString());
-				}
-			}
+
 			return false;
 		}
 
@@ -809,16 +771,8 @@ public class ElasticSearchRESTClient implements ISearch
 			try
 			{
 
-				// GetAliasRequest request = GetAliasRequest.of(i ->
-				// i.index(index.getSimpleIndex().getSimpleValue()));
 				GetMappingRequest request = GetMappingRequest.of(i -> i.index(index.getSimpleIndex().getSimpleValue()));
 				GetMappingResponse resp = esClient.indices().getMapping(request);// .getAlias(request);
-				// Response resp =
-				// high_level_rest_client.getLowLevelClient().performRequest(request);
-				// String response_body = EntityUtils.toString(resp.getEntity());
-
-				// JsonNode node = new
-				// ObjectMapper().readTree(response_body).findValue("mappings").findValue("properties");
 
 				Map<String, String> actual = new HashMap<String, String>();
 
@@ -1159,11 +1113,71 @@ public class ElasticSearchRESTClient implements ISearch
 		private AtomicInteger successful_upsert_document_count = new AtomicInteger();
 		private AtomicInteger failed_upsert_document_count = new AtomicInteger();
 
-		private List<IndexOperation<Map<String, Object>>> ops = new ArrayList<IndexOperation<Map<String, Object>>>();
+		private AtomicBoolean has_failures = new AtomicBoolean();
+
+		BulkListener<Void> listener;
+		BulkIngester<Void> injestor;
 
 		private BulkElasticSearchUpsertScanHandler( String index_name )
 		{
 			this.index_name = index_name;
+			listener = createBulkListener();
+			injestor = BulkIngester.of(b -> b.client(esClient).maxOperations(MAX_NO_REQUESTS_IN_BULK_REQUEST).flushInterval(1l, TimeUnit.SECONDS).listener(listener));
+		}
+
+		private BulkListener<Void> createBulkListener()
+		{
+			return new BulkListener<Void>()
+			{
+				@Override
+				public void beforeBulk( long executionId, BulkRequest request, List<Void> contexts )
+				{
+				}
+
+				@Override
+				public void afterBulk( long executionId, BulkRequest request, List<Void> contexts, BulkResponse response )
+				{
+					int success_count = 0;
+					int failure_count = 0;
+					for ( BulkResponseItem bulk_item_response : response.items() )
+					{
+						if ( bulk_item_response.error() != null )
+						{
+							ErrorCause failure = bulk_item_response.error();
+							logger.error("Failure on bulk upsert occurred with index "
+									+ index_name
+									+ " id "
+									+ bulk_item_response.id()
+									+ ". Failure msg "
+									+ failure.reason());
+							failure_count++;
+						}
+						else
+						{
+							success_count++;
+						}
+					}
+
+					// Update shared variable across threads only once per bulk upsert to reduce
+					// overhead of locking for the atomic variable
+					if ( failure_count != 0 )
+					{
+						failed_upsert_document_count.addAndGet(failure_count);
+					}
+					successful_upsert_document_count.addAndGet(success_count);
+
+				}
+
+				@Override
+				public void afterBulk( long executionId, BulkRequest request, List<Void> contexts, Throwable failure )
+				{
+					logger.error("Failure for full successful bulk upsert for index name "
+							+ index_name, failure);
+					has_failures.set(true);
+
+				}
+			};
+
 		}
 
 		@SuppressWarnings("rawtypes")
@@ -1207,15 +1221,8 @@ public class ElasticSearchRESTClient implements ISearch
 				indexable.writeSearchDocument(writer);
 				Map<String, Object> data = writer.getSimpleFieldsMap();
 				String document_name = indexable.getSimpleSearchDocumentId().getSimpleValue();
+				injestor.add(op -> op.index(index -> index.index(index_name).id(document_name).document(data)));
 
-				IndexOperation<Map<String, Object>> request = IndexOperation.of(i -> i.index(index_name)//
-						.id(document_name)//
-						.document(data));
-				// new IndexRequest(index_name).id(document_name).source(data).timeout("5m");
-				if ( request != null )
-				{
-					ops.add(request);
-				}
 			}
 			catch ( Exception e )
 			{
@@ -1236,17 +1243,6 @@ public class ElasticSearchRESTClient implements ISearch
 		private int getSimpleFailedUpsertDocumentCount()
 		{
 			return failed_upsert_document_count.get();
-		}
-
-		private BulkRequest getSimpleOps()
-		{
-			BulkRequest.Builder br = new BulkRequest.Builder();
-			for ( IndexOperation<Map<String, Object>> index_request : ops )
-			{
-				br.operations(op -> op.index(index_request));
-			}
-
-			return br.build();
 		}
 
 	}
