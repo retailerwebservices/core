@@ -3,11 +3,6 @@ package org.jimmutable.cloud.elasticsearch;
 import java.util.List;
 import java.util.Set;
 
-import org.elasticsearch.action.search.ClearScrollRequest;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchScrollRequest;
-import org.jimmutable.cloud.servlet_utils.common_objects.JSONServletResponse;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
@@ -16,101 +11,107 @@ import org.jimmutable.core.objects.common.Kind;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.ICsvListWriter;
 
+import co.elastic.clients.elasticsearch.core.ClearScrollRequest;
+import co.elastic.clients.elasticsearch.core.ScrollRequest;
+import co.elastic.clients.elasticsearch.core.ScrollResponse;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+
 public class StubSearch implements ISearch
 {
 
 	@Override
-	public boolean shutdownDocumentUpsertThreadPool(int seconds)
+	public boolean shutdownDocumentUpsertThreadPool( int seconds )
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
 	@Override
-	public boolean upsertDocumentAsync(Indexable object)
+	public boolean upsertDocumentAsync( Indexable object )
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
 	@Override
-	public SearchResponse searchRaw(SearchRequest request)
+	public SearchResponse<Indexable> searchRaw( SearchRequest request )
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
 	@Override
-	public SearchResponse searchScrollRaw(SearchScrollRequest request)
+	public ScrollResponse<Indexable> searchScrollRaw( ScrollRequest request )
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
 	@Override
-	public boolean clearScrollRaw(ClearScrollRequest request)
+	public boolean clearScrollRaw( ClearScrollRequest request )
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
 	@Override
-	public boolean indexExists(IndexDefinition index)
+	public boolean indexExists( IndexDefinition index )
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
 	@Override
-	public boolean indexExists(SearchIndexDefinition index)
+	public boolean indexExists( SearchIndexDefinition index )
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
 	@Override
-	public boolean indexProperlyConfigured(SearchIndexDefinition index)
+	public boolean indexProperlyConfigured( SearchIndexDefinition index )
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
 	@Override
-	public boolean upsertIndex(SearchIndexDefinition index)
+	public boolean upsertIndex( SearchIndexDefinition index )
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
 	@Override
-	public boolean writeAllToCSV(IndexDefinition index, String query_string, List<SearchFieldId> sorted_header, ICsvListWriter list_writer, CellProcessor[] cell_processors)
+	public boolean writeAllToCSV( IndexDefinition index, String query_string, List<SearchFieldId> sorted_header, ICsvListWriter list_writer, CellProcessor[] cell_processors )
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
 	@Override
-	public boolean deleteDocument(IndexDefinition index, SearchDocumentId document_id)
+	public boolean deleteDocument( IndexDefinition index, SearchDocumentId document_id )
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
 	@Override
-	public boolean upsertDocument(Indexable object)
+	public boolean upsertDocument( Indexable object )
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
 	@Override
-	public boolean upsertQuietDocumentAsync(Indexable object)
+	public boolean upsertQuietDocumentAsync( Indexable object )
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
 	@Override
-	public boolean reindex(IStorage storage, Kind... kind)
+	public boolean reindex( IStorage storage, Kind... kind )
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
 	@Override
-	public boolean putAllFieldMappings(SearchIndexDefinition index)
+	public boolean putAllFieldMappings( SearchIndexDefinition index )
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
 
 	@Override
-	public List<OneSearchResultWithTyping> search(IndexDefinition index, StandardSearchRequest request, List<OneSearchResultWithTyping> default_value)
+	public List<OneSearchResultWithTyping> search( IndexDefinition index, StandardSearchRequest request, List<OneSearchResultWithTyping> default_value )
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}

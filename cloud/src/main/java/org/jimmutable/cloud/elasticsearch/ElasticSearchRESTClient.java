@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -23,48 +22,18 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
-import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Level;
-import org.elasticsearch.action.DocWriteResponse.Result;
-import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
-import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.bulk.BulkItemResponse;
-import org.elasticsearch.action.bulk.BulkProcessor;
-import org.elasticsearch.action.bulk.BulkRequest;
-import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.delete.DeleteRequest;
-import org.elasticsearch.action.delete.DeleteResponse;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.search.ClearScrollRequest;
-import org.elasticsearch.action.search.ClearScrollResponse;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchScrollRequest;
-import org.elasticsearch.action.support.WriteRequest.RefreshPolicy;
-import org.elasticsearch.action.support.master.AcknowledgedResponse;
-import org.elasticsearch.client.Request;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.indices.CreateIndexRequest;
-import org.elasticsearch.client.indices.CreateIndexResponse;
-import org.elasticsearch.client.indices.PutMappingRequest;
 import org.elasticsearch.core.TimeValue;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryShardException;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
-import org.elasticsearch.search.sort.SortOrder;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.EnvironmentType;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 import org.jimmutable.cloud.servlet_utils.search.SortBy;
+import org.jimmutable.cloud.servlet_utils.search.SortDirection;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.storage.IStorage;
 import org.jimmutable.cloud.storage.StorageKey;
@@ -78,8 +47,53 @@ import org.slf4j.LoggerFactory;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.ICsvListWriter;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._helpers.bulk.BulkIngester;
+import co.elastic.clients.elasticsearch._helpers.bulk.BulkListener;
+import co.elastic.clients.elasticsearch._types.ErrorCause;
+import co.elastic.clients.elasticsearch._types.FieldSort;
+import co.elastic.clients.elasticsearch._types.Refresh;
+import co.elastic.clients.elasticsearch._types.Result;
+import co.elastic.clients.elasticsearch._types.SortOptions;
+import co.elastic.clients.elasticsearch._types.SortOrder;
+import co.elastic.clients.elasticsearch._types.Time;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.QueryStringQuery;
+import co.elastic.clients.elasticsearch.core.BulkRequest;
+import co.elastic.clients.elasticsearch.core.BulkResponse;
+import co.elastic.clients.elasticsearch.core.ClearScrollRequest;
+import co.elastic.clients.elasticsearch.core.ClearScrollResponse;
+import co.elastic.clients.elasticsearch.core.DeleteRequest;
+import co.elastic.clients.elasticsearch.core.DeleteResponse;
+import co.elastic.clients.elasticsearch.core.IndexRequest;
+import co.elastic.clients.elasticsearch.core.IndexResponse;
+import co.elastic.clients.elasticsearch.core.ScrollRequest;
+import co.elastic.clients.elasticsearch.core.ScrollResponse;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem;
+import co.elastic.clients.elasticsearch.core.search.Hit;
+import co.elastic.clients.elasticsearch.indices.CreateIndexRequest;
+import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
+import co.elastic.clients.elasticsearch.indices.DeleteIndexRequest;
+import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
+import co.elastic.clients.elasticsearch.indices.ExistsRequest;
+import co.elastic.clients.elasticsearch.indices.GetAliasRequest;
+import co.elastic.clients.elasticsearch.indices.GetAliasResponse;
+import co.elastic.clients.elasticsearch.indices.GetMappingRequest;
+import co.elastic.clients.elasticsearch.indices.GetMappingResponse;
+import co.elastic.clients.elasticsearch.indices.PutMappingRequest;
+import co.elastic.clients.elasticsearch.indices.PutMappingResponse;
+import co.elastic.clients.elasticsearch.indices.UpdateAliasesRequest;
+import co.elastic.clients.elasticsearch.indices.UpdateAliasesResponse;
+import co.elastic.clients.elasticsearch.indices.update_aliases.Action;
+import co.elastic.clients.elasticsearch.indices.update_aliases.AddAction;
+import co.elastic.clients.elasticsearch.indices.update_aliases.RemoveAction;
+import co.elastic.clients.json.JsonData;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.ElasticsearchTransport;
+import co.elastic.clients.transport.endpoints.BooleanResponse;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
 
 /**
  * TODO Once we're ready to fully deprecate the TransportClient used in Dev, the
@@ -102,8 +116,7 @@ public class ElasticSearchRESTClient implements ISearch
 	 * RestClient is more robust, and it doesn't strictly require us to have the
 	 * same version on client/server.
 	 */
-	protected volatile RestHighLevelClient high_level_rest_client;
-
+	protected volatile ElasticsearchClient esClient;
 	private String PRODUCTION_ELASTICSEARCH_HOST = //
 			"7381bd4eeaa34c1f8e197493b45987b1.us-west-2.aws.found.io";
 	// "f8bfe258266ee6bd44cece0dde4326d5.us-west-2.aws.found.io";
@@ -122,9 +135,10 @@ public class ElasticSearchRESTClient implements ISearch
 		// Once we deprecate the TransportClient in dev, we can simply add a
 		// RestClientBuilder in construction, that will swap between dev and prod
 		EnvironmentType type = CloudExecutionEnvironment.getEnvironmentTypeFromSystemProperty(null);
+		RestClientBuilder lowLevelClientBuilder;
 		if ( type == EnvironmentType.PRODUCTION )
 		{
-			RestClientBuilder lowLevelClientBuilder = RestClient.builder(new HttpHost(PRODUCTION_ELASTICSEARCH_HOST, PRODUCTION_ELASTICSEARCH_PORT, "https"));
+			lowLevelClientBuilder = RestClient.builder(new HttpHost(PRODUCTION_ELASTICSEARCH_HOST, PRODUCTION_ELASTICSEARCH_PORT, "https"));
 			String production_elastic_username = System.getProperty(PRODUCTION_ELASTICSEARCH_USERNAME);
 			String production_elastic_password = System.getProperty(PRODUCTION_ELASTICSEARCH_PASSWORD);
 			final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
@@ -154,7 +168,6 @@ public class ElasticSearchRESTClient implements ISearch
 				logger.debug(e.getMessage());
 			}
 
-			high_level_rest_client = new RestHighLevelClient(lowLevelClientBuilder);
 		}
 		else
 		{
@@ -162,7 +175,7 @@ public class ElasticSearchRESTClient implements ISearch
 			String host = NetUtils.extractHostFromHostPortPair(elasticsearch_address, DEFAULT_DEV_ELASTICSEARCH_HOST);
 			int port = NetUtils.extractPortFromHostPortPair(elasticsearch_address, DEFAULT_DEV_ELASTICSEARCH_PORT);
 
-			RestClientBuilder lowLevelClientBuilder = RestClient.builder(new HttpHost(host, port, "http"));
+			lowLevelClientBuilder = RestClient.builder(new HttpHost(host, port, "http"));
 			try
 			{
 
@@ -183,8 +196,10 @@ public class ElasticSearchRESTClient implements ISearch
 				logger.debug(e.getMessage());
 			}
 
-			high_level_rest_client = new RestHighLevelClient(lowLevelClientBuilder);
 		}
+		ElasticsearchTransport transport = new RestClientTransport(lowLevelClientBuilder.build(), new JacksonJsonpMapper());
+
+		esClient = new ElasticsearchClient(transport);
 	}
 
 	public boolean upsertIndex( SearchIndexDefinition index )
@@ -216,22 +231,23 @@ public class ElasticSearchRESTClient implements ISearch
 		String timestamp_index_name = createTimestampIndex(index, null);
 		if ( timestamp_index_name == null )
 		{
-			logger.error("Cannot create a timestamp Index for index " + index);
+			logger.error("Cannot create a timestamp Index for index "
+					+ index);
 			return false;
 		}
 
 		try
 		{
-			IndicesAliasesRequest request = new IndicesAliasesRequest();
+			Action.Builder add_alias_action_builder = new Action.Builder();
+			AddAction.Builder add_action_builder = new AddAction.Builder();
+			add_action_builder.index(timestamp_index_name);
+			add_action_builder.alias(index.getSimpleIndex().getSimpleValue());
+			add_alias_action_builder.add(add_action_builder.build());
 
-			AliasActions add_alias_action = new AliasActions(AliasActions.Type.ADD);
-			add_alias_action.index(timestamp_index_name);
-			add_alias_action.alias(index.getSimpleIndex().getSimpleValue());
-			request.addAliasAction(add_alias_action);
+			UpdateAliasesRequest request = new UpdateAliasesRequest.Builder().actions(Arrays.asList(add_alias_action_builder.build())).build();
+			UpdateAliasesResponse indicesAliasesResponse = esClient.indices().updateAliases(request);
 
-			AcknowledgedResponse indicesAliasesResponse = high_level_rest_client.indices().updateAliases(request, RequestOptions.DEFAULT);
-
-			if ( !indicesAliasesResponse.isAcknowledged() )
+			if ( !indicesAliasesResponse.acknowledged() )
 			{
 				logger.error(String.format("Alias addition not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
 				return false;
@@ -240,7 +256,8 @@ public class ElasticSearchRESTClient implements ISearch
 		}
 		catch ( Exception e )
 		{
-			logger.error("Alias creation failure for index " + index.getSimpleIndex().getSimpleValue(), e);
+			logger.error("Alias creation failure for index "
+					+ index.getSimpleIndex().getSimpleValue(), e);
 			return false;
 		}
 
@@ -252,10 +269,9 @@ public class ElasticSearchRESTClient implements ISearch
 	 * alias(SearchIndexDefinition name).
 	 * 
 	 * @param index
-	 *                          The SearchIndexDefinition that the index will relate
-	 *                          to
+	 *            The SearchIndexDefinition that the index will relate to
 	 * @param default_value
-	 *                          value to return on failure
+	 *            value to return on failure
 	 * @return the new unique index name on success, default_value on failure
 	 */
 
@@ -267,14 +283,18 @@ public class ElasticSearchRESTClient implements ISearch
 			return default_value;
 		}
 
-		String index_name = index.getSimpleIndex().getSimpleValue() + "_" + System.currentTimeMillis();
-
+		String index_name = index.getSimpleIndex().getSimpleValue()
+				+ "_"
+				+ System.currentTimeMillis();
 		try
 		{
-			CreateIndexRequest request = new CreateIndexRequest(index_name).mapping(ElasticSearchCommon.getMappingBuilder(index, null));
-			CreateIndexResponse createResponse = high_level_rest_client.indices().create(request, RequestOptions.DEFAULT);
 
-			if ( !createResponse.isAcknowledged() )
+			CreateIndexRequest request = CreateIndexRequest.of(i -> i.index(index_name)//
+					.mappings(ElasticSearchCommon.getMappingBuilderTypeMapping(index, null)));//
+
+			CreateIndexResponse createResponse = esClient.indices().create(request);
+
+			if ( !createResponse.acknowledged() )
 			{
 				logger.error(String.format("Index Creation not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
 				return default_value;
@@ -313,20 +333,29 @@ public class ElasticSearchRESTClient implements ISearch
 
 		try
 		{
-			String delete_request = "/" + index.getSimpleValue() + "/" + document_id.getTypeName().getSimpleName() + "/" + document_id.getSimpleValue();
+			String delete_request = "/"
+					+ index.getSimpleValue()
+					+ "/"
+					+ document_id.getTypeName().getSimpleName()
+					+ "/"
+					+ document_id.getSimpleValue();
 
-			DeleteRequest del = new DeleteRequest(index.getSimpleValue(), document_id.getSimpleValue()).setRefreshPolicy(RefreshPolicy.IMMEDIATE);
-			DeleteResponse response = high_level_rest_client.delete(del, RequestOptions.DEFAULT);
+			DeleteRequest del = DeleteRequest.of(i -> i.index(index.getSimpleValue())//
+					.id(document_id.getSimpleValue())//
+					.refresh(Refresh.True));
+			DeleteResponse response = esClient.delete(del);
 
-			boolean successfully_deleted = response.getResult().equals(Result.DELETED);
+			boolean successfully_deleted = response.result().equals(Result.Deleted);
 
 			if ( !successfully_deleted )
 			{
-				logger.error("delete unsuccessful for: " + delete_request);
+				logger.error("delete unsuccessful for: "
+						+ delete_request);
 			}
 			else
 			{
-				logger.info("successful delete for: " + delete_request);
+				logger.info("successful delete for: "
+						+ delete_request);
 			}
 
 			return successfully_deleted;
@@ -345,7 +374,11 @@ public class ElasticSearchRESTClient implements ISearch
 		{
 			if ( !deleteIndex(index_name, i) )
 			{
-				logger.error("Could not delete index " + index_name + " with timeout set to " + i + " minutes. Retrying deletion.");
+				logger.error("Could not delete index "
+						+ index_name
+						+ " with timeout set to "
+						+ i
+						+ " minutes. Retrying deletion.");
 			}
 			else
 			{
@@ -362,7 +395,7 @@ public class ElasticSearchRESTClient implements ISearch
 	 * Deletes an entire index
 	 * 
 	 * @param index
-	 *                  SearchIndexDefinition
+	 *            SearchIndexDefinition
 	 * @return boolean - true if successfully deleted, else false
 	 */
 
@@ -376,24 +409,29 @@ public class ElasticSearchRESTClient implements ISearch
 
 		try
 		{
-			DeleteIndexRequest del = new DeleteIndexRequest(index_name);
-			del.timeout(TimeValue.timeValueMinutes(timeout_minutes));
-			AcknowledgedResponse response = high_level_rest_client.indices().delete(del, RequestOptions.DEFAULT);
+			DeleteIndexRequest del = DeleteIndexRequest.of(i -> i.index(index_name)//
+					.timeout(new Time.Builder().time(TimeValue.timeValueMinutes(timeout_minutes).getMillis()
+							+ "ms")//
+							.build()));
+			DeleteIndexResponse response = esClient.indices().delete(del);
 
-			if ( response.isAcknowledged() )
+			if ( response.acknowledged() )
 			{
-				logger.info("successfully deleted: " + index_name);
+				logger.info("successfully deleted: "
+						+ index_name);
 				return true;
 			}
 			else
 			{
-				logger.info("couldn't delete index: " + index_name);
+				logger.info("couldn't delete index: "
+						+ index_name);
 				return false;
 			}
 		}
 		catch ( Exception e )
 		{
-			logger.error("Exception thrown deleting index: " + index_name, e);
+			logger.error("Exception thrown deleting index: "
+					+ index_name, e);
 			return false;
 		}
 	}
@@ -402,16 +440,16 @@ public class ElasticSearchRESTClient implements ISearch
 	 * Upsert a document to a search index
 	 * 
 	 * @param object
-	 *                   The Indexable object
+	 *            The Indexable object
 	 * @return boolean If successful or not
 	 */
 	@Override
 	public boolean upsertDocument( Indexable object )
 	{
-		return upsert(object, RefreshPolicy.WAIT_UNTIL);
+		return upsert(object, Refresh.WaitFor);
 	}
 
-	public boolean upsert( Indexable object, RefreshPolicy refresh_policy )
+	public boolean upsert( Indexable object, Refresh refresh_policy )
 	{
 		if ( object == null )
 		{
@@ -428,15 +466,18 @@ public class ElasticSearchRESTClient implements ISearch
 			String index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
 			String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
 
-			IndexRequest request = new IndexRequest(index_name).id(document_name).source(data).setRefreshPolicy(refresh_policy);
+			IndexRequest<Map<String, Object>> request = IndexRequest.of(i -> i.index(index_name)//
+					.id(document_name)//
+					.refresh(refresh_policy)//
+					.document(data));
 			IndexResponse response = null;
 			try
 			{
-				response = high_level_rest_client.index(request, RequestOptions.DEFAULT);
+				response = esClient.index(request);
 			}
 			catch ( Exception e )
 			{
-				logger.error("Exception thrown deleting index while upserting", e);
+				logger.error("Exception thrown while index while upserting", e);
 				return false;
 			}
 
@@ -447,12 +488,12 @@ public class ElasticSearchRESTClient implements ISearch
 			}
 
 			// Expected results, otherwise log an error
-			if ( response.getResult() != Result.CREATED && response.getResult() != Result.UPDATED )
+			if ( response.result() != Result.Created && response.result() != Result.Updated )
 			{
-				logger.error(String.format("%s %s/%s/%s %s", response.getResult().name(), index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name, data));
+				logger.error(String.format("%s %s/%s/%s %s", response.result().name(), index_name, ElasticSearchCommon.ELASTICSEARCH_DEFAULT_TYPE, document_name, data));
 			}
 
-			boolean success = response.getResult().equals(Result.CREATED) || response.getResult().equals(Result.UPDATED);
+			boolean success = response.result().equals(Result.Created) || response.result().equals(Result.Updated);
 			return success;
 		}
 		catch ( Exception e )
@@ -465,7 +506,7 @@ public class ElasticSearchRESTClient implements ISearch
 	@Override
 	public boolean upsertDocuments( Set<Indexable> object )
 	{
-		return upsertDocumentsBulk(object, RefreshPolicy.NONE);
+		return upsertDocumentsBulk(object, Refresh.False);
 	}
 
 	/**
@@ -473,16 +514,16 @@ public class ElasticSearchRESTClient implements ISearch
 	 * SPARINGLY!
 	 * 
 	 * @param Set<Indexable>
-	 *                           objects The Indexable objects
+	 *            objects The Indexable objects
 	 * @return boolean If successful or not
 	 */
 	@Override
 	public boolean upsertDocumentsImmediate( Set<Indexable> object )
 	{
-		return upsertDocumentsBulk(object, RefreshPolicy.IMMEDIATE);
+		return upsertDocumentsBulk(object, Refresh.True);
 	}
 
-	public boolean upsertDocumentsBulk( Set<Indexable> objects, RefreshPolicy refresh_policy )
+	public boolean upsertDocumentsBulk( Set<Indexable> objects, Refresh refresh_policy )
 	{
 		if ( objects == null )
 		{
@@ -492,8 +533,8 @@ public class ElasticSearchRESTClient implements ISearch
 
 		try
 		{
-			BulkRequest bulk_request = new BulkRequest();
-			bulk_request.setRefreshPolicy(refresh_policy);
+			BulkRequest.Builder bulk_request = new BulkRequest.Builder();
+			bulk_request.refresh(refresh_policy);
 			for ( Indexable object : objects )
 			{
 
@@ -502,18 +543,21 @@ public class ElasticSearchRESTClient implements ISearch
 				Map<String, Object> data = writer.getSimpleFieldsMap();
 				String index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
 				String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
-				bulk_request.add(new IndexRequest().index(index_name).id(document_name).source(data));
+
+				bulk_request.operations(op -> op.index(idx -> idx.index(index_name)//
+						.id(document_name)//
+						.document(data)));
 
 			}
 
 			boolean success = true;
-			BulkResponse bulk_response = high_level_rest_client.bulk(bulk_request, RequestOptions.DEFAULT);
-			for ( BulkItemResponse response : bulk_response.getItems() )
+			BulkResponse bulk_response = esClient.bulk(bulk_request.build());
+			for ( BulkResponseItem response : bulk_response.items() )
 			{
 				Level level;
-				if ( response.isFailed() )
+				if ( response.error() != null )
 				{
-					logger.error(String.format("%s %s/%s/", response.getResponse(), response.getId(), (response.isFailed() ? response.getFailure().getMessage() : "")));
+					logger.error(String.format("%s %s/%s/", response.result(), response.id(), response.error().reason()));
 					success = false;
 				}
 			}
@@ -531,7 +575,7 @@ public class ElasticSearchRESTClient implements ISearch
 	 * Test if the index exists or not
 	 * 
 	 * @param index
-	 *                  IndexDefinition
+	 *            IndexDefinition
 	 * @return boolean if the index exists or not
 	 */
 	@Override
@@ -544,17 +588,11 @@ public class ElasticSearchRESTClient implements ISearch
 		}
 		try
 		{
-			Request request = new Request("GET", "/" + index.getSimpleValue());
-			Response resp = high_level_rest_client.getLowLevelClient().performRequest(request);
+			ExistsRequest exist_request = ExistsRequest.of(i -> i.index(index.getSimpleValue()));
+			BooleanResponse resp = esClient.indices().exists(exist_request);
 
-			if ( resp.getStatusLine().getStatusCode() != 200 )
-			{
-				return false;
-			}
-			else
-			{
-				return true;
-			}
+			return resp.value();
+
 		}
 		catch ( Exception e )
 		{
@@ -574,9 +612,9 @@ public class ElasticSearchRESTClient implements ISearch
 	 * relation to the alias.
 	 * 
 	 * @param definition
-	 *                       The definition of the Kind that is being reindexed
+	 *            The definition of the Kind that is being reindexed
 	 * @param index_name
-	 *                       The unique index name that data was upserted to
+	 *            The unique index name that data was upserted to
 	 * @return is_success
 	 */
 
@@ -595,24 +633,26 @@ public class ElasticSearchRESTClient implements ISearch
 		// Has to be atomic so if it fails we don't add a new alias
 		try
 		{
-			IndicesAliasesRequest request = new IndicesAliasesRequest();
 
-			AliasActions add_alias_action = new AliasActions(AliasActions.Type.ADD);
-			add_alias_action.index(index_name);
-			add_alias_action.alias(definition.getSimpleIndex().getSimpleValue());
-			request.addAliasAction(add_alias_action);
+			UpdateAliasesRequest.Builder request_builder = new UpdateAliasesRequest.Builder();
+
+			List<Action> actions = new ArrayList<Action>();
+			Action add_alias_action = new Action.Builder().add(new AddAction.Builder().index(index_name).alias(definition.getSimpleIndex().getSimpleValue()).build()).build();
+
+			actions.add(add_alias_action);
 
 			// deletes old indices for (String index : indices_to_delete) { AliasActions
 			for ( String old_index : old_indices )
 			{
-				AliasActions delete_alias_action = new AliasActions(AliasActions.Type.REMOVE_INDEX);
-				delete_alias_action.index(old_index);
-				request.addAliasAction(delete_alias_action);
+
+				actions.add(new Action.Builder().remove(new RemoveAction.Builder().index(old_index).build()).build());
+
 			}
 
-			AcknowledgedResponse indicesAliasesResponse = high_level_rest_client.indices().updateAliases(request, RequestOptions.DEFAULT);
+			request_builder.actions(actions);
+			UpdateAliasesResponse indicesAliasesResponse = esClient.indices().updateAliases(request_builder.build());
 
-			if ( !indicesAliasesResponse.isAcknowledged() )
+			if ( !indicesAliasesResponse.acknowledged() )
 			{
 				logger.error(String.format("Alias addition not acknowledged for index %s", index_name));
 				return false;
@@ -633,7 +673,7 @@ public class ElasticSearchRESTClient implements ISearch
 	 * alias(SearchIndexDefinition name).
 	 * 
 	 * @param alias_name
-	 *                       The alias_name that all the indices are related to
+	 *            The alias_name that all the indices are related to
 	 * @return the set of indices that have relation to the alias
 	 */
 	private Set<String> getCurrentIndiciesFromAliasNameComplex( String alias_name, Set<String> default_value )
@@ -641,19 +681,11 @@ public class ElasticSearchRESTClient implements ISearch
 		Set<String> all_indicies_with_alias = new HashSet<>();
 		try
 		{
-			Request request = new Request("GET", "/_alias/" + alias_name);
-			Response resp = high_level_rest_client.getLowLevelClient().performRequest(request);
-			String response_body = EntityUtils.toString(resp.getEntity());
 
-			JsonNode node = new ObjectMapper().readTree(response_body);
+			GetAliasRequest request = GetAliasRequest.of(i -> i.index(alias_name));
+			GetAliasResponse resp = esClient.indices().getAlias(request);
 
-			Iterator<String> iterator = node.fieldNames();
-
-			while ( iterator.hasNext() )
-			{
-				String index_using_alias = iterator.next();
-				all_indicies_with_alias.add(index_using_alias);
-			}
+			all_indicies_with_alias.addAll(resp.result().keySet());
 		}
 		catch ( Exception e )
 		{
@@ -679,42 +711,20 @@ public class ElasticSearchRESTClient implements ISearch
 		BulkElasticSearchUpsertScanHandler scan_handler = new BulkElasticSearchUpsertScanHandler(index_name);
 		if ( !CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().scan(kind, scan_handler, 20) )
 		{
-			logger.warn("Storage Scanner for Kind " + kind + " was unable to successfully run. This Kind may not be fully re-indexed or there may currently not be any entries of Kind in Storage. The index will not be swapped on the alias.");
+			logger.warn("Storage Scanner for Kind "
+					+ kind
+					+ " was unable to successfully run. This Kind may not be fully re-indexed or there may currently not be any entries of Kind in Storage. The index will not be swapped on the alias.");
 			return false;
 		}
+		scan_handler.injestor.close();
 
-		boolean is_bulk_processor_closed = false;
-		try
-		{
-			is_bulk_processor_closed = scan_handler.getSimpleBulkProcessor().awaitClose(SearchSync.MAX_REINDEX_COMPLETION_TIME_MINUTES - 1, TimeUnit.MINUTES);
-		}
-		catch ( Exception e )
-		{
-			logger.error("Failure to close bulk ES client for index name " + index_name, e);
-		}
-
-		if ( !is_bulk_processor_closed )
-		{
-			try
-			{
-				scan_handler.getSimpleBulkProcessor().close();
-			}
-			catch ( Exception e2 )
-			{
-				logger.error("2nd failure to close bulk ES client for index name " + index_name, e2);
-			}
-		}
 		logger.info(String.format("Total number of requests successfully submited to index %s: %d. Failures: %d ", index_name, scan_handler.getSimpleSuccessfullyUpsertedDocumentCount(), scan_handler.getSimpleFailedUpsertDocumentCount()));
 
 		if ( scan_handler.hasElasticSearchUpsertFailures() )
 		{
 			logger.error(String.format("Failed to execute bulk reindex upsert for index %s due to failures to upsert", index_name));
-			return false;
-		}
 
-		if ( !is_bulk_processor_closed )
-		{
-			logger.error(String.format("Failed to close bulk processor %s", index_name));
+			return false;
 		}
 
 		return true;
@@ -724,7 +734,7 @@ public class ElasticSearchRESTClient implements ISearch
 	 * Test if the index exists or not
 	 * 
 	 * @param index
-	 *                  SearchIndexDefinition
+	 *            SearchIndexDefinition
 	 * @return boolean if the index exists or not
 	 */
 	@Override
@@ -760,22 +770,18 @@ public class ElasticSearchRESTClient implements ISearch
 
 			try
 			{
-				Request request = new Request("GET", "/" + index.getSimpleIndex().getSimpleValue());
-				Response resp = high_level_rest_client.getLowLevelClient().performRequest(request);
-				String response_body = EntityUtils.toString(resp.getEntity());
 
-				JsonNode node = new ObjectMapper().readTree(response_body).findValue("mappings").findValue("properties");
+				GetMappingRequest request = GetMappingRequest.of(i -> i.index(index.getSimpleIndex().getSimpleValue()));
+				GetMappingResponse resp = esClient.indices().getMapping(request);// .getAlias(request);
 
 				Map<String, String> actual = new HashMap<String, String>();
 
-				node.fields().forEachRemaining(fieldMapping ->
+				resp.result().values().stream().forEach(field_mapping ->
 				{
-					if ( !fieldMapping.getKey().contains(ElasticSearchCommon.SORT_FIELD_NAME_JIMMUTABLE) ) // Skip our
-																											// keyword
-																											// fields
+					field_mapping.mappings().properties().forEach(( k, v ) ->
 					{
-						actual.put(fieldMapping.getKey(), fieldMapping.getValue().get("type").asText());
-					}
+						actual.put(k, v._kind().toString().toLowerCase());
+					});
 				});
 
 				if ( !expected.equals(actual) )
@@ -813,36 +819,51 @@ public class ElasticSearchRESTClient implements ISearch
 			int from = request.getSimpleStartResultsAfter();
 			int size = request.getSimpleMaxResults();
 
-			SearchSourceBuilder query_builder = new SearchSourceBuilder().from(from).size(size).query(QueryBuilders.queryStringQuery(request.getSimpleQueryString()));
-
-			// Sorting
-			for ( SortBy sort_by : request.getSimpleSort().getSimpleSortOrder() )
+			List<SortOptions> sort_options = new ArrayList<SortOptions>();
+			for ( SortBy sort_order : request.getSimpleSort().getSimpleSortOrder() )
 			{
-				FieldSortBuilder sort_builder = ElasticSearchCommon.getSort(sort_by, null);
-				if ( sort_builder == null )
-					continue;
+				SortOptions.Builder sort_options_builder = new SortOptions.Builder();
+				SortOrder direction = SortOrder.Asc;
+				if ( sort_order.getSimpleDirection().equals(SortDirection.DESCENDING) )
+				{
+					direction = SortOrder.Desc;
+				}
+				String field_name = sort_order.getSimpleField().getSimpleFieldName().getSimpleName()
+				// + ".keyword"
+				;
+				if ( sort_order.getSimpleField().getSimpleType().equals(SearchIndexFieldType.ATOM) || sort_order.getSimpleField().getSimpleType().equals(SearchIndexFieldType.TEXT) )
+				{
+					field_name = field_name
+							+ "keyword";
+				}
 
-				query_builder.sort(sort_builder);
+				sort_options_builder.field(new FieldSort.Builder().order(direction).field(field_name).build());
+				sort_options.add(sort_options_builder.build());
 			}
-
-			SearchRequest ext_request = new SearchRequest(index_name).source(query_builder);
-			SearchResponse response = high_level_rest_client.search(ext_request, RequestOptions.DEFAULT);
+			SearchRequest search_request = new SearchRequest.Builder()//
+					.index(index_name)//
+					.size(size)//
+					.from(from)//
+					.query(new Query.Builder().queryString(new QueryStringQuery.Builder().query(request.getSimpleQueryString()).build()).build())//
+					.sort(sort_options)//
+					.build();
+			SearchResponse<Map> response = esClient.search(search_request, Map.class);
 
 			List<OneSearchResultWithTyping> results = new LinkedList<OneSearchResultWithTyping>();
 
-			response.getHits().forEach(hit ->
+			response.hits().hits().forEach(hit ->
 			{
 				Map<FieldName, FieldArrayList<String>> map = new TreeMap<FieldName, FieldArrayList<String>>();
-				hit.getSourceAsMap().forEach(( k, v ) ->
+				hit.source().forEach(( k, v ) ->
 				{
-					FieldName name = new FieldName(k);
+					FieldName name = new FieldName((String) k);
 					FieldArrayList<String> array_val = map.get(name);
 
 					FieldArrayList<String> new_array_val = new FieldArrayList<>();
 
 					if ( v instanceof ArrayList<?> )
 					{
-						List<Object> array_as_list = (ArrayList<Object>) v;
+						List<String> array_as_list = (ArrayList<String>) v;
 						new_array_val = new FieldArrayList<String>();
 
 						for ( int i = 0; i < array_as_list.size(); i++ )
@@ -863,7 +884,7 @@ public class ElasticSearchRESTClient implements ISearch
 				results.add(new OneSearchResultWithTyping(map));
 			});
 
-			logger.info(String.format("QUERY:%s INDEX:%s STATUS:%s HITS:%s TOTAL_HITS:%s MAX_RESULTS:%d START_RESULTS_AFTER:%d", request.getSimpleQueryString(), index.getSimpleValue(), response.status(), results.size(), response.getHits().getTotalHits(), request.getSimpleMaxResults(), request.getSimpleStartResultsAfter()));
+			logger.info(String.format("QUERY:%s INDEX:%s HITS:%s TOTAL_HITS:%s MAX_RESULTS:%d START_RESULTS_AFTER:%d", request.getSimpleQueryString(), index.getSimpleValue(), results.size(), response.hits().hits().size(), request.getSimpleMaxResults(), request.getSimpleStartResultsAfter()));
 			return results;
 
 		}
@@ -883,7 +904,7 @@ public class ElasticSearchRESTClient implements ISearch
 	}
 
 	@Override
-	public SearchResponse searchRaw( SearchRequest request )
+	public SearchResponse<Indexable> searchRaw( SearchRequest request )
 	{
 		if ( request == null )
 		{
@@ -892,7 +913,7 @@ public class ElasticSearchRESTClient implements ISearch
 
 		try
 		{
-			return high_level_rest_client.search(request, RequestOptions.DEFAULT);
+			return esClient.search(s -> s.index(request.index().get(0)).query(request.query()), Indexable.class);
 		}
 		catch ( Exception e )
 		{
@@ -903,7 +924,7 @@ public class ElasticSearchRESTClient implements ISearch
 	}
 
 	@Override
-	public SearchResponse searchScrollRaw( SearchScrollRequest request )
+	public ScrollResponse<Indexable> searchScrollRaw( ScrollRequest request )
 	{
 		if ( request == null )
 		{
@@ -912,7 +933,7 @@ public class ElasticSearchRESTClient implements ISearch
 
 		try
 		{
-			return high_level_rest_client.searchScroll(request, RequestOptions.DEFAULT);
+			return esClient.scroll(request, Indexable.class);
 
 		}
 		catch ( Exception e )
@@ -933,9 +954,9 @@ public class ElasticSearchRESTClient implements ISearch
 
 		try
 		{
-			ClearScrollResponse resp_raw = high_level_rest_client.clearScroll(request, RequestOptions.DEFAULT);
+			ClearScrollResponse resp_raw = esClient.clearScroll(request);
 
-			return resp_raw.isSucceeded();
+			return resp_raw.succeeded();
 		}
 		catch ( Exception e )
 		{
@@ -965,24 +986,31 @@ public class ElasticSearchRESTClient implements ISearch
 			SearchIndexDefinition index_definition = SearchSync.getSimpleAllRegisteredIndexableKindsMap().get(kind);
 			if ( index_definition == null )
 			{
-				logger.error("Kind " + kind + " passed in for re-indexing is not registered with SearchSync.registerIndexableKind");
+				logger.error("Kind "
+						+ kind
+						+ " passed in for re-indexing is not registered with SearchSync.registerIndexableKind");
 				return false;
 			}
-
 			String index_name = createTimestampIndex(index_definition, null);
 			if ( index_name == null )
 			{
-				logger.error("Kind " + kind + " could not create a new index to reindex documents with");
+				logger.error("Kind "
+						+ kind
+						+ " could not create a new index to reindex documents with");
 				return false;
 			}
 
 			boolean success = syncSearchAndStorage(kind, index_name);
 			if ( !success )
 			{
-				logger.error("Kind " + kind + " did not complete sync of storage and search, no swap made");
+				logger.error("Kind "
+						+ kind
+						+ " did not complete sync of storage and search, no swap made");
 				if ( !deleteWithRetry(index_name) )
 				{
-					logger.error("Error removing index " + index_name + " on failure");
+					logger.error("Error removing index "
+							+ index_name
+							+ " on failure");
 				}
 				return false;
 			}
@@ -991,10 +1019,14 @@ public class ElasticSearchRESTClient implements ISearch
 			success = updateAlias(index_definition, index_name);
 			if ( !success )
 			{
-				logger.error("Kind " + kind + " could not complete full alias swap");
+				logger.error("Kind "
+						+ kind
+						+ " could not complete full alias swap");
 				if ( !deleteWithRetry(index_name) )
 				{
-					logger.error("Error removing index " + index_name + " on failure.");
+					logger.error("Error removing index "
+							+ index_name
+							+ " on failure.");
 				}
 				return false;
 			}
@@ -1013,22 +1045,24 @@ public class ElasticSearchRESTClient implements ISearch
 
 		String index_name = index.getSimpleValue();
 
-		SearchSourceBuilder query_builder = new SearchSourceBuilder().query(QueryBuilders.queryStringQuery(query_string)).sort(FieldSortBuilder.DOC_FIELD_NAME, SortOrder.ASC).size(1_000);
-
-		SearchRequest ext_request = new SearchRequest(index_name).scroll(TimeValue.timeValueMinutes(1)).source(query_builder);
-
 		try
 		{
-			SearchResponse scrollResp = high_level_rest_client.search(ext_request, RequestOptions.DEFAULT);
-
+			SearchResponse<Map> search_response = esClient.search(s -> s.index(index_name)//
+					.scroll(new Time.Builder().time(TimeValue.timeValueMinutes(1).getMillis()
+							+ "ms").build())//
+					.size(1_000)//
+					.sort(new SortOptions.Builder().field(FieldSort.of(fs -> fs.field(FieldSortBuilder.DOC_FIELD_NAME).order(SortOrder.Asc))).build()).query(new Query.Builder().queryString(new QueryStringQuery.Builder().query(query_string).build())//
+							.build()), Map.class);
+			String scroll_id = search_response.scrollId();
+			List<Hit<Map>> hits = search_response.hits().hits();
 			do
 			{
 				String[] document;
-				for ( SearchHit hit : scrollResp.getHits().getHits() )
+				for ( Hit<Map> hit : hits )
 				{
 					document = new String[sorted_header.size()];
 
-					Map<String, Object> resultMap = hit.getSourceAsMap();
+					Map<String, JsonData> resultMap = hit.fields();
 
 					for ( int i = 0; i < sorted_header.size(); i++ )
 					{
@@ -1048,13 +1082,16 @@ public class ElasticSearchRESTClient implements ISearch
 						return false;
 					}
 				}
-
-				scrollResp = high_level_rest_client.searchScroll(new SearchScrollRequest(scrollResp.getScrollId()).scroll(TimeValue.timeValueMinutes(1)), RequestOptions.DEFAULT);
+				ScrollResponse<Map> scroll_response = esClient.scroll(new ScrollRequest.Builder()//
+						.scroll(new Time.Builder().time(TimeValue.timeValueMinutes(1).getMillis()
+								+ "ms").build())//
+						.scrollId(scroll_id).build(), Map.class);
+				hits = scroll_response.hits().hits();
 
 			}
-			while ( scrollResp.getHits().getHits().length != 0 ); // Zero hits mark the end of the scroll and the
-																	// while
-																	// loop.
+			while ( hits.size() != 0 ); // Zero hits mark the end of the scroll and the
+										// while
+										// loop.
 			return true;
 		}
 		catch ( Exception e )
@@ -1076,40 +1113,43 @@ public class ElasticSearchRESTClient implements ISearch
 		private AtomicInteger successful_upsert_document_count = new AtomicInteger();
 		private AtomicInteger failed_upsert_document_count = new AtomicInteger();
 
-		private BulkProcessor bulk_processor;
 		private AtomicBoolean has_failures = new AtomicBoolean();
+
+		BulkListener<Void> listener;
+		BulkIngester<Void> injestor;
 
 		private BulkElasticSearchUpsertScanHandler( String index_name )
 		{
 			this.index_name = index_name;
-			BulkProcessor.Listener listener = createBulkProcessorListener();
-			BulkProcessor.Builder builder = BulkProcessor.builder(( request, bulkListener ) -> high_level_rest_client.bulkAsync(request, RequestOptions.DEFAULT, bulkListener), listener);
-			builder.setBulkActions(MAX_NO_REQUESTS_IN_BULK_REQUEST);
-			this.bulk_processor = builder.build();
+			listener = createBulkListener();
+			injestor = BulkIngester.of(b -> b.client(esClient).maxOperations(MAX_NO_REQUESTS_IN_BULK_REQUEST).flushInterval(1l, TimeUnit.SECONDS).listener(listener));
 		}
 
-		private BulkProcessor.Listener createBulkProcessorListener()
+		private BulkListener<Void> createBulkListener()
 		{
-			return new BulkProcessor.Listener()
+			return new BulkListener<Void>()
 			{
 				@Override
-				public void beforeBulk( long executionId, BulkRequest request )
+				public void beforeBulk( long executionId, BulkRequest request, List<Void> contexts )
 				{
-
 				}
 
-				// For successful execution only
 				@Override
-				public void afterBulk( long executionId, BulkRequest request, BulkResponse response )
+				public void afterBulk( long executionId, BulkRequest request, List<Void> contexts, BulkResponse response )
 				{
 					int success_count = 0;
 					int failure_count = 0;
-					for ( BulkItemResponse bulk_item_response : response )
+					for ( BulkResponseItem bulk_item_response : response.items() )
 					{
-						if ( bulk_item_response.isFailed() )
+						if ( bulk_item_response.error() != null )
 						{
-							BulkItemResponse.Failure failure = bulk_item_response.getFailure();
-							logger.error("Failure on bulk upsert occurred with index " + index_name + " id " + bulk_item_response.getId() + ". Failure msg " + failure.getMessage());
+							ErrorCause failure = bulk_item_response.error();
+							logger.error("Failure on bulk upsert occurred with index "
+									+ index_name
+									+ " id "
+									+ bulk_item_response.id()
+									+ ". Failure msg "
+									+ failure.reason());
 							failure_count++;
 						}
 						else
@@ -1125,15 +1165,19 @@ public class ElasticSearchRESTClient implements ISearch
 						failed_upsert_document_count.addAndGet(failure_count);
 					}
 					successful_upsert_document_count.addAndGet(success_count);
+
 				}
 
 				@Override
-				public void afterBulk( long executionId, BulkRequest request, Throwable failure )
+				public void afterBulk( long executionId, BulkRequest request, List<Void> contexts, Throwable failure )
 				{
-					logger.error("Failure for full successful bulk upsert for index name " + index_name, failure);
+					logger.error("Failure for full successful bulk upsert for index name "
+							+ index_name, failure);
 					has_failures.set(true);
+
 				}
 			};
+
 		}
 
 		@SuppressWarnings("rawtypes")
@@ -1145,7 +1189,8 @@ public class ElasticSearchRESTClient implements ISearch
 
 			if ( !retrieved )
 			{
-				logger.error("Could not retrieve object for StorageKey " + key);
+				logger.error("Could not retrieve object for StorageKey "
+						+ key);
 				return;
 			}
 
@@ -1158,7 +1203,9 @@ public class ElasticSearchRESTClient implements ISearch
 			}
 			catch ( Exception e )
 			{
-				logger.error("This object from StorageKey " + key + " was unable to be deserialized as a Storable and Indexable object...", e);
+				logger.error("This object from StorageKey "
+						+ key
+						+ " was unable to be deserialized as a Storable and Indexable object...", e);
 				return;
 			}
 			Indexable indexable = (Indexable) obj.getObject();
@@ -1168,17 +1215,14 @@ public class ElasticSearchRESTClient implements ISearch
 			{
 				SearchDocumentWriter writer = new SearchDocumentWriter();
 
-				// Someone could have a bug in the search doc writer so we need ot handle that
+				// Someone could have a bug in the search doc writer so we need ot handle
+				// that
 				// case
 				indexable.writeSearchDocument(writer);
 				Map<String, Object> data = writer.getSimpleFieldsMap();
 				String document_name = indexable.getSimpleSearchDocumentId().getSimpleValue();
+				injestor.add(op -> op.index(index -> index.index(index_name).id(document_name).document(data)));
 
-				IndexRequest request = new IndexRequest(index_name).id(document_name).source(data).timeout("5m");
-				if ( request != null )
-				{
-					bulk_processor.add(request);
-				}
 			}
 			catch ( Exception e )
 			{
@@ -1199,11 +1243,6 @@ public class ElasticSearchRESTClient implements ISearch
 		private int getSimpleFailedUpsertDocumentCount()
 		{
 			return failed_upsert_document_count.get();
-		}
-
-		private BulkProcessor getSimpleBulkProcessor()
-		{
-			return bulk_processor;
 		}
 
 	}
@@ -1303,8 +1342,12 @@ public class ElasticSearchRESTClient implements ISearch
 			{
 				String index_name = object.getSimpleSearchIndexDefinition().getSimpleValue();
 				String document_name = object.getSimpleSearchDocumentId().getSimpleValue();
-				IndexRequest request = new IndexRequest(index_name).id(document_name).source(data).setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
-				high_level_rest_client.index(request, RequestOptions.DEFAULT);
+
+				IndexRequest<Map<String, Object>> request = IndexRequest.of(i -> i.index(index_name)//
+						.id(document_name)//
+						.document(data)//
+						.refresh(Refresh.WaitFor));
+				esClient.index(request);
 			}
 			catch ( Exception e )
 			{
@@ -1330,12 +1373,12 @@ public class ElasticSearchRESTClient implements ISearch
 
 		try
 		{
-			PutMappingRequest request = new PutMappingRequest(index.getSimpleIndex().getSimpleValue());
-			request.source(ElasticSearchCommon.getMappingBuilder(index, null));
+			PutMappingRequest request = new PutMappingRequest.Builder().index(index.getSimpleIndex().getSimpleValue())//
+					.source(ElasticSearchCommon.getMappingBuilderSourceField(index, null)).build();
 
-			AcknowledgedResponse put_response = high_level_rest_client.indices().putMapping(request, RequestOptions.DEFAULT);
+			PutMappingResponse put_response = esClient.indices().putMapping(request);
 
-			if ( !put_response.isAcknowledged() )
+			if ( !put_response.acknowledged() )
 			{
 				logger.error(String.format("Put Mappings result not acknowledged for index %s", index.getSimpleIndex().getSimpleValue()));
 				return false;

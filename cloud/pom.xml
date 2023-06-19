@@ -3,7 +3,7 @@
 
 	<groupId>org.jimmutable</groupId>
 	<artifactId>cloud</artifactId>
-	<version>0.0.108-SNAPSHOT</version>
+	<version>0.0.111-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>cloud</name>
@@ -49,7 +49,9 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<elasticsearch.version>7.16.2</elasticsearch.version>
+		<elasticsearch.version>8.7.1</elasticsearch.version>
+		<elasticsearch.hlrc.version>7.17.4</elasticsearch.hlrc.version>
+		<fasterxml.jackson>2.15.2</fasterxml.jackson>
 		<log4j.version>2.15.0</log4j.version>
 		<skipITs>true</skipITs>
 		<jetty.version>9.4.38.v20210224</jetty.version>
@@ -78,12 +80,32 @@
 			<groupId>org.jimmutable</groupId>
 			<artifactId>core</artifactId>
 			<version>0.0.16</version>
+			<exclusions>
+        		<exclusion>
+           			<groupId>com.fasterxml.jackson.core</groupId>
+            		<artifactId>jackson-core</artifactId>
+        		</exclusion>
+        		<exclusion>
+           			<groupId>com.fasterxml.jackson.core</groupId>
+            		<artifactId>jackson-dataformat</artifactId>
+        		</exclusion>
+    		</exclusions>
 		</dependency>
 
 		<!--Version number is defined by aws-java-sdk-bom -->
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-s3</artifactId>
+			<exclusions>
+        		<exclusion>
+           			<groupId>com.fasterxml.jackson.core</groupId>
+            		<artifactId>jackson-core</artifactId>
+        		</exclusion>
+				<exclusion>
+           			<groupId>com.fasterxml.jackson.core</groupId>
+            		<artifactId>jackson-dataformat-cbor</artifactId>
+        		</exclusion>
+    		</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.amazonaws</groupId>
@@ -114,6 +136,24 @@
 			<version>4.0.0</version>
 		</dependency>
 		<dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${fasterxml.jackson}</version>
+        </dependency>
+
+		<dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+           <version>${fasterxml.jackson}</version>
+        </dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>${fasterxml.jackson}</version>
+		</dependency> 
+
+		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
 			<version>${elasticsearch.version}</version>
@@ -121,18 +161,28 @@
 		<dependency>
 			<groupId>org.elasticsearch.client</groupId>
 			<artifactId>elasticsearch-rest-client</artifactId>
-			<version>${elasticsearch.version}</version>
+			<version>${elasticsearch.hlrc.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.elasticsearch.client</groupId>
 			<artifactId>elasticsearch-rest-high-level-client</artifactId>
-			<version>${elasticsearch.version}</version>
+			<version>${elasticsearch.hlrc.version}</version>
 		</dependency>
+
+
 		<dependency>
-			<groupId>org.elasticsearch.client</groupId>
-			<artifactId>transport</artifactId>
-			<version>${elasticsearch.version}</version>
-		</dependency>
+      		<groupId>co.elastic.clients</groupId>
+      		<artifactId>elasticsearch-java</artifactId>
+      		<version>${elasticsearch.version}</version>
+    	</dependency>
+
+		
+
+		<dependency>
+      		<groupId>jakarta.json</groupId>
+      		<artifactId>jakarta.json-api</artifactId>
+      		<version>2.0.1</version>
+    	</dependency>
 
 
 		<dependency>
