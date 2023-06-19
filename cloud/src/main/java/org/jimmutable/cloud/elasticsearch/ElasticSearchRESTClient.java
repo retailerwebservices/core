@@ -88,7 +88,7 @@ import co.elastic.clients.elasticsearch.indices.UpdateAliasesRequest;
 import co.elastic.clients.elasticsearch.indices.UpdateAliasesResponse;
 import co.elastic.clients.elasticsearch.indices.update_aliases.Action;
 import co.elastic.clients.elasticsearch.indices.update_aliases.AddAction;
-import co.elastic.clients.elasticsearch.indices.update_aliases.RemoveAction;
+import co.elastic.clients.elasticsearch.indices.update_aliases.RemoveIndexAction;
 import co.elastic.clients.json.JsonData;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
@@ -640,13 +640,10 @@ public class ElasticSearchRESTClient implements ISearch
 			Action add_alias_action = new Action.Builder().add(new AddAction.Builder().index(index_name).alias(definition.getSimpleIndex().getSimpleValue()).build()).build();
 
 			actions.add(add_alias_action);
-
-			// deletes old indices for (String index : indices_to_delete) { AliasActions
+			// deletes old indices
 			for ( String old_index : old_indices )
 			{
-
-				actions.add(new Action.Builder().remove(new RemoveAction.Builder().index(old_index).build()).build());
-
+				actions.add(new Action.Builder().removeIndex(new RemoveIndexAction.Builder().index(old_index).build()).build());
 			}
 
 			request_builder.actions(actions);
@@ -780,11 +777,16 @@ public class ElasticSearchRESTClient implements ISearch
 				{
 					field_mapping.mappings().properties().forEach(( k, v ) ->
 					{
-						actual.put(k, v._kind().toString().toLowerCase());
+						if ( !k.contains(ElasticSearchCommon.SORT_FIELD_NAME_JIMMUTABLE) ) // Skip our
+						// keyword
+						// fields
+						{
+							actual.put(k, v._kind().toString().toLowerCase());
+						}
 					});
 				});
 
-				if ( !expected.equals(actual) )
+				if ( expected.size() != actual.size() || !expected.entrySet().stream().allMatch(e -> e.getValue().equals(actual.get(e.getKey()))) )
 				{
 					logger.info(String.format("Index: %s not properly configured", index.getSimpleIndex().getSimpleValue()));
 					logger.info(String.format("Expected fields=%s", expected));
