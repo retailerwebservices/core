@@ -128,7 +128,7 @@ public class ElasticSearchRESTClient implements ISearch
 	private static final int DEFAULT_DEV_ELASTICSEARCH_PORT = 9200;
 
 	public static final int FIVE_SECOND_CONNECT_TIMEOUT_MILLIS = 5000;
-	public static final int SIXTY_SECOND_SOCKET_TIMEOUT_MILLIS = 60000;
+	public static final int NINETY_SECOND_SOCKET_TIMEOUT_MILLIS = 90000;
 
 	public ElasticSearchRESTClient()
 	{
@@ -159,7 +159,7 @@ public class ElasticSearchRESTClient implements ISearch
 					@Override
 					public RequestConfig.Builder customizeRequestConfig( RequestConfig.Builder requestConfigBuilder )
 					{
-						return requestConfigBuilder.setConnectTimeout(FIVE_SECOND_CONNECT_TIMEOUT_MILLIS).setSocketTimeout(SIXTY_SECOND_SOCKET_TIMEOUT_MILLIS);
+						return requestConfigBuilder.setConnectTimeout(FIVE_SECOND_CONNECT_TIMEOUT_MILLIS).setSocketTimeout(NINETY_SECOND_SOCKET_TIMEOUT_MILLIS);
 					}
 				});
 			}
@@ -185,7 +185,7 @@ public class ElasticSearchRESTClient implements ISearch
 					@Override
 					public RequestConfig.Builder customizeRequestConfig( RequestConfig.Builder requestConfigBuilder )
 					{
-						return requestConfigBuilder.setConnectTimeout(FIVE_SECOND_CONNECT_TIMEOUT_MILLIS).setSocketTimeout(SIXTY_SECOND_SOCKET_TIMEOUT_MILLIS);
+						return requestConfigBuilder.setConnectTimeout(FIVE_SECOND_CONNECT_TIMEOUT_MILLIS).setSocketTimeout(NINETY_SECOND_SOCKET_TIMEOUT_MILLIS);
 					}
 				});
 			}
