@@ -57,6 +57,7 @@ import co.elastic.clients.elasticsearch._types.Result;
 import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.Time;
+import co.elastic.clients.elasticsearch._types.mapping.DynamicMapping;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryStringQuery;
 import co.elastic.clients.elasticsearch.core.BulkRequest;
@@ -1376,6 +1377,7 @@ public class ElasticSearchRESTClient implements ISearch
 		try
 		{
 			PutMappingRequest request = new PutMappingRequest.Builder().index(index.getSimpleIndex().getSimpleValue())//
+					.dynamic(DynamicMapping.False)//
 					.source(ElasticSearchCommon.getMappingBuilderSourceField(index, null)).build();
 
 			PutMappingResponse put_response = esClient.indices().putMapping(request);
