@@ -52,6 +52,20 @@ public class ElasticSearchCommon
 				{
 					mappingBuilder.field("type", field.getSimpleType().getSimpleSearchType());
 				}
+				if ( field.getSimpleType().equals(SearchIndexFieldType.ATOM) )
+				{
+					mappingBuilder.field("type", field.getSimpleType().getSimpleSearchType());
+					mappingBuilder.startObject().startObject("fields");
+					{
+						mappingBuilder.startObject().startObject("keyword");
+						{
+							mappingBuilder.field("type", "keyword");
+							mappingBuilder.field("ignore_above", 256);
+						}
+						mappingBuilder.endObject();
+					}
+					mappingBuilder.endObject();
+				}
 				mappingBuilder.endObject();
 
 			}
@@ -117,11 +131,13 @@ public class ElasticSearchCommon
 
 		if ( success )
 		{
-			logger.warn(String.format("Successfully terminated pool in %s milliseconds", (System.currentTimeMillis() - start)));
+			logger.warn(String.format("Successfully terminated pool in %s milliseconds", (System.currentTimeMillis()
+					- start)));
 		}
 		else
 		{
-			logger.warn(String.format("Unsuccessful termination of pool in %s milliseconds", (System.currentTimeMillis() - start)));
+			logger.warn(String.format("Unsuccessful termination of pool in %s milliseconds", (System.currentTimeMillis()
+					- start)));
 		}
 		return success;
 	}
@@ -151,7 +167,9 @@ public class ElasticSearchCommon
 		if ( sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.TEXT )
 		{
 			// Reference getSortFieldNameText for logic on calling ATOM search type here
-			sort_on_string = getSortFieldNameText(sort_by.getSimpleField().getSimpleFieldName()) + "." + SearchIndexFieldType.ATOM.getSimpleSearchType();
+			sort_on_string = getSortFieldNameText(sort_by.getSimpleField().getSimpleFieldName())
+					+ "."
+					+ SearchIndexFieldType.ATOM.getSimpleSearchType();
 		}
 		if ( sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.TIMEOFDAY )
 		{
@@ -196,7 +214,11 @@ public class ElasticSearchCommon
 	 */
 	static public String getSortFieldNameText( String field_name )
 	{
-		return field_name + "_" + SORT_FIELD_NAME_JIMMUTABLE + "_" + SearchIndexFieldType.ATOM.getSimpleSearchType();
+		return field_name
+				+ "_"
+				+ SORT_FIELD_NAME_JIMMUTABLE
+				+ "_"
+				+ SearchIndexFieldType.ATOM.getSimpleSearchType();
 	}
 
 	/**
@@ -220,7 +242,11 @@ public class ElasticSearchCommon
 	 */
 	static public String getSortFieldNameTimeOfDay( String field_name )
 	{
-		return field_name + "_" + SORT_FIELD_NAME_JIMMUTABLE + "_" + TimeOfDay.FIELD_MS_FROM_MIDNIGHT.getSimpleFieldName().getSimpleName();
+		return field_name
+				+ "_"
+				+ SORT_FIELD_NAME_JIMMUTABLE
+				+ "_"
+				+ TimeOfDay.FIELD_MS_FROM_MIDNIGHT.getSimpleFieldName().getSimpleName();
 	}
 
 	/**
@@ -244,6 +270,10 @@ public class ElasticSearchCommon
 	 */
 	static public String getSortFieldNameInstant( String field_name )
 	{
-		return field_name + "_" + SORT_FIELD_NAME_JIMMUTABLE + "_" + Instant.FIELD_MS_FROM_EPOCH.getSimpleFieldName().getSimpleName();
+		return field_name
+				+ "_"
+				+ SORT_FIELD_NAME_JIMMUTABLE
+				+ "_"
+				+ Instant.FIELD_MS_FROM_EPOCH.getSimpleFieldName().getSimpleName();
 	}
 }
