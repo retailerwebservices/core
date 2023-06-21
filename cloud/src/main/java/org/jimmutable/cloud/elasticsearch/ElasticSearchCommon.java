@@ -52,22 +52,25 @@ public class ElasticSearchCommon
 				{
 					mappingBuilder.field("type", field.getSimpleType().getSimpleSearchType());
 				}
+				mappingBuilder.endObject();
 				if ( field.getSimpleType().equals(SearchIndexFieldType.ATOM) )
 				{
-					mappingBuilder.field("type", field.getSimpleType().getSimpleSearchType());
-					mappingBuilder.startObject().startObject("fields");
+					mappingBuilder.startObject(getSortFieldNameText(field.getSimpleFieldName().getSimpleName()));
 					{
-						mappingBuilder.startObject().startObject("keyword");
+						mappingBuilder.field("type", field.getSimpleType().getSimpleSearchType());
+						mappingBuilder.startObject("fields");
 						{
-							mappingBuilder.field("type", "keyword");
-							mappingBuilder.field("ignore_above", 256);
+							mappingBuilder.startObject("keyword");
+							{
+								mappingBuilder.field("type", "keyword");
+								mappingBuilder.field("ignore_above", 256);
+							}
+							mappingBuilder.endObject();
 						}
 						mappingBuilder.endObject();
 					}
 					mappingBuilder.endObject();
 				}
-				mappingBuilder.endObject();
-
 			}
 			mappingBuilder.endObject().endObject();
 			mappingBuilder.close();
