@@ -53,7 +53,7 @@ public class ElasticSearchCommon
 					mappingBuilder.field("type", field.getSimpleType().getSimpleSearchType());
 				}
 				mappingBuilder.endObject();
-				if ( field.getSimpleType().equals(SearchIndexFieldType.ATOM) )
+				if ( field.getSimpleType().equals(SearchIndexFieldType.TEXT) )
 				{
 					mappingBuilder.startObject(getSortFieldNameText(field.getSimpleFieldName().getSimpleName()));
 					{
