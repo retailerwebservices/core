@@ -1378,6 +1378,8 @@ public class ElasticSearchRESTClient implements ISearch
 		{
 			PutMappingRequest request = new PutMappingRequest.Builder().index(index.getSimpleIndex().getSimpleValue())//
 					.dynamic(DynamicMapping.False)//
+					.masterTimeout(new Time.Builder().time(TimeValue.timeValueMinutes(1).getMillis()
+							+ "ms").build())//
 					.source(ElasticSearchCommon.getMappingBuilderSourceField(index, null)).build();
 
 			PutMappingResponse put_response = esClient.indices().putMapping(request);
