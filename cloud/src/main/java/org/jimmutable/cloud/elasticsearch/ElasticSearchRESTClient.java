@@ -291,7 +291,7 @@ public class ElasticSearchRESTClient implements ISearch
 		{
 
 			CreateIndexRequest request = CreateIndexRequest.of(i -> i.index(index_name)//
-					.mappings(ElasticSearchCommon.getMappingBuilderTypeMapping(index, null)));//
+					.mappings(ElasticSearchCommon.getMappingBuilderTypeMapping(index, null)));
 
 			CreateIndexResponse createResponse = esClient.indices().create(request);
 

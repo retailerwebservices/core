@@ -20,6 +20,7 @@ import org.jimmutable.core.serialization.FieldName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import co.elastic.clients.elasticsearch._types.mapping.DynamicMapping;
 import co.elastic.clients.elasticsearch._types.mapping.SourceField;
 import co.elastic.clients.elasticsearch._types.mapping.TypeMapping;
 
@@ -91,7 +92,7 @@ public class ElasticSearchCommon
 			return default_value;
 		}
 		String json = content_builder.getOutputStream().toString();
-		return new TypeMapping.Builder().withJson(new ByteArrayInputStream(json.getBytes())).build();
+		return new TypeMapping.Builder().withJson(new ByteArrayInputStream(json.getBytes())).dynamic(DynamicMapping.False).build();
 
 	}
 
