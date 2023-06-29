@@ -3,11 +3,13 @@ package org.jimmutable.cloud.elasticsearch;
 import static org.elasticsearch.xcontent.XContentFactory.jsonBuilder;
 
 import java.io.ByteArrayInputStream;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.elasticsearch.common.util.set.Sets;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -39,6 +41,8 @@ public class ElasticSearchCommon
 
 	public static final String ELASTICSEARCH_DEFAULT_TYPE = "mappings";
 	public static final String SORT_FIELD_NAME_JIMMUTABLE = "jimmutable_sort_field";
+	
+	public static final Set<SearchIndexFieldType> SEARCH_INDEX_FIELD_TYPES_REQUIRING_SORT_FIELDS = Sets.newHashSet(SearchIndexFieldType.TEXT, SearchIndexFieldType.INSTANT, SearchIndexFieldType.TIMEOFDAY);
 
 	public static XContentBuilder getMappingBuilder( SearchIndexDefinition index, XContentBuilder default_value )
 	{
@@ -54,7 +58,7 @@ public class ElasticSearchCommon
 					mappingBuilder.field("type", field.getSimpleType().getSimpleSearchType());
 				}
 				mappingBuilder.endObject();
-				if ( field.getSimpleType().equals(SearchIndexFieldType.TEXT) )
+				if ( SEARCH_INDEX_FIELD_TYPES_REQUIRING_SORT_FIELDS.contains(field.getSimpleType()) )
 				{
 					mappingBuilder.startObject(getSortFieldNameText(field.getSimpleFieldName().getSimpleName()));
 					{
