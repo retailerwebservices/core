@@ -60,7 +60,7 @@ public class ElasticSearchCommon
 				mappingBuilder.endObject();
 				if ( SEARCH_INDEX_FIELD_TYPES_REQUIRING_SORT_FIELDS.contains(field.getSimpleType()) )
 				{
-					mappingBuilder.startObject(getSortFieldNameText(field.getSimpleFieldName().getSimpleName()));
+					mappingBuilder.startObject(determineSortFieldName(field));
 					{
 						mappingBuilder.field("type", field.getSimpleType().getSimpleSearchType());
 						mappingBuilder.startObject("fields");
@@ -85,6 +85,21 @@ public class ElasticSearchCommon
 		{
 			logger.error(String.format("Failed to generate mapping json for index %s", index.getSimpleIndex().getSimpleValue()), e);
 			return default_value;
+		}
+	}
+	
+	private static String determineSortFieldName(SearchIndexFieldDefinition field) throws Exception
+	{
+		switch(field.getSimpleType())
+		{
+		case TEXT:
+			return getSortFieldNameText(field.getSimpleFieldName());
+		case INSTANT:
+			return getSortFieldNameInstant(field.getSimpleFieldName());
+		case TIMEOFDAY:
+			return getSortFieldNameTimeOfDay(field.getSimpleFieldName());
+		default:
+			throw new Exception(String.format("Unknown Sort Field Type for index %s", field.getSimpleFieldName().getSimpleName()));
 		}
 	}
 
