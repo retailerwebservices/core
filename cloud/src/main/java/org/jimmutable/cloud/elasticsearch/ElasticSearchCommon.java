@@ -99,7 +99,7 @@ public class ElasticSearchCommon
 		case TIMEOFDAY:
 			return getSortFieldNameTimeOfDay(field.getSimpleFieldName());
 		default:
-			throw new Exception(String.format("Unknown Sort Field Type for index %s", field.getSimpleFieldName().getSimpleName()));
+			throw new Exception(String.format("Unknown Sort Field Type for custom sort field for index %s", field.getSimpleFieldName().getSimpleName()));
 		}
 	}
 
