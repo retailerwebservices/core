@@ -177,6 +177,7 @@ class SearchSortIntegrationTestV2
     	
 		String query = String.format("%s:%s", SearchSortObjectLong.SEARCH_FIELD_VALUE.getSimpleFieldName().getSimpleName(), "*");
 		
+		// Test Sort LONG Ascending
 		SortBy sort_by = new SortBy(SearchSortObjectLong.SEARCH_FIELD_VALUE, SortDirection.ASCENDING);
 		List<OneSearchResultWithTyping> results = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(SearchSortObjectLong.INDEX_DEFINITION, new StandardSearchRequest(query, 10000, 0, new Sort(sort_by)), null);
 		
@@ -207,6 +208,7 @@ class SearchSortIntegrationTestV2
 			prev_long_value = long_value;
 		}
 		
+		// Test Sort LONG Descending
 		sort_by = new SortBy(SearchSortObjectLong.SEARCH_FIELD_VALUE, SortDirection.DESCENDING);
 		results = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(SearchSortObjectLong.INDEX_DEFINITION, new StandardSearchRequest(query, 10000, 0, new Sort(sort_by)), null);
 		
@@ -232,6 +234,7 @@ class SearchSortIntegrationTestV2
     	String test_object = "SearchSortObjectText";
     	boolean is_successful = true;
     	
+    	// Create test entries
     	Map<ObjectId, SearchSortObjectText> test_objects = new HashMap<>();
     	
 		for ( char ch = 'j' ; ch >= 'a' ; ch-- )
@@ -241,9 +244,8 @@ class SearchSortIntegrationTestV2
 			CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocument(obj);
 		}
     	
-		// Test sort ascending
-		
-		String query = String.format("%s:%s", SearchSortObjectText.SEARCH_FIELD_VALUE.getSimpleFieldName().getSimpleName(), "?");
+		// Test Sort TEXT Ascending
+		String query = String.format("%s:%s", SearchSortObjectText.SEARCH_FIELD_VALUE.getSimpleFieldName().getSimpleName(), "*");
 		
 		SortBy sort_by = new SortBy(SearchSortObjectText.SEARCH_FIELD_VALUE, SortDirection.ASCENDING);
 		List<OneSearchResultWithTyping> results = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(SearchSortObjectText.INDEX_DEFINITION, new StandardSearchRequest(query, 10000, 0, new Sort(sort_by)), null);
@@ -261,6 +263,7 @@ class SearchSortIntegrationTestV2
 				is_successful = false;
 			}
 			
+			logger.info("Sort TEXT Ascending search results:");
 			String prev_text_value = "";
 			for ( OneSearchResultWithTyping result : results )
 			{
@@ -278,13 +281,14 @@ class SearchSortIntegrationTestV2
 					outputError(test_object, String.format("Incorrect ascending sort sequence. Prev: %s, Curr: %s", prev_text_value, text_value));
 					is_successful = false;
 				}
+				
+				logger.info(String.format("Current value: %s, Previous value: %s", text_value, prev_text_value));
 	
 				prev_text_value = text_value;
 			}
 		}
 		
-		// Test sort descending
-		
+		// Test Sort TEXT Descending
 		sort_by = new SortBy(SearchSortObjectText.SEARCH_FIELD_VALUE, SortDirection.DESCENDING);
 		results = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(SearchSortObjectText.INDEX_DEFINITION, new StandardSearchRequest(query, 10000, 0, new Sort(sort_by)), null);
 		
@@ -295,11 +299,15 @@ class SearchSortIntegrationTestV2
 		}
 		else
 		{
+			logger.info("Sort TEXT Descending search results:");
+			
 			String prev_text_value = "zzz";
 			for ( OneSearchResultWithTyping result : results )
 			{
 				String text_value = result.readAsText(SearchSortObjectText.SEARCH_FIELD_VALUE.getSimpleFieldName(), null);
 	
+				logger.info(String.format("Current value: %s, Previous value: %s", text_value, prev_text_value));
+				
 				if (text_value.compareTo(prev_text_value) >= 0)
 				{
 					outputError(test_object, String.format("Incorrect descending sort sequence. Prev: %s, Curr: %s", prev_text_value, text_value));

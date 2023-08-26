@@ -22,6 +22,7 @@ import org.jimmutable.core.serialization.FieldName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import co.elastic.clients.elasticsearch._types.FieldSort;
 import co.elastic.clients.elasticsearch._types.mapping.DynamicMapping;
 import co.elastic.clients.elasticsearch._types.mapping.SourceField;
 import co.elastic.clients.elasticsearch._types.mapping.TypeMapping;
@@ -216,6 +217,63 @@ public class ElasticSearchCommon
 		}
 
 		return SortBuilders.fieldSort(sort_on_string).order(order).unmappedType(SearchIndexFieldType.ATOM.getSimpleSearchType());
+	}
+
+	/**
+	 * Using a SortBy object, construct a SortBuilder used by ElasticSearch.
+	 * This method handles the unique sorting cases for Text, Time of Day, and
+	 * Instant.
+	 * 
+	 * @param sort_by
+	 * @param default_value
+	 * @return
+	 */
+	static public FieldSort getFieldSort(SortBy sort_by, FieldSort default_value)
+	{
+		co.elastic.clients.elasticsearch._types.SortOrder order = null;
+		if (sort_by.getSimpleDirection() == SortDirection.ASCENDING) order = co.elastic.clients.elasticsearch._types.SortOrder.Asc;
+		if (sort_by.getSimpleDirection() == SortDirection.DESCENDING) order = co.elastic.clients.elasticsearch._types.SortOrder.Desc;
+		
+		if (order == null) return default_value;
+		
+		String field_name = null;
+		
+		switch(sort_by.getSimpleField().getSimpleType())
+		{
+		case TEXT:
+			// Reference getSortFieldNameText for logic on calling ATOM search type here
+			field_name = getSortFieldNameText(sort_by.getSimpleField().getSimpleFieldName()) + "." + SearchIndexFieldType.ATOM.getSimpleSearchType();
+			break;
+		case INSTANT:
+			field_name = getSortFieldNameInstant(sort_by.getSimpleField().getSimpleFieldName());
+			break;
+		case TIMEOFDAY:
+			field_name = getSortFieldNameTimeOfDay(sort_by.getSimpleField().getSimpleFieldName());
+			break;
+		default:
+			field_name = sort_by.getSimpleField().getSimpleFieldName().getSimpleName();
+			break;
+		}
+		
+//		String field_name = sort_by.getSimpleField().getSimpleFieldName().getSimpleName();
+//		String sort_on_string = field_name.getSimpleName();
+		
+//		if (sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.TEXT)
+//		{
+//			// Reference getSortFieldNameText for logic on calling ATOM search type here
+//			field_name = getSortFieldNameText(sort_by.getSimpleField().getSimpleFieldName()) + "." + SearchIndexFieldType.ATOM.getSimpleSearchType();
+//		}
+//		if (sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.TIMEOFDAY)
+//		{
+//			field_name = getSortFieldNameTimeOfDay(sort_by.getSimpleField().getSimpleFieldName());
+//		}
+//		if (sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.INSTANT)
+//		{
+//			field_name = getSortFieldNameInstant(sort_by.getSimpleField().getSimpleFieldName());
+//		}
+		
+		return new FieldSort.Builder().order(order).field(field_name).build();
+//		return SortBuilders.fieldSort(sort_on_string).order(order).unmappedType(SearchIndexFieldType.ATOM.getSimpleSearchType());
 	}
 
 	/**

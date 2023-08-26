@@ -823,25 +823,31 @@ public class ElasticSearchRESTClient implements ISearch
 			int size = request.getSimpleMaxResults();
 
 			List<SortOptions> sort_options = new ArrayList<SortOptions>();
-			for ( SortBy sort_order : request.getSimpleSort().getSimpleSortOrder() )
+			
+			for ( SortBy sort_by : request.getSimpleSort().getSimpleSortOrder() )
 			{
 				SortOptions.Builder sort_options_builder = new SortOptions.Builder();
 				SortOrder direction = SortOrder.Asc;
-				if ( sort_order.getSimpleDirection().equals(SortDirection.DESCENDING) )
+				if ( sort_by.getSimpleDirection().equals(SortDirection.DESCENDING) )
 				{
 					direction = SortOrder.Desc;
 				}
-				String field_name = sort_order.getSimpleField().getSimpleFieldName().getSimpleName()
+//				String field_name = sort_by.getSimpleField().getSimpleFieldName().getSimpleName()
 				// + ".keyword"
 				;
-				if ( sort_order.getSimpleField().getSimpleType().equals(SearchIndexFieldType.ATOM) || sort_order.getSimpleField().getSimpleType().equals(SearchIndexFieldType.TEXT) )
-				{
-					field_name = field_name
-							+ "keyword";
-				}
+//				if ( sort_order.getSimpleField().getSimpleType().equals(SearchIndexFieldType.ATOM) || sort_order.getSimpleField().getSimpleType().equals(SearchIndexFieldType.TEXT) )
+//				{
+//					field_name = field_name
+//							+ "keyword";
+//				}
+				FieldSort field_sort = ElasticSearchCommon.getFieldSort(sort_by, null);
 
-				sort_options_builder.field(new FieldSort.Builder().order(direction).field(field_name).build());
-				sort_options.add(sort_options_builder.build());
+//				sort_options_builder.field(new FieldSort.Builder().order(direction).field(field_name).build());
+				if (field_sort != null)
+				{
+					sort_options_builder.field(field_sort);
+					sort_options.add(sort_options_builder.build());
+				}
 			}
 			SearchRequest search_request = new SearchRequest.Builder()//
 					.index(index_name)//
