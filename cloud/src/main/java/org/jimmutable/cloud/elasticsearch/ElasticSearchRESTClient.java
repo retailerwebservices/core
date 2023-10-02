@@ -826,27 +826,10 @@ public class ElasticSearchRESTClient implements ISearch
 			
 			for ( SortBy sort_by : request.getSimpleSort().getSimpleSortOrder() )
 			{
-				SortOptions.Builder sort_options_builder = new SortOptions.Builder();
-				SortOrder direction = SortOrder.Asc;
-				if ( sort_by.getSimpleDirection().equals(SortDirection.DESCENDING) )
-				{
-					direction = SortOrder.Desc;
-				}
-//				String field_name = sort_by.getSimpleField().getSimpleFieldName().getSimpleName()
-				// + ".keyword"
-				;
-//				if ( sort_order.getSimpleField().getSimpleType().equals(SearchIndexFieldType.ATOM) || sort_order.getSimpleField().getSimpleType().equals(SearchIndexFieldType.TEXT) )
-//				{
-//					field_name = field_name
-//							+ "keyword";
-//				}
 				FieldSort field_sort = ElasticSearchCommon.getFieldSort(sort_by, null);
-
-//				sort_options_builder.field(new FieldSort.Builder().order(direction).field(field_name).build());
 				if (field_sort != null)
 				{
-					sort_options_builder.field(field_sort);
-					sort_options.add(sort_options_builder.build());
+					sort_options.add(new SortOptions.Builder().field(field_sort).build());
 				}
 			}
 			SearchRequest search_request = new SearchRequest.Builder()//

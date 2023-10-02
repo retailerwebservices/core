@@ -73,7 +73,10 @@ public class SearchDocumentWriter
 		{
 			s = s.trim();
 		}
+		
 		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements);
+		
+		fields.put(ElasticSearchCommon.getSortFieldNameText(search_index_definition.getSimpleFieldName().getSimpleName()), elements);
 	}
 
 	/**
@@ -1030,6 +1033,8 @@ public class SearchDocumentWriter
 			return;
 
 		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements);
+		
+		fields.put(ElasticSearchCommon.getSortFieldNameText(search_index_definition.getSimpleFieldName().getSimpleName()), elements);
 	}
 
 	/**
@@ -1122,6 +1127,8 @@ public class SearchDocumentWriter
 		// }
 
 		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements);
+		
+		fields.put(ElasticSearchCommon.getSortFieldNameText(search_index_definition.getSimpleFieldName().getSimpleName()), elements);
 	}
 
 	/**

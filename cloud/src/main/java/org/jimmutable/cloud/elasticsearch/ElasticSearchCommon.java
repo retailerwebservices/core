@@ -220,7 +220,7 @@ public class ElasticSearchCommon
 	}
 
 	/**
-	 * Using a SortBy object, construct a SortBuilder used by ElasticSearch.
+	 * Using a SortBy object, construct a FieldSort used by ElasticSearch.
 	 * This method handles the unique sorting cases for Text, Time of Day, and
 	 * Instant.
 	 * 
@@ -255,25 +255,7 @@ public class ElasticSearchCommon
 			break;
 		}
 		
-//		String field_name = sort_by.getSimpleField().getSimpleFieldName().getSimpleName();
-//		String sort_on_string = field_name.getSimpleName();
-		
-//		if (sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.TEXT)
-//		{
-//			// Reference getSortFieldNameText for logic on calling ATOM search type here
-//			field_name = getSortFieldNameText(sort_by.getSimpleField().getSimpleFieldName()) + "." + SearchIndexFieldType.ATOM.getSimpleSearchType();
-//		}
-//		if (sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.TIMEOFDAY)
-//		{
-//			field_name = getSortFieldNameTimeOfDay(sort_by.getSimpleField().getSimpleFieldName());
-//		}
-//		if (sort_by.getSimpleField().getSimpleType() == SearchIndexFieldType.INSTANT)
-//		{
-//			field_name = getSortFieldNameInstant(sort_by.getSimpleField().getSimpleFieldName());
-//		}
-		
 		return new FieldSort.Builder().order(order).field(field_name).build();
-//		return SortBuilders.fieldSort(sort_on_string).order(order).unmappedType(SearchIndexFieldType.ATOM.getSimpleSearchType());
 	}
 
 	/**
