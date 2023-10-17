@@ -422,4 +422,8 @@ public class CloudExecutionEnvironment
 		}
 		return CURRENT;
 	}
+
+	static public boolean hasStartupBeenCalled(){
+		return CURRENT != null;
+	}
 }
