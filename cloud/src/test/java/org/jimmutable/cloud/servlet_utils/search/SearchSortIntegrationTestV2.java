@@ -24,22 +24,12 @@ import org.jimmutable.cloud.elasticsearch.SearchDocumentWriter;
 import org.jimmutable.cloud.elasticsearch.SearchIndexDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldDefinition;
 import org.jimmutable.cloud.elasticsearch.SearchIndexFieldType;
-import org.jimmutable.cloud.servlet_utils.search.SearchSortIntegrationTest.SearchSortObjectBoolean;
-import org.jimmutable.cloud.servlet_utils.search.SearchSortIntegrationTest.SearchSortObjectDay;
-import org.jimmutable.cloud.servlet_utils.search.SearchSortIntegrationTest.SearchSortObjectFloat;
-import org.jimmutable.cloud.servlet_utils.search.SearchSortIntegrationTest.SearchSortObjectInstant;
-import org.jimmutable.cloud.servlet_utils.search.SearchSortIntegrationTest.SearchSortObjectLong;
-import org.jimmutable.cloud.servlet_utils.search.SearchSortIntegrationTest.SearchSortObjectLongArray;
 import org.jimmutable.cloud.servlet_utils.search.SearchSortIntegrationTest.SearchSortObjectText;
-import org.jimmutable.cloud.servlet_utils.search.SearchSortIntegrationTest.SearchSortObjectTextArray;
-import org.jimmutable.cloud.servlet_utils.search.SearchSortIntegrationTest.SearchSortObjectTimeOfDay;
-import org.jimmutable.cloud.storage.Storable;
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.fields.FieldCollection;
 import org.jimmutable.core.objects.JimmutableBuilder;
 import org.jimmutable.core.objects.StandardImmutableObject;
 import org.jimmutable.core.objects.common.Day;
-import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.serialization.FieldDefinition;
 import org.jimmutable.core.serialization.FieldName;
@@ -48,7 +38,6 @@ import org.jimmutable.core.serialization.reader.ObjectParseTree;
 import org.jimmutable.core.serialization.writer.ObjectWriter;
 import org.jimmutable.core.serialization.writer.WriteAs;
 import org.jimmutable.core.utils.Comparison;
-import org.joda.time.DateTime;
 
 /**
  * The purpose of this class is to test our
@@ -78,8 +67,8 @@ class SearchSortIntegrationTestV2
         // Add object types to be registered
         ObjectParseTree.registerTypeName(SearchSortObjectText.class);
         ObjectParseTree.registerTypeName(SearchSortObjectLongV2.class);
-        ObjectParseTree.registerTypeName(SearchSortObjectFloat.class);
-        ObjectParseTree.registerTypeName(SearchSortObjectBoolean.class);
+        ObjectParseTree.registerTypeName(SearchSortObjectFloatV2.class);
+        ObjectParseTree.registerTypeName(SearchSortObjectBooleanV2.class);
         ObjectParseTree.registerTypeName(SearchSortObjectDayV2.class);
 //        ObjectParseTree.registerTypeName(SearchSortObjectInstant.class);
 //        ObjectParseTree.registerTypeName(SearchSortObjectTimeOfDay.class);
@@ -187,14 +176,14 @@ class SearchSortIntegrationTestV2
     		deleteIndexEntries(SearchSortObjectDayV2.SEARCH_FIELD_ID.getSimpleFieldName(), SearchSortObjectDayV2.INDEX_DEFINITION);
     	}
 
-		if (CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexExists(SearchSortObjectFloat.INDEX_MAPPING))
+		if (CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexExists(SearchSortObjectFloatV2.INDEX_MAPPING))
 		{
-			deleteIndexEntries(SearchSortObjectFloat.SEARCH_FIELD_ID.getSimpleFieldName(), SearchSortObjectFloat.INDEX_DEFINITION);
+			deleteIndexEntries(SearchSortObjectFloatV2.SEARCH_FIELD_ID.getSimpleFieldName(), SearchSortObjectFloatV2.INDEX_DEFINITION);
 		}
 
-		if (CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexExists(SearchSortObjectBoolean.INDEX_MAPPING))
+		if (CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexExists(SearchSortObjectBooleanV2.INDEX_MAPPING))
 		{
-			deleteIndexEntries(SearchSortObjectBoolean.SEARCH_FIELD_ID.getSimpleFieldName(), SearchSortObjectBoolean.INDEX_DEFINITION);
+			deleteIndexEntries(SearchSortObjectBooleanV2.SEARCH_FIELD_ID.getSimpleFieldName(), SearchSortObjectBooleanV2.INDEX_DEFINITION);
 		}
     }
     
@@ -275,20 +264,20 @@ class SearchSortIntegrationTestV2
 		String test_object = "SearchSortObjectFloat";
 		boolean is_successful = true;
 
-		Map<ObjectId, SearchSortObjectFloat> test_objects = new HashMap<>();
+		Map<ObjectId, SearchSortObjectFloatV2> test_objects = new HashMap<>();
 
 		for ( float i = 9; i >= 0; i-- )
 		{
-			SearchSortObjectFloat obj = new SearchSortObjectFloat(ObjectId.createRandomId(), i);
+			SearchSortObjectFloatV2 obj = new SearchSortObjectFloatV2(ObjectId.createRandomId(), i);
 			test_objects.put(obj.getSimpleObjectId(), obj);
 			CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocument(obj);
 		}
 
-		String query = String.format("%s:%s", SearchSortObjectFloat.SEARCH_FIELD_VALUE.getSimpleFieldName().getSimpleName(), "*");
+		String query = String.format("%s:%s", SearchSortObjectFloatV2.SEARCH_FIELD_VALUE.getSimpleFieldName().getSimpleName(), "*");
 
 		// Test Sort FLOAT Ascending
 		SortBy sort_by = new SortBy(SearchSortObjectLongV2.SEARCH_FIELD_VALUE, SortDirection.ASCENDING);
-		List<OneSearchResultWithTyping> results = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(SearchSortObjectFloat.INDEX_DEFINITION, new StandardSearchRequest(query, 10000, 0, new Sort(sort_by)), null);
+		List<OneSearchResultWithTyping> results = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(SearchSortObjectFloatV2.INDEX_DEFINITION, new StandardSearchRequest(query, 10000, 0, new Sort(sort_by)), null);
 
 		if (test_objects.size() != results.size())
 		{
@@ -300,8 +289,8 @@ class SearchSortIntegrationTestV2
 		float prev_float_value = -1;
 		for ( OneSearchResultWithTyping result : results )
 		{
-			ObjectId id = new ObjectId(result.readAsAtom(SearchSortObjectFloat.SEARCH_FIELD_ID.getSimpleFieldName(), null));
-			float float_value = result.readAsFloat(SearchSortObjectFloat.SEARCH_FIELD_VALUE.getSimpleFieldName(), -1F);
+			ObjectId id = new ObjectId(result.readAsAtom(SearchSortObjectFloatV2.SEARCH_FIELD_ID.getSimpleFieldName(), null));
+			float float_value = result.readAsFloat(SearchSortObjectFloatV2.SEARCH_FIELD_VALUE.getSimpleFieldName(), -1F);
 
 			if (!(float_value == test_objects.get(id).getSimpleValue()) )
 			{
@@ -321,14 +310,14 @@ class SearchSortIntegrationTestV2
 		}
 
 		// Test Sort FLOAT Descending
-		sort_by = new SortBy(SearchSortObjectFloat.SEARCH_FIELD_VALUE, SortDirection.DESCENDING);
-		results = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(SearchSortObjectFloat.INDEX_DEFINITION, new StandardSearchRequest(query, 10000, 0, new Sort(sort_by)), null);
+		sort_by = new SortBy(SearchSortObjectFloatV2.SEARCH_FIELD_VALUE, SortDirection.DESCENDING);
+		results = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(SearchSortObjectFloatV2.INDEX_DEFINITION, new StandardSearchRequest(query, 10000, 0, new Sort(sort_by)), null);
 
 		logger.info("Sort FLOAT Descending search results:");
 		prev_float_value = 10;
 		for ( OneSearchResultWithTyping result : results )
 		{
-			float float_value = result.readAsFloat(SearchSortObjectFloat.SEARCH_FIELD_VALUE.getSimpleFieldName(), -1F);
+			float float_value = result.readAsFloat(SearchSortObjectFloatV2.SEARCH_FIELD_VALUE.getSimpleFieldName(), -1F);
 
 			if (!(float_value < prev_float_value))
 			{
@@ -349,21 +338,21 @@ class SearchSortIntegrationTestV2
 		String test_object = "SearchSortObjectBoolean";
 		boolean is_successful = true;
 
-		Map<ObjectId, SearchSortObjectBoolean> test_objects = new HashMap<>();
+		Map<ObjectId, SearchSortObjectBooleanV2> test_objects = new HashMap<>();
 
 		for ( int i = 9; i >= 0; i-- )
 		{
 			boolean bool_val = ((i % 2) == 0); //Alternate true and false
-			SearchSortObjectBoolean obj = new SearchSortObjectBoolean(ObjectId.createRandomId(), bool_val);
+			SearchSortObjectBooleanV2 obj = new SearchSortObjectBooleanV2(ObjectId.createRandomId(), bool_val);
 			test_objects.put(obj.getSimpleObjectId(), obj);
 			CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocument(obj);
 		}
 
-		String query = String.format("%s:%s", SearchSortObjectBoolean.SEARCH_FIELD_VALUE.getSimpleFieldName().getSimpleName(), "*");
+		String query = String.format("%s:%s", SearchSortObjectBooleanV2.SEARCH_FIELD_VALUE.getSimpleFieldName().getSimpleName(), "*");
 
 		// Test Sort Boolean Ascending
-		SortBy sort_by = new SortBy(SearchSortObjectBoolean.SEARCH_FIELD_VALUE, SortDirection.ASCENDING);
-		List<OneSearchResultWithTyping> results = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(SearchSortObjectBoolean.INDEX_DEFINITION, new StandardSearchRequest(query, 10000, 0, new Sort(sort_by)), null);
+		SortBy sort_by = new SortBy(SearchSortObjectBooleanV2.SEARCH_FIELD_VALUE, SortDirection.ASCENDING);
+		List<OneSearchResultWithTyping> results = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(SearchSortObjectBooleanV2.INDEX_DEFINITION, new StandardSearchRequest(query, 10000, 0, new Sort(sort_by)), null);
 
 		if (test_objects.size() != results.size())
 		{
@@ -375,8 +364,8 @@ class SearchSortIntegrationTestV2
 		boolean prev_bool_value = false;
 		for ( OneSearchResultWithTyping result : results )
 		{
-			ObjectId id = new ObjectId(result.readAsAtom(SearchSortObjectBoolean.SEARCH_FIELD_ID.getSimpleFieldName(), null));
-			boolean bool_value = result.readAsBoolean(SearchSortObjectBoolean.SEARCH_FIELD_VALUE.getSimpleFieldName(), false);
+			ObjectId id = new ObjectId(result.readAsAtom(SearchSortObjectBooleanV2.SEARCH_FIELD_ID.getSimpleFieldName(), null));
+			boolean bool_value = result.readAsBoolean(SearchSortObjectBooleanV2.SEARCH_FIELD_VALUE.getSimpleFieldName(), false);
 
 			if (!(bool_value == test_objects.get(id).getSimpleValue()) )
 			{
@@ -396,14 +385,14 @@ class SearchSortIntegrationTestV2
 		}
 
 		// Test Sort BOOLEAN Descending
-		sort_by = new SortBy(SearchSortObjectBoolean.SEARCH_FIELD_VALUE, SortDirection.DESCENDING);
-		results = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(SearchSortObjectBoolean.INDEX_DEFINITION, new StandardSearchRequest(query, 10000, 0, new Sort(sort_by)), null);
+		sort_by = new SortBy(SearchSortObjectBooleanV2.SEARCH_FIELD_VALUE, SortDirection.DESCENDING);
+		results = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(SearchSortObjectBooleanV2.INDEX_DEFINITION, new StandardSearchRequest(query, 10000, 0, new Sort(sort_by)), null);
 
 		logger.info("Sort BOOLEAN Descending search results:");
 		prev_bool_value = true;
 		for ( OneSearchResultWithTyping result : results )
 		{
-			boolean bool_value = result.readAsBoolean(SearchSortObjectBoolean.SEARCH_FIELD_VALUE.getSimpleFieldName(), false);
+			boolean bool_value = result.readAsBoolean(SearchSortObjectBooleanV2.SEARCH_FIELD_VALUE.getSimpleFieldName(), false);
 
 			if (Boolean.compare(prev_bool_value, bool_value) < 0)
 			{
@@ -944,7 +933,7 @@ class SearchSortIntegrationTestV2
 	}
 
 
-	public static class SearchSortObjectFloat extends StandardImmutableObject<SearchSortObjectFloat> implements Indexable
+	public static class SearchSortObjectFloatV2 extends StandardImmutableObject<SearchSortObjectFloatV2> implements Indexable
 	{
 		static public final FieldDefinition.Stringable<ObjectId> FIELD_ID = new FieldDefinition.Stringable<ObjectId>("id", null, ObjectId.CONVERTER);
 		static public final FieldDefinition.Float FIELD_VALUE = new FieldDefinition.Float("value", -1F);
@@ -970,7 +959,7 @@ class SearchSortIntegrationTestV2
 			INDEX_MAPPING = (SearchIndexDefinition) b.create();
 		}
 
-		public SearchSortObjectFloat(ObjectId id, float value)
+		public SearchSortObjectFloatV2(ObjectId id, float value)
 		{
 			this.id = id;
 			this.value = value;
@@ -1017,7 +1006,7 @@ class SearchSortIntegrationTestV2
 		}
 
 		@Override
-		public int compareTo(SearchSortObjectFloat o)
+		public int compareTo(SearchSortObjectFloatV2 o)
 		{
 			int ret = Comparison.startCompare();
 			ret = Comparison.continueCompare(ret, getSimpleObjectId(), o.getSimpleObjectId());
@@ -1051,7 +1040,7 @@ class SearchSortIntegrationTestV2
 			if (this == obj) return true;
 			if (obj == null) return false;
 			if (getClass() != obj.getClass()) return false;
-			SearchSortObjectFloat other = (SearchSortObjectFloat) obj;
+			SearchSortObjectFloatV2 other = (SearchSortObjectFloatV2) obj;
 			return Objects.equals(id, other.id) && value == other.value;
 		}
 
@@ -1059,7 +1048,7 @@ class SearchSortIntegrationTestV2
 
 	}
 
-	public static class SearchSortObjectBoolean extends StandardImmutableObject<SearchSortObjectBoolean> implements Indexable
+	public static class SearchSortObjectBooleanV2 extends StandardImmutableObject<SearchSortObjectBooleanV2> implements Indexable
 	{
 		static public final FieldDefinition.Stringable<ObjectId> FIELD_ID = new FieldDefinition.Stringable<ObjectId>("id", null, ObjectId.CONVERTER);
 		static public final FieldDefinition.Boolean FIELD_VALUE = new FieldDefinition.Boolean("value", false);
@@ -1085,7 +1074,7 @@ class SearchSortIntegrationTestV2
 			INDEX_MAPPING = (SearchIndexDefinition) b.create();
 		}
 
-		public SearchSortObjectBoolean(ObjectId id, boolean value)
+		public SearchSortObjectBooleanV2(ObjectId id, boolean value)
 		{
 			this.id = id;
 			this.value = value;
@@ -1132,7 +1121,7 @@ class SearchSortIntegrationTestV2
 		}
 
 		@Override
-		public int compareTo(SearchSortObjectBoolean o)
+		public int compareTo(SearchSortObjectBooleanV2 o)
 		{
 			int ret = Comparison.startCompare();
 			ret = Comparison.continueCompare(ret, getSimpleObjectId(), o.getSimpleObjectId());
@@ -1166,7 +1155,7 @@ class SearchSortIntegrationTestV2
 			if (this == obj) return true;
 			if (obj == null) return false;
 			if (getClass() != obj.getClass()) return false;
-			SearchSortObjectBoolean other = (SearchSortObjectBoolean) obj;
+			SearchSortObjectBooleanV2 other = (SearchSortObjectBooleanV2) obj;
 			return Objects.equals(id, other.id) && value == other.value;
 		}
 
