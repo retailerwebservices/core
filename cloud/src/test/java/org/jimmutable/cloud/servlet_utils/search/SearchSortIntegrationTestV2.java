@@ -79,7 +79,7 @@ class SearchSortIntegrationTestV2
         ObjectParseTree.registerTypeName(SearchSortObjectText.class);
         ObjectParseTree.registerTypeName(SearchSortObjectLongV2.class);
         ObjectParseTree.registerTypeName(SearchSortObjectFloat.class);
-//        ObjectParseTree.registerTypeName(SearchSortObjectBoolean.class);
+        ObjectParseTree.registerTypeName(SearchSortObjectBoolean.class);
         ObjectParseTree.registerTypeName(SearchSortObjectDayV2.class);
 //        ObjectParseTree.registerTypeName(SearchSortObjectInstant.class);
 //        ObjectParseTree.registerTypeName(SearchSortObjectTimeOfDay.class);
@@ -137,6 +137,11 @@ class SearchSortIntegrationTestV2
 				{
 					test_failed = true;
 				}
+
+				if (!testSearchSortObjectBoolean())
+				{
+					test_failed = true;
+				}
 			}
 			catch ( Exception e )
 			{
@@ -185,6 +190,11 @@ class SearchSortIntegrationTestV2
 		if (CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexExists(SearchSortObjectFloat.INDEX_MAPPING))
 		{
 			deleteIndexEntries(SearchSortObjectFloat.SEARCH_FIELD_ID.getSimpleFieldName(), SearchSortObjectFloat.INDEX_DEFINITION);
+		}
+
+		if (CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexExists(SearchSortObjectBoolean.INDEX_MAPPING))
+		{
+			deleteIndexEntries(SearchSortObjectBoolean.SEARCH_FIELD_ID.getSimpleFieldName(), SearchSortObjectBoolean.INDEX_DEFINITION);
 		}
     }
     
@@ -333,6 +343,82 @@ class SearchSortIntegrationTestV2
 
 		return is_successful;
 	}
+
+	private static boolean testSearchSortObjectBoolean() throws Exception
+	{
+		String test_object = "SearchSortObjectBoolean";
+		boolean is_successful = true;
+
+		Map<ObjectId, SearchSortObjectBoolean> test_objects = new HashMap<>();
+
+		for ( int i = 9; i >= 0; i-- )
+		{
+			boolean bool_val = ((i % 2) == 0); //Alternate true and false
+			SearchSortObjectBoolean obj = new SearchSortObjectBoolean(ObjectId.createRandomId(), bool_val);
+			test_objects.put(obj.getSimpleObjectId(), obj);
+			CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocument(obj);
+		}
+
+		String query = String.format("%s:%s", SearchSortObjectBoolean.SEARCH_FIELD_VALUE.getSimpleFieldName().getSimpleName(), "*");
+
+		// Test Sort Boolean Ascending
+		SortBy sort_by = new SortBy(SearchSortObjectBoolean.SEARCH_FIELD_VALUE, SortDirection.ASCENDING);
+		List<OneSearchResultWithTyping> results = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(SearchSortObjectBoolean.INDEX_DEFINITION, new StandardSearchRequest(query, 10000, 0, new Sort(sort_by)), null);
+
+		if (test_objects.size() != results.size())
+		{
+			outputError(test_object, String.format("Incorrect number of entries retrieved from search. Expected: %s, Actual: %s", test_objects.size(), results.size()));
+			is_successful = false;
+		}
+
+		logger.info("Sort BOOLEAN Ascending search results:");
+		boolean prev_bool_value = false;
+		for ( OneSearchResultWithTyping result : results )
+		{
+			ObjectId id = new ObjectId(result.readAsAtom(SearchSortObjectBoolean.SEARCH_FIELD_ID.getSimpleFieldName(), null));
+			boolean bool_value = result.readAsBoolean(SearchSortObjectBoolean.SEARCH_FIELD_VALUE.getSimpleFieldName(), false);
+
+			if (!(bool_value == test_objects.get(id).getSimpleValue()) )
+			{
+				outputError(test_object, String.format("Value from search doesn't match expected value. Expected: %s, Actual: %s", test_objects.get(id).getSimpleValue(), bool_value));
+				is_successful = false;
+			}
+
+			if (Boolean.compare(prev_bool_value, bool_value) > 0)
+			{
+				outputError(test_object, String.format("Incorrect ascending sort sequence. Prev: %s, Curr: %s", prev_bool_value, bool_value));
+				is_successful = false;
+			}
+
+			logger.info(String.format("Current value: %s, Previous value: %s", bool_value, prev_bool_value));
+
+			prev_bool_value = bool_value;
+		}
+
+		// Test Sort BOOLEAN Descending
+		sort_by = new SortBy(SearchSortObjectBoolean.SEARCH_FIELD_VALUE, SortDirection.DESCENDING);
+		results = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(SearchSortObjectBoolean.INDEX_DEFINITION, new StandardSearchRequest(query, 10000, 0, new Sort(sort_by)), null);
+
+		logger.info("Sort BOOLEAN Descending search results:");
+		prev_bool_value = true;
+		for ( OneSearchResultWithTyping result : results )
+		{
+			boolean bool_value = result.readAsBoolean(SearchSortObjectBoolean.SEARCH_FIELD_VALUE.getSimpleFieldName(), false);
+
+			if (Boolean.compare(prev_bool_value, bool_value) < 0)
+			{
+				outputError(test_object, String.format("Incorrect descending sort sequence. Prev: %s, Curr: %s", prev_bool_value, bool_value));
+				is_successful = false;
+			}
+
+			logger.info(String.format("Current value: %s, Previous value: %s", bool_value, prev_bool_value));
+
+			prev_bool_value = bool_value;
+		}
+
+		return is_successful;
+	}
+
     
     private static boolean testSearchSortObjectLongArray() throws Exception
     {
@@ -566,7 +652,7 @@ class SearchSortIntegrationTestV2
 		}
 		else
 		{
-			logger.info("Sort TEXT Descending search results:");
+			logger.info("Sort DAY Descending search results:");
 			
 			Day prev_day_value = new Day("12/31/9999");
 			for ( OneSearchResultWithTyping result : results )
@@ -970,6 +1056,119 @@ class SearchSortIntegrationTestV2
 		}
 
 
+
+	}
+
+	public static class SearchSortObjectBoolean extends StandardImmutableObject<SearchSortObjectBoolean> implements Indexable
+	{
+		static public final FieldDefinition.Stringable<ObjectId> FIELD_ID = new FieldDefinition.Stringable<ObjectId>("id", null, ObjectId.CONVERTER);
+		static public final FieldDefinition.Boolean FIELD_VALUE = new FieldDefinition.Boolean("value", false);
+
+		static public final TypeName TYPE_NAME = new TypeName("SearchSortObjectBoolean");
+		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("boolean"), new IndexVersion("v1"));
+
+		static public final SearchIndexFieldDefinition SEARCH_FIELD_ID = new SearchIndexFieldDefinition(FIELD_ID.getSimpleFieldName(), SearchIndexFieldType.ATOM);
+		static public final SearchIndexFieldDefinition SEARCH_FIELD_VALUE = new SearchIndexFieldDefinition(FIELD_VALUE.getSimpleFieldName(), SearchIndexFieldType.BOOLEAN);
+		static public final SearchIndexDefinition INDEX_MAPPING;
+
+		private ObjectId id;
+		private boolean value;
+
+		static
+		{
+			JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
+
+			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_ID);
+			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
+			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
+
+			INDEX_MAPPING = (SearchIndexDefinition) b.create();
+		}
+
+		public SearchSortObjectBoolean(ObjectId id, boolean value)
+		{
+			this.id = id;
+			this.value = value;
+			complete();
+		}
+
+		public Boolean getSimpleValue() { return value; }
+
+		public ObjectId getSimpleObjectId() { return id; }
+
+		@Override
+		public IndexDefinition getSimpleSearchIndexDefinition()
+		{
+			return INDEX_DEFINITION;
+		}
+
+		@Override
+		public SearchDocumentId getSimpleSearchDocumentId()
+		{
+			return new SearchDocumentId(id.getSimpleValue());
+		}
+
+		@Override
+		public void writeSearchDocument(SearchDocumentWriter writer)
+		{
+			writer.writeAtom(SEARCH_FIELD_ID, id.getSimpleValue());
+			writer.writeBoolean(SEARCH_FIELD_VALUE, value);
+		}
+
+
+		@Override
+		public void freeze()
+		{
+		}
+
+		@Override
+		public void normalize()
+		{
+		}
+
+		@Override
+		public void validate()
+		{
+		}
+
+		@Override
+		public int compareTo(SearchSortObjectBoolean o)
+		{
+			int ret = Comparison.startCompare();
+			ret = Comparison.continueCompare(ret, getSimpleObjectId(), o.getSimpleObjectId());
+			ret = Comparison.continueCompare(ret, getSimpleValue(), o.getSimpleValue());
+
+			return ret;
+		}
+
+		@Override
+		public TypeName getTypeName()
+		{
+			return TYPE_NAME;
+		}
+
+		@Override
+		public void write(ObjectWriter writer)
+		{
+			writer.writeStringable(FIELD_ID, id);
+			writer.writeBoolean(FIELD_VALUE, value);
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return Objects.hash(id, value);
+		}
+
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			SearchSortObjectBoolean other = (SearchSortObjectBoolean) obj;
+			return Objects.equals(id, other.id) && value == other.value;
+		}
 
 	}
 	
