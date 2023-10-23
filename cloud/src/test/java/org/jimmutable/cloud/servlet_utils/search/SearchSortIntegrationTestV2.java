@@ -11,6 +11,7 @@ import java.util.Random;
 import java.util.stream.IntStream;
 
 import org.jimmutable.core.objects.common.time.Instant;
+import org.jimmutable.core.objects.common.time.TimeOfDay;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.jimmutable.cloud.ApplicationId;
@@ -72,7 +73,7 @@ class SearchSortIntegrationTestV2
         ObjectParseTree.registerTypeName(SearchSortObjectBooleanV2.class);
         ObjectParseTree.registerTypeName(SearchSortObjectDayV2.class);
         ObjectParseTree.registerTypeName(SearchSortObjectInstantV2.class);
-//        ObjectParseTree.registerTypeName(SearchSortObjectTimeOfDay.class);
+        ObjectParseTree.registerTypeName(SearchSortObjectTimeOfDayV2.class);
 //        ObjectParseTree.registerTypeName(SearchSortObjectTextArray.class);
         ObjectParseTree.registerTypeName(SearchSortObjectLongArray.class);
 //        ObjectParseTree.registerTypeName(SearchSortObjectFloatArray.class);
@@ -137,6 +138,11 @@ class SearchSortIntegrationTestV2
 				{
 					test_failed = true;
 				}
+
+				if (!testSearchSortObjectTimeOfDay())
+				{
+					test_failed = true;
+				}
 			}
 			catch ( Exception e )
 			{
@@ -195,6 +201,11 @@ class SearchSortIntegrationTestV2
 		if (CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexExists(SearchSortObjectInstantV2.INDEX_MAPPING))
 		{
 			deleteIndexEntries(SearchSortObjectInstantV2.SEARCH_FIELD_ID.getSimpleFieldName(), SearchSortObjectInstantV2.INDEX_DEFINITION);
+		}
+
+		if (CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexExists(SearchSortObjectTimeOfDayV2.INDEX_MAPPING))
+		{
+			deleteIndexEntries(SearchSortObjectTimeOfDayV2.SEARCH_FIELD_ID.getSimpleFieldName(), SearchSortObjectTimeOfDayV2.INDEX_DEFINITION);
 		}
     }
     
@@ -489,6 +500,82 @@ class SearchSortIntegrationTestV2
 			logger.info(String.format("Current value: %s, Previous value: %s", curr_instant_value.getSimpleMillisecondsFromEpoch(), prev_instant_value.getSimpleMillisecondsFromEpoch()));
 
 			prev_instant_value = curr_instant_value;
+		}
+
+		return is_successful;
+	}
+
+
+	private static boolean testSearchSortObjectTimeOfDay() throws Exception
+	{
+		String test_object = "SearchSortObjectTimeOfDayV2";
+		boolean is_successful = true;
+
+		Map<ObjectId, SearchSortObjectTimeOfDayV2> test_objects = new HashMap<>();
+
+		for ( long i = 10; i >= 1; i-- )
+		{
+			TimeOfDay tod_val = new TimeOfDay(i*300000);
+			SearchSortObjectTimeOfDayV2 obj = new SearchSortObjectTimeOfDayV2(ObjectId.createRandomId(), tod_val);
+			test_objects.put(obj.getSimpleObjectId(), obj);
+			CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocument(obj);
+		}
+
+		String query = String.format("%s:%s", SearchSortObjectTimeOfDayV2.SEARCH_FIELD_VALUE.getSimpleFieldName().getSimpleName(), "*");
+
+		// Test Sort TIME_OF_DAY Ascending
+		SortBy sort_by = new SortBy(SearchSortObjectTimeOfDayV2.SEARCH_FIELD_VALUE, SortDirection.ASCENDING);
+		List<OneSearchResultWithTyping> results = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(SearchSortObjectTimeOfDayV2.INDEX_DEFINITION, new StandardSearchRequest(query, 10000, 0, new Sort(sort_by)), null);
+
+		if (test_objects.size() != results.size())
+		{
+			outputError(test_object, String.format("Incorrect number of entries retrieved from search. Expected: %s, Actual: %s", test_objects.size(), results.size()));
+			is_successful = false;
+		}
+
+		logger.info("Sort TIME_OF_DAY Ascending search results:");
+		TimeOfDay prev_tod_value = new TimeOfDay(0);
+		for ( OneSearchResultWithTyping result : results )
+		{
+			ObjectId id = new ObjectId(result.readAsAtom(SearchSortObjectTimeOfDayV2.SEARCH_FIELD_ID.getSimpleFieldName(), null));
+			TimeOfDay curr_tod_value = result.readAsTimeOfDay(SearchSortObjectTimeOfDayV2.SEARCH_FIELD_VALUE.getSimpleFieldName(), null);
+
+			if (!(curr_tod_value.equals(test_objects.get(id).getSimpleValue())) )
+			{
+				outputError(test_object, String.format("Value from search doesn't match expected value. Expected: %s, Actual: %s", test_objects.get(id).getSimpleValue(), curr_tod_value));
+				is_successful = false;
+			}
+
+			if (prev_tod_value.compareTo(curr_tod_value) >= 0)
+			{
+				outputError(test_object, String.format("Incorrect ascending sort sequence. Prev: %s, Curr: %s", prev_tod_value, curr_tod_value));
+				is_successful = false;
+			}
+
+			logger.info(String.format("Current value: %s, Previous value: %s", curr_tod_value.toPrettyPrint(), prev_tod_value.toPrettyPrint()));
+
+			prev_tod_value = curr_tod_value;
+		}
+
+		// Test Sort TIME_OF_DAY Descending
+		sort_by = new SortBy(SearchSortObjectTimeOfDayV2.SEARCH_FIELD_VALUE, SortDirection.DESCENDING);
+		results = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(SearchSortObjectTimeOfDayV2.INDEX_DEFINITION, new StandardSearchRequest(query, 10000, 0, new Sort(sort_by)), null);
+
+		logger.info("Sort TIME_OF_DAY Descending search results:");
+		prev_tod_value = new TimeOfDay(82800000); //11PM
+		for ( OneSearchResultWithTyping result : results )
+		{
+			TimeOfDay curr_tod_value = result.readAsTimeOfDay(SearchSortObjectTimeOfDayV2.SEARCH_FIELD_VALUE.getSimpleFieldName(), null);
+
+			if (prev_tod_value.compareTo(curr_tod_value) <= 0)
+			{
+				outputError(test_object, String.format("Incorrect descending sort sequence. Prev: %s, Curr: %s", prev_tod_value, curr_tod_value));
+				is_successful = false;
+			}
+
+			logger.info(String.format("Current value: %s, Previous value: %s", curr_tod_value.toPrettyPrint(), prev_tod_value.toPrettyPrint()));
+
+			prev_tod_value = curr_tod_value;
 		}
 
 		return is_successful;
@@ -1466,6 +1553,116 @@ class SearchSortIntegrationTestV2
 			return Objects.equals(id, other.id) && Objects.equals(value, other.value);
 		}
 	}
+
+	public static class SearchSortObjectTimeOfDayV2 extends StandardImmutableObject<SearchSortObjectTimeOfDayV2> implements Indexable
+	{
+		static public final FieldDefinition.Stringable<ObjectId> FIELD_ID = new FieldDefinition.Stringable<ObjectId>("id", null, ObjectId.CONVERTER);
+		static public final FieldDefinition.StandardObject FIELD_VALUE = new FieldDefinition.StandardObject("timeofday", null);
+
+		static public final TypeName TYPE_NAME = new TypeName("SearchSortObjectTimeOfDay");
+		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("timeofday"), new IndexVersion("v1"));
+
+		static public final SearchIndexFieldDefinition SEARCH_FIELD_ID = new SearchIndexFieldDefinition(FIELD_ID.getSimpleFieldName(), SearchIndexFieldType.ATOM);
+		static public final SearchIndexFieldDefinition SEARCH_FIELD_VALUE = new SearchIndexFieldDefinition(FIELD_VALUE.getSimpleFieldName(), SearchIndexFieldType.TIMEOFDAY);
+		static public final SearchIndexDefinition INDEX_MAPPING;
+
+		private ObjectId id;
+		private TimeOfDay value;
+
+		static
+		{
+			JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
+
+			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_ID);
+			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
+			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
+
+			INDEX_MAPPING = (SearchIndexDefinition) b.create();
+		}
+
+		public SearchSortObjectTimeOfDayV2(ObjectId id, TimeOfDay value)
+		{
+			this.id = id;
+			this.value = value;
+			complete();
+		}
+
+		public ObjectId getSimpleObjectId() { return id; }
+		public TimeOfDay getSimpleValue() { return value; }
+
+		@Override
+		public IndexDefinition getSimpleSearchIndexDefinition()
+		{
+			return INDEX_DEFINITION;
+		}
+
+		@Override
+		public SearchDocumentId getSimpleSearchDocumentId()
+		{
+			return new SearchDocumentId(id.getSimpleValue());
+		}
+
+		@Override
+		public void writeSearchDocument(SearchDocumentWriter writer)
+		{
+			writer.writeAtom(SEARCH_FIELD_ID, id.getSimpleValue());
+			writer.writeTimeOfDay(SEARCH_FIELD_VALUE, value);
+		}
+
+		@Override
+		public int compareTo(SearchSortObjectTimeOfDayV2 o)
+		{
+			int ret = Comparison.startCompare();
+			ret = Comparison.continueCompare(ret, getSimpleObjectId(), o.getSimpleObjectId());
+			ret = Comparison.continueCompare(ret, getSimpleValue(), o.getSimpleValue());
+
+			return ret;
+		}
+
+		@Override
+		public TypeName getTypeName()
+		{
+			return TYPE_NAME;
+		}
+
+		@Override
+		public void write(ObjectWriter writer)
+		{
+			writer.writeStringable(FIELD_ID, id);
+			writer.writeObject(FIELD_VALUE, value);
+		}
+
+		@Override
+		public void freeze()
+		{
+		}
+
+		@Override
+		public void normalize()
+		{
+		}
+
+		@Override
+		public void validate()
+		{
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return Objects.hash(id, value);
+		}
+
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			SearchSortObjectTimeOfDayV2 other = (SearchSortObjectTimeOfDayV2) obj;
+			return Objects.equals(id, other.id) && Objects.equals(value, other.value);
+		}
+	}
 	
 	public static class SearchSortObjectLongArray extends StandardImmutableObject<SearchSortObjectLongArray> implements Indexable
 	{		
@@ -1583,40 +1780,7 @@ class SearchSortIntegrationTestV2
 			
 			return true;
 		}
-		
-//		public static void upsertData()
-//		{
-//			for ( int i = 0; i < 100; i++ )
-//			{		
-//				List<Long> collection = new ArrayList<>();
-//				
-//				while(RANDOM.nextInt(26) % 2 == 0)
-//				{
-//					collection.add(RANDOM.nextLong());
-//				}
-//				
-//				SearchSortObjectLongArray obj = new SearchSortObjectLongArray(collection);
-//				
-//				CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocument(obj);
-//			}
-//		}
-//		
-//		public static void doSearch()
-//		{
-//			SortBy sort_by = new SortBy(SearchSortObjectLong.SEARCH_FIELD_VALUE, SortDirection.ASCENDING);
-//			List<OneSearchResultWithTyping> results = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(SearchSortObjectLongArray.INDEX_DEFINITION, 
-//					new StandardSearchRequest(String.format("%s:%s", SEARCH_FIELD_VALUE.getSimpleFieldName().getSimpleName(), "*"), 10000, 0, new Sort(sort_by)), null);
-//			
-//			for ( OneSearchResultWithTyping result : results )
-//			{
-//				System.out.print("[");
-//				for ( Long value : result.readAsLongArray(SEARCH_FIELD_VALUE.getSimpleFieldName(), null) )
-//				{
-//					System.out.print(value + ", ");
-//				}
-//				logger.info("]");
-//			}
-//		}
+
 	}
 
     private static void deleteIndexEntries( FieldName key_field_name, IndexDefinition index_definition)
