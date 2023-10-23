@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.stream.IntStream;
 
+import org.jimmutable.core.objects.common.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.jimmutable.cloud.ApplicationId;
@@ -70,7 +71,7 @@ class SearchSortIntegrationTestV2
         ObjectParseTree.registerTypeName(SearchSortObjectFloatV2.class);
         ObjectParseTree.registerTypeName(SearchSortObjectBooleanV2.class);
         ObjectParseTree.registerTypeName(SearchSortObjectDayV2.class);
-//        ObjectParseTree.registerTypeName(SearchSortObjectInstant.class);
+        ObjectParseTree.registerTypeName(SearchSortObjectInstantV2.class);
 //        ObjectParseTree.registerTypeName(SearchSortObjectTimeOfDay.class);
 //        ObjectParseTree.registerTypeName(SearchSortObjectTextArray.class);
         ObjectParseTree.registerTypeName(SearchSortObjectLongArray.class);
@@ -131,6 +132,11 @@ class SearchSortIntegrationTestV2
 				{
 					test_failed = true;
 				}
+
+				if (!testSearchSortObjectInstant())
+				{
+					test_failed = true;
+				}
 			}
 			catch ( Exception e )
 			{
@@ -184,6 +190,11 @@ class SearchSortIntegrationTestV2
 		if (CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexExists(SearchSortObjectBooleanV2.INDEX_MAPPING))
 		{
 			deleteIndexEntries(SearchSortObjectBooleanV2.SEARCH_FIELD_ID.getSimpleFieldName(), SearchSortObjectBooleanV2.INDEX_DEFINITION);
+		}
+
+		if (CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexExists(SearchSortObjectInstantV2.INDEX_MAPPING))
+		{
+			deleteIndexEntries(SearchSortObjectInstantV2.SEARCH_FIELD_ID.getSimpleFieldName(), SearchSortObjectInstantV2.INDEX_DEFINITION);
 		}
     }
     
@@ -403,6 +414,81 @@ class SearchSortIntegrationTestV2
 			logger.info(String.format("Current value: %s, Previous value: %s", bool_value, prev_bool_value));
 
 			prev_bool_value = bool_value;
+		}
+
+		return is_successful;
+	}
+
+	private static boolean testSearchSortObjectInstant() throws Exception
+	{
+		String test_object = "SearchSortObjectInstantV2";
+		boolean is_successful = true;
+
+		Map<ObjectId, SearchSortObjectInstantV2> test_objects = new HashMap<>();
+
+		for ( long i = 9; i >= 0; i-- )
+		{
+			Instant instant_val = new Instant(i*100);
+			SearchSortObjectInstantV2 obj = new SearchSortObjectInstantV2(ObjectId.createRandomId(), instant_val);
+			test_objects.put(obj.getSimpleObjectId(), obj);
+			CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocument(obj);
+		}
+
+		String query = String.format("%s:%s", SearchSortObjectInstantV2.SEARCH_FIELD_VALUE.getSimpleFieldName().getSimpleName(), "*");
+
+		// Test Sort Instant Ascending
+		SortBy sort_by = new SortBy(SearchSortObjectInstantV2.SEARCH_FIELD_VALUE, SortDirection.ASCENDING);
+		List<OneSearchResultWithTyping> results = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(SearchSortObjectInstantV2.INDEX_DEFINITION, new StandardSearchRequest(query, 10000, 0, new Sort(sort_by)), null);
+
+		if (test_objects.size() != results.size())
+		{
+			outputError(test_object, String.format("Incorrect number of entries retrieved from search. Expected: %s, Actual: %s", test_objects.size(), results.size()));
+			is_successful = false;
+		}
+
+		logger.info("Sort INSTANT Ascending search results:");
+		Instant prev_instant_value = new Instant(-100000);
+		for ( OneSearchResultWithTyping result : results )
+		{
+			ObjectId id = new ObjectId(result.readAsAtom(SearchSortObjectInstantV2.SEARCH_FIELD_ID.getSimpleFieldName(), null));
+			Instant curr_instant_value = result.readAsInstant(SearchSortObjectInstantV2.SEARCH_FIELD_VALUE.getSimpleFieldName(), null);
+
+			if (!(curr_instant_value.equals(test_objects.get(id).getSimpleValue())) )
+			{
+				outputError(test_object, String.format("Value from search doesn't match expected value. Expected: %s, Actual: %s", test_objects.get(id).getSimpleValue(), curr_instant_value));
+				is_successful = false;
+			}
+
+			if (prev_instant_value.compareTo(curr_instant_value) >= 0)
+			{
+				outputError(test_object, String.format("Incorrect ascending sort sequence. Prev: %s, Curr: %s", prev_instant_value, curr_instant_value));
+				is_successful = false;
+			}
+
+			logger.info(String.format("Current value: %s, Previous value: %s", curr_instant_value.getSimpleMillisecondsFromEpoch(), prev_instant_value.getSimpleMillisecondsFromEpoch()));
+
+			prev_instant_value = curr_instant_value;
+		}
+
+		// Test Sort INSTANT Descending
+		sort_by = new SortBy(SearchSortObjectInstantV2.SEARCH_FIELD_VALUE, SortDirection.DESCENDING);
+		results = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(SearchSortObjectInstantV2.INDEX_DEFINITION, new StandardSearchRequest(query, 10000, 0, new Sort(sort_by)), null);
+
+		logger.info("Sort INSTANT Descending search results:");
+		prev_instant_value = new Instant(999999999);
+		for ( OneSearchResultWithTyping result : results )
+		{
+			Instant curr_instant_value = result.readAsInstant(SearchSortObjectInstantV2.SEARCH_FIELD_VALUE.getSimpleFieldName(), null);
+
+			if (prev_instant_value.compareTo(curr_instant_value) <= 0)
+			{
+				outputError(test_object, String.format("Incorrect descending sort sequence. Prev: %s, Curr: %s", prev_instant_value, curr_instant_value));
+				is_successful = false;
+			}
+
+			logger.info(String.format("Current value: %s, Previous value: %s", curr_instant_value.getSimpleMillisecondsFromEpoch(), prev_instant_value.getSimpleMillisecondsFromEpoch()));
+
+			prev_instant_value = curr_instant_value;
 		}
 
 		return is_successful;
@@ -1269,32 +1355,116 @@ class SearchSortIntegrationTestV2
 			SearchSortObjectDayV2 other = (SearchSortObjectDayV2) obj;
 			return Objects.equals(id, other.id) && Objects.equals(value, other.value);
 		}
+	}
 
-		
-		
-//		public static void upsertData()
-//		{
-//			for ( int i = 0; i < 100; i++ )
-//			{				
-//				DateTime date_time = DateTime.now().minusDays(RANDOM.nextInt(3000));
-//				Day day = new Day(date_time);
-//				SearchSortObjectDay obj = new SearchSortObjectDay(day);
-//				
-//				CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().upsertDocument(obj);
-//			}
-//		}
-//		
-//		public static void doSearch()
-//		{
-//			SortBy sort_by = new SortBy(SearchSortObjectDay.SEARCH_FIELD_VALUE, SortDirection.ASCENDING);
-//			List<OneSearchResultWithTyping> results = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().search(SearchSortObjectDay.INDEX_DEFINITION, 
-//					new StandardSearchRequest(String.format("%s:%s", SEARCH_FIELD_VALUE.getSimpleFieldName().getSimpleName(), "*"), 10000, 0, new Sort(sort_by)), null);
-//			
-//			for ( OneSearchResultWithTyping result : results )
-//			{
-//				System.out.println(result.readAsDay(SEARCH_FIELD_VALUE.getSimpleFieldName(), null));
-//			}
-//		}
+	public static class SearchSortObjectInstantV2 extends StandardImmutableObject<SearchSortObjectInstantV2> implements Indexable
+	{
+		static public final FieldDefinition.Stringable<ObjectId> FIELD_ID = new FieldDefinition.Stringable<ObjectId>("id", null, ObjectId.CONVERTER);
+		static public final FieldDefinition.StandardObject FIELD_VALUE = new FieldDefinition.StandardObject("instant", null);
+
+		static public final TypeName TYPE_NAME = new TypeName("SearchSortObjectInstant");
+		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("instant"), new IndexVersion("v1"));
+
+		static public final SearchIndexFieldDefinition SEARCH_FIELD_ID = new SearchIndexFieldDefinition(FIELD_ID.getSimpleFieldName(), SearchIndexFieldType.ATOM);
+		static public final SearchIndexFieldDefinition SEARCH_FIELD_VALUE = new SearchIndexFieldDefinition(FIELD_VALUE.getSimpleFieldName(), SearchIndexFieldType.INSTANT);
+		static public final SearchIndexDefinition INDEX_MAPPING;
+
+		private ObjectId id;
+		private Instant value;
+
+		static
+		{
+			JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);
+
+			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_ID);
+			b.add(SearchIndexDefinition.FIELD_FIELDS, SEARCH_FIELD_VALUE);
+			b.set(SearchIndexDefinition.FIELD_INDEX_DEFINITION, INDEX_DEFINITION);
+
+			INDEX_MAPPING = (SearchIndexDefinition) b.create();
+		}
+
+		public SearchSortObjectInstantV2(ObjectId id, Instant value)
+		{
+			this.id = id;
+			this.value = value;
+			complete();
+		}
+
+		public ObjectId getSimpleObjectId() { return id; }
+		public Instant getSimpleValue() { return value; }
+
+		@Override
+		public IndexDefinition getSimpleSearchIndexDefinition()
+		{
+			return INDEX_DEFINITION;
+		}
+
+		@Override
+		public SearchDocumentId getSimpleSearchDocumentId()
+		{
+			return new SearchDocumentId(id.getSimpleValue());
+		}
+
+		@Override
+		public void writeSearchDocument(SearchDocumentWriter writer)
+		{
+			writer.writeAtom(SEARCH_FIELD_ID, id.getSimpleValue());
+			writer.writeInstant(SEARCH_FIELD_VALUE, value);
+		}
+
+		@Override
+		public int compareTo(SearchSortObjectInstantV2 o)
+		{
+			int ret = Comparison.startCompare();
+			ret = Comparison.continueCompare(ret, getSimpleObjectId(), o.getSimpleObjectId());
+			ret = Comparison.continueCompare(ret, getSimpleValue(), o.getSimpleValue());
+
+			return ret;
+		}
+
+		@Override
+		public TypeName getTypeName()
+		{
+			return TYPE_NAME;
+		}
+
+		@Override
+		public void write(ObjectWriter writer)
+		{
+			writer.writeStringable(FIELD_ID, id);
+			writer.writeObject(FIELD_VALUE, value);
+		}
+
+		@Override
+		public void freeze()
+		{
+		}
+
+		@Override
+		public void normalize()
+		{
+		}
+
+		@Override
+		public void validate()
+		{
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return Objects.hash(id, value);
+		}
+
+		@Override
+		public boolean equals(Object obj)
+		{
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			SearchSortObjectInstantV2 other = (SearchSortObjectInstantV2) obj;
+			return Objects.equals(id, other.id) && Objects.equals(value, other.value);
+		}
 	}
 	
 	public static class SearchSortObjectLongArray extends StandardImmutableObject<SearchSortObjectLongArray> implements Indexable
