@@ -14,6 +14,7 @@ import org.jimmutable.core.objects.common.time.Instant;
 import org.jimmutable.core.objects.common.time.TimeOfDay;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.EnvironmentType;
@@ -80,8 +81,18 @@ class SearchSortIntegrationTestV2
         if ( CloudExecutionEnvironment.getSimpleCurrent().getSimpleEnvironmentType().equals(EnvironmentType.DEV) )
 		{				
 			ArrayList<SearchIndexDefinition> classes = new ArrayList<SearchIndexDefinition>();
-			Collections.addAll(classes, SearchSortObjectLongV2.INDEX_MAPPING, /* SearchSortObjectLongArray.INDEX_MAPPING), */ SearchSortObjectTextV2.INDEX_MAPPING, //, SearchSortObjectFloat.INDEX_MAPPING, SearchSortObjectBoolean.INDEX_MAPPING, 
-					SearchSortObjectDayV2.INDEX_MAPPING); //, SearchSortObjectInstant.INDEX_MAPPING, SearchSortObjectTimeOfDay.INDEX_MAPPING);
+			Collections.addAll(classes, //
+					SearchSortObjectLongV2.INDEX_MAPPING, //
+					SearchSortObjectTextV2.INDEX_MAPPING, //
+					SearchSortObjectFloatV2.INDEX_MAPPING, //
+					SearchSortObjectBooleanV2.INDEX_MAPPING, // 
+					SearchSortObjectDayV2.INDEX_MAPPING, //
+					SearchSortObjectInstantV2.INDEX_MAPPING, //
+					SearchSortObjectTimeOfDayV2.INDEX_MAPPING, //
+					SearchSortObjectLongArray.INDEX_MAPPING, //
+					SearchSortObjectTextArray.INDEX_MAPPING, //
+					SearchSortObjectFloatArray.INDEX_MAPPING //
+					);
 			
 			for ( SearchIndexDefinition definition : classes )
 			{
@@ -215,6 +226,21 @@ class SearchSortIntegrationTestV2
 		if (CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexExists(SearchSortObjectTimeOfDayV2.INDEX_MAPPING))
 		{
 			deleteIndexEntries(SearchSortObjectTimeOfDayV2.SEARCH_FIELD_ID.getSimpleFieldName(), SearchSortObjectTimeOfDayV2.INDEX_DEFINITION);
+		}
+		
+		if (CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexExists(SearchSortObjectLongArray.INDEX_MAPPING))
+    	{
+    		deleteIndexEntries(SearchSortObjectLongArray.SEARCH_FIELD_ID.getSimpleFieldName(), SearchSortObjectLongArray.INDEX_DEFINITION);
+    	}
+		
+		if (CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexExists(SearchSortObjectTextArray.INDEX_MAPPING))
+		{
+			deleteIndexEntries(SearchSortObjectTextArray.SEARCH_FIELD_ID.getSimpleFieldName(), SearchSortObjectTextArray.INDEX_DEFINITION);
+		}
+
+		if (CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexExists(SearchSortObjectFloatArray.INDEX_MAPPING))
+		{
+			deleteIndexEntries(SearchSortObjectFloatArray.SEARCH_FIELD_ID.getSimpleFieldName(), SearchSortObjectFloatArray.INDEX_DEFINITION);
 		}
     }
     
@@ -371,7 +397,7 @@ class SearchSortIntegrationTestV2
 
 		Map<ObjectId, SearchSortObjectBooleanV2> test_objects = new HashMap<>();
 
-		for ( int i = 9; i >= 0; i-- )
+		for ( int i = 10; i >= 0; i-- )
 		{
 			boolean bool_val = ((i % 2) == 0); //Alternate true and false
 			SearchSortObjectBooleanV2 obj = new SearchSortObjectBooleanV2(ObjectId.createRandomId(), bool_val);
