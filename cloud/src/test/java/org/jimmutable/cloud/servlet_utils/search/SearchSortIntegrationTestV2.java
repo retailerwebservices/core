@@ -965,7 +965,7 @@ class SearchSortIntegrationTestV2
 		static public final FieldDefinition.String FIELD_VALUE = new FieldDefinition.String("value", null);
 		
 		static public final TypeName TYPE_NAME = new TypeName("SearchSortObjectText");		
-		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("text"), new IndexVersion("v1"));
+		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("text"), new IndexVersion("v2"));
 		
 		static public final SearchIndexFieldDefinition SEARCH_FIELD_ID = new SearchIndexFieldDefinition(FIELD_ID.getSimpleFieldName(), SearchIndexFieldType.ATOM);
 		static public final SearchIndexFieldDefinition SEARCH_FIELD_VALUE = new SearchIndexFieldDefinition(FIELD_VALUE.getSimpleFieldName(), SearchIndexFieldType.TEXT);		
@@ -1075,7 +1075,7 @@ class SearchSortIntegrationTestV2
 		static public final FieldDefinition.Long FIELD_VALUE = new FieldDefinition.Long("value", -1L);
 		
 		static public final TypeName TYPE_NAME = new TypeName("SearchSortObjectLong");		
-		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("long"), new IndexVersion("v1"));
+		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("long"), new IndexVersion("v2"));
 		
 		static public final SearchIndexFieldDefinition SEARCH_FIELD_ID = new SearchIndexFieldDefinition(FIELD_ID.getSimpleFieldName(), SearchIndexFieldType.ATOM);	
 		static public final SearchIndexFieldDefinition SEARCH_FIELD_VALUE = new SearchIndexFieldDefinition(FIELD_VALUE.getSimpleFieldName(), SearchIndexFieldType.LONG);	
@@ -1191,7 +1191,7 @@ class SearchSortIntegrationTestV2
 		static public final FieldDefinition.Float FIELD_VALUE = new FieldDefinition.Float("value", -1F);
 
 		static public final TypeName TYPE_NAME = new TypeName("SearchSortObjectFloat");
-		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("float"), new IndexVersion("v1"));
+		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("float"), new IndexVersion("v2"));
 
 		static public final SearchIndexFieldDefinition SEARCH_FIELD_ID = new SearchIndexFieldDefinition(FIELD_ID.getSimpleFieldName(), SearchIndexFieldType.ATOM);
 		static public final SearchIndexFieldDefinition SEARCH_FIELD_VALUE = new SearchIndexFieldDefinition(FIELD_VALUE.getSimpleFieldName(), SearchIndexFieldType.FLOAT);
@@ -1306,7 +1306,7 @@ class SearchSortIntegrationTestV2
 		static public final FieldDefinition.Boolean FIELD_VALUE = new FieldDefinition.Boolean("value", false);
 
 		static public final TypeName TYPE_NAME = new TypeName("SearchSortObjectBoolean");
-		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("boolean"), new IndexVersion("v1"));
+		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("boolean"), new IndexVersion("v2"));
 
 		static public final SearchIndexFieldDefinition SEARCH_FIELD_ID = new SearchIndexFieldDefinition(FIELD_ID.getSimpleFieldName(), SearchIndexFieldType.ATOM);
 		static public final SearchIndexFieldDefinition SEARCH_FIELD_VALUE = new SearchIndexFieldDefinition(FIELD_VALUE.getSimpleFieldName(), SearchIndexFieldType.BOOLEAN);
@@ -1419,7 +1419,7 @@ class SearchSortIntegrationTestV2
 		static public final FieldDefinition.Stringable<Day> FIELD_VALUE = new FieldDefinition.Stringable<Day>("day", null, Day.CONVERTER);
 		
 		static public final TypeName TYPE_NAME = new TypeName("SearchSortObjectDay");		
-		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("day"), new IndexVersion("v1"));
+		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("day"), new IndexVersion("v2"));
 		
 		static public final SearchIndexFieldDefinition SEARCH_FIELD_ID = new SearchIndexFieldDefinition(FIELD_ID.getSimpleFieldName(), SearchIndexFieldType.ATOM);	
 		static public final SearchIndexFieldDefinition SEARCH_FIELD_VALUE = new SearchIndexFieldDefinition(FIELD_VALUE.getSimpleFieldName(), SearchIndexFieldType.DAY);	
@@ -1529,7 +1529,7 @@ class SearchSortIntegrationTestV2
 		static public final FieldDefinition.StandardObject FIELD_VALUE = new FieldDefinition.StandardObject("instant", null);
 
 		static public final TypeName TYPE_NAME = new TypeName("SearchSortObjectInstant");
-		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("instant"), new IndexVersion("v1"));
+		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("instant"), new IndexVersion("v2"));
 
 		static public final SearchIndexFieldDefinition SEARCH_FIELD_ID = new SearchIndexFieldDefinition(FIELD_ID.getSimpleFieldName(), SearchIndexFieldType.ATOM);
 		static public final SearchIndexFieldDefinition SEARCH_FIELD_VALUE = new SearchIndexFieldDefinition(FIELD_VALUE.getSimpleFieldName(), SearchIndexFieldType.INSTANT);
@@ -1639,7 +1639,7 @@ class SearchSortIntegrationTestV2
 		static public final FieldDefinition.StandardObject FIELD_VALUE = new FieldDefinition.StandardObject("timeofday", null);
 
 		static public final TypeName TYPE_NAME = new TypeName("SearchSortObjectTimeOfDay");
-		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("timeofday"), new IndexVersion("v1"));
+		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("timeofday"), new IndexVersion("v2"));
 
 		static public final SearchIndexFieldDefinition SEARCH_FIELD_ID = new SearchIndexFieldDefinition(FIELD_ID.getSimpleFieldName(), SearchIndexFieldType.ATOM);
 		static public final SearchIndexFieldDefinition SEARCH_FIELD_VALUE = new SearchIndexFieldDefinition(FIELD_VALUE.getSimpleFieldName(), SearchIndexFieldType.TIMEOFDAY);
@@ -1749,7 +1749,7 @@ class SearchSortIntegrationTestV2
 		static public final FieldDefinition.Long FIELD_VALUE = new FieldDefinition.Long("value", -1L);
 		
 		static public final TypeName TYPE_NAME = new TypeName("SearchSortObjectLongArray");		
-		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("long-array"), new IndexVersion("v1"));
+		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("long-array"), new IndexVersion("v2"));
 		
 		static public final SearchIndexFieldDefinition SEARCH_FIELD_ID = new SearchIndexFieldDefinition(FIELD_ID.getSimpleFieldName(), SearchIndexFieldType.ATOM);
 		static public final SearchIndexFieldDefinition SEARCH_FIELD_VALUE = new SearchIndexFieldDefinition(FIELD_VALUE.getSimpleFieldName(), SearchIndexFieldType.LONG);	
@@ -1869,7 +1869,7 @@ class SearchSortIntegrationTestV2
 		static public final FieldDefinition.Float FIELD_VALUE = new FieldDefinition.Float("value", -1F);
 
 		static public final TypeName TYPE_NAME = new TypeName("SearchSortObjectFloatArray");
-		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("float-array"), new IndexVersion("v1"));
+		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("float-array"), new IndexVersion("v2"));
 
 		static public final SearchIndexFieldDefinition SEARCH_FIELD_ID = new SearchIndexFieldDefinition(FIELD_ID.getSimpleFieldName(), SearchIndexFieldType.ATOM);
 		static public final SearchIndexFieldDefinition SEARCH_FIELD_VALUE = new SearchIndexFieldDefinition(FIELD_VALUE.getSimpleFieldName(), SearchIndexFieldType.FLOAT);
@@ -1988,7 +1988,7 @@ class SearchSortIntegrationTestV2
 		static public final FieldDefinition.String FIELD_VALUE = new FieldDefinition.String("value", null);
 
 		static public final TypeName TYPE_NAME = new TypeName("SearchSortObjectTextArray");
-		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("text-array"), new IndexVersion("v1"));
+		static public final IndexDefinition INDEX_DEFINITION = new IndexDefinition(CloudExecutionEnvironment.getSimpleCurrent().getSimpleApplicationId(), new IndexId("text-array"), new IndexVersion("v2"));
 
 		static public final SearchIndexFieldDefinition SEARCH_FIELD_ID = new SearchIndexFieldDefinition(FIELD_ID.getSimpleFieldName(), SearchIndexFieldType.ATOM);
 		static public final SearchIndexFieldDefinition SEARCH_FIELD_VALUE = new SearchIndexFieldDefinition(FIELD_VALUE.getSimpleFieldName(), SearchIndexFieldType.TEXT);

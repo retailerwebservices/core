@@ -28,6 +28,7 @@ import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.index.query.QueryShardException;
 import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.xcontent.XContentBuilder;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.EnvironmentType;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
@@ -57,7 +58,9 @@ import co.elastic.clients.elasticsearch._types.Result;
 import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.Time;
+import co.elastic.clients.elasticsearch._types.mapping.BooleanProperty;
 import co.elastic.clients.elasticsearch._types.mapping.DynamicMapping;
+import co.elastic.clients.elasticsearch._types.mapping.Property;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryStringQuery;
 import co.elastic.clients.elasticsearch.core.BulkRequest;
@@ -1363,13 +1366,32 @@ public class ElasticSearchRESTClient implements ISearch
 			return false;
 		}
 
+		// TODO When upgrading to the Java API Client 8.x, the put mapping
+		// code has changed. Documentation is lacking so we are disabling
+		// this for now. The function shouldn't be needed since mapping
+		// changes should be accompanied by a version number change in
+		// the mapping definition and a reindex after deployment. We 
+		// use explicit mappings rather than dynamic ones. We can 
+		// attemp to fix this code in the future, after the upgrade
+		// from 7.x to 8.10.-PM
+		
+		// Create a new PutMappingRequest.Builder
+		PutMappingRequest.Builder builder = new PutMappingRequest.Builder();
+
+		// Add the properties to the builder
+		Map<String, Property> properties = new HashMap<>();
+		builder.properties(properties).build();
+		
 		try
 		{
+			
 			PutMappingRequest request = new PutMappingRequest.Builder().index(index.getSimpleIndex().getSimpleValue())//
 					.dynamic(DynamicMapping.False)//
 					.masterTimeout(new Time.Builder().time(TimeValue.timeValueMinutes(1).getMillis()
 							+ "ms").build())//
-					.source(ElasticSearchCommon.getMappingBuilderSourceField(index, null)).build();
+//					.source(ElasticSearchCommon.getMappingBuilderSourceField(index, null)).build();
+					.properties(properties)//
+					.build();
 
 			PutMappingResponse put_response = esClient.indices().putMapping(request);
 

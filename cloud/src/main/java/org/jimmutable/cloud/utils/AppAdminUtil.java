@@ -33,16 +33,18 @@ public class AppAdminUtil
 			// index is not properly configured
 			if (!CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexProperlyConfigured(index))
 			{
+				// TODO Remove the PutMapping in order to complete the upgrade 
+				// from 7.x to 8.10. After that, maybe fix it. -PM
 				// put all field mappings
-				CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().putAllFieldMappings(index);
+//				CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().putAllFieldMappings(index);
 
 				// if its still not configured correctly add it to error list
-				if (!CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexProperlyConfigured(index))
-				{
+//				if (!CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().indexProperlyConfigured(index))
+//				{
 
 					logger.error(String.format("The index %s is not properly configured! You must rebuild or recreate this index using the reindex utility. The app will not start until all indices are properly mapped.", index.getSimpleIndex().getSimpleValue()));
 					startup_allowed = false;
-				}
+//				}
 			}
 
 		}
