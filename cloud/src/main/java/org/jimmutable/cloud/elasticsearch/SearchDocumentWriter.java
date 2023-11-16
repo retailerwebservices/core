@@ -76,7 +76,7 @@ public class SearchDocumentWriter
 		
 		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements);
 		
-		fields.put(ElasticSearchCommon.getSortFieldNameText(search_index_definition.getSimpleFieldName().getSimpleName()), elements);
+//		fields.put(ElasticSearchCommon.getSortFieldNameText(search_index_definition.getSimpleFieldName().getSimpleName()), elements);
 	}
 
 	/**
@@ -1034,7 +1034,7 @@ public class SearchDocumentWriter
 
 		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements);
 		
-		fields.put(ElasticSearchCommon.getSortFieldNameText(search_index_definition.getSimpleFieldName().getSimpleName()), elements);
+//		fields.put(ElasticSearchCommon.getSortFieldNameInstant(search_index_definition.getSimpleFieldName().getSimpleName()), elements);
 	}
 
 	/**
@@ -1128,7 +1128,7 @@ public class SearchDocumentWriter
 
 		fields.put(search_index_definition.getSimpleFieldName().getSimpleName(), elements);
 		
-		fields.put(ElasticSearchCommon.getSortFieldNameText(search_index_definition.getSimpleFieldName().getSimpleName()), elements);
+//		fields.put(ElasticSearchCommon.getSortFieldNameTimeOfDay(search_index_definition.getSimpleFieldName().getSimpleName()), elements);
 	}
 
 	/**
