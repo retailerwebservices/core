@@ -210,7 +210,7 @@ public class StorageDevLocalFileSystem extends Storage
 
 			if ( !folder.exists() )
 			{
-				System.err.println("File path " + folder + "does not exist. Cannot walk file tree for Kind " + getSimpleKind());
+				System.err.println("File path " + folder + " does not exist. Cannot walk file tree for Kind " + getSimpleKind());
 				return Result.ERROR;
 			}
 
