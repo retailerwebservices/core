@@ -122,7 +122,8 @@ public class ElasticSearchRESTClient implements ISearch
 	 */
 	protected volatile ElasticsearchClient esClient;
 	private String PRODUCTION_ELASTICSEARCH_HOST = //
-			"7381bd4eeaa34c1f8e197493b45987b1.us-west-2.aws.found.io";
+	"https://adrocketproduction8-10-4.es.us-west-2.aws.found.io/";
+			//"7381bd4eeaa34c1f8e197493b45987b1.us-west-2.aws.found.io";
 	// "f8bfe258266ee6bd44cece0dde4326d5.us-west-2.aws.found.io";
 	private int PRODUCTION_ELASTICSEARCH_PORT = 9243;
 
