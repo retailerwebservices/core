@@ -3,6 +3,8 @@ package org.jimmutable.cloud.elasticsearch;
 import java.util.List;
 import java.util.Set;
 
+import co.elastic.clients.elasticsearch._types.Time;
+import co.elastic.clients.elasticsearch.core.*;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
@@ -10,12 +12,6 @@ import org.jimmutable.cloud.storage.IStorage;
 import org.jimmutable.core.objects.common.Kind;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.ICsvListWriter;
-
-import co.elastic.clients.elasticsearch.core.ClearScrollRequest;
-import co.elastic.clients.elasticsearch.core.ScrollRequest;
-import co.elastic.clients.elasticsearch.core.ScrollResponse;
-import co.elastic.clients.elasticsearch.core.SearchRequest;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
 
 public class StubSearch implements ISearch
 {
@@ -46,6 +42,18 @@ public class StubSearch implements ISearch
 
 	@Override
 	public boolean clearScrollRaw( ClearScrollRequest request )
+	{
+		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
+	}
+
+	@Override
+	public OpenPointInTimeResponse createPointInTime(Time keep_alive, List<String> indices)
+	{
+		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
+	}
+
+	@Override
+	public ClosePointInTimeResponse closePointInTime(String id)
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}

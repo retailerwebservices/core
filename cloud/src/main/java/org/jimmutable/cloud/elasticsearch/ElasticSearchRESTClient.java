@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import co.elastic.clients.elasticsearch.core.*;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -28,13 +29,11 @@ import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.index.query.QueryShardException;
 import org.elasticsearch.search.sort.FieldSortBuilder;
-import org.elasticsearch.xcontent.XContentBuilder;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.EnvironmentType;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 import org.jimmutable.cloud.servlet_utils.search.SortBy;
-import org.jimmutable.cloud.servlet_utils.search.SortDirection;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.storage.IStorage;
 import org.jimmutable.cloud.storage.StorageKey;
@@ -58,23 +57,10 @@ import co.elastic.clients.elasticsearch._types.Result;
 import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.Time;
-import co.elastic.clients.elasticsearch._types.mapping.BooleanProperty;
 import co.elastic.clients.elasticsearch._types.mapping.DynamicMapping;
 import co.elastic.clients.elasticsearch._types.mapping.Property;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryStringQuery;
-import co.elastic.clients.elasticsearch.core.BulkRequest;
-import co.elastic.clients.elasticsearch.core.BulkResponse;
-import co.elastic.clients.elasticsearch.core.ClearScrollRequest;
-import co.elastic.clients.elasticsearch.core.ClearScrollResponse;
-import co.elastic.clients.elasticsearch.core.DeleteRequest;
-import co.elastic.clients.elasticsearch.core.DeleteResponse;
-import co.elastic.clients.elasticsearch.core.IndexRequest;
-import co.elastic.clients.elasticsearch.core.IndexResponse;
-import co.elastic.clients.elasticsearch.core.ScrollRequest;
-import co.elastic.clients.elasticsearch.core.ScrollResponse;
-import co.elastic.clients.elasticsearch.core.SearchRequest;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch.indices.CreateIndexRequest;
@@ -1411,4 +1397,38 @@ public class ElasticSearchRESTClient implements ISearch
 		return true;
 	}
 
+
+	public OpenPointInTimeResponse createPointInTime(Time keep_alive, List<String> indices)
+	{
+		OpenPointInTimeRequest request = new OpenPointInTimeRequest.Builder()//
+				.index(indices)//
+				.keepAlive(keep_alive)//
+				.build();
+
+		try
+		{
+			return esClient.openPointInTime(request);
+		}
+		catch ( Exception e )
+		{
+			logger.error("Failed to Create Point in Time!", e);
+		}
+		return null;
+	}
+	public ClosePointInTimeResponse closePointInTime(String id)
+	{
+		ClosePointInTimeRequest request = new ClosePointInTimeRequest.Builder()//
+				.id(id)//
+				.build();
+
+		try
+		{
+			return esClient.closePointInTime(request);
+		}
+		catch ( Exception e )
+		{
+			logger.error("Failed to Close Point in Time!", e);
+		}
+		return null;
+	}
 }

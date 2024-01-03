@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import co.elastic.clients.elasticsearch._types.Time;
+import co.elastic.clients.elasticsearch.core.*;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
@@ -12,12 +14,6 @@ import org.jimmutable.cloud.storage.IStorage;
 import org.jimmutable.core.objects.common.Kind;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.ICsvListWriter;
-
-import co.elastic.clients.elasticsearch.core.ClearScrollRequest;
-import co.elastic.clients.elasticsearch.core.ScrollRequest;
-import co.elastic.clients.elasticsearch.core.ScrollResponse;
-import co.elastic.clients.elasticsearch.core.SearchRequest;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
 
 /**
  * Any class that implements Search should have the following implementations
@@ -212,5 +208,9 @@ public interface ISearch
 		return o.toString();
 
 	}
+
+	public OpenPointInTimeResponse createPointInTime(Time keep_alive, List<String> indices);
+
+	public ClosePointInTimeResponse closePointInTime(String id);
 
 }
