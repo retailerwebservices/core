@@ -906,7 +906,7 @@ public class ElasticSearchRESTClient implements ISearch
 	}
 
 	@Override
-	public ScrollResponse<Indexable> searchScrollRaw( ScrollRequest request )
+	public ScrollResponse<Map> searchScrollRaw( ScrollRequest request )
 	{
 		if ( request == null )
 		{
@@ -915,7 +915,7 @@ public class ElasticSearchRESTClient implements ISearch
 
 		try
 		{
-			return esClient.scroll(request, Indexable.class);
+			return esClient.scroll(request, Map.class);
 
 		}
 		catch ( Exception e )

@@ -36,7 +36,7 @@ public class StubSearch implements ISearch
 	}
 
 	@Override
-	public ScrollResponse<Indexable> searchScrollRaw( ScrollRequest request )
+	public ScrollResponse<Map> searchScrollRaw( ScrollRequest request )
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}

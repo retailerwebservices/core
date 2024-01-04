@@ -194,7 +194,7 @@ public interface ISearch
 	 */
 	public boolean putAllFieldMappings( SearchIndexDefinition index );
 
-	public ScrollResponse<Indexable> searchScrollRaw( ScrollRequest request );
+	public ScrollResponse<Map> searchScrollRaw( ScrollRequest request );
 
 	boolean clearScrollRaw( ClearScrollRequest request );
 
