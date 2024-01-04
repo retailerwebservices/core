@@ -100,7 +100,7 @@ public interface ISearch
 	 *            {@link ISearch#search(IndexDefinition index, SearchRequest request)}
 	 * @return SearchResponse with all matching searches
 	 */
-	public SearchResponse<Indexable> searchRaw( SearchRequest request );
+	public SearchResponse<Map> searchRaw( SearchRequest request );
 
 	public List<OneSearchResultWithTyping> search( IndexDefinition index, StandardSearchRequest request, List<OneSearchResultWithTyping> default_value );
 

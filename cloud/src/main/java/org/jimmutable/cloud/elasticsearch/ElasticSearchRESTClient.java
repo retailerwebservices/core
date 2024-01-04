@@ -886,7 +886,7 @@ public class ElasticSearchRESTClient implements ISearch
 	}
 
 	@Override
-	public SearchResponse<Indexable> searchRaw( SearchRequest request )
+	public SearchResponse<Map> searchRaw( SearchRequest request )
 	{
 		if ( request == null )
 		{
@@ -895,7 +895,7 @@ public class ElasticSearchRESTClient implements ISearch
 
 		try
 		{
-			return esClient.search(s -> s.index(request.index().get(0)).query(request.query()), Indexable.class);
+			return esClient.search(request, Map.class);
 		}
 		catch ( Exception e )
 		{

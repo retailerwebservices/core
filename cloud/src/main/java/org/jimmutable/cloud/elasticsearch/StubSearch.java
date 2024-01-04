@@ -1,6 +1,7 @@
 package org.jimmutable.cloud.elasticsearch;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import co.elastic.clients.elasticsearch._types.Time;
@@ -29,7 +30,7 @@ public class StubSearch implements ISearch
 	}
 
 	@Override
-	public SearchResponse<Indexable> searchRaw( SearchRequest request )
+	public SearchResponse<Map> searchRaw(SearchRequest request )
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
