@@ -26,6 +26,9 @@ public class StandardSearchRequest extends StandardImmutableObject<StandardSearc
 	}
 
 	static public int DEFAULT_MAX_RESULTS = 100;
+
+	static public int ABSOLUTE_MAX_RESULTS = 10_000;
+
 	static public int DEFAULT_START_RESULTS_AFTER = 0;
 
 	static public final FieldDefinition.String FIELD_QUERY_STRING = new FieldDefinition.String("query", "");
