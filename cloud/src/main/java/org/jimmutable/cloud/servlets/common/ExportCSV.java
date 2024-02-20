@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jimmutable.core.serialization.FieldName;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import org.jimmutable.cloud.elasticsearch.IndexDefinition;
@@ -37,6 +38,9 @@ public abstract class ExportCSV extends HttpServlet
 	 * @return IndexDefinition
 	 */
 	protected abstract IndexDefinition getIndex();
+	protected FieldName getIdField(){
+		return new FieldName(("id"));
+	}
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -67,6 +71,7 @@ public abstract class ExportCSV extends HttpServlet
 			b.set(RequestExportCSV.FIELD_EXPORT_ALL_DOCUMENTS, r.readBoolean("export_all_documents", null));
 			b.set(RequestExportCSV.FIELD_QUERY_STRING, r.readString("query_string", null));
 
+			b.set(RequestExportCSV.FIELD_ID_FIELD, getIdField());
 			String field = r.readString("field_to_include_in_export", null);
 			while (field != null)
 			{

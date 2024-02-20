@@ -11,6 +11,7 @@ import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.storage.IStorage;
 import org.jimmutable.core.objects.common.Kind;
+import org.jimmutable.core.serialization.FieldName;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.ICsvListWriter;
 
@@ -84,7 +85,7 @@ public class StubSearch implements ISearch
 	}
 
 	@Override
-	public boolean writeAllToCSV( IndexDefinition index, String query_string, List<SearchFieldId> sorted_header, ICsvListWriter list_writer, CellProcessor[] cell_processors )
+	public boolean writeAllToCSV(IndexDefinition index, String query_string, List<SearchFieldId> sorted_header, FieldName id_field, ICsvListWriter list_writer, CellProcessor[] cell_processors )
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
