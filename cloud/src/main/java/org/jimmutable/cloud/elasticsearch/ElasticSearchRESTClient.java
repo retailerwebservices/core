@@ -1027,7 +1027,7 @@ public class ElasticSearchRESTClient implements ISearch
 			final Time keepAlive = new Time.Builder().time("1m").build();
 			final List<String> pitIndices = new ArrayList<>();
 			pitIndices.add(index.getSimpleValue());
-			final OpenPointInTimeResponse pitResp = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().createPointInTime(keepAlive, pitIndices);
+			final OpenPointInTimeResponse pitResp = createPointInTime(keepAlive, pitIndices);
 			final String pitId = pitResp.id();
 
 			String previous_id = null;
@@ -1048,7 +1048,7 @@ public class ElasticSearchRESTClient implements ISearch
 					search_request_builder.searchAfter(FieldValue.of(previous_timestamp), FieldValue.of(previous_id));
 				}
 				SearchRequest request = search_request_builder.build();
-				search_response = CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().searchRaw(request);
+				search_response = searchRaw(request);
 
 				if ( search_response == null )
 				{
@@ -1083,7 +1083,7 @@ public class ElasticSearchRESTClient implements ISearch
 				{
 					previous_id = hits.stream()//
 					 .map(ElasticSearchCommon::parseSearchResultsToOneSearchResultWithTypeing)//
-					 .toList().get(hits.size() - 1).readAsAtom(new FieldName("id"), null);
+					 .toList().get(hits.size() - 1).readAsAtom(id_field, null);
 
 				}
 
@@ -1091,7 +1091,7 @@ public class ElasticSearchRESTClient implements ISearch
 			while ( ! hits.isEmpty() ); // Zero hits mark the end of the scroll and the
 										// while
 										// loop.
-				CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().closePointInTime(pitId);
+				closePointInTime(pitId);
 				return true;
 		}
 		catch ( Exception e )
