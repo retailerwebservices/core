@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import co.elastic.clients.elasticsearch._types.*;
 import co.elastic.clients.elasticsearch.core.*;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -38,6 +39,7 @@ import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.storage.IStorage;
 import org.jimmutable.cloud.storage.StorageKey;
 import org.jimmutable.cloud.storage.StorageKeyHandler;
+import org.jimmutable.core.fields.Field;
 import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.serialization.FieldName;
@@ -50,13 +52,6 @@ import org.supercsv.io.ICsvListWriter;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._helpers.bulk.BulkIngester;
 import co.elastic.clients.elasticsearch._helpers.bulk.BulkListener;
-import co.elastic.clients.elasticsearch._types.ErrorCause;
-import co.elastic.clients.elasticsearch._types.FieldSort;
-import co.elastic.clients.elasticsearch._types.Refresh;
-import co.elastic.clients.elasticsearch._types.Result;
-import co.elastic.clients.elasticsearch._types.SortOptions;
-import co.elastic.clients.elasticsearch._types.SortOrder;
-import co.elastic.clients.elasticsearch._types.Time;
 import co.elastic.clients.elasticsearch._types.mapping.DynamicMapping;
 import co.elastic.clients.elasticsearch._types.mapping.Property;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
@@ -1018,7 +1013,7 @@ public class ElasticSearchRESTClient implements ISearch
 	}
 
 	@Override
-	public boolean writeAllToCSV( IndexDefinition index, String query_string, List<SearchFieldId> sorted_header, ICsvListWriter list_writer, CellProcessor[] cell_processors )
+	public boolean writeAllToCSV( IndexDefinition index, String query_string, List<SearchFieldId> sorted_header, FieldName id_field, ICsvListWriter list_writer, CellProcessor[] cell_processors )
 	{
 		if ( index == null || query_string == null )
 		{
@@ -1029,22 +1024,42 @@ public class ElasticSearchRESTClient implements ISearch
 
 		try
 		{
-			SearchResponse<Map> search_response = esClient.search(s -> s.index(index_name)//
-					.scroll(new Time.Builder().time(TimeValue.timeValueMinutes(1).getMillis()
-							+ "ms").build())//
-					.size(1_000)//
-					.sort(new SortOptions.Builder().field(FieldSort.of(fs -> fs.field(FieldSortBuilder.DOC_FIELD_NAME).order(SortOrder.Asc))).build()).query(new Query.Builder().queryString(new QueryStringQuery.Builder().query(query_string).build())//
-							.build()), Map.class);
-			String scroll_id = search_response.scrollId();
-			List<Hit<Map>> hits = search_response.hits().hits();
+			final Time keepAlive = new Time.Builder().time("1m").build();
+			final List<String> pitIndices = new ArrayList<>();
+			pitIndices.add(index.getSimpleValue());
+			final OpenPointInTimeResponse pitResp = createPointInTime(keepAlive, pitIndices);
+			final String pitId = pitResp.id();
+
+			String previous_id = null;
+			long previous_timestamp = 0;
+			SearchResponse<Map> search_response = null;
+			List<Hit<Map>> hits = new ArrayList<>();
 			do
 			{
+				SearchRequest.Builder search_request_builder = new SearchRequest.Builder()//
+						.pit(pit -> pit.id(pitId).keepAlive(keepAlive))
+						.size(StandardSearchRequest.ABSOLUTE_MAX_RESULTS)//
+						.query(new Query.Builder().queryString(new QueryStringQuery.Builder().query(query_string).build()).build())//
+						.from(0)//
+						.sort(new SortOptions.Builder().field(FieldSort.of(fs -> fs.field(FieldSortBuilder.DOC_FIELD_NAME).order(SortOrder.Asc))).build());
+
+				if ( previous_id != null )
+				{
+					search_request_builder.searchAfter(FieldValue.of(previous_timestamp), FieldValue.of(previous_id));
+				}
+				SearchRequest request = search_request_builder.build();
+				search_response = searchRaw(request);
+
+				if ( search_response == null )
+				{
+					break;
+				}
 				String[] document;
-				for ( Hit<Map> hit : hits )
+				hits = search_response.hits().hits();
+				for ( Hit<Map> hit :  hits)
 				{
 					document = new String[sorted_header.size()];
-
-					Map<String, JsonData> resultMap = hit.fields();
+					Map<String, JsonData> resultMap = hit.source();
 
 					for ( int i = 0; i < sorted_header.size(); i++ )
 					{
@@ -1064,17 +1079,20 @@ public class ElasticSearchRESTClient implements ISearch
 						return false;
 					}
 				}
-				ScrollResponse<Map> scroll_response = esClient.scroll(new ScrollRequest.Builder()//
-						.scroll(new Time.Builder().time(TimeValue.timeValueMinutes(1).getMillis()
-								+ "ms").build())//
-						.scrollId(scroll_id).build(), Map.class);
-				hits = scroll_response.hits().hits();
+				if ( hits.size() > 0 )
+				{
+					previous_id = hits.stream()//
+					 .map(ElasticSearchCommon::parseSearchResultsToOneSearchResultWithTypeing)//
+					 .toList().get(hits.size() - 1).readAsAtom(id_field, null);
+
+				}
 
 			}
-			while ( hits.size() != 0 ); // Zero hits mark the end of the scroll and the
+			while ( ! hits.isEmpty() ); // Zero hits mark the end of the scroll and the
 										// while
 										// loop.
-			return true;
+				closePointInTime(pitId);
+				return true;
 		}
 		catch ( Exception e )
 		{

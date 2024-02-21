@@ -12,6 +12,7 @@ import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.storage.IStorage;
 import org.jimmutable.core.objects.common.Kind;
+import org.jimmutable.core.serialization.FieldName;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.ICsvListWriter;
 
@@ -172,7 +173,7 @@ public interface ISearch
 	 *            CellProcessor[]
 	 * @return boolean if successful or not
 	 */
-	public boolean writeAllToCSV( IndexDefinition index, String query_string, List<SearchFieldId> sorted_header, ICsvListWriter list_writer, CellProcessor[] cell_processors );
+	public boolean writeAllToCSV(IndexDefinition index, String query_string, List<SearchFieldId> sorted_header, FieldName id_field, ICsvListWriter list_writer, CellProcessor[] cell_processors );
 
 	/**
 	 * Delete a document within an index
