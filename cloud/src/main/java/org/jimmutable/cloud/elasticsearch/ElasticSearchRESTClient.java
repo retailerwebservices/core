@@ -32,10 +32,7 @@ import org.elasticsearch.index.query.QueryShardException;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.EnvironmentType;
-import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
-import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
-import org.jimmutable.cloud.servlet_utils.search.SortBy;
-import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
+import org.jimmutable.cloud.servlet_utils.search.*;
 import org.jimmutable.cloud.storage.IStorage;
 import org.jimmutable.cloud.storage.StorageKey;
 import org.jimmutable.cloud.storage.StorageKeyHandler;
@@ -1041,11 +1038,11 @@ public class ElasticSearchRESTClient implements ISearch
 						.size(StandardSearchRequest.ABSOLUTE_MAX_RESULTS)//
 						.query(new Query.Builder().queryString(new QueryStringQuery.Builder().query(query_string).build()).build())//
 						.from(0)//
-						.sort(new SortOptions.Builder().field(FieldSort.of(fs -> fs.field(FieldSortBuilder.DOC_FIELD_NAME).order(SortOrder.Asc))).build());
+						.sort(createSortOptions(id_field));
 
 				if ( previous_id != null )
 				{
-					search_request_builder.searchAfter(FieldValue.of(previous_timestamp), FieldValue.of(previous_id));
+					search_request_builder.searchAfter(FieldValue.of(previous_id));
 				}
 				SearchRequest request = search_request_builder.build();
 				search_response = searchRaw(request);
@@ -1083,8 +1080,8 @@ public class ElasticSearchRESTClient implements ISearch
 				{
 					previous_id = hits.stream()//
 					 .map(ElasticSearchCommon::parseSearchResultsToOneSearchResultWithTypeing)//
-					 .toList().get(hits.size() - 1).readAsAtom(id_field, null);
-
+					 .toList().get(hits.size() - 1)
+					 .readAsAtom(id_field, null);
 				}
 
 			}
@@ -1099,6 +1096,18 @@ public class ElasticSearchRESTClient implements ISearch
 			e.printStackTrace();
 			return false;
 		}
+	}
+	private static List<SortOptions> createSortOptions(FieldName id_field)
+	{
+		return Arrays.asList(
+				new SortOptions.Builder().field(
+								ElasticSearchCommon.getFieldSort(
+										new SortBy(
+												new SearchIndexFieldDefinition(id_field, SearchIndexFieldType.ATOM), SortDirection.DESCENDING),
+										null)
+						)
+						.build()
+		);
 	}
 
 	/**
