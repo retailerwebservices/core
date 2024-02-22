@@ -1028,7 +1028,6 @@ public class ElasticSearchRESTClient implements ISearch
 			final String pitId = pitResp.id();
 
 			String previous_id = null;
-			long previous_timestamp = 0;
 			SearchResponse<Map> search_response = null;
 			List<Hit<Map>> hits = new ArrayList<>();
 			do
