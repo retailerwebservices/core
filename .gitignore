@@ -48,3 +48,5 @@ cloud/bin/.settings/org.eclipse.core.resources.prefs
 cloud/bin/.settings/org.eclipse.m2e.core.prefs
 cloud/bin/aws-notes/elastic-cache/elastic-cache-notes.txt
 cloud/bin/aws-notes/jimmutable-ami/notes.txt
+cloud/.idea
+core/.idea
