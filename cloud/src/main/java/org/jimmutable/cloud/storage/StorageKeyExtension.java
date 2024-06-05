@@ -20,6 +20,7 @@ public class StorageKeyExtension extends Stringable
 	public static final StorageKeyExtension PDF = new StorageKeyExtension("pdf");
 	public static final StorageKeyExtension CSV = new StorageKeyExtension("csv");
 	public static final StorageKeyExtension XSLX = new StorageKeyExtension("xlsx");
+	public static final StorageKeyExtension GIF = new StorageKeyExtension("gif");
 
 	public StorageKeyExtension(String value)
 	{
