@@ -3,7 +3,7 @@
 
 	<groupId>org.jimmutable</groupId>
 	<artifactId>core</artifactId>
-	<version>0.0.17-SNAPSHOT</version>
+	<version>0.0.17</version>
 	<packaging>jar</packaging>
 
 	<name>jimmutable core</name>
@@ -21,7 +21,7 @@
 		<url>https://github.com/jimmutable/core.git</url>
 		<connection>scm:git:https://github.com/jimmutable/core.git</connection>
 		<developerConnection>scm:git:https://github.com/jimmutable/core.git</developerConnection>
-		<tag>HEAD</tag>
+		<tag>core-0.0.17</tag>
 	</scm>
 
 	<licenses>
