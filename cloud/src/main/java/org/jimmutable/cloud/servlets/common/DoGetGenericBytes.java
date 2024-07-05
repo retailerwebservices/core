@@ -37,6 +37,8 @@ public abstract class DoGetGenericBytes extends HttpServlet
 	{
 
 		String id = request.getParameter(getId());
+		String extension_str = request.getParameter(getExtensionParamName());
+		StorageKeyExtension extension = getExtension();
 
 		if (id == null || id.equals("") || id.equals("undefined"))
 		{
@@ -44,25 +46,35 @@ public abstract class DoGetGenericBytes extends HttpServlet
 			return;
 		}
 
+		if (extension_str != null && !extension_str.isEmpty() && !extension_str.equals("undefined"))
+		{
+			extension = new StorageKeyExtension(extension_str);
+		}
+
 		try
 		{
-			StorageKey storage_key = new ObjectIdStorageKey(getKind(), new ObjectId(id), getExtension());
+			StorageKey storage_key = new ObjectIdStorageKey(getKind(), new ObjectId(id), extension);
 
 			OutputStream out = null;
 			try
 			{
 				response = setHeader(request, response);// to set filename, content type, etc.
 				out = response.getOutputStream();
+				boolean data_was_retrieved = false;
 
 				if (isLarge())
 				{
-					CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getThreadedCurrentVersionStreaming(storage_key, out);
+					data_was_retrieved = CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getThreadedCurrentVersionStreaming(storage_key, out);
 				} else
 				{
-					CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersionStreaming(storage_key, out);
+					data_was_retrieved = CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersionStreaming(storage_key, out);
 				}
-				
+
 				out.flush();
+
+				if (!data_was_retrieved) {
+					bytesNotFound(request, response);
+				}
 			} catch (EofException e)
 			{
 				// making this quiet since it causes mass fear and panic among devs
@@ -107,6 +119,11 @@ public abstract class DoGetGenericBytes extends HttpServlet
 	protected String getId()
 	{
 		return "id";
+	}
+
+	protected String getExtensionParamName()
+	{
+		return "extension";
 	}
 
 	/**
