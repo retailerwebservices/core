@@ -1,6 +1,7 @@
 package org.jimmutable.cloud.storage;
 
 import org.jimmutable.core.objects.Stringable;
+import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.utils.Validator;
 
 /**
@@ -10,6 +11,8 @@ import org.jimmutable.core.utils.Validator;
  */
 public class StorageKeyExtension extends Stringable
 {
+	static public final ObjectId.MyConverter CONVERTER = new ObjectId.MyConverter();
+	
 	public static final StorageKeyExtension XML = new StorageKeyExtension("xml");
 	public static final StorageKeyExtension JSON = new StorageKeyExtension("json");
 	public static final StorageKeyExtension BIN = new StorageKeyExtension("bin");
