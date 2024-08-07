@@ -2,6 +2,8 @@ package org.jimmutable.cloud.servlets.common;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -11,9 +13,7 @@ import org.eclipse.jetty.io.EofException;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.servlet_utils.get.GetResponseError;
 import org.jimmutable.cloud.servlets.util.ServletUtil;
-import org.jimmutable.cloud.storage.ObjectIdStorageKey;
-import org.jimmutable.cloud.storage.StorageKey;
-import org.jimmutable.cloud.storage.StorageKeyExtension;
+import org.jimmutable.cloud.storage.*;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 import org.slf4j.Logger;
@@ -54,6 +54,23 @@ public abstract class DoGetGenericBytes extends HttpServlet
 		try
 		{
 			StorageKey storage_key = new ObjectIdStorageKey(getKind(), new ObjectId(id), extension);
+
+			// Catches issue with wrong extension type causing errors
+			if (!StorageUtils.doesExist(storage_key, false)) {
+
+				List<StorageKeyExtension> extensions_to_try = new ArrayList<>();
+				extensions_to_try.add(StorageKeyExtension.JPG);
+				extensions_to_try.add(StorageKeyExtension.PNG);
+				extensions_to_try.add(StorageKeyExtension.GIF);
+
+				for (StorageKeyExtension ext : extensions_to_try) {
+					ObjectIdStorageKey new_storage_key = new ObjectIdStorageKey(getKind(), new ObjectId(id), ext);
+					if (StorageUtils.doesExist(new_storage_key, false)) {
+						storage_key = new_storage_key;
+						break;
+					}
+				}
+			}
 
 			OutputStream out = null;
 			try
