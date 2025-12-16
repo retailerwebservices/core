@@ -3,7 +3,7 @@ package org.jimmutable.cloud.simple_object_store.scan;
 import org.jimmutable.cloud.s3.S3Path;
 import org.jimmutable.core.objects.StandardObject;
 
-import com.amazonaws.services.s3.model.S3ObjectSummary;
+import software.amazon.awssdk.services.s3.model.S3ObjectSummary;
 
 /**
  * The scan operation sends it's resutls to an implementation of the ScanListener class

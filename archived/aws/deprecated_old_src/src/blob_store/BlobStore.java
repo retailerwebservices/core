@@ -10,12 +10,12 @@ import org.jimmutable.cloud.s3.S3DefaultClientCreator;
 import org.jimmutable.cloud.s3.S3Path;
 import org.jimmutable.core.utils.Validator;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.transfer.TransferManager;
-import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
-import com.amazonaws.services.s3.transfer.Upload;
+import software.amazon.awssdk.services.s3.AmazonS3;
+import software.amazon.awssdk.services.s3.model.ObjectMetadata;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.transfer.TransferManager;
+import software.amazon.awssdk.services.s3.transfer.TransferManagerBuilder;
+import software.amazon.awssdk.services.s3.transfer.Upload;
 
 public class BlobStore extends CloudResource
 {

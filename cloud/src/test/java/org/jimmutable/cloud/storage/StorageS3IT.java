@@ -34,13 +34,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.CreateBucketRequest;
-import com.amazonaws.services.s3.model.ListVersionsRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.amazonaws.services.s3.model.S3VersionSummary;
-import com.amazonaws.services.s3.model.VersionListing;
+import software.amazon.awssdk.services.s3.AmazonS3Client;
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.ListVersionsRequest;
+import software.amazon.awssdk.services.s3.model.ObjectListing;
+import software.amazon.awssdk.services.s3.model.S3ObjectSummary;
+import software.amazon.awssdk.services.s3.model.S3VersionSummary;
+import software.amazon.awssdk.services.s3.model.VersionListing;
 
 
 public class StorageS3IT extends IntegrationTest

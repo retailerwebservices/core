@@ -139,7 +139,7 @@ public class CloudExecutionEnvironment
 		return cache_service;
 	}
 
-	private static SESClient getSESClient()
+	private static SESClient getJimmutableSESClient()
 	{
 		try
 		{
@@ -205,12 +205,12 @@ public class CloudExecutionEnvironment
 		{
 		case DEV:
 			checkOs();
-			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), new StorageDevLocalFileSystem(false, APPLICATION_ID, STANDARD_IMMUTABLE_OBJECT_CACHE), new QueueRedis(APPLICATION_ID, redis_driver), new SignalRedis(APPLICATION_ID, redis_driver), getSESClient(), redis);
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), new StorageDevLocalFileSystem(false, APPLICATION_ID, STANDARD_IMMUTABLE_OBJECT_CACHE), new QueueRedis(APPLICATION_ID, redis_driver), new SignalRedis(APPLICATION_ID, redis_driver), getJimmutableSESClient(), redis);
 			break;
 		case INTEGRATION:
 
 			checkOs();
-			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), new StorageDevLocalFileSystem(false, APPLICATION_ID, STANDARD_IMMUTABLE_OBJECT_CACHE), new QueueRedis(APPLICATION_ID, redis_driver), new SignalRedis(APPLICATION_ID, redis_driver), getSESClient(), redis);
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), new StorageDevLocalFileSystem(false, APPLICATION_ID, STANDARD_IMMUTABLE_OBJECT_CACHE), new QueueRedis(APPLICATION_ID, redis_driver), new SignalRedis(APPLICATION_ID, redis_driver), getJimmutableSESClient(), redis);
 			break;
 		// For now, staging is the same as dev
 		case STAGING:
@@ -229,7 +229,7 @@ public class CloudExecutionEnvironment
 			StorageS3 staging_storage = new StorageS3(RegionSpecificAmazonS3ClientFactory.defaultFactory(), staging_application_id, STANDARD_IMMUTABLE_OBJECT_CACHE, false);
 			staging_storage.upsertBucketIfNeeded();
 
-			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), staging_storage, new QueueRedis(APPLICATION_ID, redis_driver), new SignalRedis(APPLICATION_ID, redis_driver), getSESClient(), redis);
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), staging_storage, new QueueRedis(APPLICATION_ID, redis_driver), new SignalRedis(APPLICATION_ID, redis_driver), getJimmutableSESClient(), redis);
 
 			break;
 
@@ -241,7 +241,7 @@ public class CloudExecutionEnvironment
 			StorageS3 production_storage = new StorageS3(RegionSpecificAmazonS3ClientFactory.defaultFactory(), APPLICATION_ID, STANDARD_IMMUTABLE_OBJECT_CACHE, false);
 			production_storage.upsertBucketIfNeeded();
 
-			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), production_storage, new QueueRedis(APPLICATION_ID, redis_driver), new SignalRedis(APPLICATION_ID, redis_driver), getSESClient(), new CacheRedis(APPLICATION_ID, redis_driver));
+			CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), production_storage, new QueueRedis(APPLICATION_ID, redis_driver), new SignalRedis(APPLICATION_ID, redis_driver), getJimmutableSESClient(), new CacheRedis(APPLICATION_ID, redis_driver));
 			break;
 		case STUB:
 

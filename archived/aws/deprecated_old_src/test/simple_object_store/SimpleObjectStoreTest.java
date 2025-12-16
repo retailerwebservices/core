@@ -19,7 +19,7 @@ import org.jimmutable.core.objects.common.ObjectID;
 import org.jimmutable.core.serialization.JimmutableTypeNameRegister;
 import org.jimmutable.core.serialization.reader.ObjectParseTree;
 
-import com.amazonaws.services.s3.model.S3ObjectSummary;
+import software.amazon.awssdk.services.s3.model.S3ObjectSummary;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

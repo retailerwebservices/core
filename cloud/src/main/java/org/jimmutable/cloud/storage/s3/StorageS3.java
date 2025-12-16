@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.CompletableFuture;
 
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.storage.GenericStorageKey;
@@ -33,21 +34,11 @@ import org.jimmutable.core.utils.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.CreateBucketRequest;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.amazonaws.services.s3.transfer.Download;
-import com.amazonaws.services.s3.transfer.Transfer.TransferState;
-import com.amazonaws.services.s3.transfer.TransferManager;
-import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
-import com.amazonaws.services.s3.transfer.Upload;
+import software.amazon.awssdk.core.async.AsyncRequestBody;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.transfer.s3.S3TransferManager;
+import software.amazon.awssdk.transfer.s3.model.*;
 
 public class StorageS3 extends Storage
 {
@@ -58,8 +49,8 @@ public class StorageS3 extends Storage
 	static private final long TRANSFER_MANAGER_POLLING_INTERVAL_MS = 500L;
 
 	final private String bucket_name;
-	final private AmazonS3Client client;
-	final private TransferManager transfer_manager;
+	final private S3AsyncClient client;
+	final private S3TransferManager.Builder transfer_manager;
 
 	// Since this will be init'd in CEE.startup, we can't rely on the singleton for
 	// access to the ApplicationId
@@ -73,7 +64,8 @@ public class StorageS3 extends Storage
 		Validator.notNull(client_factory);
 		client = client_factory.create();
 
-		transfer_manager = TransferManagerBuilder.standard().withS3Client(client).build();
+		transfer_manager = S3TransferManager.builder();
+		transfer_manager.s3Client(client);
 	}
 
 	public StorageS3( final AmazonS3ClientFactory client_factory, final ApplicationId application_id, StandardImmutableObjectCache cache, final boolean is_read_only )
@@ -86,10 +78,11 @@ public class StorageS3 extends Storage
 		Validator.notNull(client_factory);
 		client = client_factory.create();
 
-		transfer_manager = TransferManagerBuilder.standard().withS3Client(client).build();
+		transfer_manager = S3TransferManager.builder();
+		transfer_manager.s3Client(client);
 	}
 
-	public AmazonS3Client getSimpleClient()
+	public S3AsyncClient getSimpleClient()
 	{
 		return client;
 	}
@@ -101,18 +94,35 @@ public class StorageS3 extends Storage
 
 	public void upsertBucketIfNeeded( String bucket_name )
 	{
-		if ( !client.doesBucketExist(bucket_name) )
+		if ( !doesBucketExist(client, bucket_name) )
 		{
 			LOGGER.info("creating bucket: "
 					+ bucket_name);
 
-			CreateBucketRequest request = new CreateBucketRequest(bucket_name, RegionSpecificAmazonS3ClientFactory.DEFAULT_REGION);
+			CreateBucketRequest request = CreateBucketRequest.builder().bucket(bucket_name).build();
 			client.createBucket(request);
 		}
 		else
 		{
 			LOGGER.info("using storage bucket: "
 					+ bucket_name);
+		}
+	}
+
+	public static boolean doesBucketExist(S3AsyncClient client, String bucket_name)
+	{
+		LOGGER.info("Checking if bucket exists: {}", bucket_name);
+		try
+		{
+			HeadBucketRequest request = HeadBucketRequest.builder().bucket(bucket_name).build();
+			client.headBucket(request);
+			LOGGER.info("Amazon S3 directory bucket: \"{}\" found.", bucket_name);
+			return true;
+		}
+		catch ( S3Exception e )
+		{
+			LOGGER.info("Failed to access bucket: {} - Error code: {}", e.awsErrorDetails().errorMessage(), e.awsErrorDetails().errorCode(), e);
+			return false;
 		}
 	}
 
@@ -131,9 +141,12 @@ public class StorageS3 extends Storage
 	{
 		try
 		{
-			return client.doesObjectExist(bucket_name, key.toString());
+			HeadObjectRequest request = HeadObjectRequest.builder().bucket(bucket_name).key(key.toString()).build();
+			client.headObject(request);
+			LOGGER.info("Amazon S3 object: \"{}\" found.", bucket_name);
+			return true;
 		}
-		catch ( Exception e )
+		catch ( S3Exception e )
 		{
 			LOGGER.error("Exception on existance check", e);
 			return default_value;
@@ -190,10 +203,9 @@ public class StorageS3 extends Storage
 		{
 			InputStream bin = new ByteArrayInputStream(bytes);
 
-			ObjectMetadata metadata = new ObjectMetadata();
-			metadata.setContentLength(bytes.length);
+			PutObjectRequest request = PutObjectRequest.builder().bucket(bucket_name).key(key.toString()).contentLength(Long.valueOf(bytes.length)).build();
 
-			client.putObject(bucket_name, key.toString(), bin, metadata);
+			CompletableFuture<PutObjectResponse> response = client.putObject(request, AsyncRequestBody.empty());
 			if ( isCacheEnabled() )
 			{
 				removeFromCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()));
@@ -239,21 +251,25 @@ public class StorageS3 extends Storage
 
 			final String s3_key = key.toString();
 
-			Upload upload = null;
+			FileUpload upload;
 
 			try
 			{
-				upload = transfer_manager.upload(bucket_name, s3_key, temp);
+				UploadFileRequest fileRequest = UploadFileRequest.builder()
+						.putObjectRequest(b -> b.bucket(bucket_name).key(s3_key))
+						.source(temp)
+						.build();
+				upload = transfer_manager.build().uploadFile(fileRequest);
 
 				LOGGER.info(log_prefix
 						+ "Upload: "
-						+ upload.getDescription());
+						+ upload.toString());
 
-				while ( !upload.isDone() )
+				while ( upload.progress().snapshot().totalBytes().is != upload.progress().snapshot().transferredBytes() )
 				{
 					LOGGER.debug(log_prefix
 							+ "Progress: "
-							+ upload.getProgress().getPercentTransferred());
+							+ upload.progress().snapshot().remainingBytes());
 					try
 					{
 						Thread.sleep(TRANSFER_MANAGER_POLLING_INTERVAL_MS);
@@ -265,11 +281,12 @@ public class StorageS3 extends Storage
 
 				LOGGER.debug(log_prefix
 						+ "Progress: "
-						+ upload.getProgress().getPercentTransferred()); // give the 100
+						+ upload.progress().snapshot().remainingBytes()); // give the 100
 																			// percent
 																			// before
 																			// exiting
 
+				CompletedFileUpload uploadResult = upload.completionFuture().join();
 				boolean result = TransferState.Completed == upload.getState();
 				if ( result && isCacheEnabled() )
 				{
@@ -587,7 +604,7 @@ public class StorageS3 extends Storage
 
 			return new StorageMetadata(last_modified, size, etag);
 		}
-		catch ( AmazonS3Exception e )
+		catch ( S3Exception e )
 		{
 			// We get a 404 Not Found for any object that doesn't exist.
 			// A separate doesObjectExist call would be an entire extra
