@@ -2,8 +2,8 @@ package org.jimmutable.cloud.s3;
 
 import org.jimmutable.cloud.environment.ApplicationEnvironment;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import software.amazon.awssdk.services.s3.AmazonS3;
+import software.amazon.awssdk.services.s3.AmazonS3ClientBuilder;
 
 /**
  * This class simply encapsulates our "default" settings for creating an S3

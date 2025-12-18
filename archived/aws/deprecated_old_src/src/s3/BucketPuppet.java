@@ -6,13 +6,13 @@ import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.jimmutable.core.utils.Validator;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.AbortIncompleteMultipartUpload;
-import com.amazonaws.services.s3.model.BucketLifecycleConfiguration;
-import com.amazonaws.services.s3.model.BucketPolicy;
-import com.amazonaws.services.s3.model.BucketVersioningConfiguration;
-import com.amazonaws.services.s3.model.CreateBucketRequest;
-import com.amazonaws.services.s3.model.SetBucketVersioningConfigurationRequest;
+import software.amazon.awssdk.services.s3.AmazonS3;
+import software.amazon.awssdk.services.s3.model.AbortIncompleteMultipartUpload;
+import software.amazon.awssdk.services.s3.model.BucketLifecycleConfiguration;
+import software.amazon.awssdk.services.s3.model.BucketPolicy;
+import software.amazon.awssdk.services.s3.model.BucketVersioningConfiguration;
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.SetBucketVersioningConfigurationRequest;
 
 /**
  * The bucket puppet class is meant to be an analog to the puppet tool but for

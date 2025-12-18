@@ -17,10 +17,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.IntegrationTest;
@@ -33,14 +30,10 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.CreateBucketRequest;
-import com.amazonaws.services.s3.model.ListVersionsRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.amazonaws.services.s3.model.S3VersionSummary;
-import com.amazonaws.services.s3.model.VersionListing;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.model.*;
 
 
 public class StorageS3IT extends IntegrationTest
@@ -72,9 +65,9 @@ public class StorageS3IT extends IntegrationTest
     {
         try
         {
-            DefaultAWSCredentialsProviderChain.getInstance().getCredentials();
+			AwsCredentials credentials = DefaultCredentialsProvider.create().resolveCredentials();
         }
-        catch (com.amazonaws.SdkClientException e)
+        catch (S3Exception e)
         {
             String message = "Must provide AWS credentials, as per DefaultAWSCredentialsProviderChain.\n"
                            + "For EC2 instances, this will be provided by the Role assigned when the instance launched.\n"
@@ -87,8 +80,21 @@ public class StorageS3IT extends IntegrationTest
     
     static private void createBucket()
     {
-        AmazonS3Client client = RegionSpecificAmazonS3ClientFactory.defaultFactory().create();
-        if (client.doesBucketExist(storage.getSimpleBucketName()))
+        S3AsyncClient client = RegionSpecificAmazonS3ClientFactory.defaultFactory().create();
+		HeadBucketRequest request = HeadBucketRequest.builder()
+				.bucket(storage.getSimpleBucketName())
+				.build();
+
+		Boolean doesBucketExist = false;
+		try {
+			client.headBucket(request);
+			doesBucketExist = true;
+		}
+		catch ( Exception e )
+		{
+			System.err.println(e.getMessage());
+		}
+        if (doesBucketExist)
         {
             String message = "The unit test bucket - " + storage.getSimpleBucketName() + " - must NOT already exist.\n"
                            + "This is to provide a clean environment for the integration test.\n"
@@ -98,9 +104,11 @@ public class StorageS3IT extends IntegrationTest
             System.err.println(message);
             throw new ValidationException();
         }
-        
-        CreateBucketRequest request = new CreateBucketRequest(storage.getSimpleBucketName(), RegionSpecificAmazonS3ClientFactory.DEFAULT_REGION);
-        client.createBucket(request);
+
+		CreateBucketRequest createRequest = CreateBucketRequest.builder().bucket(storage.getSimpleBucketName())
+				.createBucketConfiguration(CreateBucketConfiguration.builder().locationConstraint(RegionSpecificAmazonS3ClientFactory.DEFAULT_REGION.id()).build())
+				.build();
+		client.createBucket(createRequest).join();
         bucket_created = true;
     }
     
@@ -115,14 +123,24 @@ public class StorageS3IT extends IntegrationTest
     
     static private void deleteAllObjects()
     {
-        AmazonS3Client client = RegionSpecificAmazonS3ClientFactory.defaultFactory().create();
-        
-        ObjectListing listing = client.listObjects(storage.getSimpleBucketName());
-        for (S3ObjectSummary object : listing.getObjectSummaries())
+		S3AsyncClient client = RegionSpecificAmazonS3ClientFactory.defaultFactory().create();
+
+		ListObjectsV2Request request = ListObjectsV2Request.builder()
+				.bucket(storage.getSimpleBucketName())
+				.build();
+
+		CompletableFuture<ListObjectsV2Response> future = client.listObjectsV2(request);
+		ListObjectsV2Response response = future.join();
+
+        for (S3Object object : response.contents())
         {
             try
             {
-                client.deleteObject(object.getBucketName(), object.getKey());
+				DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
+						.bucket(storage.getSimpleBucketName())
+						.key(object.key())
+						.build();
+				client.deleteObject(deleteRequest).join();
             }
             catch (Exception e)
             {
@@ -133,15 +151,26 @@ public class StorageS3IT extends IntegrationTest
     
     static private void deleteAllObjectVersions()
     {
-        AmazonS3Client client = RegionSpecificAmazonS3ClientFactory.defaultFactory().create();
-        
-        VersionListing versions = client.listVersions(new ListVersionsRequest().withBucketName(storage.getSimpleBucketName()));
-        for (S3VersionSummary version : versions.getVersionSummaries())
+        S3AsyncClient client = RegionSpecificAmazonS3ClientFactory.defaultFactory().create();
+
+		ListObjectVersionsRequest  request = ListObjectVersionsRequest .builder()
+				.bucket(storage.getSimpleBucketName())
+				.build();
+
+		CompletableFuture<ListObjectVersionsResponse> future = client.listObjectVersions(request);
+		ListObjectVersionsResponse response = future.join();
+        for ( ObjectVersion version : response.versions())
         {
             try
             {
-                client.deleteVersion(version.getBucketName(), version.getKey(), version.getVersionId());
-            }
+				DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
+						.bucket(storage.getSimpleBucketName())
+						.key(version.key())
+						.versionId(version.versionId())
+						.build();
+				client.deleteObject(deleteRequest).join();
+
+			}
             catch (Exception e)
             {
                 e.printStackTrace();
@@ -158,8 +187,13 @@ public class StorageS3IT extends IntegrationTest
         deleteAllObjectVersions();
         
         // Finally, delete the bucket itself
-        AmazonS3Client client = RegionSpecificAmazonS3ClientFactory.defaultFactory().create();
-        client.deleteBucket(storage.getSimpleBucketName());
+        S3AsyncClient client = RegionSpecificAmazonS3ClientFactory.defaultFactory().create();
+
+		DeleteBucketRequest deleteBucketRequest = DeleteBucketRequest.builder()
+				.bucket(storage.getSimpleBucketName())
+				.build();
+
+        client.deleteBucket(deleteBucketRequest).join();
     }
     
     

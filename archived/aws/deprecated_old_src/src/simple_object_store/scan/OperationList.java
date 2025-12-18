@@ -4,9 +4,9 @@ import org.jimmutable.cloud.s3.S3Path;
 import org.jimmutable.core.threading.OperationRunnable;
 import org.jimmutable.core.utils.Validator;
 
-import com.amazonaws.services.s3.model.ListObjectsV2Request;
-import com.amazonaws.services.s3.model.ListObjectsV2Result;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Result;
+import software.amazon.awssdk.services.s3.model.S3ObjectSummary;
 
 public class OperationList extends OperationRunnable
 {

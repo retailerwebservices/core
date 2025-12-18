@@ -6,7 +6,7 @@ import java.nio.charset.Charset;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import com.amazonaws.util.IOUtils;
+import org.apache.commons.io.IOUtils;
 
 public class CompressionUtils 
 {

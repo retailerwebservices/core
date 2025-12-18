@@ -60,9 +60,9 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>com.amazonaws</groupId>
-				<artifactId>aws-java-sdk-bom</artifactId>
-				<version>1.11.975</version>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>bom</artifactId>
+				<version>2.31.55</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -92,33 +92,6 @@
     		</exclusions>
 		</dependency>
 
-		<!--Version number is defined by aws-java-sdk-bom -->
-		<dependency>
-			<groupId>com.amazonaws</groupId>
-			<artifactId>aws-java-sdk-s3</artifactId>
-			<exclusions>
-        		<exclusion>
-           			<groupId>com.fasterxml.jackson.core</groupId>
-            		<artifactId>jackson-core</artifactId>
-        		</exclusion>
-				<exclusion>
-           			<groupId>com.fasterxml.jackson.core</groupId>
-            		<artifactId>jackson-dataformat-cbor</artifactId>
-        		</exclusion>
-    		</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>com.amazonaws</groupId>
-			<artifactId> aws-java-sdk-ses</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.amazonaws</groupId>
-			<artifactId> aws-java-sdk-ec2</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.amazonaws</groupId>
-			<artifactId>aws-java-sdk-cloudwatch</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
@@ -264,6 +237,26 @@
 			<artifactId>commons-cli</artifactId>
 			<version>1.4</version>
 		</dependency>
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3</artifactId>
+			<version>2.31.55</version>
+		</dependency>
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3-transfer-manager</artifactId>
+			<version>2.31.55</version>
+		</dependency>
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>ses</artifactId>
+			<version>2.31.55</version>
+		</dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sdk-core</artifactId>
+            <version>2.31.55</version>
+        </dependency>
 	</dependencies>
 
 
@@ -332,7 +325,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>2.20.1</version>
+				<version>3.2.5</version>
 				<executions>
 					<execution>
 						<goals>
@@ -353,7 +346,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0-M5</version>
+				<version>3.2.5</version>
 			</plugin>
 
 		</plugins>

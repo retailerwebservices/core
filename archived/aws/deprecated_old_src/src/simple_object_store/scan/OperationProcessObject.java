@@ -5,7 +5,7 @@ import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.threading.OperationRunnable;
 import org.jimmutable.core.utils.Validator;
 
-import com.amazonaws.services.s3.model.S3ObjectSummary;
+import software.amazon.awssdk.services.s3.model.S3ObjectSummary;
 
 public class OperationProcessObject extends OperationRunnable
 {

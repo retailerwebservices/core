@@ -18,8 +18,6 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.amazonaws.services.ec2.model.AssociateRouteTableRequest;
-
 public class StandardImmutableObjectCacheLongRunningIT extends IntegrationTest
 {
 	@BeforeClass
