@@ -101,7 +101,7 @@ public class StorageS3 extends Storage
 					.bucket(bucket_name)
 					.build();
 
-			client.headBucket(headBucketRequest);
+			client.headBucket(headBucketRequest).join();
 
 			LOGGER.info("using storage bucket: "
 					+ bucket_name);
@@ -112,7 +112,7 @@ public class StorageS3 extends Storage
 			CreateBucketRequest request = CreateBucketRequest.builder().bucket(bucket_name)
 					.createBucketConfiguration(CreateBucketConfiguration.builder().locationConstraint(RegionSpecificAmazonS3ClientFactory.DEFAULT_REGION.id()).build())
 					.build();
-			client.createBucket(request);
+			client.createBucket(request).join();
 		}
 	}
 
@@ -137,7 +137,7 @@ public class StorageS3 extends Storage
 					.key(key.toString())
 					.build();
 
-			client.headObject(headObjectRequest);
+			client.headObject(headObjectRequest).join();
 			doesExist = true;
 		}
 		catch ( Exception e )
@@ -202,7 +202,7 @@ public class StorageS3 extends Storage
 					.key(key.toString())
 					.contentLength((long) bytes.length)
 					.build();
-			client.putObject(putObjectRequest, (AsyncRequestBody) RequestBody.fromInputStream(bin, bytes.length));
+			client.putObject(putObjectRequest, (AsyncRequestBody) RequestBody.fromInputStream(bin, bytes.length)).join();
 			if ( isCacheEnabled() )
 			{
 				removeFromCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()));
