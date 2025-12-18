@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jimmutable.core.serialization.FieldName;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
@@ -27,10 +28,10 @@ public class CSVExport
 
 	static private final Logger logger = LoggerFactory.getLogger(CSVExport.class);
 
-	private static void writeAllToCSV(List<SearchFieldId> sorted_header, IndexDefinition index, String query_string, ICsvListWriter list_writer, CellProcessor[] cell_processors)
+	private static void writeAllToCSV(List<SearchFieldId> sorted_header, IndexDefinition index, String query_string,FieldName id_field, ICsvListWriter list_writer, CellProcessor[] cell_processors)
 	{
 
-		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().writeAllToCSV(index, query_string, sorted_header, list_writer, cell_processors);
+		CloudExecutionEnvironment.getSimpleCurrent().getSimpleSearch().writeAllToCSV(index, query_string, sorted_header, id_field, list_writer, cell_processors);
 	}
 
 	// private static void getDocuments(List<SearchFieldId> sorted_header,
@@ -152,12 +153,12 @@ public class CSVExport
 			{
 				// writeAllToCSV(sorted_fields, request.getSimpleIndex(),
 				// request.getSimpleQueryString(), list_writer, cell_processors);
-				writeAllToCSV(sorted_fields, request.getSimpleIndex(), "*", list_writer, cell_processors);
+				writeAllToCSV(sorted_fields, request.getSimpleIndex(), "*", request.getSimpleIdField(), list_writer, cell_processors);
 			} else
 			{
 				// getDocuments(sorted_fields, request.getSimpleIndex(),
 				// request.getSimpleQueryString(), list_writer, cell_processors, 0);
-				writeAllToCSV(sorted_fields, request.getSimpleIndex(), request.getSimpleQueryString(), list_writer, cell_processors);
+				writeAllToCSV(sorted_fields, request.getSimpleIndex(), request.getSimpleQueryString(), request.getSimpleIdField(), list_writer, cell_processors);
 			}
 
 		} catch (IOException e)

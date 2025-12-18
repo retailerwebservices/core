@@ -11,6 +11,7 @@ import org.jimmutable.cloud.elasticsearch.IndexDefinition;
 import org.jimmutable.core.objects.StandardObject;
 import org.jimmutable.core.objects.common.ObjectId;
 import org.jimmutable.core.serialization.FieldDefinition;
+import org.jimmutable.core.serialization.Format;
 import org.junit.Test;
 
 public class RequestExportCSVTest extends StubTest
@@ -32,17 +33,22 @@ public class RequestExportCSVTest extends StubTest
 
 		RequestExportCSV export = new RequestExportCSV(new IndexDefinition("dev_dev_v1"), false, "blaa", set);
 
-		//System.out.println(export.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
+//		System.out.println(export.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 
-		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s"
-			     , "{"
-			     , "  \"type_hint\" : \"request_export_csv\","
-			     , "  \"index\" : \"dev_dev_v1\","
-			     , "  \"export_all_documents\" : false,"
-			     , "  \"field_to_include_in_export\" : [ \"id\", \"id_atom\" ],"
-			     , "  \"query_string\" : \"blaa\""
-			     , "}"
-			);
+		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s"
+				, "{"
+				, "  \"type_hint\" : \"request_export_csv\","
+				, "  \"index\" : \"dev_dev_v1\","
+				, "  \"export_all_documents\" : false,"
+				, "  \"field_to_include_in_export\" : [ \"id\", \"id_atom\" ],"
+				, "  \"query_string\" : \"blaa\","
+				, "  \"id_field\" : {"
+				, "    \"type_hint\" : \"jimmutable.FieldName\","
+				, "    \"name\" : \"id\""
+				, "  }"
+				, "}"
+		);
+
 
 		RequestExportCSV obj = (RequestExportCSV)StandardObject.deserialize(obj_string);
 
@@ -67,19 +73,23 @@ public class RequestExportCSVTest extends StubTest
 	@Test
 	public void deserializeEmptyCollection()
 	{
-		RequestExportCSV export = new RequestExportCSV(new IndexDefinition("dev_dev_v1"), false, "blaa", null);
+		RequestExportCSV export = new RequestExportCSV(new IndexDefinition("dev_dev_v1"), false, "blaa",null);
 
-		//System.out.println(export.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
+//		System.out.println(export.toJavaCode(Format.JSON_PRETTY_PRINT, "obj"));
 
-		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s"
-			     , "{"
-			     , "  \"type_hint\" : \"request_export_csv\","
-			     , "  \"index\" : \"dev_dev_v1\","
-			     , "  \"export_all_documents\" : false,"
-			     , "  \"field_to_include_in_export\" : [ ],"
-			     , "  \"query_string\" : \"blaa\""
-			     , "}"
-			);
+		String obj_string = String.format("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s"
+				, "{"
+				, "  \"type_hint\" : \"request_export_csv\","
+				, "  \"index\" : \"dev_dev_v1\","
+				, "  \"export_all_documents\" : false,"
+				, "  \"field_to_include_in_export\" : [ ],"
+				, "  \"query_string\" : \"blaa\","
+				, "  \"id_field\" : {"
+				, "    \"type_hint\" : \"jimmutable.FieldName\","
+				, "    \"name\" : \"id\""
+				, "  }"
+				, "}"
+		);
 
 		RequestExportCSV obj = (RequestExportCSV)StandardObject.deserialize(obj_string);
 

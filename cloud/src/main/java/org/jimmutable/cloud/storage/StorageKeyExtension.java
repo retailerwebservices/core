@@ -10,6 +10,8 @@ import org.jimmutable.core.utils.Validator;
  */
 public class StorageKeyExtension extends Stringable
 {
+	static public final MyConverter CONVERTER = new MyConverter();
+
 	public static final StorageKeyExtension XML = new StorageKeyExtension("xml");
 	public static final StorageKeyExtension JSON = new StorageKeyExtension("json");
 	public static final StorageKeyExtension BIN = new StorageKeyExtension("bin");
@@ -20,6 +22,7 @@ public class StorageKeyExtension extends Stringable
 	public static final StorageKeyExtension PDF = new StorageKeyExtension("pdf");
 	public static final StorageKeyExtension CSV = new StorageKeyExtension("csv");
 	public static final StorageKeyExtension XSLX = new StorageKeyExtension("xlsx");
+	public static final StorageKeyExtension GIF = new StorageKeyExtension("gif");
 
 	public StorageKeyExtension(String value)
 	{

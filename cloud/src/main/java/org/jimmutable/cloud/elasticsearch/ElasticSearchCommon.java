@@ -3,19 +3,22 @@ package org.jimmutable.cloud.elasticsearch;
 import static org.elasticsearch.xcontent.XContentFactory.jsonBuilder;
 
 import java.io.ByteArrayInputStream;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import co.elastic.clients.elasticsearch.core.search.Hit;
 import org.elasticsearch.common.util.set.Sets;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.elasticsearch.xcontent.XContentBuilder;
+import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.SortBy;
 import org.jimmutable.cloud.servlet_utils.search.SortDirection;
+import org.jimmutable.core.fields.FieldArrayList;
 import org.jimmutable.core.objects.common.time.Instant;
 import org.jimmutable.core.objects.common.time.TimeOfDay;
 import org.jimmutable.core.serialization.FieldName;
@@ -342,5 +345,38 @@ public class ElasticSearchCommon
 	static public String getSortFieldNameInstant(String field_name)
 	{
 		return field_name + "_" + SORT_FIELD_NAME_JIMMUTABLE + "_" + Instant.FIELD_MS_FROM_EPOCH.getSimpleFieldName().getSimpleName();
+	}
+
+	public static OneSearchResultWithTyping parseSearchResultsToOneSearchResultWithTypeing(Hit<Map> hit)
+	{
+		Map<FieldName, FieldArrayList<String>> map = new TreeMap<FieldName, FieldArrayList<String>>();
+		hit.source().forEach(( k, v ) ->
+		{
+			FieldName name = new FieldName((String) k);
+			FieldArrayList<String> array_val = map.get(name);
+
+			FieldArrayList<String> new_array_val = new FieldArrayList<>();
+
+			if ( v instanceof ArrayList<?> )
+			{
+				List<String> array_as_list = (ArrayList<String>) v;
+				new_array_val = new FieldArrayList<String>();
+
+				for ( int i = 0; i < array_as_list.size(); i++ )
+				{
+					new_array_val.add(String.valueOf(array_as_list.get(i)));
+				}
+			}
+			else
+			{
+				if ( array_val == null )
+					array_val = new FieldArrayList<String>();
+				new_array_val.add(String.valueOf(v));
+			}
+
+			if ( new_array_val != null )
+				map.put(name, new_array_val);
+		});
+		return new OneSearchResultWithTyping(map);
 	}
 }

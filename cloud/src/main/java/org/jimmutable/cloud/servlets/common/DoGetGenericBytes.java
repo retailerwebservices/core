@@ -2,6 +2,8 @@ package org.jimmutable.cloud.servlets.common;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -11,9 +13,7 @@ import org.eclipse.jetty.io.EofException;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.servlet_utils.get.GetResponseError;
 import org.jimmutable.cloud.servlets.util.ServletUtil;
-import org.jimmutable.cloud.storage.ObjectIdStorageKey;
-import org.jimmutable.cloud.storage.StorageKey;
-import org.jimmutable.cloud.storage.StorageKeyExtension;
+import org.jimmutable.cloud.storage.*;
 import org.jimmutable.core.objects.common.Kind;
 import org.jimmutable.core.objects.common.ObjectId;
 import org.slf4j.Logger;
@@ -37,6 +37,8 @@ public abstract class DoGetGenericBytes extends HttpServlet
 	{
 
 		String id = request.getParameter(getId());
+		String extension_str = request.getParameter(getExtensionParamName());
+		StorageKeyExtension extension = getExtension();
 
 		if (id == null || id.equals("") || id.equals("undefined"))
 		{
@@ -44,25 +46,52 @@ public abstract class DoGetGenericBytes extends HttpServlet
 			return;
 		}
 
+		if (extension_str != null && !extension_str.isEmpty() && !extension_str.equals("undefined"))
+		{
+			extension = new StorageKeyExtension(extension_str);
+		}
+
 		try
 		{
-			StorageKey storage_key = new ObjectIdStorageKey(getKind(), new ObjectId(id), getExtension());
+			StorageKey storage_key = new ObjectIdStorageKey(getKind(), new ObjectId(id), extension);
+
+			// Catches issue with wrong extension type causing errors
+			if (!StorageUtils.doesExist(storage_key, false)) {
+
+				List<StorageKeyExtension> extensions_to_try = new ArrayList<>();
+				extensions_to_try.add(StorageKeyExtension.JPG);
+				extensions_to_try.add(StorageKeyExtension.PNG);
+				extensions_to_try.add(StorageKeyExtension.GIF);
+
+				for (StorageKeyExtension ext : extensions_to_try) {
+					ObjectIdStorageKey new_storage_key = new ObjectIdStorageKey(getKind(), new ObjectId(id), ext);
+					if (StorageUtils.doesExist(new_storage_key, false)) {
+						storage_key = new_storage_key;
+						break;
+					}
+				}
+			}
 
 			OutputStream out = null;
 			try
 			{
 				response = setHeader(request, response);// to set filename, content type, etc.
 				out = response.getOutputStream();
+				boolean data_was_retrieved = false;
 
 				if (isLarge())
 				{
-					CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getThreadedCurrentVersionStreaming(storage_key, out);
+					data_was_retrieved = CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getThreadedCurrentVersionStreaming(storage_key, out);
 				} else
 				{
-					CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersionStreaming(storage_key, out);
+					data_was_retrieved = CloudExecutionEnvironment.getSimpleCurrent().getSimpleStorage().getCurrentVersionStreaming(storage_key, out);
 				}
-				
+
 				out.flush();
+
+				if (!data_was_retrieved) {
+					bytesNotFound(request, response);
+				}
 			} catch (EofException e)
 			{
 				// making this quiet since it causes mass fear and panic among devs
@@ -107,6 +136,11 @@ public abstract class DoGetGenericBytes extends HttpServlet
 	protected String getId()
 	{
 		return "id";
+	}
+
+	protected String getExtensionParamName()
+	{
+		return "extension";
 	}
 
 	/**

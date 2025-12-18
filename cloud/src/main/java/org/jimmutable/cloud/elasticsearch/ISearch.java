@@ -5,19 +5,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import co.elastic.clients.elasticsearch._types.Time;
+import co.elastic.clients.elasticsearch.core.*;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
 import org.jimmutable.cloud.storage.IStorage;
 import org.jimmutable.core.objects.common.Kind;
+import org.jimmutable.core.serialization.FieldName;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 import org.supercsv.io.ICsvListWriter;
-
-import co.elastic.clients.elasticsearch.core.ClearScrollRequest;
-import co.elastic.clients.elasticsearch.core.ScrollRequest;
-import co.elastic.clients.elasticsearch.core.ScrollResponse;
-import co.elastic.clients.elasticsearch.core.SearchRequest;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
 
 /**
  * Any class that implements Search should have the following implementations
@@ -104,7 +101,7 @@ public interface ISearch
 	 *            {@link ISearch#search(IndexDefinition index, SearchRequest request)}
 	 * @return SearchResponse with all matching searches
 	 */
-	public SearchResponse<Indexable> searchRaw( SearchRequest request );
+	public SearchResponse<Map> searchRaw( SearchRequest request );
 
 	public List<OneSearchResultWithTyping> search( IndexDefinition index, StandardSearchRequest request, List<OneSearchResultWithTyping> default_value );
 
@@ -176,7 +173,7 @@ public interface ISearch
 	 *            CellProcessor[]
 	 * @return boolean if successful or not
 	 */
-	public boolean writeAllToCSV( IndexDefinition index, String query_string, List<SearchFieldId> sorted_header, ICsvListWriter list_writer, CellProcessor[] cell_processors );
+	public boolean writeAllToCSV(IndexDefinition index, String query_string, List<SearchFieldId> sorted_header, FieldName id_field, ICsvListWriter list_writer, CellProcessor[] cell_processors );
 
 	/**
 	 * Delete a document within an index
@@ -198,7 +195,7 @@ public interface ISearch
 	 */
 	public boolean putAllFieldMappings( SearchIndexDefinition index );
 
-	public ScrollResponse<Indexable> searchScrollRaw( ScrollRequest request );
+	public ScrollResponse<Map> searchScrollRaw( ScrollRequest request );
 
 	boolean clearScrollRaw( ClearScrollRequest request );
 
@@ -212,5 +209,9 @@ public interface ISearch
 		return o.toString();
 
 	}
+
+	public OpenPointInTimeResponse createPointInTime(Time keep_alive, List<String> indices);
+
+	public ClosePointInTimeResponse closePointInTime(String id);
 
 }
