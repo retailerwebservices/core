@@ -22,7 +22,7 @@ import org.jimmutable.core.utils.Validator;
 import software.amazon.awssdk.services.s3.AmazonS3;
 import software.amazon.awssdk.services.s3.model.ObjectMetadata;
 import software.amazon.awssdk.services.s3.model.S3Object;
-import com.amazonaws.util.IOUtils;
+import org.apache.commons.io.IOUtils;
 
 public class SimpleObjectStore extends CloudResource
 {

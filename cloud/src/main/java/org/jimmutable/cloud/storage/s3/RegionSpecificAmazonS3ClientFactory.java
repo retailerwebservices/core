@@ -8,7 +8,7 @@ import software.amazon.awssdk.regions.Region;
 
 /**
  * A {@link AmazonS3ClientFactory factory} that uses the
- * {@link com.amazonaws.auth.DefaultAWSCredentialsProviderChain default AWS credentials provider}
+ * {@link software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider default AWS credentials provider}
  * but allows clients to specify which region to use.
  * </p>
  * The default region for jimmutable is {@link Region#US_WEST_2 us-west-2}.

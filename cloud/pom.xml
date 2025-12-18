@@ -60,13 +60,6 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>com.amazonaws</groupId>
-				<artifactId>aws-java-sdk-bom</artifactId>
-				<version>1.11.975</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
 				<groupId>software.amazon.awssdk</groupId>
 				<artifactId>bom</artifactId>
 				<version>2.31.55</version>
@@ -99,33 +92,6 @@
     		</exclusions>
 		</dependency>
 
-		<!--Version number is defined by aws-java-sdk-bom -->
-		<dependency>
-			<groupId>com.amazonaws</groupId>
-			<artifactId>aws-java-sdk-s3</artifactId>
-			<exclusions>
-        		<exclusion>
-           			<groupId>com.fasterxml.jackson.core</groupId>
-            		<artifactId>jackson-core</artifactId>
-        		</exclusion>
-				<exclusion>
-           			<groupId>com.fasterxml.jackson.core</groupId>
-            		<artifactId>jackson-dataformat-cbor</artifactId>
-        		</exclusion>
-    		</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>com.amazonaws</groupId>
-			<artifactId> aws-java-sdk-ses</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.amazonaws</groupId>
-			<artifactId> aws-java-sdk-ec2</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.amazonaws</groupId>
-			<artifactId>aws-java-sdk-cloudwatch</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
@@ -286,6 +252,11 @@
 			<artifactId>ses</artifactId>
 			<version>2.31.55</version>
 		</dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sdk-core</artifactId>
+            <version>2.31.55</version>
+        </dependency>
 	</dependencies>
 
 

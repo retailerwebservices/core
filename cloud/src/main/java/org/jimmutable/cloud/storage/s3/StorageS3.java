@@ -33,7 +33,7 @@ import org.jimmutable.core.utils.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.amazonaws.services.s3.model.AmazonS3Exception;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.core.async.AsyncResponseTransformer;
@@ -633,12 +633,12 @@ public class StorageS3 extends Storage
 
 			return new StorageMetadata(last_modified, size, etag);
 		}
-		catch ( AmazonS3Exception e )
+		catch ( S3Exception e )
 		{
 			// We get a 404 Not Found for any object that doesn't exist.
 			// A separate doesObjectExist call would be an entire extra
 			// network round trip... so just special case it.
-			if ( 404 == e.getStatusCode() )
+			if ( 404 == e.statusCode() )
 			{
 				return default_value;
 			}

@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
 
-import com.amazonaws.util.IOUtils;
+import org.apache.commons.io.IOUtils;
 
 public class HttpUtils 
 {

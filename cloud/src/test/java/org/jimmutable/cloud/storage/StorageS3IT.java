@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.*;
 
-import com.amazonaws.services.s3.model.S3VersionSummary;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.IntegrationTest;
 import org.jimmutable.cloud.storage.s3.RegionSpecificAmazonS3ClientFactory;
@@ -31,7 +30,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.*;
 
@@ -65,9 +65,9 @@ public class StorageS3IT extends IntegrationTest
     {
         try
         {
-            DefaultAWSCredentialsProviderChain.getInstance().getCredentials();
+			AwsCredentials credentials = DefaultCredentialsProvider.create().resolveCredentials();
         }
-        catch (com.amazonaws.SdkClientException e)
+        catch (S3Exception e)
         {
             String message = "Must provide AWS credentials, as per DefaultAWSCredentialsProviderChain.\n"
                            + "For EC2 instances, this will be provided by the Role assigned when the instance launched.\n"
