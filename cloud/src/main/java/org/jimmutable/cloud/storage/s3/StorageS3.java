@@ -11,6 +11,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.storage.GenericStorageKey;
@@ -37,7 +39,6 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.core.async.AsyncResponseTransformer;
-import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
@@ -196,13 +197,14 @@ public class StorageS3 extends Storage
 		try
 		{
 			InputStream bin = new ByteArrayInputStream(bytes);
+			ExecutorService executor = Executors.newCachedThreadPool();
 
 			PutObjectRequest putObjectRequest = PutObjectRequest.builder()
 					.bucket(bucket_name)
 					.key(key.toString())
 					.contentLength((long) bytes.length)
 					.build();
-			client.putObject(putObjectRequest, (AsyncRequestBody) RequestBody.fromInputStream(bin, bytes.length)).join();
+			client.putObject(putObjectRequest, AsyncRequestBody.fromInputStream(bin, (long) bytes.length, executor)).join();
 			if ( isCacheEnabled() )
 			{
 				removeFromCache(key.getSimpleKind(), new ObjectId(key.getSimpleName().getSimpleValue()));
