@@ -54,7 +54,7 @@
 		<fasterxml.jackson>2.15.2</fasterxml.jackson>
 		<log4j.version>2.15.0</log4j.version>
 		<skipITs>true</skipITs>
-		<jetty.version>9.4.38.v20210224</jetty.version>
+		<jetty.version>9.4.44.v20210927</jetty.version>
 	</properties>
 
 	<dependencyManagement>
