@@ -77,24 +77,24 @@ public class SESClient implements IEmail
 					.source(email.getSimpleSource())
 					.build();
 
-			dest.toBuilder().toAddresses(email.getSimpleTo().stream().map(e -> e.getSimpleValue()).collect(Collectors.toSet())).build();
+			dest = dest.toBuilder().toAddresses(email.getSimpleTo().stream().map(e -> e.getSimpleValue()).collect(Collectors.toSet())).build();
 
 			if (email.hasCc())
 			{
-				dest.toBuilder().ccAddresses(email.getOptionalCc(null).stream().map(e -> e.getSimpleValue()).collect(Collectors.toSet())).build();
+				dest = dest.toBuilder().ccAddresses(email.getOptionalCc(null).stream().map(e -> e.getSimpleValue()).collect(Collectors.toSet())).build();
 			}
 
 			if (email.hasBcc())
 			{
-				dest.toBuilder().bccAddresses(email.getOptionalBcc(null).stream().map(e -> e.getSimpleValue()).collect(Collectors.toSet())).build();
+				dest = dest.toBuilder().bccAddresses(email.getOptionalBcc(null).stream().map(e -> e.getSimpleValue()).collect(Collectors.toSet())).build();
 			}
-
-			request.toBuilder().destination(dest).message(aws_message).build();
 
 			if (email.hasReplyTo())
 			{
-				request.toBuilder().replyToAddresses(email.getOptionalReplyTo(null).stream().map(e -> e.getSimpleValue()).collect(Collectors.toSet())).build();
+				request = request.toBuilder().replyToAddresses(email.getOptionalReplyTo(null).stream().map(e -> e.getSimpleValue()).collect(Collectors.toSet())).build();
 			}
+
+			request = request.toBuilder().destination(dest).message(aws_message).build();
 
 			// Send the email.
 			SendEmailResponse result = client.sendEmail(request);
