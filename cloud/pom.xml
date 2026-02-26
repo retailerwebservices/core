@@ -49,8 +49,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<elasticsearch.version>8.10.4</elasticsearch.version>
-		<elasticsearch.hlrc.version>7.17.4</elasticsearch.hlrc.version>
+		<elasticsearch.version>8.19.12</elasticsearch.version>
+		<elasticsearch.java.version>8.17.0</elasticsearch.java.version>
 		<fasterxml.jackson>2.15.2</fasterxml.jackson>
 		<log4j.version>2.15.0</log4j.version>
 		<skipITs>true</skipITs>
@@ -161,12 +161,12 @@
 		<dependency>
 			<groupId>org.elasticsearch.client</groupId>
 			<artifactId>elasticsearch-rest-client</artifactId>
-			<version>${elasticsearch.hlrc.version}</version>
+			<version>${elasticsearch.java.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.elasticsearch.client</groupId>
-			<artifactId>elasticsearch-rest-high-level-client</artifactId>
-			<version>${elasticsearch.hlrc.version}</version>
+			<groupId>co.elastic.clients</groupId>
+			<artifactId>elasticsearch-java</artifactId>
+			<version>${elasticsearch.java.version}</version>
 		</dependency>
 
 
