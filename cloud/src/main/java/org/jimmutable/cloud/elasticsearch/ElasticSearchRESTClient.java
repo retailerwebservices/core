@@ -30,6 +30,7 @@ import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.index.query.QueryShardException;
 import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.EnvironmentType;
 import org.jimmutable.cloud.servlet_utils.search.*;
@@ -60,6 +61,8 @@ import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexRequest;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
 import co.elastic.clients.elasticsearch.indices.ExistsRequest;
+import co.elastic.clients.elasticsearch.indices.GetIndexRequest;
+import co.elastic.clients.elasticsearch.indices.GetIndexResponse;
 import co.elastic.clients.elasticsearch.indices.GetAliasRequest;
 import co.elastic.clients.elasticsearch.indices.GetAliasResponse;
 import co.elastic.clients.elasticsearch.indices.GetMappingRequest;
@@ -348,6 +351,139 @@ public class ElasticSearchRESTClient implements ISearch
 			logger.error("Error", e);
 			return false;
 		}
+	}
+
+	/**
+	 * Deletes every index belonging to an application, e.g. every concrete index
+	 * matching "integration_*". Aliases pointing at those indices are dropped along
+	 * with them.
+	 *
+	 * EXTREMELY DANGEROUS!!! See {@link ISearch#deleteAllIndicesForApp(ApplicationId)}.
+	 * The safety guard below is the only thing standing between a mis-configured
+	 * test run and a wiped production cluster, so do not relax it.
+	 */
+	@Override
+	public boolean deleteAllIndicesForApp( ApplicationId app )
+	{
+		if ( !isSafeToDeleteAllIndicesForApp(app) )
+		{
+			return false;
+		}
+
+		// Never a bare wildcard -- always anchored to the application id, using the
+		// same separator IndexDefinition uses between the app id and the index id.
+		String wildcard = app.getSimpleValue()
+				+ "_*";
+
+		// ElasticSearch itself refuses a wildcard delete whenever
+		// action.destructive_requires_name is on (the default since ES 8), so the
+		// expression is resolved to concrete index names and each one is deleted by
+		// name.
+		Set<String> index_names = getConcreteIndexNames(wildcard);
+
+		if ( index_names == null )
+		{
+			return false;
+		}
+
+		if ( index_names.isEmpty() )
+		{
+			logger.info("No indices to delete matching "
+					+ wildcard);
+			return true;
+		}
+
+		logger.info("Deleting all indices matching "
+				+ wildcard
+				+ ": "
+				+ index_names);
+
+		boolean all_deleted = true;
+
+		for ( String index_name : index_names )
+		{
+			if ( !deleteWithRetry(index_name) )
+			{
+				logger.error("Failed to delete index "
+						+ index_name);
+				all_deleted = false;
+			}
+		}
+
+		return all_deleted;
+	}
+
+	/**
+	 * Resolves an index expression (which may contain wildcards) to the concrete
+	 * index names that currently match it.
+	 *
+	 * @param expression
+	 *            The index name or wildcard expression to resolve
+	 * @return the matching concrete index names (empty if nothing matches), or null
+	 *         if the lookup itself failed
+	 */
+	private Set<String> getConcreteIndexNames( String expression )
+	{
+		try
+		{
+			GetIndexResponse response = esClient.indices().get(GetIndexRequest.of(i -> i.index(expression)//
+					.ignoreUnavailable(true)//
+					.allowNoIndices(true)));
+
+			return new HashSet<>(response.result().keySet());
+		}
+		catch ( Exception e )
+		{
+			logger.error("Exception thrown listing the indices matching "
+					+ expression, e);
+			return null;
+		}
+	}
+
+	/**
+	 * A delete of every index for an application is only ever allowed against a
+	 * throw away integration test environment. Both of the following must hold:
+	 *
+	 * 1) the environment is DEV or INTEGRATION (never STAGING/PRODUCTION/UNKNOWN)
+	 * 2) the application id is the integration test application id
+	 *
+	 * Deliberately static and free of any client state so that it can be unit tested
+	 * without standing up an ElasticSearch connection.
+	 *
+	 * @param app
+	 *            The ApplicationId the caller asked to wipe
+	 * @return boolean true if the wipe may proceed, false otherwise
+	 */
+	static boolean isSafeToDeleteAllIndicesForApp( ApplicationId app )
+	{
+		if ( app == null )
+		{
+			logger.error("Refusing to delete all indices for a null application id");
+			return false;
+		}
+
+		if ( !ISearch.INTEGRATION_TEST_APPLICATION_ID.equals(app) )
+		{
+			logger.error(String.format("Refusing to delete all indices for application %s. Only the integration test application (%s) may be wiped.", app.getSimpleValue(), ISearch.INTEGRATION_TEST_APPLICATION_ID.getSimpleValue()));
+			return false;
+		}
+
+		if ( !CloudExecutionEnvironment.hasStartupBeenCalled() )
+		{
+			logger.error("Refusing to delete all indices before CloudExecutionEnvironment startup -- the environment type cannot be verified.");
+			return false;
+		}
+
+		EnvironmentType env_type = CloudExecutionEnvironment.getSimpleCurrent().getSimpleEnvironmentType();
+
+		if ( env_type != EnvironmentType.DEV
+				&& env_type != EnvironmentType.INTEGRATION )
+		{
+			logger.error(String.format("Refusing to delete all indices in a %s environment. Only DEV and INTEGRATION environments may be wiped.", env_type));
+			return false;
+		}
+
+		return true;
 	}
 
 	private boolean deleteWithRetry( String index_name )

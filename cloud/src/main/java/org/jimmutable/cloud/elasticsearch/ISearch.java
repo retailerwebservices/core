@@ -7,6 +7,7 @@ import java.util.Set;
 
 import co.elastic.clients.elasticsearch._types.Time;
 import co.elastic.clients.elasticsearch.core.*;
+import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
@@ -157,6 +158,32 @@ public interface ISearch
 	 * @return boolean if the upsert was successful or not
 	 */
 	public boolean upsertIndex( SearchIndexDefinition index );
+
+	/**
+	 * Deletes every index belonging to an application (every concrete index whose
+	 * name is prefixed with the application id). Any aliases pointing at those
+	 * indices go away with them.
+	 *
+	 * EXTREMELY DANGEROUS!!! This exists so that automated tests can guarantee a
+	 * clean Search environment. Implementations are required to refuse the call
+	 * unless it is unambiguously safe -- specifically, unless the environment is a
+	 * dev/integration environment AND the passed in application id is the
+	 * integration test application id ({@link #INTEGRATION_TEST_APPLICATION_ID}).
+	 * There is deliberately no way to ask for a bare wildcard.
+	 *
+	 * @param app
+	 *            The ApplicationId whose indices should be dropped
+	 * @return boolean true if the indices were dropped, false otherwise (including
+	 *         when the safety guard refused the call)
+	 */
+	public boolean deleteAllIndicesForApp( ApplicationId app );
+
+	/**
+	 * The only application id that {@link #deleteAllIndicesForApp(ApplicationId)}
+	 * will act on. Matches the sub service id used by
+	 * CloudExecutionEnvironment.startupIntegrationTest.
+	 */
+	static public final ApplicationId INTEGRATION_TEST_APPLICATION_ID = new ApplicationId("integration");
 
 	/**
 	 * Runs a search and writes the results to the passed in ICsvListWriter.

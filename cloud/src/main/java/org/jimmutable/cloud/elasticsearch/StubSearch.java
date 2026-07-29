@@ -6,6 +6,7 @@ import java.util.Set;
 
 import co.elastic.clients.elasticsearch._types.Time;
 import co.elastic.clients.elasticsearch.core.*;
+import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.servlet_utils.search.OneSearchResultWithTyping;
 import org.jimmutable.cloud.servlet_utils.search.SearchFieldId;
 import org.jimmutable.cloud.servlet_utils.search.StandardSearchRequest;
@@ -80,6 +81,12 @@ public class StubSearch implements ISearch
 
 	@Override
 	public boolean upsertIndex( SearchIndexDefinition index )
+	{
+		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
+	}
+
+	@Override
+	public boolean deleteAllIndicesForApp( ApplicationId app )
 	{
 		throw new RuntimeException("This should have never been called for unit testing, use a different implementation for integration testing!");
 	}
