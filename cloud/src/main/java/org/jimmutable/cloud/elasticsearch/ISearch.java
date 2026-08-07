@@ -160,16 +160,10 @@ public interface ISearch
 	public boolean upsertIndex( SearchIndexDefinition index );
 
 	/**
-	 * Deletes every index belonging to an application (every concrete index whose
-	 * name is prefixed with the application id). Any aliases pointing at those
-	 * indices go away with them.
+	 * Deletes every index prefixed by an application's id, including its aliases.
 	 *
-	 * EXTREMELY DANGEROUS!!! This exists so that automated tests can guarantee a
-	 * clean Search environment. Implementations are required to refuse the call
-	 * unless it is unambiguously safe -- specifically, unless the environment is a
-	 * dev/integration environment AND the passed in application id is the
-	 * integration test application id ({@link #INTEGRATION_TEST_APPLICATION_ID}).
-	 * There is deliberately no way to ask for a bare wildcard.
+	 * Implementations must accept only {@link #INTEGRATION_TEST_APPLICATION_ID} in a
+	 * DEV or INTEGRATION environment and must never issue a bare wildcard delete.
 	 *
 	 * @param app
 	 *            The ApplicationId whose indices should be dropped
@@ -179,9 +173,7 @@ public interface ISearch
 	public boolean deleteAllIndicesForApp( ApplicationId app );
 
 	/**
-	 * The only application id that {@link #deleteAllIndicesForApp(ApplicationId)}
-	 * will act on. Matches the sub service id used by
-	 * CloudExecutionEnvironment.startupIntegrationTest.
+	 * The only application id eligible for bulk index deletion.
 	 */
 	static public final ApplicationId INTEGRATION_TEST_APPLICATION_ID = new ApplicationId("integration");
 

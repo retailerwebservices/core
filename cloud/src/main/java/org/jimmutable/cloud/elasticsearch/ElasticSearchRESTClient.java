@@ -354,13 +354,10 @@ public class ElasticSearchRESTClient implements ISearch
 	}
 
 	/**
-	 * Deletes every index belonging to an application, e.g. every concrete index
-	 * matching "integration_*". Aliases pointing at those indices are dropped along
-	 * with them.
+	 * Deletes every concrete index prefixed by the application id.
 	 *
-	 * EXTREMELY DANGEROUS!!! See {@link ISearch#deleteAllIndicesForApp(ApplicationId)}.
-	 * The safety guard below is the only thing standing between a mis-configured
-	 * test run and a wiped production cluster, so do not relax it.
+	 * See {@link ISearch#deleteAllIndicesForApp(ApplicationId)} for required safety
+	 * restrictions.
 	 */
 	@Override
 	public boolean deleteAllIndicesForApp( ApplicationId app )
@@ -370,15 +367,11 @@ public class ElasticSearchRESTClient implements ISearch
 			return false;
 		}
 
-		// Never a bare wildcard -- always anchored to the application id, using the
-		// same separator IndexDefinition uses between the app id and the index id.
+		// Anchor the wildcard to the application's index prefix.
 		String wildcard = app.getSimpleValue()
 				+ "_*";
 
-		// ElasticSearch itself refuses a wildcard delete whenever
-		// action.destructive_requires_name is on (the default since ES 8), so the
-		// expression is resolved to concrete index names and each one is deleted by
-		// name.
+		// Resolve the wildcard because Elasticsearch may reject wildcard deletes.
 		Set<String> index_names = getConcreteIndexNames(wildcard);
 
 		if ( index_names == null )
@@ -414,8 +407,7 @@ public class ElasticSearchRESTClient implements ISearch
 	}
 
 	/**
-	 * Resolves an index expression (which may contain wildcards) to the concrete
-	 * index names that currently match it.
+	 * Resolves an index expression to matching concrete index names.
 	 *
 	 * @param expression
 	 *            The index name or wildcard expression to resolve
@@ -441,14 +433,8 @@ public class ElasticSearchRESTClient implements ISearch
 	}
 
 	/**
-	 * A delete of every index for an application is only ever allowed against a
-	 * throw away integration test environment. Both of the following must hold:
-	 *
-	 * 1) the environment is DEV or INTEGRATION (never STAGING/PRODUCTION/UNKNOWN)
-	 * 2) the application id is the integration test application id
-	 *
-	 * Deliberately static and free of any client state so that it can be unit tested
-	 * without standing up an ElasticSearch connection.
+	 * Allows deletion only for the integration application in a DEV or INTEGRATION
+	 * environment.
 	 *
 	 * @param app
 	 *            The ApplicationId the caller asked to wipe

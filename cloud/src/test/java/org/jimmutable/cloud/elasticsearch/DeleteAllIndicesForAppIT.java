@@ -13,7 +13,7 @@ import org.junit.Test;
 /**
  * Integration test for {@link ISearch#deleteAllIndicesForApp(ApplicationId)}.
  *
- * WARNING: this drops every index belonging to the "integration" application, so
+ * This drops every index belonging to the "integration" application, so
  * do not run it in the same JVM as ITs that expect their indices to survive.
  *
  * @author preston.mccumber
@@ -67,8 +67,7 @@ public class DeleteAllIndicesForAppIT extends IntegrationTest
 	public void leavesOtherApplicationsAlone()
 	{
 		// Deliberately left behind -- the guard will not let us delete an index that
-		// does not belong to the integration app, which is the whole point of the test.
-		// The name is a constant, so at most one stray index is ever created.
+		// does not belong to the integration app.
 		assertTrue(elastic_search.upsertIndex(createIndexDefinition(OTHER_APP_INDEX)));
 
 		assertTrue(elastic_search.deleteAllIndicesForApp(ISearch.INTEGRATION_TEST_APPLICATION_ID));
@@ -86,11 +85,7 @@ public class DeleteAllIndicesForAppIT extends IntegrationTest
 		assertTrue(elastic_search.indexExists(SECOND_INDEX));
 	}
 
-	/*
-	 * Built lazily (rather than in a static initializer) so that the cloud type
-	 * names are registered by setupEnvironment() first. Uses MyIndexable's fields so
-	 * that a MyIndexable can be written into the resulting index.
-	 */
+	/* Build after setupEnvironment() registers cloud type names. */
 	private static SearchIndexDefinition createIndexDefinition( IndexDefinition index )
 	{
 		JimmutableBuilder b = new JimmutableBuilder(SearchIndexDefinition.TYPE_NAME);

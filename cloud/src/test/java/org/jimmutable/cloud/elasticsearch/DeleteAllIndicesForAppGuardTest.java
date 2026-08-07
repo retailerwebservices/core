@@ -6,14 +6,7 @@ import org.jimmutable.cloud.ApplicationId;
 import org.junit.Test;
 
 /**
- * The safety guard on {@link ISearch#deleteAllIndicesForApp(ApplicationId)} is the
- * only thing standing between a mis-configured test run and a wiped cluster, so it
- * gets a plain unit test of its own.
- *
- * The application id check is the half that can be asserted deterministically --
- * it is evaluated before anything about the environment, so these cases hold no
- * matter what else has (or has not) started up in this JVM. The environment type
- * half is covered by DeleteAllIndicesForAppIT.
+ * Unit tests for the application-id portion of the bulk-delete safety guard.
  *
  * @author preston.mccumber
  */
