@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Before and after viewer for jimmutable architecture ADRs">
+  <title>jimmutable ADR comparison - before and after ISecrets</title>
+  <style>
+    :root { color-scheme: light dark; --bg: Canvas; --ink: CanvasText; --muted: GrayText; --line: color-mix(in srgb, CanvasText 22%, Canvas); --accent: AccentColor; --panel: color-mix(in srgb, Canvas 94%, CanvasText 6%); }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; align-items: end; padding: 1.1rem 1.25rem; border-bottom: 1px solid var(--line); }
+    h1 { margin: 0; font-size: clamp(1.35rem, 3vw, 2rem); letter-spacing: -.03em; }
+    p { margin: .35rem 0 0; color: var(--muted); font-size: .88rem; }
+    .links { display: flex; flex-wrap: wrap; gap: .55rem; }
+    .links a { padding: .42rem .75rem; border: 1px solid var(--line); border-radius: 999px; color: var(--ink); background: var(--panel); text-decoration: none; font-size: .82rem; }
+    .links a:hover { border-color: var(--accent); }
+    main { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; min-height: calc(100vh - 94px); background: var(--line); }
+    section { display: grid; grid-template-rows: auto minmax(0, 1fr); min-width: 0; background: var(--bg); }
+    .bar { display: flex; justify-content: space-between; gap: 1rem; align-items: center; padding: .65rem .8rem; background: var(--panel); border-bottom: 1px solid var(--line); }
+    .bar strong { font-size: .86rem; }
+    .bar span { color: var(--muted); font-size: .76rem; }
+    iframe { width: 100%; height: 100%; min-height: calc(100vh - 138px); border: 0; background: white; }
+    @media (max-width: 920px) {
+      main { grid-template-columns: 1fr; }
+      iframe { min-height: 78vh; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Architecture ADR comparison</h1>
+      <p>Before and after adding AWS Secrets Manager as the seventh jimmutable-cloud service.</p>
+    </div>
+    <div class="links">
+      <a href="../html/architecture-design-record.html" target="_blank" rel="noopener">Open ADR-001</a>
+      <a href="architecture-design-record-secrets.html" target="_blank" rel="noopener">Open ADR-002</a>
+    </div>
+  </header>
+  <main>
+    <section>
+      <div class="bar"><strong>Before · ADR-001</strong><span>Six cloud service ports</span></div>
+      <iframe src="../html/architecture-design-record.html" title="ADR-001 before secrets management"></iframe>
+    </section>
+    <section>
+      <div class="bar"><strong>After · ADR-002</strong><span>Seven ports, including ISecrets</span></div>
+      <iframe src="architecture-design-record-secrets.html" title="ADR-002 after secrets management"></iframe>
+    </section>
+  </main>
+</body>
+</html>

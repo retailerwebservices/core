@@ -1,0 +1,808 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Adversarial review of the jimmutable-cloud AWS Secrets Manager changes">
+  <title>Adversarial code review — ISecrets</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f6f8;
+      --surface: #ffffff;
+      --ink: #17202a;
+      --muted: #5f6b78;
+      --line: #d5dbe2;
+      --high: #b42318;
+      --high-soft: #feeceb;
+      --medium: #9a6700;
+      --medium-soft: #fff5d6;
+      --optional: #3066a6;
+      --optional-soft: #e9f2ff;
+      --good: #12715b;
+      --good-soft: #e4f5ef;
+      --code: #101820;
+      --code-ink: #e7edf3;
+      --code-muted: #82909f;
+      --code-mark: #4a3013;
+      --shadow: 0 16px 42px rgba(18, 30, 43, .08);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color-scheme: dark;
+        --bg: #0e141a;
+        --surface: #172029;
+        --ink: #edf2f7;
+        --muted: #a6b1bd;
+        --line: #33404d;
+        --high: #ff8b81;
+        --high-soft: #4b2322;
+        --medium: #f4c05e;
+        --medium-soft: #493a1d;
+        --optional: #83b9f6;
+        --optional-soft: #203b5a;
+        --good: #78d6ba;
+        --good-soft: #173f35;
+        --code: #090e13;
+        --code-ink: #e8eef4;
+        --code-muted: #7f8e9d;
+        --code-mark: #4e3515;
+        --shadow: none;
+      }
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 16px; }
+    a { color: inherit; }
+    .page { width: min(1220px, calc(100% - 2rem)); margin: 0 auto; }
+    .hero { padding: clamp(2.3rem, 7vw, 5.4rem) 0 2rem; border-bottom: 1px solid var(--line); }
+    .eyebrow { margin: 0 0 .75rem; color: var(--high); font-size: .76rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { max-width: 930px; margin: 0; font-size: clamp(2.35rem, 6vw, 5.1rem); line-height: .98; letter-spacing: -.055em; }
+    .lede { max-width: 870px; margin: 1.25rem 0 0; color: var(--muted); font-size: clamp(1rem, 2vw, 1.16rem); line-height: 1.68; }
+    .meta { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: 1.35rem; }
+    .pill { padding: .34rem .7rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); font-size: .78rem; }
+    .layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 3.8rem); }
+    nav { position: sticky; top: 1rem; align-self: start; padding: 2rem 0; }
+    nav strong { display: block; margin-bottom: .6rem; font-size: .74rem; letter-spacing: .12em; text-transform: uppercase; }
+    nav a { display: block; padding: .27rem 0; color: var(--muted); font-size: .86rem; text-decoration: none; }
+    nav a:hover { color: var(--ink); text-decoration: underline; }
+    article { min-width: 0; padding-bottom: 4rem; }
+    section, .finding { scroll-margin-top: 1rem; }
+    h2 { margin: 3rem 0 .9rem; font-size: clamp(1.5rem, 3vw, 2.1rem); letter-spacing: -.03em; }
+    h3 { margin: 0; font-size: clamp(1.13rem, 2vw, 1.38rem); line-height: 1.28; }
+    h4 { margin: 1.2rem 0 .4rem; font-size: .97rem; }
+    p { margin: .62rem 0; line-height: 1.68; }
+    ul, ol { padding-left: 1.25rem; line-height: 1.62; }
+    li + li { margin-top: .35rem; }
+    code { font: .92em/1.45 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .7rem; margin: 1.3rem 0; }
+    .summary div { padding: .9rem; border-top: 3px solid var(--line); background: var(--surface); box-shadow: var(--shadow); }
+    .summary div:nth-child(2) { border-color: var(--high); }
+    .summary div:nth-child(3) { border-color: var(--medium); }
+    .summary div:nth-child(4) { border-color: var(--optional); }
+    .summary b { display: block; font-size: 1.65rem; }
+    .summary span { color: var(--muted); font-size: .76rem; }
+    .finding { margin: 1.1rem 0 1.7rem; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); overflow: hidden; }
+    .finding-head { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .85rem; align-items: start; padding: 1rem 1.1rem; }
+    .finding.high .finding-head { background: var(--high-soft); }
+    .finding.medium .finding-head { background: var(--medium-soft); }
+    .number { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; color: white; background: var(--muted); font-weight: 800; }
+    .high .number { background: var(--high); }
+    .medium .number { background: var(--medium); }
+    .severity { display: block; margin-bottom: .2rem; font-size: .7rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .high .severity { color: var(--high); }
+    .medium .severity { color: var(--medium); }
+    .finding-body { min-width: 0; padding: .25rem 1.1rem 1.2rem; overflow: hidden; }
+    .impact { margin: .9rem 0; padding: .75rem .85rem; border-left: 3px solid var(--line); background: color-mix(in srgb, var(--surface) 82%, var(--line)); }
+    .fix { margin: .9rem 0; padding: .8rem .9rem; border-left: 3px solid var(--good); background: var(--good-soft); }
+    .fix strong, .impact strong { display: block; margin-bottom: .25rem; }
+    figure { width: 100%; max-width: 100%; margin: 1rem 0; border: 1px solid #2b3947; border-radius: 10px; background: var(--code); overflow: hidden; }
+    figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem; padding: .58rem .72rem; color: var(--code-ink); background: #1a2631; font: .76rem/1.4 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    figcaption span:last-child { color: var(--code-muted); }
+    pre { display: block; width: 100%; max-width: 100%; margin: 0; padding: .65rem 0; overflow-x: auto; color: var(--code-ink); font: .78rem/1.55 ui-monospace, SFMono-Regular, Consolas, monospace; tab-size: 4; }
+    pre .line { display: block; min-width: max-content; padding: 0 .85rem 0 0; }
+    pre .line.ref { background: var(--code-mark); box-shadow: inset 3px 0 var(--medium); }
+    pre .ln { display: inline-block; width: 3.6rem; padding-right: .9rem; color: var(--code-muted); text-align: right; user-select: none; }
+    pre .kw { color: #ff9d8e; }
+    pre .type { color: #8fd8ff; }
+    pre .str { color: #b9df91; }
+    .deep-dive { margin: 1rem 0; padding: 1rem; border: 1px solid color-mix(in srgb, var(--medium) 55%, var(--line)); border-radius: 10px; background: var(--medium-soft); }
+    .deep-dive h4 { margin-top: 0; color: var(--medium); }
+    .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: .6rem; margin: .8rem 0; }
+    .flow div { position: relative; padding: .75rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-size: .82rem; line-height: 1.45; }
+    .flow div:not(:last-child)::after { content: "→"; position: absolute; right: -.52rem; top: 50%; z-index: 2; color: var(--medium); font-size: 1.1rem; transform: translateY(-50%); }
+    .optional { margin: .8rem 0; padding: .9rem 1rem; border-left: 3px solid var(--optional); background: var(--optional-soft); }
+    .verified { margin: 1rem 0; padding: .9rem 1rem; border-left: 3px solid var(--good); background: var(--good-soft); }
+    .resolution { margin: 1.2rem 0; padding: 1rem 1.1rem; border: 1px solid color-mix(in srgb, var(--good) 55%, var(--line)); border-radius: 12px; background: var(--good-soft); }
+    .resolution strong { color: var(--good); }
+    .sources { color: var(--muted); font-size: .84rem; }
+    footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .8rem; }
+    @media (max-width: 850px) {
+      .layout { grid-template-columns: 1fr; }
+      nav { position: static; padding-bottom: 0; columns: 2; }
+      nav strong { column-span: all; }
+      .summary { grid-template-columns: repeat(2, 1fr); }
+      .flow { grid-template-columns: 1fr; }
+      .flow div:not(:last-child)::after { content: "↓"; right: 50%; top: auto; bottom: -.8rem; transform: translateX(50%); }
+    }
+    @media (max-width: 520px) {
+      body { overflow-x: hidden; }
+      .page { width: auto; max-width: 100%; margin-right: .5rem; margin-left: .5rem; }
+      h1 { width: 100%; max-width: 100%; font-size: 2rem; white-space: normal; word-break: break-word; }
+      h1, .lede, p, li, .pill, figcaption span { max-width: 100%; overflow-wrap: anywhere; word-break: break-word; }
+      article, section, .finding, .finding-body, figure { max-width: 100%; min-width: 0; }
+      .pill { max-width: 100%; }
+      nav { columns: 1; }
+      .summary { grid-template-columns: 1fr; }
+      .finding-head { grid-template-columns: 1fr; }
+    }
+    @media print {
+      body { background: white; }
+      .page { width: 100%; }
+      .layout { display: block; }
+      nav { display: none; }
+      .finding, figure { break-inside: avoid; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero page">
+    <p class="eyebrow">Adversarial review · ISecrets change set</p>
+    <h1>AWS Secrets Manager code review</h1>
+    <p class="lede">A hostile-path assessment of failure semantics, environment isolation, region configuration, API accuracy, mutation outcomes, client ownership, stub fidelity, and test isolation. Source excerpts include the cited line plus at least five lines before and after it.</p>
+    <div class="meta">
+      <span class="pill">Reviewed: 2026-07-15</span>
+      <span class="pill">Scope: uncommitted jimmutable-cloud changes</span>
+      <span class="pill">Mode: read-only review</span>
+      <span class="pill">Reviewer: delegated adversarial subagent + primary synthesis</span>
+    </div>
+  </header>
+
+  <div class="page layout">
+    <nav aria-label="Review sections">
+      <strong>Findings</strong>
+      <a href="#overview">Overview</a>
+      <a href="#resolution">Resolution status</a>
+      <a href="#issue-1">1 · Fail-open reads</a>
+      <a href="#issue-2">2 · Non-prod AWS mutation</a>
+      <a href="#issue-3">3 · Fixed region</a>
+      <a href="#issue-4">4 · ARN contract</a>
+      <a href="#issue-5">5 · Indeterminate writes</a>
+      <a href="#issue-6">6 · Client lifecycle</a>
+      <a href="#issue-7">7 · Stub deletion</a>
+      <a href="#issue-8">8 · Shared test state</a>
+      <a href="#improvements">Optional improvements</a>
+      <a href="#confirmed">Confirmed-correct behavior</a>
+    </nav>
+
+    <article>
+      <section id="overview">
+        <h2>Review outcome</h2>
+        <p>This document preserves the original adversarial review and its pre-remediation source excerpts. No direct secret-value logging or immediately exploitable credential disclosure was found. The findings below describe the implementation as it existed when the review was written; current resolution status is recorded separately.</p>
+        <div class="summary">
+          <div><b>0</b><span>critical findings</span></div>
+          <div><b>3</b><span>high-severity findings</span></div>
+          <div><b>5</b><span>medium-severity findings</span></div>
+          <div><b>4</b><span>optional improvements</span></div>
+        </div>
+      </section>
+
+      <section id="resolution">
+        <h2>Resolution status</h2>
+        <div class="resolution">
+          <strong>Corrected in the current uncommitted working tree: findings 1, 3, 4, 5, 6, and 7.</strong>
+          <p>Reads now fail closed except for an explicit not-found or non-string result; region comes from the AWS SDK provider chain; creation is name-only with shared validation; mutations use typed rejected/unknown outcomes and retry tokens; updates use the idempotent <code>PutSecretValue</code> operation; owned clients close through an idempotent adapter and environment shutdown hook; and the stub fails closed during pending deletion without promising that asynchronous purge has completed at the recovery-window boundary.</p>
+          <p><strong>Still open:</strong> finding 2 (non-production environments use real AWS services) and finding 8 (the process-global STUB service can leak mutable state between test classes). The source excerpts and line numbers in the finding cards remain the historical evidence that prompted the remediation.</p>
+        </div>
+      </section>
+
+      <section class="finding high" id="issue-1">
+        <div class="finding-head"><span class="number">1</span><div><span class="severity">High</span><h3>Secret reads fail open on every AWS failure</h3></div></div>
+        <div class="finding-body">
+          <p><code>readSecret</code> turns every exception into the caller’s default. Missing data, denied access, expired credentials, throttling, wrong-region access, network failure, SDK defects, and an unexpected null response are indistinguishable.</p>
+          <div class="impact"><strong>Concrete failure scenario</strong>An AdRocket service starts with an expired workload role. Instead of reporting an authorization failure, the API returns <code>null</code> or a plausible fallback. Startup may proceed with a broken or obsolete credential, obscuring the security-boundary failure.</div>
+          <div class="fix"><strong>Recommended remediation</strong>Return absence only for an explicitly supported not-found or non-string case. Propagate or wrap authorization, throttling, transport, and unexpected failures. Prefer a required-secret method or typed result that cannot silently degrade.</div>
+
+          <figure><figcaption><span>AWSSecretsManager.java</span><span>lines 64–89 · references 69 and 81–84</span></figcaption><pre>
+<span class="line"><span class="ln">64</span>            return false;</span>
+<span class="line"><span class="ln">65</span>        }</span>
+<span class="line"><span class="ln">66</span>    }</span>
+<span class="line"><span class="ln">67</span></span>
+<span class="line"><span class="ln">68</span>    @Override</span>
+<span class="line ref"><span class="ln">69</span>    public String readSecret( String secret_id, String default_value )</span>
+<span class="line"><span class="ln">70</span>    {</span>
+<span class="line"><span class="ln">71</span>        requireSecretId(secret_id);</span>
+<span class="line"><span class="ln">72</span></span>
+<span class="line"><span class="ln">73</span>        try</span>
+<span class="line"><span class="ln">74</span>        {</span>
+<span class="line"><span class="ln">75</span>            GetSecretValueRequest request = GetSecretValueRequest.builder()</span>
+<span class="line"><span class="ln">76</span>                    .secretId(secret_id)</span>
+<span class="line"><span class="ln">77</span>                    .build();</span>
+<span class="line"><span class="ln">78</span>            GetSecretValueResponse response = client.getSecretValue(request);</span>
+<span class="line ref"><span class="ln">79</span>            return response.secretString() == null ? default_value : response.secretString();</span>
+<span class="line"><span class="ln">80</span>        }</span>
+<span class="line ref"><span class="ln">81</span>        catch ( Exception e )</span>
+<span class="line ref"><span class="ln">82</span>        {</span>
+<span class="line ref"><span class="ln">83</span>            LOGGER.error("Unable to read secret", e);</span>
+<span class="line ref"><span class="ln">84</span>            return default_value;</span>
+<span class="line"><span class="ln">85</span>        }</span>
+<span class="line"><span class="ln">86</span>    }</span>
+<span class="line"><span class="ln">87</span></span>
+<span class="line"><span class="ln">88</span>    @Override</span>
+<span class="line"><span class="ln">89</span>    public boolean updateSecret( String secret_id, String secret_value )</span></pre></figure>
+
+          <figure><figcaption><span>ISecrets.java</span><span>lines 14–27 · references 19–22</span></figcaption><pre>
+<span class="line"><span class="ln">14</span>    public boolean createSecret( String secret_id, String secret_value );</span>
+<span class="line"><span class="ln">15</span></span>
+<span class="line"><span class="ln">16</span>    /**</span>
+<span class="line"><span class="ln">17</span>     * Reads the current value of a secret.</span>
+<span class="line"><span class="ln">18</span>     *</span>
+<span class="line ref"><span class="ln">19</span>     * @param default_value</span>
+<span class="line ref"><span class="ln">20</span>     *            returned when the secret cannot be read or has no string value</span>
+<span class="line"><span class="ln">21</span>     */</span>
+<span class="line ref"><span class="ln">22</span>    public String readSecret( String secret_id, String default_value );</span>
+<span class="line"><span class="ln">23</span></span>
+<span class="line"><span class="ln">24</span>    /**</span>
+<span class="line"><span class="ln">25</span>     * Updates the value of an existing secret.</span>
+<span class="line"><span class="ln">26</span>     *</span>
+<span class="line"><span class="ln">27</span>     * @return {@code true} when a new secret version was stored, otherwise</span></pre></figure>
+
+          <figure><figcaption><span>AWSSecretsManagerTest.java</span><span>lines 76–96 · references 81–91</span></figcaption><pre>
+<span class="line"><span class="ln">76</span>        assertEquals("adrocket/api-key", recording.delete_request.secretId());</span>
+<span class="line"><span class="ln">77</span>        assertNull(recording.delete_request.recoveryWindowInDays());</span>
+<span class="line"><span class="ln">78</span>        assertNull(recording.delete_request.forceDeleteWithoutRecovery());</span>
+<span class="line"><span class="ln">79</span>    }</span>
+<span class="line"><span class="ln">80</span></span>
+<span class="line ref"><span class="ln">81</span>    @Test</span>
+<span class="line ref"><span class="ln">82</span>    public void awsFailureUsesOperationFallback()</span>
+<span class="line ref"><span class="ln">83</span>    {</span>
+<span class="line ref"><span class="ln">84</span>        RecordingClient recording = new RecordingClient();</span>
+<span class="line ref"><span class="ln">85</span>        recording.failure = new RuntimeException("AWS unavailable");</span>
+<span class="line ref"><span class="ln">86</span>        ISecrets secrets = new AWSSecretsManager(recording.createClient());</span>
+<span class="line ref"><span class="ln">87</span></span>
+<span class="line ref"><span class="ln">88</span>        assertFalse(secrets.createSecret("adrocket/api-key", "secret-value"));</span>
+<span class="line ref"><span class="ln">89</span>        assertEquals("fallback", secrets.readSecret("adrocket/api-key", "fallback"));</span>
+<span class="line ref"><span class="ln">90</span>        assertFalse(secrets.updateSecret("adrocket/api-key", "replacement"));</span>
+<span class="line ref"><span class="ln">91</span>        assertFalse(secrets.removeSecret("adrocket/api-key"));</span>
+<span class="line"><span class="ln">92</span>    }</span>
+<span class="line"><span class="ln">93</span></span>
+<span class="line"><span class="ln">94</span>    private static class RecordingClient implements InvocationHandler</span>
+<span class="line"><span class="ln">95</span>    {</span>
+<span class="line"><span class="ln">96</span>        private CreateSecretRequest create_request;</span></pre></figure>
+        </div>
+      </section>
+
+      <section class="finding high" id="issue-2">
+        <div class="finding-head"><span class="number">2</span><div><span class="severity">High</span><h3>DEV and INTEGRATION are wired to real AWS with destructive operations</h3></div></div>
+        <div class="finding-body">
+          <p>Local and integration startup construct the same <code>AWSSecretsManager</code> used in staging and production. The interface also exposes create, update, and delete operations. There is no account guard, environment prefix, read-only wrapper, or non-production endpoint enforcement.</p>
+          <div class="impact"><strong>Concrete failure scenario</strong>A developer has broad credentials in the default profile and runs an integration workflow with a production secret ARN. The code accepts it and can update or schedule deletion of the real secret.</div>
+          <div class="fix"><strong>Recommended remediation</strong>Use <code>SecretsStub</code>, LocalStack, or an explicitly isolated AWS account/endpoint for DEV and INTEGRATION. Split runtime reads from administrative lifecycle operations, and enforce an environment namespace or allow-list.</div>
+          <figure><figcaption><span>CloudExecutionEnvironment.java</span><span>lines 213–228 · references 218 and 223</span></figcaption><pre>
+<span class="line"><span class="ln">213</span></span>
+<span class="line"><span class="ln">214</span>        switch ( env_type )</span>
+<span class="line"><span class="ln">215</span>        {</span>
+<span class="line"><span class="ln">216</span>        case DEV:</span>
+<span class="line"><span class="ln">217</span>            checkOs();</span>
+<span class="line ref"><span class="ln">218</span>            CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), new StorageDevLocalFileSystem(false, APPLICATION_ID, STANDARD_IMMUTABLE_OBJECT_CACHE), new QueueRedis(APPLICATION_ID, redis_driver), new SignalRedis(APPLICATION_ID, redis_driver), getJimmutableSESClient(), redis, new AWSSecretsManager());</span>
+<span class="line"><span class="ln">219</span>            break;</span>
+<span class="line"><span class="ln">220</span>        case INTEGRATION:</span>
+<span class="line"><span class="ln">221</span></span>
+<span class="line"><span class="ln">222</span>            checkOs();</span>
+<span class="line ref"><span class="ln">223</span>            CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), new StorageDevLocalFileSystem(false, APPLICATION_ID, STANDARD_IMMUTABLE_OBJECT_CACHE), new QueueRedis(APPLICATION_ID, redis_driver), new SignalRedis(APPLICATION_ID, redis_driver), getJimmutableSESClient(), redis, new AWSSecretsManager());</span>
+<span class="line"><span class="ln">224</span>            break;</span>
+<span class="line"><span class="ln">225</span>        // For now, staging is the same as dev</span>
+<span class="line"><span class="ln">226</span>        case STAGING:</span>
+<span class="line"><span class="ln">227</span></span>
+<span class="line"><span class="ln">228</span>            checkOs();</span></pre></figure>
+        </div>
+      </section>
+
+      <section class="finding high" id="issue-3">
+        <div class="finding-head"><span class="number">3</span><div><span class="severity">High</span><h3>Normal runtime wiring ignores the AWS region provider chain</h3></div></div>
+        <div class="finding-body">
+          <p>The no-argument adapter always targets <code>us-west-2</code>. Although a caller can directly inject a custom client, <code>CloudExecutionEnvironment</code> always calls the no-argument constructor, so application configuration cannot override the region through the supported composition root.</p>
+          <div class="impact"><strong>Concrete failure scenario</strong>A workload deploys in <code>us-east-1</code> with <code>AWS_REGION=us-east-1</code>. The service still queries <code>us-west-2</code>; issue 1 then converts the resulting lookup or access failure into a fallback.</div>
+          <div class="fix"><strong>Recommended remediation</strong>Allow <code>SecretsManagerClient.builder().build()</code> to use the standard region provider chain, or require region/client configuration in <code>startup</code>.</div>
+          <figure><figcaption><span>AWSSecretsManager.java</span><span>lines 18–48 · references 23 and 41–43</span></figcaption><pre>
+<span class="line"><span class="ln">18</span> * Uses the AWS SDK default credentials provider chain.</span>
+<span class="line"><span class="ln">19</span> */</span>
+<span class="line"><span class="ln">20</span>public class AWSSecretsManager implements ISecrets</span>
+<span class="line"><span class="ln">21</span>{</span>
+<span class="line"><span class="ln">22</span>    private static final Logger LOGGER = LoggerFactory.getLogger(AWSSecretsManager.class);</span>
+<span class="line ref"><span class="ln">23</span>    private static final Region DEFAULT_REGION = Region.US_WEST_2;</span>
+<span class="line"><span class="ln">24</span></span>
+<span class="line"><span class="ln">25</span>    private final SecretsManagerClient client;</span>
+<span class="line"><span class="ln">26</span></span>
+<span class="line"><span class="ln">27</span>    public AWSSecretsManager()</span>
+<span class="line"><span class="ln">28</span>    {</span>
+<span class="line"><span class="ln">29</span>        this(createDefaultClient());</span>
+<span class="line"><span class="ln">30</span>    }</span>
+<span class="line"><span class="ln">31</span></span>
+<span class="line"><span class="ln">32</span>    /**</span>
+<span class="line"><span class="ln">33</span>     * Accepts a client so applications can select a region or endpoint and tests can</span>
+<span class="line"><span class="ln">34</span>     * use a substitute without changing secret-management behavior.</span>
+<span class="line"><span class="ln">35</span>     */</span>
+<span class="line"><span class="ln">36</span>    public AWSSecretsManager( SecretsManagerClient client )</span>
+<span class="line"><span class="ln">37</span>    {</span>
+<span class="line"><span class="ln">38</span>        this.client = Objects.requireNonNull(client, "client");</span>
+<span class="line"><span class="ln">39</span>    }</span>
+<span class="line"><span class="ln">40</span></span>
+<span class="line ref"><span class="ln">41</span>    public static SecretsManagerClient createDefaultClient()</span>
+<span class="line ref"><span class="ln">42</span>    {</span>
+<span class="line ref"><span class="ln">43</span>        return SecretsManagerClient.builder().region(DEFAULT_REGION).build();</span>
+<span class="line"><span class="ln">44</span>    }</span>
+<span class="line"><span class="ln">45</span></span>
+<span class="line"><span class="ln">46</span>    @Override</span>
+<span class="line"><span class="ln">47</span>    public boolean createSecret( String secret_id, String secret_value )</span>
+<span class="line"><span class="ln">48</span>    {</span></pre></figure>
+        </div>
+      </section>
+
+      <section class="finding medium" id="issue-4">
+        <div class="finding-head"><span class="number">4</span><div><span class="severity">Medium · expanded analysis</span><h3>The advertised ARN contract is false for creation</h3></div></div>
+        <div class="finding-body">
+          <p>The interface-level statement applies “names or ARNs” to every operation. That is true for AWS operations that address an existing secret through <code>SecretId</code>, but it is not true for <code>CreateSecret</code>: creation requires a new secret <em>name</em>. The implementation maps the same undifferentiated <code>secret_id</code> argument to <code>CreateSecretRequest.name</code>.</p>
+          <div class="deep-dive">
+            <h4>Why this is more than documentation wording</h4>
+            <ul>
+              <li><strong>The type system cannot express the distinction.</strong> A caller sees one <code>String</code> accepted by all four methods and reasonably reuses an ARN obtained from configuration.</li>
+              <li><strong>The actual cause is hidden.</strong> AWS rejects the ARN as a name, but the broad catch returns only <code>false</code>. The caller cannot tell invalid identifier form from access denial or an existing secret.</li>
+              <li><strong>The stub gives a false positive.</strong> <code>SecretsStub.createSecret</code> accepts any non-blank string, including an ARN, so a test can pass while production fails.</li>
+              <li><strong>The abstraction leaks provider vocabulary.</strong> A supposedly provider-neutral interface explicitly promises ARN support, coupling its general contract to AWS without accurately modeling AWS’s operation-specific rules.</li>
+            </ul>
+            <div class="flow"><div>Caller stores an ARN</div><div>Passes ARN to <code>createSecret</code></div><div>Adapter assigns ARN to <code>name</code></div><div>AWS rejects it; caller receives only <code>false</code></div></div>
+          </div>
+          <div class="fix"><strong>Recommended remediation</strong>At minimum, document <code>createSecret</code> as name-only and existing-secret operations as name-or-ARN. A stronger design uses separate types such as <code>NewSecretName</code> and <code>SecretIdentifier</code>, with shared validation used by both AWS and stub adapters.</div>
+
+          <figure><figcaption><span>ISecrets.java</span><span>lines 1–19 · references 3–5 and 10–14</span></figcaption><pre>
+<span class="line"><span class="ln">1</span>package org.jimmutable.cloud.secrets;</span>
+<span class="line"><span class="ln">2</span></span>
+<span class="line ref"><span class="ln">3</span>/**</span>
+<span class="line ref"><span class="ln">4</span> * Provides string secret storage without exposing callers to a specific cloud</span>
+<span class="line ref"><span class="ln">5</span> * provider. Secret identifiers may be either provider-specific names or ARNs.</span>
+<span class="line"><span class="ln">6</span> */</span>
+<span class="line"><span class="ln">7</span>public interface ISecrets</span>
+<span class="line"><span class="ln">8</span>{</span>
+<span class="line"><span class="ln">9</span>    /**</span>
+<span class="line ref"><span class="ln">10</span>     * Creates a new secret.</span>
+<span class="line ref"><span class="ln">11</span>     *</span>
+<span class="line ref"><span class="ln">12</span>     * @return {@code true} when the secret was created, otherwise {@code false}</span>
+<span class="line ref"><span class="ln">13</span>     */</span>
+<span class="line ref"><span class="ln">14</span>    public boolean createSecret( String secret_id, String secret_value );</span>
+<span class="line"><span class="ln">15</span></span>
+<span class="line"><span class="ln">16</span>    /**</span>
+<span class="line"><span class="ln">17</span>     * Reads the current value of a secret.</span>
+<span class="line"><span class="ln">18</span>     *</span>
+<span class="line"><span class="ln">19</span>     * @param default_value</span></pre></figure>
+
+          <figure><figcaption><span>AWSSecretsManager.java</span><span>lines 49–63 · references 54–58</span></figcaption><pre>
+<span class="line"><span class="ln">49</span>        requireSecretId(secret_id);</span>
+<span class="line"><span class="ln">50</span>        Objects.requireNonNull(secret_value, "secret_value");</span>
+<span class="line"><span class="ln">51</span></span>
+<span class="line"><span class="ln">52</span>        try</span>
+<span class="line"><span class="ln">53</span>        {</span>
+<span class="line ref"><span class="ln">54</span>            CreateSecretRequest request = CreateSecretRequest.builder()</span>
+<span class="line ref"><span class="ln">55</span>                    .name(secret_id)</span>
+<span class="line ref"><span class="ln">56</span>                    .secretString(secret_value)</span>
+<span class="line ref"><span class="ln">57</span>                    .build();</span>
+<span class="line ref"><span class="ln">58</span>            client.createSecret(request);</span>
+<span class="line"><span class="ln">59</span>            return true;</span>
+<span class="line"><span class="ln">60</span>        }</span>
+<span class="line"><span class="ln">61</span>        catch ( Exception e )</span>
+<span class="line"><span class="ln">62</span>        {</span>
+<span class="line"><span class="ln">63</span>            LOGGER.error("Unable to create secret", e);</span></pre></figure>
+        </div>
+      </section>
+
+      <section class="finding medium" id="issue-5">
+        <div class="finding-head"><span class="number">5</span><div><span class="severity">Medium</span><h3>Mutation booleans misrepresent indeterminate outcomes</h3></div></div>
+        <div class="finding-body">
+          <p>A network timeout after AWS accepts a request is reported as <code>false</code>, which sounds like “nothing changed.” Separate caller retries may encounter an existing secret, create another version, or find deletion already scheduled.</p>
+          <div class="fix"><strong>Recommended remediation</strong>Expose operation-specific results or typed exceptions. Preserve stable request tokens when callers must retry across method invocations, and document delete as an asynchronous state transition.</div>
+          <figure><figcaption><span>AWSSecretsManager.java</span><span>lines 42–69 · create outcome, references 47–64</span></figcaption><pre>
+<span class="line"><span class="ln">42</span>    {</span>
+<span class="line"><span class="ln">43</span>        return SecretsManagerClient.builder().region(DEFAULT_REGION).build();</span>
+<span class="line"><span class="ln">44</span>    }</span>
+<span class="line"><span class="ln">45</span></span>
+<span class="line"><span class="ln">46</span>    @Override</span>
+<span class="line ref"><span class="ln">47</span>    public boolean createSecret( String secret_id, String secret_value )</span>
+<span class="line ref"><span class="ln">48</span>    {</span>
+<span class="line ref"><span class="ln">49</span>        requireSecretId(secret_id);</span>
+<span class="line ref"><span class="ln">50</span>        Objects.requireNonNull(secret_value, "secret_value");</span>
+<span class="line ref"><span class="ln">51</span></span>
+<span class="line ref"><span class="ln">52</span>        try</span>
+<span class="line ref"><span class="ln">53</span>        {</span>
+<span class="line ref"><span class="ln">54</span>            CreateSecretRequest request = CreateSecretRequest.builder()</span>
+<span class="line ref"><span class="ln">55</span>                    .name(secret_id)</span>
+<span class="line ref"><span class="ln">56</span>                    .secretString(secret_value)</span>
+<span class="line ref"><span class="ln">57</span>                    .build();</span>
+<span class="line ref"><span class="ln">58</span>            client.createSecret(request);</span>
+<span class="line ref"><span class="ln">59</span>            return true;</span>
+<span class="line ref"><span class="ln">60</span>        }</span>
+<span class="line ref"><span class="ln">61</span>        catch ( Exception e )</span>
+<span class="line ref"><span class="ln">62</span>        {</span>
+<span class="line ref"><span class="ln">63</span>            LOGGER.error("Unable to create secret", e);</span>
+<span class="line ref"><span class="ln">64</span>            return false;</span>
+<span class="line"><span class="ln">65</span>        }</span>
+<span class="line"><span class="ln">66</span>    }</span>
+<span class="line"><span class="ln">67</span></span>
+<span class="line"><span class="ln">68</span>    @Override</span>
+<span class="line"><span class="ln">69</span>    public String readSecret( String secret_id, String default_value )</span></pre></figure>
+          <figure><figcaption><span>AWSSecretsManager.java</span><span>lines 84–112 · update outcome, references 89–106</span></figcaption><pre>
+<span class="line"><span class="ln">84</span>            return default_value;</span>
+<span class="line"><span class="ln">85</span>        }</span>
+<span class="line"><span class="ln">86</span>    }</span>
+<span class="line"><span class="ln">87</span></span>
+<span class="line"><span class="ln">88</span>    @Override</span>
+<span class="line ref"><span class="ln">89</span>    public boolean updateSecret( String secret_id, String secret_value )</span>
+<span class="line ref"><span class="ln">90</span>    {</span>
+<span class="line ref"><span class="ln">91</span>        requireSecretId(secret_id);</span>
+<span class="line ref"><span class="ln">92</span>        Objects.requireNonNull(secret_value, "secret_value");</span>
+<span class="line ref"><span class="ln">93</span></span>
+<span class="line ref"><span class="ln">94</span>        try</span>
+<span class="line ref"><span class="ln">95</span>        {</span>
+<span class="line ref"><span class="ln">96</span>            UpdateSecretRequest request = UpdateSecretRequest.builder()</span>
+<span class="line ref"><span class="ln">97</span>                    .secretId(secret_id)</span>
+<span class="line ref"><span class="ln">98</span>                    .secretString(secret_value)</span>
+<span class="line ref"><span class="ln">99</span>                    .build();</span>
+<span class="line ref"><span class="ln">100</span>            client.updateSecret(request);</span>
+<span class="line ref"><span class="ln">101</span>            return true;</span>
+<span class="line ref"><span class="ln">102</span>        }</span>
+<span class="line ref"><span class="ln">103</span>        catch ( Exception e )</span>
+<span class="line ref"><span class="ln">104</span>        {</span>
+<span class="line ref"><span class="ln">105</span>            LOGGER.error("Unable to update secret", e);</span>
+<span class="line ref"><span class="ln">106</span>            return false;</span>
+<span class="line"><span class="ln">107</span>        }</span>
+<span class="line"><span class="ln">108</span>    }</span>
+<span class="line"><span class="ln">109</span></span>
+<span class="line"><span class="ln">110</span>    @Override</span>
+<span class="line"><span class="ln">111</span>    public boolean removeSecret( String secret_id )</span>
+<span class="line"><span class="ln">112</span>    {</span></pre></figure>
+          <figure><figcaption><span>AWSSecretsManager.java</span><span>lines 106–132 · delete outcome, references 111–126</span></figcaption><pre>
+<span class="line"><span class="ln">106</span>            return false;</span>
+<span class="line"><span class="ln">107</span>        }</span>
+<span class="line"><span class="ln">108</span>    }</span>
+<span class="line"><span class="ln">109</span></span>
+<span class="line"><span class="ln">110</span>    @Override</span>
+<span class="line ref"><span class="ln">111</span>    public boolean removeSecret( String secret_id )</span>
+<span class="line ref"><span class="ln">112</span>    {</span>
+<span class="line ref"><span class="ln">113</span>        requireSecretId(secret_id);</span>
+<span class="line ref"><span class="ln">114</span></span>
+<span class="line ref"><span class="ln">115</span>        try</span>
+<span class="line ref"><span class="ln">116</span>        {</span>
+<span class="line ref"><span class="ln">117</span>            DeleteSecretRequest request = DeleteSecretRequest.builder()</span>
+<span class="line ref"><span class="ln">118</span>                    .secretId(secret_id)</span>
+<span class="line ref"><span class="ln">119</span>                    .build();</span>
+<span class="line ref"><span class="ln">120</span>            client.deleteSecret(request);</span>
+<span class="line ref"><span class="ln">121</span>            return true;</span>
+<span class="line ref"><span class="ln">122</span>        }</span>
+<span class="line ref"><span class="ln">123</span>        catch ( Exception e )</span>
+<span class="line ref"><span class="ln">124</span>        {</span>
+<span class="line ref"><span class="ln">125</span>            LOGGER.error("Unable to remove secret", e);</span>
+<span class="line ref"><span class="ln">126</span>            return false;</span>
+<span class="line"><span class="ln">127</span>        }</span>
+<span class="line"><span class="ln">128</span>    }</span>
+<span class="line"><span class="ln">129</span></span>
+<span class="line"><span class="ln">130</span>    private static void requireSecretId( String secret_id )</span>
+<span class="line"><span class="ln">131</span>    {</span>
+<span class="line"><span class="ln">132</span>        Objects.requireNonNull(secret_id, "secret_id");</span></pre></figure>
+        </div>
+      </section>
+
+      <section class="finding medium" id="issue-6">
+        <div class="finding-head"><span class="number">6</span><div><span class="severity">Medium</span><h3>The default AWS client has no ownership or close lifecycle</h3></div></div>
+        <div class="finding-body">
+          <p>The adapter can allocate its own closeable SDK client, but it is not <code>AutoCloseable</code> and cannot express whether it owns an injected client. The composition root suppresses resource warnings and provides no shutdown method.</p>
+          <div class="fix"><strong>Recommended remediation</strong>Track client ownership, implement <code>AutoCloseable</code>, and close owned clients from an environment shutdown hook. Do not close externally injected clients unless that ownership contract is explicit.</div>
+          <figure><figcaption><span>AWSSecretsManager.java</span><span>lines 20–48 · references 25–43</span></figcaption><pre>
+<span class="line"><span class="ln">20</span>public class AWSSecretsManager implements ISecrets</span>
+<span class="line"><span class="ln">21</span>{</span>
+<span class="line"><span class="ln">22</span>    private static final Logger LOGGER = LoggerFactory.getLogger(AWSSecretsManager.class);</span>
+<span class="line"><span class="ln">23</span>    private static final Region DEFAULT_REGION = Region.US_WEST_2;</span>
+<span class="line"><span class="ln">24</span></span>
+<span class="line ref"><span class="ln">25</span>    private final SecretsManagerClient client;</span>
+<span class="line"><span class="ln">26</span></span>
+<span class="line ref"><span class="ln">27</span>    public AWSSecretsManager()</span>
+<span class="line ref"><span class="ln">28</span>    {</span>
+<span class="line ref"><span class="ln">29</span>        this(createDefaultClient());</span>
+<span class="line ref"><span class="ln">30</span>    }</span>
+<span class="line"><span class="ln">31</span></span>
+<span class="line"><span class="ln">32</span>    /**</span>
+<span class="line"><span class="ln">33</span>     * Accepts a client so applications can select a region or endpoint and tests can</span>
+<span class="line"><span class="ln">34</span>     * use a substitute without changing secret-management behavior.</span>
+<span class="line"><span class="ln">35</span>     */</span>
+<span class="line ref"><span class="ln">36</span>    public AWSSecretsManager( SecretsManagerClient client )</span>
+<span class="line ref"><span class="ln">37</span>    {</span>
+<span class="line ref"><span class="ln">38</span>        this.client = Objects.requireNonNull(client, "client");</span>
+<span class="line ref"><span class="ln">39</span>    }</span>
+<span class="line"><span class="ln">40</span></span>
+<span class="line ref"><span class="ln">41</span>    public static SecretsManagerClient createDefaultClient()</span>
+<span class="line ref"><span class="ln">42</span>    {</span>
+<span class="line ref"><span class="ln">43</span>        return SecretsManagerClient.builder().region(DEFAULT_REGION).build();</span>
+<span class="line"><span class="ln">44</span>    }</span>
+<span class="line"><span class="ln">45</span></span>
+<span class="line"><span class="ln">46</span>    @Override</span>
+<span class="line"><span class="ln">47</span>    public boolean createSecret( String secret_id, String secret_value )</span>
+<span class="line"><span class="ln">48</span>    {</span></pre></figure>
+          <figure><figcaption><span>CloudExecutionEnvironment.java</span><span>lines 183–195 · reference 188</span></figcaption><pre>
+<span class="line"><span class="ln">183</span>     *</span>
+<span class="line"><span class="ln">184</span>     * @param default_id</span>
+<span class="line"><span class="ln">185</span>     *            A default application id in case the environment variable is not</span>
+<span class="line"><span class="ln">186</span>     *            set</span>
+<span class="line"><span class="ln">187</span>     */</span>
+<span class="line ref"><span class="ln">188</span>    @SuppressWarnings("resource")</span>
+<span class="line"><span class="ln">189</span>    public static void startup( ApplicationId application_id, ApplicationId application_sub_service_id, EnvironmentType env_type )</span>
+<span class="line"><span class="ln">190</span>    {</span>
+<span class="line"><span class="ln">191</span></span>
+<span class="line"><span class="ln">192</span>        if ( CURRENT != null )</span>
+<span class="line"><span class="ln">193</span>        {</span>
+<span class="line"><span class="ln">194</span>            throw new RuntimeException("Startup has already been called!");</span>
+<span class="line"><span class="ln">195</span>        }</span></pre></figure>
+        </div>
+      </section>
+
+      <section class="finding medium" id="issue-7">
+        <div class="finding-head"><span class="number">7</span><div><span class="severity">Medium</span><h3>Stub deletion semantics materially diverge from AWS</h3></div></div>
+        <div class="finding-body">
+          <p>The stub removes immediately and allows immediate recreation. The AWS adapter schedules deletion using the provider default recovery window; a scheduled secret cannot be read or normally recreated until restored or permanently deleted.</p>
+          <div class="fix"><strong>Recommended remediation</strong>Model a pending-deletion state in the fake, or explicitly label it a simplified fake and cover recovery-state workflows with a higher-fidelity integration test.</div>
+          <figure><figcaption><span>SecretsStub.java</span><span>lines 31–44 · references 36–39</span></figcaption><pre>
+<span class="line"><span class="ln">31</span>        validate(secret_id, secret_value);</span>
+<span class="line"><span class="ln">32</span>        return secrets.replace(secret_id, secret_value) != null;</span>
+<span class="line"><span class="ln">33</span>    }</span>
+<span class="line"><span class="ln">34</span></span>
+<span class="line"><span class="ln">35</span>    @Override</span>
+<span class="line ref"><span class="ln">36</span>    public boolean removeSecret( String secret_id )</span>
+<span class="line ref"><span class="ln">37</span>    {</span>
+<span class="line ref"><span class="ln">38</span>        validateSecretId(secret_id);</span>
+<span class="line ref"><span class="ln">39</span>        return secrets.remove(secret_id) != null;</span>
+<span class="line"><span class="ln">40</span>    }</span>
+<span class="line"><span class="ln">41</span></span>
+<span class="line"><span class="ln">42</span>    private static void validate( String secret_id, String secret_value )</span>
+<span class="line"><span class="ln">43</span>    {</span>
+<span class="line"><span class="ln">44</span>        validateSecretId(secret_id);</span></pre></figure>
+          <figure><figcaption><span>AWSSecretsManager.java</span><span>lines 112–126 · references 117–121</span></figcaption><pre>
+<span class="line"><span class="ln">112</span>    {</span>
+<span class="line"><span class="ln">113</span>        requireSecretId(secret_id);</span>
+<span class="line"><span class="ln">114</span></span>
+<span class="line"><span class="ln">115</span>        try</span>
+<span class="line"><span class="ln">116</span>        {</span>
+<span class="line ref"><span class="ln">117</span>            DeleteSecretRequest request = DeleteSecretRequest.builder()</span>
+<span class="line ref"><span class="ln">118</span>                    .secretId(secret_id)</span>
+<span class="line ref"><span class="ln">119</span>                    .build();</span>
+<span class="line ref"><span class="ln">120</span>            client.deleteSecret(request);</span>
+<span class="line ref"><span class="ln">121</span>            return true;</span>
+<span class="line"><span class="ln">122</span>        }</span>
+<span class="line"><span class="ln">123</span>        catch ( Exception e )</span>
+<span class="line"><span class="ln">124</span>        {</span>
+<span class="line"><span class="ln">125</span>            LOGGER.error("Unable to remove secret", e);</span>
+<span class="line"><span class="ln">126</span>            return false;</span></pre></figure>
+        </div>
+      </section>
+
+      <section class="finding medium" id="issue-8">
+        <div class="finding-head"><span class="number">8</span><div><span class="severity">Medium · expanded analysis</span><h3>The global stub can leak secret state between test classes</h3></div></div>
+        <div class="finding-body">
+          <p>This is an interaction defect across four individually reasonable choices: <code>CURRENT</code> is static, startup is allowed only once, STUB installs one mutable <code>SecretsStub</code>, and the common test base catches subsequent startup exceptions. The result is one process-wide secret map for every test class that accesses the global execution environment.</p>
+          <div class="deep-dive">
+            <h4>How the leak occurs</h4>
+            <div class="flow"><div>First <code>StubTest</code> subclass calls startup</div><div><code>CURRENT</code> receives one <code>SecretsStub</code></div><div>Later subclasses catch “startup already called”</div><div>All classes keep using the original mutable map</div></div>
+            <ul>
+              <li><strong>Order dependence:</strong> a test creating <code>adrocket/api-key</code> can cause a later create test to return <code>false</code>, or make a missing-secret test unexpectedly find data.</li>
+              <li><strong>Cross-class contamination:</strong> JUnit creates test instances, but the secret state lives behind a static process singleton and therefore outlives those instances.</li>
+              <li><strong>The current unit test does not exercise the risky path:</strong> <code>SecretsStubTest</code> constructs a fresh stub directly. It never accesses <code>CloudExecutionEnvironment.getSimpleCurrent()</code>.</li>
+              <li><strong>Parallel execution magnifies the problem:</strong> <code>ConcurrentHashMap</code> prevents structural corruption, not semantic interference between tests sharing identifiers.</li>
+              <li><strong>The catch is overly broad:</strong> <code>StubTest</code> treats every startup <code>RuntimeException</code> as ignorable, which can conceal initialization failures beyond the expected “already started” condition.</li>
+            </ul>
+          </div>
+          <div class="fix"><strong>Recommended remediation</strong>Add an explicit test-only reset/replace hook for the environment or inject a fresh <code>ISecrets</code> per test. Alternatively, give <code>SecretsStub</code> a controlled <code>clear()</code>/seed lifecycle and call it in setup/teardown. Test the exact global access path and stop swallowing unrelated startup exceptions.</div>
+
+          <figure><figcaption><span>CloudExecutionEnvironment.java</span><span>lines 39–49 · reference 44</span></figcaption><pre>
+<span class="line"><span class="ln">39</span> *</span>
+<span class="line"><span class="ln">40</span> */</span>
+<span class="line"><span class="ln">41</span>public class CloudExecutionEnvironment</span>
+<span class="line"><span class="ln">42</span>{</span>
+<span class="line"><span class="ln">43</span>    private static Logger logger = LoggerFactory.getLogger(CloudExecutionEnvironment.class);</span>
+<span class="line ref"><span class="ln">44</span>    private static CloudExecutionEnvironment CURRENT;</span>
+<span class="line"><span class="ln">45</span></span>
+<span class="line"><span class="ln">46</span>    private ISearch search;</span>
+<span class="line"><span class="ln">47</span>    private IStorage storage;</span>
+<span class="line"><span class="ln">48</span>    private IQueue queue_service;</span>
+<span class="line"><span class="ln">49</span>    private ISignal signal_service;</span></pre></figure>
+
+          <figure><figcaption><span>CloudExecutionEnvironment.java</span><span>lines 254–264 · reference 259</span></figcaption><pre>
+<span class="line"><span class="ln">254</span>            CURRENT = new CloudExecutionEnvironment(new ElasticSearchRESTClient(), production_storage, new QueueRedis(APPLICATION_ID, redis_driver), new SignalRedis(APPLICATION_ID, redis_driver), getJimmutableSESClient(), new CacheRedis(APPLICATION_ID, redis_driver), new AWSSecretsManager());</span>
+<span class="line"><span class="ln">255</span>            break;</span>
+<span class="line"><span class="ln">256</span>        case STUB:</span>
+<span class="line"><span class="ln">257</span></span>
+<span class="line"><span class="ln">258</span>            checkOs();</span>
+<span class="line ref"><span class="ln">259</span>            CURRENT = new CloudExecutionEnvironment(new StubSearch(), new StubStorage(), new QueueStub(), new SignalStub(), new EmailStub(), new CacheStub(), new SecretsStub());</span>
+<span class="line"><span class="ln">260</span>            break;</span>
+<span class="line"><span class="ln">261</span></span>
+<span class="line"><span class="ln">262</span>        default:</span>
+<span class="line"><span class="ln">263</span></span>
+<span class="line"><span class="ln">264</span>            throw new RuntimeException(String.format("Unhandled EnvironmentType: %s! Add the environment to startup to handle it correctly.", env_type));</span></pre></figure>
+
+          <figure><figcaption><span>CloudExecutionEnvironment.java</span><span>lines 318–343 · references 323–325 and 336–338</span></figcaption><pre>
+<span class="line"><span class="ln">318</span>     * classes and throw Runtime Exceptions if their methods are called.</span>
+<span class="line"><span class="ln">319</span>     *</span>
+<span class="line"><span class="ln">320</span>     * @param application_id</span>
+<span class="line"><span class="ln">321</span>     *            The ApplicationId</span>
+<span class="line"><span class="ln">322</span>     */</span>
+<span class="line ref"><span class="ln">323</span>    public static void startupStubTest( ApplicationId application_id )</span>
+<span class="line ref"><span class="ln">324</span>    {</span>
+<span class="line ref"><span class="ln">325</span>        startup(application_id, new ApplicationId("stub"), EnvironmentType.STUB);</span>
+<span class="line"><span class="ln">326</span>    }</span>
+<span class="line"><span class="ln">327</span></span>
+<span class="line"><span class="ln">328</span>    /**</span>
+<span class="line"><span class="ln">329</span>     * Use this for running integration tests. Search, Storage, and Messaging are</span>
+<span class="line"><span class="ln">330</span>     * initialized to the Dev instances. Any local clients needed for Search,</span>
+<span class="line"><span class="ln">331</span>     * Storage or Messaging should be running.</span>
+<span class="line"><span class="ln">332</span>     *</span>
+<span class="line"><span class="ln">333</span>     * @param application_id</span>
+<span class="line"><span class="ln">334</span>     *            The ApplicationId</span>
+<span class="line"><span class="ln">335</span>     */</span>
+<span class="line ref"><span class="ln">336</span>    public static void startupIntegrationTest( ApplicationId application_id )</span>
+<span class="line ref"><span class="ln">337</span>    {</span>
+<span class="line ref"><span class="ln">338</span>        startup(application_id, new ApplicationId("integration"), EnvironmentType.DEV);</span>
+<span class="line"><span class="ln">339</span>    }</span>
+<span class="line"><span class="ln">340</span></span>
+<span class="line"><span class="ln">341</span>    /**</span>
+<span class="line"><span class="ln">342</span>     * Get the environment type from the system property JIMMUTABLE_ENV_TYPE. If it</span>
+<span class="line"><span class="ln">343</span>     * fails the default value is returned.</span></pre></figure>
+
+          <figure><figcaption><span>CloudExecutionEnvironment.java</span><span>lines 422–439 · reference 427–433</span></figcaption><pre>
+<span class="line"><span class="ln">422</span>     * Make sure your application calls startup first to setup the singleton. If</span>
+<span class="line"><span class="ln">423</span>     * CURRENT is not set the JVM will be terminated!</span>
+<span class="line"><span class="ln">424</span>     *</span>
+<span class="line"><span class="ln">425</span>     * @return the cloud execution environment</span>
+<span class="line"><span class="ln">426</span>     */</span>
+<span class="line ref"><span class="ln">427</span>    static public CloudExecutionEnvironment getSimpleCurrent()</span>
+<span class="line ref"><span class="ln">428</span>    {</span>
+<span class="line ref"><span class="ln">429</span>        if ( CURRENT == null )</span>
+<span class="line ref"><span class="ln">430</span>        {</span>
+<span class="line ref"><span class="ln">431</span>            throw new RuntimeException("The startup method was never called first to setup the singleton!");</span>
+<span class="line ref"><span class="ln">432</span>        }</span>
+<span class="line ref"><span class="ln">433</span>        return CURRENT;</span>
+<span class="line"><span class="ln">434</span>    }</span>
+<span class="line"><span class="ln">435</span></span>
+<span class="line"><span class="ln">436</span>    static public boolean hasStartupBeenCalled(){</span>
+<span class="line"><span class="ln">437</span>        return CURRENT != null;</span>
+<span class="line"><span class="ln">438</span>    }</span>
+<span class="line"><span class="ln">439</span>}</span></pre></figure>
+
+          <figure><figcaption><span>SecretsStub.java</span><span>lines 5–30 · references 10–18 and 22–25</span></figcaption><pre>
+<span class="line"><span class="ln">5</span>import java.util.concurrent.ConcurrentHashMap;</span>
+<span class="line"><span class="ln">6</span></span>
+<span class="line"><span class="ln">7</span>/**</span>
+<span class="line"><span class="ln">8</span> * In-memory secrets implementation intended for unit tests.</span>
+<span class="line"><span class="ln">9</span> */</span>
+<span class="line ref"><span class="ln">10</span>public class SecretsStub implements ISecrets</span>
+<span class="line ref"><span class="ln">11</span>{</span>
+<span class="line ref"><span class="ln">12</span>    private final Map&lt;String, String&gt; secrets = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="line"><span class="ln">13</span></span>
+<span class="line ref"><span class="ln">14</span>    @Override</span>
+<span class="line ref"><span class="ln">15</span>    public boolean createSecret( String secret_id, String secret_value )</span>
+<span class="line ref"><span class="ln">16</span>    {</span>
+<span class="line ref"><span class="ln">17</span>        validate(secret_id, secret_value);</span>
+<span class="line ref"><span class="ln">18</span>        return secrets.putIfAbsent(secret_id, secret_value) == null;</span>
+<span class="line"><span class="ln">19</span>    }</span>
+<span class="line"><span class="ln">20</span></span>
+<span class="line"><span class="ln">21</span>    @Override</span>
+<span class="line ref"><span class="ln">22</span>    public String readSecret( String secret_id, String default_value )</span>
+<span class="line ref"><span class="ln">23</span>    {</span>
+<span class="line ref"><span class="ln">24</span>        validateSecretId(secret_id);</span>
+<span class="line ref"><span class="ln">25</span>        return secrets.getOrDefault(secret_id, default_value);</span>
+<span class="line"><span class="ln">26</span>    }</span>
+<span class="line"><span class="ln">27</span></span>
+<span class="line"><span class="ln">28</span>    @Override</span>
+<span class="line"><span class="ln">29</span>    public boolean updateSecret( String secret_id, String secret_value )</span>
+<span class="line"><span class="ln">30</span>    {</span></pre></figure>
+
+          <figure><figcaption><span>StubTest.java</span><span>complete file, lines 1–22 · reference 10–19</span></figcaption><pre>
+<span class="line"><span class="ln">1</span>package org.jimmutable.cloud;</span>
+<span class="line"><span class="ln">2</span></span>
+<span class="line"><span class="ln">3</span>import org.jimmutable.cloud.ApplicationId;</span>
+<span class="line"><span class="ln">4</span>import org.jimmutable.cloud.CloudExecutionEnvironment;</span>
+<span class="line"><span class="ln">5</span>import org.junit.BeforeClass;</span>
+<span class="line"><span class="ln">6</span></span>
+<span class="line"><span class="ln">7</span>public abstract class StubTest</span>
+<span class="line"><span class="ln">8</span>{</span>
+<span class="line"><span class="ln">9</span></span>
+<span class="line ref"><span class="ln">10</span>    @BeforeClass</span>
+<span class="line ref"><span class="ln">11</span>    public static void setUp()</span>
+<span class="line ref"><span class="ln">12</span>    {</span>
+<span class="line ref"><span class="ln">13</span>        try</span>
+<span class="line ref"><span class="ln">14</span>        {</span>
+<span class="line ref"><span class="ln">15</span>            CloudExecutionEnvironment.startupStubTest(new ApplicationId("stub"));</span>
+<span class="line ref"><span class="ln">16</span>        } catch (RuntimeException e)</span>
+<span class="line ref"><span class="ln">17</span>        {</span>
+<span class="line ref"><span class="ln">18</span>            System.out.println(e);</span>
+<span class="line ref"><span class="ln">19</span>        }</span>
+<span class="line"><span class="ln">20</span>    }</span>
+<span class="line"><span class="ln">21</span></span>
+<span class="line"><span class="ln">22</span>}</span></pre></figure>
+
+          <figure><figcaption><span>SecretsStubTest.java</span><span>complete file, lines 1–26 · reference 12–24</span></figcaption><pre>
+<span class="line"><span class="ln">1</span>package org.jimmutable.cloud.secrets;</span>
+<span class="line"><span class="ln">2</span></span>
+<span class="line"><span class="ln">3</span>import static org.junit.Assert.assertEquals;</span>
+<span class="line"><span class="ln">4</span>import static org.junit.Assert.assertFalse;</span>
+<span class="line"><span class="ln">5</span>import static org.junit.Assert.assertTrue;</span>
+<span class="line"><span class="ln">6</span></span>
+<span class="line"><span class="ln">7</span>import org.junit.Test;</span>
+<span class="line"><span class="ln">8</span></span>
+<span class="line"><span class="ln">9</span>public class SecretsStubTest</span>
+<span class="line"><span class="ln">10</span>{</span>
+<span class="line"><span class="ln">11</span>    @Test</span>
+<span class="line ref"><span class="ln">12</span>    public void lifecycleMatchesSecretsContract()</span>
+<span class="line ref"><span class="ln">13</span>    {</span>
+<span class="line ref"><span class="ln">14</span>        ISecrets secrets = new SecretsStub();</span>
+<span class="line ref"><span class="ln">15</span></span>
+<span class="line ref"><span class="ln">16</span>        assertEquals("fallback", secrets.readSecret("adrocket/api-key", "fallback"));</span>
+<span class="line ref"><span class="ln">17</span>        assertTrue(secrets.createSecret("adrocket/api-key", "first"));</span>
+<span class="line ref"><span class="ln">18</span>        assertFalse(secrets.createSecret("adrocket/api-key", "duplicate"));</span>
+<span class="line ref"><span class="ln">19</span>        assertEquals("first", secrets.readSecret("adrocket/api-key", null));</span>
+<span class="line ref"><span class="ln">20</span>        assertTrue(secrets.updateSecret("adrocket/api-key", "second"));</span>
+<span class="line ref"><span class="ln">21</span>        assertFalse(secrets.updateSecret("missing", "value"));</span>
+<span class="line ref"><span class="ln">22</span>        assertEquals("second", secrets.readSecret("adrocket/api-key", null));</span>
+<span class="line ref"><span class="ln">23</span>        assertTrue(secrets.removeSecret("adrocket/api-key"));</span>
+<span class="line ref"><span class="ln">24</span>        assertFalse(secrets.removeSecret("adrocket/api-key"));</span>
+<span class="line"><span class="ln">25</span>    }</span>
+<span class="line"><span class="ln">26</span>}</span></pre></figure>
+        </div>
+      </section>
+
+      <section id="improvements">
+        <h2>Optional improvements</h2>
+        <div class="optional"><strong>Rotation-aware caching or read-once injection.</strong> Uncached retrieval adds latency, cost, throttling exposure, and a dependency on Secrets Manager availability. Prefer bounded caching or resolve required secrets once during startup, while preserving rotation behavior.</div>
+        <div class="optional"><strong>Broader negative-path tests.</strong> Add service-specific exceptions, region selection, ARN/name validation, owned-client closing, composition-root wiring, shared-stub isolation, and pending-deletion scenarios. The existing seven tests prove request construction but not these operational boundaries.</div>
+        <div class="optional"><strong>Review exception logging.</strong> Lines 63, 83, 105, and 125 log raw exception objects. No explicit secret value is interpolated, but confirm SDK/custom-client exception messages cannot carry sensitive request context.</div>
+        <div class="optional"><strong>Use the imported AWS BOM consistently.</strong> The dependency-management BOM already fixes SDK version 2.31.55, so the explicit module version is redundant and can drift during future upgrades.</div>
+        <figure><figcaption><span>pom.xml</span><span>lines 55–72 · AWS BOM context</span></figcaption><pre>
+<span class="line"><span class="ln">55</span>        &lt;log4j.version&gt;2.15.0&lt;/log4j.version&gt;</span>
+<span class="line"><span class="ln">56</span>        &lt;skipITs&gt;true&lt;/skipITs&gt;</span>
+<span class="line"><span class="ln">57</span>        &lt;jetty.version&gt;9.4.38.v20210224&lt;/jetty.version&gt;</span>
+<span class="line"><span class="ln">58</span>    &lt;/properties&gt;</span>
+<span class="line"><span class="ln">59</span></span>
+<span class="line ref"><span class="ln">60</span>    &lt;dependencyManagement&gt;</span>
+<span class="line ref"><span class="ln">61</span>        &lt;dependencies&gt;</span>
+<span class="line ref"><span class="ln">62</span>            &lt;dependency&gt;</span>
+<span class="line ref"><span class="ln">63</span>                &lt;groupId&gt;software.amazon.awssdk&lt;/groupId&gt;</span>
+<span class="line ref"><span class="ln">64</span>                &lt;artifactId&gt;bom&lt;/artifactId&gt;</span>
+<span class="line ref"><span class="ln">65</span>                &lt;version&gt;2.31.55&lt;/version&gt;</span>
+<span class="line ref"><span class="ln">66</span>                &lt;type&gt;pom&lt;/type&gt;</span>
+<span class="line ref"><span class="ln">67</span>                &lt;scope&gt;import&lt;/scope&gt;</span>
+<span class="line ref"><span class="ln">68</span>            &lt;/dependency&gt;</span>
+<span class="line"><span class="ln">69</span>        &lt;/dependencies&gt;</span>
+<span class="line"><span class="ln">70</span>    &lt;/dependencyManagement&gt;</span>
+<span class="line"><span class="ln">71</span></span>
+<span class="line"><span class="ln">72</span>    &lt;dependencies&gt;</span></pre></figure>
+        <figure><figcaption><span>pom.xml</span><span>lines 253–263 · reference 258</span></figcaption><pre>
+<span class="line"><span class="ln">253</span>            &lt;version&gt;2.31.55&lt;/version&gt;</span>
+<span class="line"><span class="ln">254</span>        &lt;/dependency&gt;</span>
+<span class="line"><span class="ln">255</span>        &lt;dependency&gt;</span>
+<span class="line"><span class="ln">256</span>            &lt;groupId&gt;software.amazon.awssdk&lt;/groupId&gt;</span>
+<span class="line"><span class="ln">257</span>            &lt;artifactId&gt;secretsmanager&lt;/artifactId&gt;</span>
+<span class="line ref"><span class="ln">258</span>            &lt;version&gt;2.31.55&lt;/version&gt;</span>
+<span class="line"><span class="ln">259</span>        &lt;/dependency&gt;</span>
+<span class="line"><span class="ln">260</span>        &lt;dependency&gt;</span>
+<span class="line"><span class="ln">261</span>            &lt;groupId&gt;software.amazon.awssdk&lt;/groupId&gt;</span>
+<span class="line"><span class="ln">262</span>            &lt;artifactId&gt;sdk-core&lt;/artifactId&gt;</span>
+<span class="line"><span class="ln">263</span>            &lt;version&gt;2.31.55&lt;/version&gt;</span></pre></figure>
+      </section>
+
+      <section id="confirmed">
+        <h2>Confirmed-correct behavior</h2>
+        <div class="verified"><strong>No direct secret-value logging found.</strong> Log statements use fixed operation messages and do not interpolate <code>secret_value</code>.</div>
+        <div class="verified"><strong>Recoverable deletion is correctly requested.</strong> Neither forced deletion nor a custom recovery window is set, so AWS applies its service default recovery window.</div>
+        <div class="verified"><strong>Core request mappings are correct.</strong> String values map to <code>secretString</code>, existing-secret operations use <code>secretId</code>, and reads use the current version by default.</div>
+        <p class="sources">Operational references: AWS Secrets Manager <a href="https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_DeleteSecret.html">DeleteSecret API</a>; AWS SDK for Java <a href="https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/best-practices.html">client lifecycle best practices</a>; AWS Secrets Manager <a href="https://docs.aws.amazon.com/secretsmanager/latest/userguide/retrieving-secrets_cache-java.html">Java client-side caching guidance</a>.</p>
+      </section>
+
+      <footer>This artifact preserves the original review evidence and records subsequent remediation status. No Git commit was created.</footer>
+    </article>
+  </div>
+</body>
+</html>

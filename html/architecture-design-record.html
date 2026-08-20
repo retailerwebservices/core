@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Architectural Design Record for the jimmutable-core repository">
+  <title>ADR-001 - jimmutable-core architecture</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --background: color-mix(in srgb, Canvas 96%, AccentColor 4%);
+      --foreground: color-mix(in srgb, CanvasText 88%, Canvas 12%);
+      --card: color-mix(in srgb, Canvas 92%, CanvasText 8%);
+      --muted: color-mix(in srgb, Canvas 87%, CanvasText 13%);
+      --muted-foreground: color-mix(in srgb, CanvasText 62%, Canvas 38%);
+      --border: color-mix(in srgb, CanvasText 20%, Canvas);
+      --viz-series-1: AccentColor;
+      --viz-series-2: LinkText;
+      --viz-series-3: Mark;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color-scheme: dark;
+        --background: color-mix(in srgb, Canvas 84%, CanvasText 16%);
+        --foreground: color-mix(in srgb, CanvasText 90%, Canvas 10%);
+        --card: color-mix(in srgb, Canvas 76%, CanvasText 24%);
+        --muted: color-mix(in srgb, Canvas 72%, CanvasText 28%);
+        --muted-foreground: color-mix(in srgb, CanvasText 68%, Canvas 32%);
+        --border: color-mix(in srgb, CanvasText 32%, Canvas);
+      }
+    }
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--foreground);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+<style>
+  #jic-adr {
+    --adr-surface: color-mix(in srgb, var(--card, Canvas) 96%, var(--foreground, CanvasText) 4%);
+    --adr-soft: color-mix(in srgb, var(--muted, Canvas) 82%, transparent);
+    --adr-line: var(--border, color-mix(in srgb, CanvasText 22%, Canvas));
+    --adr-ink: var(--foreground, CanvasText);
+    --adr-muted: var(--muted-foreground, GrayText);
+    --adr-series-1: var(--viz-series-1, AccentColor);
+    --adr-series-2: var(--viz-series-2, LinkText);
+    --adr-series-3: var(--viz-series-3, Mark);
+    color: var(--adr-ink);
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+  #jic-adr * { box-sizing: border-box; }
+  #jic-adr .adr-hero {
+    padding: clamp(1.25rem, 3vw, 2.75rem) 0 1.5rem;
+    border-bottom: 1px solid var(--adr-line);
+  }
+  #jic-adr .eyebrow,
+  #jic-adr .diagram-kicker {
+    margin: 0 0 .45rem;
+    color: var(--adr-muted);
+    font-size: .78rem;
+    font-weight: 500;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  #jic-adr h1 { margin: 0; max-width: 860px; font-size: clamp(2rem, 5vw, 4.25rem); line-height: 1.02; letter-spacing: -.045em; }
+  #jic-adr h2 { margin: 2.6rem 0 .8rem; font-size: clamp(1.35rem, 2.5vw, 2rem); line-height: 1.15; letter-spacing: -.025em; }
+  #jic-adr h3 { margin: 1.5rem 0 .55rem; font-size: 1.05rem; }
+  #jic-adr p { margin: .65rem 0; line-height: 1.68; }
+  #jic-adr code { font-size: .92em; }
+  #jic-adr .lede { max-width: 850px; margin-top: 1rem; color: var(--adr-muted); font-size: 1.05rem; }
+  #jic-adr .meta { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.25rem; }
+  #jic-adr .meta span,
+  #jic-adr .tag {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.8rem;
+    padding: .25rem .65rem;
+    border: 1px solid var(--adr-line);
+    border-radius: 999px;
+    background: var(--adr-soft);
+    font-size: .78rem;
+  }
+  #jic-adr .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 3.5rem); }
+  #jic-adr .toc { position: sticky; top: 1rem; align-self: start; padding-top: 2rem; }
+  #jic-adr .toc strong { display: block; margin-bottom: .65rem; font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; }
+  #jic-adr .toc a { display: block; padding: .28rem 0; color: var(--adr-muted); text-decoration: none; font-size: .88rem; }
+  #jic-adr .toc a:hover { color: var(--adr-ink); text-decoration: underline; }
+  #jic-adr .content { min-width: 0; }
+  #jic-adr .decision {
+    margin: 1.5rem 0;
+    padding: 1.15rem 1.2rem;
+    border-left: 4px solid var(--adr-series-1);
+    background: var(--adr-soft);
+  }
+  #jic-adr .decision strong { display: block; margin-bottom: .35rem; }
+  #jic-adr .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .75rem; margin: 1.25rem 0; }
+  #jic-adr .stat { padding: .9rem; border-top: 2px solid var(--adr-line); }
+  #jic-adr .stat b { display: block; font-size: 1.5rem; font-weight: 500; }
+  #jic-adr .stat span { color: var(--adr-muted); font-size: .78rem; }
+  #jic-adr ul,
+  #jic-adr ol { padding-left: 1.25rem; line-height: 1.62; }
+  #jic-adr li + li { margin-top: .35rem; }
+  #jic-adr .diagram { margin: 1.25rem 0 2rem; }
+  #jic-adr .diagram-head { display: flex; justify-content: space-between; gap: 1rem; align-items: end; margin-bottom: .55rem; }
+  #jic-adr .diagram-head h3 { margin: 0; }
+  #jic-adr .diagram-head p { margin: 0; color: var(--adr-muted); font-size: .82rem; }
+  #jic-adr .diagram svg { display: block; width: 100%; height: auto; color: var(--adr-ink); background: transparent; }
+  #jic-adr .diagram .node { fill: var(--adr-surface); stroke: var(--adr-line); stroke-width: 1.3; }
+  #jic-adr .diagram .node-core { fill: color-mix(in srgb, var(--adr-series-1) 12%, var(--adr-surface)); }
+  #jic-adr .diagram .node-cloud { fill: color-mix(in srgb, var(--adr-series-2) 12%, var(--adr-surface)); }
+  #jic-adr .diagram .node-adapter { fill: color-mix(in srgb, var(--adr-series-3) 10%, var(--adr-surface)); }
+  #jic-adr .diagram .edge { fill: none; stroke: var(--adr-muted); stroke-width: 1.5; }
+  #jic-adr .diagram .edge-dashed { stroke-dasharray: 7 5; }
+  #jic-adr .diagram .divider { stroke: var(--adr-line); stroke-width: 1; }
+  #jic-adr .diagram text { fill: currentColor; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px; }
+  #jic-adr .diagram .type { font-size: 14px; font-weight: 500; }
+  #jic-adr .diagram .stereo,
+  #jic-adr .diagram .edge-label { fill: var(--adr-muted); font-size: 11px; }
+  #jic-adr .diagram .flow-label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 12px; }
+  #jic-adr .legend { display: flex; flex-wrap: wrap; gap: .9rem; margin-top: .6rem; color: var(--adr-muted); font-size: .76rem; }
+  #jic-adr .legend span { display: inline-flex; align-items: center; gap: .35rem; }
+  #jic-adr .legend i { display: inline-block; width: 28px; border-top: 2px solid var(--adr-muted); }
+  #jic-adr .legend i.dashed { border-top-style: dashed; }
+  #jic-adr .legend i.dot { width: 8px; height: 8px; border: 0; border-radius: 50%; background: var(--adr-series-1); }
+  #jic-adr .table-wrap { width: 100%; overflow-x: auto; margin: 1rem 0; }
+  #jic-adr table { width: 100%; border-collapse: collapse; font-size: .86rem; }
+  #jic-adr th,
+  #jic-adr td { padding: .7rem .65rem; text-align: left; vertical-align: top; border-bottom: 1px solid var(--adr-line); }
+  #jic-adr th { font-weight: 500; color: var(--adr-muted); }
+  #jic-adr .matrix td:first-child { white-space: nowrap; font-weight: 500; }
+  #jic-adr .risk-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; margin: 1rem 0; }
+  #jic-adr .risk { padding: .95rem 1rem; border-top: 2px solid var(--adr-line); background: var(--adr-soft); }
+  #jic-adr .risk h3 { margin: 0 0 .35rem; }
+  #jic-adr .risk p { margin: 0; color: var(--adr-muted); font-size: .86rem; line-height: 1.55; }
+  #jic-adr .evidence { margin: 1.5rem 0; border-top: 1px solid var(--adr-line); border-bottom: 1px solid var(--adr-line); }
+  #jic-adr details { padding: .8rem 0; }
+  #jic-adr details + details { border-top: 1px solid var(--adr-line); }
+  #jic-adr summary { cursor: pointer; font-weight: 500; }
+  #jic-adr .path-list { margin: .65rem 0 0; color: var(--adr-muted); font-size: .82rem; }
+  #jic-adr footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--adr-line); color: var(--adr-muted); font-size: .78rem; }
+  @media (max-width: 820px) {
+    #jic-adr .layout { grid-template-columns: 1fr; }
+    #jic-adr .toc { position: static; padding-top: 1rem; columns: 2; }
+    #jic-adr .toc strong { column-span: all; }
+    #jic-adr .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 540px) {
+    #jic-adr { padding: .75rem; }
+    #jic-adr .toc { columns: 1; }
+    #jic-adr .risk-grid { grid-template-columns: 1fr; }
+    #jic-adr .diagram-head { align-items: start; flex-direction: column; }
+  }
+  @media print {
+    #jic-adr { max-width: none; padding: 0; }
+    #jic-adr .layout { display: block; }
+    #jic-adr .toc { display: none; }
+    #jic-adr .diagram,
+    #jic-adr .risk { break-inside: avoid; }
+    #jic-adr a { color: inherit; }
+  }
+</style>
+
+<main id="jic-adr">
+  <header class="adr-hero">
+    <p class="eyebrow">ADR-001 · Architecture baseline</p>
+    <h1>jimmutable-core architectural design record</h1>
+    <p class="lede">A source-derived record of the repository’s current architecture: an immutable domain-object and serialization kernel, extended by a cloud integration layer with environment-selected adapters for storage, search, Redis messaging/cache, and email.</p>
+    <div class="meta" aria-label="Document metadata">
+      <span>Status: Accepted — existing system</span>
+      <span>Recorded: 2026-07-14</span>
+      <span>Scope: repository HEAD 282b8bef</span>
+      <span>Target runtime: Java 17</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="toc" aria-label="Architectural record sections">
+      <strong>Contents</strong>
+      <a href="#decision">Decision</a>
+      <a href="#context">Context &amp; drivers</a>
+      <a href="#boundaries">System boundaries</a>
+      <a href="#core-model">Core class model</a>
+      <a href="#serialization">Serialization lifecycle</a>
+      <a href="#cloud-runtime">Cloud runtime</a>
+      <a href="#packages">Package map</a>
+      <a href="#consequences">Consequences</a>
+      <a href="#risks">Risks &amp; debt</a>
+      <a href="#guardrails">Guardrails</a>
+      <a href="#evidence">Evidence</a>
+    </nav>
+
+    <article class="content">
+      <section id="decision">
+        <h2>Decision</h2>
+        <div class="decision">
+          <strong>Preserve a two-layer library architecture.</strong>
+          The <code>core</code> JAR owns deterministic domain objects, validation, freezing, field containers, and explicit JSON/XML serialization. The <code>cloud</code> JAR depends on that model and supplies application-facing ports plus environment-specific infrastructure adapters. Runtime selection is centralized in <code>CloudExecutionEnvironment</code>.
+        </div>
+        <p>Persisted and transmitted objects are modeled as <code>StandardObject</code> implementations. Immutable objects complete through a strict <em>normalize → validate → freeze</em> lifecycle. Serialization is deliberately explicit: each type writes its fields, reads from an <code>ObjectParseTree</code>, and is registered by a stable <code>TypeName</code>.</p>
+        <p>Cloud-capable domain objects opt into storage and search independently through <code>Storable</code> and <code>Indexable</code>. Infrastructure access is expressed through six ports—search, storage, queue, signal, email, and cache—with production/dev and stub implementations selected at startup.</p>
+
+        <div class="stats" aria-label="Repository size snapshot">
+          <div class="stat"><b>105</b><span>core production Java files</span></div>
+          <div class="stat"><b>145</b><span>cloud production Java files</span></div>
+          <div class="stat"><b>116</b><span>core + cloud test files</span></div>
+          <div class="stat"><b>31.5k</b><span>production Java lines, approximate</span></div>
+        </div>
+      </section>
+
+      <section id="context">
+        <h2>Context and decision drivers</h2>
+        <p>The repository supports Java applications that need value-like domain objects shared across persistence, search, servlet responses, queues, signals, and caches. Those objects must remain comparable and serializable without allowing collection aliases or iterators to mutate completed instances.</p>
+        <ul>
+          <li><strong>Deterministic data behavior:</strong> normalize and validate at object completion; make completed object graphs resistant to mutation.</li>
+          <li><strong>Stable wire/storage forms:</strong> support JSON, pretty JSON, XML, and in-memory token buffers using the same object contract.</li>
+          <li><strong>Infrastructure portability:</strong> keep application code pointed at small ports while switching local, AWS/Redis/Elasticsearch, or stub adapters by environment.</li>
+          <li><strong>Operational reuse:</strong> centralize startup, type registration, heartbeat, logging, object caching, and uncaught-exception handling.</li>
+          <li><strong>Testability:</strong> provide stub services for unit tests and name integration tests with the Maven Failsafe <code>*IT</code> convention.</li>
+        </ul>
+      </section>
+
+      <section id="boundaries">
+        <h2>System boundaries</h2>
+        <div class="diagram" role="group" aria-labelledby="module-title">
+          <div class="diagram-head">
+            <div><p class="diagram-kicker">Module view</p><h3 id="module-title">Repository and deployable boundaries</h3></div>
+            <p>Arrows point from consumer to dependency.</p>
+          </div>
+          <svg viewBox="0 0 1080 470" role="img" aria-labelledby="module-svg-title module-svg-desc">
+            <title id="module-svg-title">jimmutable repository module architecture</title>
+            <desc id="module-svg-desc">The root Maven aggregator contains core and cloud. Cloud depends on a released core artifact. Both inherit an external RWS parent. Archived and demo areas are outside the active reactor.</desc>
+            <defs>
+              <marker id="module-arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--adr-muted)"/></marker>
+            </defs>
+            <path class="edge" marker-end="url(#module-arrow)" d="M530 105 L330 175"/>
+            <path class="edge" marker-end="url(#module-arrow)" d="M550 105 L755 175"/>
+            <path class="edge" marker-end="url(#module-arrow)" d="M740 280 C650 320 460 320 350 280"/>
+            <path class="edge edge-dashed" marker-end="url(#module-arrow)" d="M300 175 L245 105"/>
+            <path class="edge edge-dashed" marker-end="url(#module-arrow)" d="M780 175 L835 105"/>
+
+            <rect class="node" x="400" y="25" width="280" height="80" rx="10"/>
+            <text class="stereo" x="540" y="49" text-anchor="middle">&lt;&lt;Maven aggregator&gt;&gt;</text>
+            <text class="type" x="540" y="72" text-anchor="middle">org.jimmutable:parent</text>
+            <text x="540" y="92" text-anchor="middle">modules: core, cloud</text>
+
+            <rect class="node-core" x="125" y="175" width="310" height="105" rx="10" stroke="var(--adr-line)"/>
+            <text class="stereo" x="280" y="200" text-anchor="middle">&lt;&lt;JAR · domain kernel&gt;&gt;</text>
+            <text class="type" x="280" y="224" text-anchor="middle">org.jimmutable:core</text>
+            <line class="divider" x1="125" y1="238" x2="435" y2="238"/>
+            <text x="145" y="260">objects · fields · serialization · threading</text>
+
+            <rect class="node-cloud" x="645" y="175" width="310" height="105" rx="10" stroke="var(--adr-line)"/>
+            <text class="stereo" x="800" y="200" text-anchor="middle">&lt;&lt;JAR · integration layer&gt;&gt;</text>
+            <text class="type" x="800" y="224" text-anchor="middle">org.jimmutable:cloud</text>
+            <line class="divider" x1="645" y1="238" x2="955" y2="238"/>
+            <text x="666" y="260">storage · search · cache · HTTP · messaging</text>
+
+            <text class="edge-label" x="540" y="309" text-anchor="middle">declares dependency on core 0.0.18</text>
+
+            <rect class="node" x="35" y="25" width="280" height="80" rx="10"/>
+            <text class="stereo" x="175" y="49" text-anchor="middle">&lt;&lt;external parent&gt;&gt;</text>
+            <text class="type" x="175" y="72" text-anchor="middle">com.rws:rws-parent:0.0.6</text>
+            <text x="175" y="92" text-anchor="middle">release, test, repository policy</text>
+
+            <rect class="node" x="765" y="25" width="280" height="80" rx="10"/>
+            <text class="stereo" x="905" y="49" text-anchor="middle">&lt;&lt;external parent&gt;&gt;</text>
+            <text class="type" x="905" y="72" text-anchor="middle">com.rws:rws-parent:0.0.6</text>
+            <text x="905" y="92" text-anchor="middle">relativePath disabled</text>
+
+            <rect class="node" x="85" y="365" width="270" height="72" rx="10"/>
+            <text class="type" x="220" y="395" text-anchor="middle">archived/</text>
+            <text x="220" y="418" text-anchor="middle">legacy AWS, GCloud, App Engine</text>
+            <rect class="node" x="405" y="365" width="270" height="72" rx="10"/>
+            <text class="type" x="540" y="395" text-anchor="middle">aws/</text>
+            <text x="540" y="418" text-anchor="middle">single code-review demo class</text>
+            <rect class="node" x="725" y="365" width="270" height="72" rx="10"/>
+            <text class="type" x="860" y="395" text-anchor="middle">html/</text>
+            <text x="860" y="418" text-anchor="middle">static prototypes and this record</text>
+          </svg>
+        </div>
+        <p><code>core</code> and <code>cloud</code> are the active reactor modules. <code>archived/</code>, <code>aws/</code>, and the existing HTML prototype are not declared by the root aggregator and should not be treated as production dependencies.</p>
+      </section>
+
+      <section id="core-model">
+        <h2>Core class model</h2>
+        <p>The central abstraction is behavioral rather than annotation-driven. A domain type implements its own comparison, normalization, validation, type name, field writer, and parse-tree constructor. Immutability is applied at the end of construction and propagated into collection wrappers.</p>
+        <div class="diagram" role="group" aria-labelledby="core-title">
+          <div class="diagram-head">
+            <div><p class="diagram-kicker">High-level class diagram</p><h3 id="core-title">Domain object, field, and serialization hierarchy</h3></div>
+            <p>Selected classes only; methods show architectural contracts.</p>
+          </div>
+          <svg viewBox="0 0 1120 720" role="img" aria-labelledby="core-svg-title core-svg-desc">
+            <title id="core-svg-title">Core high-level class diagram</title>
+            <desc id="core-svg-desc">StandardObject implements StandardWritable. StandardImmutableObject extends it, and Stringable and deck types specialize it. Field collections and maps implement Field. ObjectWriter serializes writable objects, while Parser creates an ObjectParseTree used for registered type reconstruction.</desc>
+            <defs>
+              <marker id="core-triangle" markerWidth="12" markerHeight="12" refX="10" refY="5" orient="auto"><path d="M0,0 L0,10 L10,5 z" fill="var(--adr-surface)" stroke="var(--adr-muted)"/></marker>
+              <marker id="core-arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--adr-muted)"/></marker>
+            </defs>
+
+            <path class="edge edge-dashed" marker-end="url(#core-triangle)" d="M360 170 L360 115"/>
+            <path class="edge" marker-end="url(#core-triangle)" d="M360 295 L360 250"/>
+            <path class="edge" marker-end="url(#core-triangle)" d="M220 420 L320 345"/>
+            <path class="edge" marker-end="url(#core-triangle)" d="M485 420 L405 345"/>
+            <path class="edge edge-dashed" marker-end="url(#core-triangle)" d="M810 285 L810 235"/>
+            <path class="edge edge-dashed" marker-end="url(#core-triangle)" d="M965 285 L875 235"/>
+            <path class="edge" marker-end="url(#core-arrow)" d="M505 105 C600 105 610 105 665 105"/>
+            <path class="edge" marker-end="url(#core-arrow)" d="M760 540 C620 540 590 380 500 220"/>
+            <path class="edge" marker-end="url(#core-arrow)" d="M915 540 L915 365"/>
+            <path class="edge" marker-end="url(#core-arrow)" d="M760 600 C620 660 470 640 400 600"/>
+
+            <rect class="node-core" x="220" y="35" width="285" height="80" rx="9" stroke="var(--adr-line)"/>
+            <text class="stereo" x="362" y="58" text-anchor="middle">&lt;&lt;interface&gt;&gt;</text>
+            <text class="type" x="362" y="79" text-anchor="middle">StandardWritable</text>
+            <line class="divider" x1="220" y1="89" x2="505" y2="89"/>
+            <text x="235" y="107">+ getTypeName() · + write(ObjectWriter)</text>
+
+            <rect class="node-core" x="205" y="170" width="310" height="80" rx="9" stroke="var(--adr-line)"/>
+            <text class="stereo" x="360" y="191" text-anchor="middle">&lt;&lt;abstract&gt;&gt;</text>
+            <text class="type" x="360" y="212" text-anchor="middle">StandardObject&lt;T&gt;</text>
+            <line class="divider" x1="205" y1="222" x2="515" y2="222"/>
+            <text x="220" y="241">+ normalize() · validate() · complete()</text>
+
+            <rect class="node-core" x="205" y="295" width="310" height="80" rx="9" stroke="var(--adr-line)"/>
+            <text class="stereo" x="360" y="316" text-anchor="middle">&lt;&lt;abstract&gt;&gt;</text>
+            <text class="type" x="360" y="337" text-anchor="middle">StandardImmutableObject&lt;T&gt;</text>
+            <line class="divider" x1="205" y1="347" x2="515" y2="347"/>
+            <text x="220" y="366">- is_complete · + freeze() · + assertNotComplete()</text>
+
+            <rect class="node" x="70" y="420" width="285" height="78" rx="9"/>
+            <text class="stereo" x="212" y="442" text-anchor="middle">&lt;&lt;abstract value scalar&gt;&gt;</text>
+            <text class="type" x="212" y="465" text-anchor="middle">Stringable</text>
+            <text x="212" y="486" text-anchor="middle">string-backed IDs and value objects</text>
+
+            <rect class="node" x="400" y="420" width="285" height="78" rx="9"/>
+            <text class="stereo" x="542" y="442" text-anchor="middle">&lt;&lt;abstract collection value&gt;&gt;</text>
+            <text class="type" x="542" y="465" text-anchor="middle">StandardImmutableDeck&lt;T,E&gt;</text>
+            <text x="542" y="486" text-anchor="middle">list · set · map specializations</text>
+
+            <rect class="node" x="665" y="35" width="270" height="105" rx="9"/>
+            <text class="type" x="800" y="62" text-anchor="middle">ObjectWriter</text>
+            <line class="divider" x1="665" y1="74" x2="935" y2="74"/>
+            <text x="681" y="95">+ writeObject / writeCollection / writeMap</text>
+            <text x="681" y="117">+ serialize(Format, Object)</text>
+
+            <rect class="node" x="690" y="180" width="240" height="55" rx="9"/>
+            <text class="stereo" x="810" y="201" text-anchor="middle">&lt;&lt;interface&gt;&gt;</text>
+            <text class="type" x="810" y="222" text-anchor="middle">Field</text>
+
+            <rect class="node" x="655" y="285" width="300" height="80" rx="9"/>
+            <text class="stereo" x="805" y="306" text-anchor="middle">&lt;&lt;abstract wrappers&gt;&gt;</text>
+            <text class="type" x="805" y="328" text-anchor="middle">FieldCollection&lt;E&gt; · FieldMap&lt;K,V&gt;</text>
+            <line class="divider" x1="655" y1="338" x2="955" y2="338"/>
+            <text x="670" y="357">+ freeze() · + assertNotFrozen()</text>
+
+            <rect class="node" x="760" y="510" width="310" height="105" rx="9"/>
+            <text class="type" x="915" y="537" text-anchor="middle">ObjectParseTree</text>
+            <line class="divider" x1="760" y1="550" x2="1070" y2="550"/>
+            <text x="776" y="572">+ getObject / getCollection / getMap</text>
+            <text x="776" y="594">+ registerTypeName(Class) · deserialize()</text>
+
+            <rect class="node" x="75" y="555" width="270" height="72" rx="9"/>
+            <text class="type" x="210" y="583" text-anchor="middle">JimmutableBuilder</text>
+            <text x="210" y="607" text-anchor="middle">edits a parse tree, then create()</text>
+            <rect class="node" x="405" y="555" width="245" height="72" rx="9"/>
+            <text class="type" x="527" y="583" text-anchor="middle">Parser</text>
+            <text x="527" y="607" text-anchor="middle">JSON / XML / TokenBuffer → tree</text>
+          </svg>
+          <div class="legend" aria-label="Class diagram legend">
+            <span><i></i> inheritance or dependency</span>
+            <span><i class="dashed"></i> interface realization</span>
+            <span><i class="dot"></i> core lifecycle types</span>
+          </div>
+        </div>
+        <h3>Core invariants</h3>
+        <ul>
+          <li><code>complete()</code> is a one-way boundary for immutable objects: normalize, validate, freeze, then mark complete.</li>
+          <li><code>FieldCollection</code> and <code>FieldMap</code> guard every mutating path, including iterator mutation; null collection elements are skipped.</li>
+          <li>A completed immutable object returns itself from <code>deepClone()</code>; incomplete objects clone through token-buffer serialization.</li>
+          <li>Serialized object identity is a stable, simple <code>TypeName</code>, not a Java fully qualified class name.</li>
+          <li>Deserialization requires prior registration and a compatible constructor that consumes <code>ObjectParseTree</code>.</li>
+        </ul>
+      </section>
+
+      <section id="serialization">
+        <h2>Serialization and object lifecycle</h2>
+        <div class="diagram" role="group" aria-labelledby="flow-title">
+          <div class="diagram-head">
+            <div><p class="diagram-kicker">Lifecycle flow</p><h3 id="flow-title">From construction to round-trip reconstruction</h3></div>
+            <p>Failure paths terminate in validation or serialization exceptions.</p>
+          </div>
+          <svg viewBox="0 0 1120 350" role="img" aria-labelledby="flow-svg-title flow-svg-desc">
+            <title id="flow-svg-title">Standard immutable object lifecycle flow</title>
+            <desc id="flow-svg-desc">An object is populated, normalized, validated, frozen and used. ObjectWriter writes a type hint and fields to JSON XML or a token buffer. Parser makes an ObjectParseTree, which uses the type registry and a parse-tree constructor to reconstruct and complete the object.</desc>
+            <defs>
+              <marker id="flow-arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="var(--adr-muted)"/></marker>
+            </defs>
+            <path class="edge" marker-end="url(#flow-arrow)" d="M160 80 L225 80"/>
+            <path class="edge" marker-end="url(#flow-arrow)" d="M355 80 L420 80"/>
+            <path class="edge" marker-end="url(#flow-arrow)" d="M550 80 L615 80"/>
+            <path class="edge" marker-end="url(#flow-arrow)" d="M745 80 L810 80"/>
+            <path class="edge" marker-end="url(#flow-arrow)" d="M930 110 C930 180 835 185 790 220"/>
+            <path class="edge" marker-end="url(#flow-arrow)" d="M690 255 L610 255"/>
+            <path class="edge" marker-end="url(#flow-arrow)" d="M500 255 L420 255"/>
+            <path class="edge" marker-end="url(#flow-arrow)" d="M310 255 L230 255"/>
+            <path class="edge" marker-end="url(#flow-arrow)" d="M120 220 C80 180 80 140 100 110"/>
+
+            <rect class="node-core" x="30" y="50" width="130" height="60" rx="30" stroke="var(--adr-line)"/><text class="flow-label" x="95" y="77" text-anchor="middle">populate fields</text><text class="flow-label" x="95" y="96" text-anchor="middle">constructor</text>
+            <rect class="node-core" x="225" y="50" width="130" height="60" rx="9" stroke="var(--adr-line)"/><text class="flow-label" x="290" y="85" text-anchor="middle">normalize()</text>
+            <rect class="node-core" x="420" y="50" width="130" height="60" rx="9" stroke="var(--adr-line)"/><text class="flow-label" x="485" y="85" text-anchor="middle">validate()</text>
+            <rect class="node-core" x="615" y="50" width="130" height="60" rx="9" stroke="var(--adr-line)"/><text class="flow-label" x="680" y="85" text-anchor="middle">freeze()</text>
+            <rect class="node-core" x="810" y="50" width="150" height="60" rx="30" stroke="var(--adr-line)"/><text class="flow-label" x="885" y="77" text-anchor="middle">complete immutable</text><text class="flow-label" x="885" y="96" text-anchor="middle">domain object</text>
+
+            <rect class="node" x="690" y="220" width="210" height="70" rx="9"/><text class="flow-label" x="795" y="248" text-anchor="middle">ObjectWriter + type hint</text><text class="flow-label" x="795" y="270" text-anchor="middle">JSON · XML · TokenBuffer</text>
+            <rect class="node" x="500" y="225" width="110" height="60" rx="9"/><text class="flow-label" x="555" y="260" text-anchor="middle">Parser</text>
+            <rect class="node" x="310" y="220" width="110" height="70" rx="9"/><text class="flow-label" x="365" y="250" text-anchor="middle">Object</text><text class="flow-label" x="365" y="270" text-anchor="middle">ParseTree</text>
+            <rect class="node" x="100" y="220" width="130" height="70" rx="9"/><text class="flow-label" x="165" y="247" text-anchor="middle">registered class +</text><text class="flow-label" x="165" y="269" text-anchor="middle">tree constructor</text>
+
+            <text class="edge-label" x="487" y="35" text-anchor="middle">complete()</text>
+            <text class="edge-label" x="545" y="315" text-anchor="middle">deserialize()</text>
+          </svg>
+        </div>
+        <p><code>ObjectWriter</code> delegates low-level tokens to Jackson-backed writers. <code>Parser</code> detects XML or JSON from the input prefix, or consumes a Jackson <code>TokenBuffer</code>, and builds a neutral tree. <code>ObjectParseTree</code> converts primitives, collections, maps, enums, stringables, and registered standard objects. <code>JimmutableBuilder</code> reuses this tree representation to clone and modify immutable objects without exposing setters on the object itself.</p>
+      </section>
+
+      <section id="cloud-runtime">
+        <h2>Cloud runtime and adapter selection</h2>
+        <p><code>CloudExecutionEnvironment.startup(...)</code> is the composition root. It validates application identity, creates Redis and the standard-object cache, selects adapters, registers core and cloud type names, starts heartbeat support, and installs the default uncaught-exception handler.</p>
+        <div class="diagram" role="group" aria-labelledby="cloud-title">
+          <div class="diagram-head">
+            <div><p class="diagram-kicker">High-level class diagram</p><h3 id="cloud-title">Ports, adapters, and composition root</h3></div>
+            <p>Stub adapters isolate unit tests from external services.</p>
+          </div>
+          <svg viewBox="0 0 1140 690" role="img" aria-labelledby="cloud-svg-title cloud-svg-desc">
+            <title id="cloud-svg-title">Cloud execution environment class diagram</title>
+            <desc id="cloud-svg-desc">CloudExecutionEnvironment owns six service interfaces. Search has Elasticsearch and stub adapters. Storage has filesystem, S3, and stub adapters. Queue, signal and cache use Redis or stubs. Email uses SES or a stub.</desc>
+            <defs>
+              <marker id="cloud-diamond" markerWidth="14" markerHeight="14" refX="3" refY="6" orient="auto"><path d="M0,6 L6,0 L12,6 L6,12 z" fill="var(--adr-ink)"/></marker>
+              <marker id="cloud-triangle" markerWidth="12" markerHeight="12" refX="10" refY="5" orient="auto"><path d="M0,0 L0,10 L10,5 z" fill="var(--adr-surface)" stroke="var(--adr-muted)"/></marker>
+            </defs>
+            <path class="edge" marker-start="url(#cloud-diamond)" d="M570 145 L170 220"/>
+            <path class="edge" marker-start="url(#cloud-diamond)" d="M570 145 L355 220"/>
+            <path class="edge" marker-start="url(#cloud-diamond)" d="M570 145 L540 220"/>
+            <path class="edge" marker-start="url(#cloud-diamond)" d="M570 145 L725 220"/>
+            <path class="edge" marker-start="url(#cloud-diamond)" d="M570 145 L910 220"/>
+            <path class="edge" marker-start="url(#cloud-diamond)" d="M570 145 L1065 220"/>
+
+            <path class="edge edge-dashed" marker-end="url(#cloud-triangle)" d="M115 500 L155 285"/>
+            <path class="edge edge-dashed" marker-end="url(#cloud-triangle)" d="M225 500 L170 285"/>
+            <path class="edge edge-dashed" marker-end="url(#cloud-triangle)" d="M325 500 L338 285"/>
+            <path class="edge" marker-end="url(#cloud-triangle)" d="M420 500 L356 285"/>
+            <path class="edge edge-dashed" marker-end="url(#cloud-triangle)" d="M520 500 L372 285"/>
+            <path class="edge edge-dashed" marker-end="url(#cloud-triangle)" d="M627 500 L540 285"/>
+            <path class="edge edge-dashed" marker-end="url(#cloud-triangle)" d="M627 575 C620 430 575 340 550 285"/>
+            <path class="edge edge-dashed" marker-end="url(#cloud-triangle)" d="M690 500 L725 285"/>
+            <path class="edge edge-dashed" marker-end="url(#cloud-triangle)" d="M790 500 L725 285"/>
+            <path class="edge edge-dashed" marker-end="url(#cloud-triangle)" d="M875 500 L910 285"/>
+            <path class="edge edge-dashed" marker-end="url(#cloud-triangle)" d="M955 500 L910 285"/>
+            <path class="edge edge-dashed" marker-end="url(#cloud-triangle)" d="M1080 500 L1060 285"/>
+            <path class="edge edge-dashed" marker-end="url(#cloud-triangle)" d="M1080 575 C1125 430 1110 340 1070 285"/>
+
+            <rect class="node-cloud" x="380" y="40" width="380" height="105" rx="10" stroke="var(--adr-line)"/>
+            <text class="stereo" x="570" y="64" text-anchor="middle">&lt;&lt;singleton composition root&gt;&gt;</text>
+            <text class="type" x="570" y="88" text-anchor="middle">CloudExecutionEnvironment</text>
+            <line class="divider" x1="380" y1="100" x2="760" y2="100"/>
+            <text x="400" y="123">+ startup(appId, serviceId, EnvironmentType)</text>
+
+            <g>
+              <rect class="node-cloud" x="95" y="220" width="150" height="65" rx="9" stroke="var(--adr-line)"/><text class="stereo" x="170" y="242" text-anchor="middle">&lt;&lt;interface&gt;&gt;</text><text class="type" x="170" y="265" text-anchor="middle">ISearch</text>
+              <rect class="node-cloud" x="280" y="220" width="150" height="65" rx="9" stroke="var(--adr-line)"/><text class="stereo" x="355" y="242" text-anchor="middle">&lt;&lt;interface&gt;&gt;</text><text class="type" x="355" y="265" text-anchor="middle">IStorage</text>
+              <rect class="node-cloud" x="465" y="220" width="150" height="65" rx="9" stroke="var(--adr-line)"/><text class="stereo" x="540" y="242" text-anchor="middle">&lt;&lt;interface&gt;&gt;</text><text class="type" x="540" y="265" text-anchor="middle">IQueue</text>
+              <rect class="node-cloud" x="650" y="220" width="150" height="65" rx="9" stroke="var(--adr-line)"/><text class="stereo" x="725" y="242" text-anchor="middle">&lt;&lt;interface&gt;&gt;</text><text class="type" x="725" y="265" text-anchor="middle">ISignal</text>
+              <rect class="node-cloud" x="835" y="220" width="150" height="65" rx="9" stroke="var(--adr-line)"/><text class="stereo" x="910" y="242" text-anchor="middle">&lt;&lt;interface&gt;&gt;</text><text class="type" x="910" y="265" text-anchor="middle">IEmail</text>
+              <rect class="node-cloud" x="1000" y="220" width="125" height="65" rx="9" stroke="var(--adr-line)"/><text class="stereo" x="1062" y="242" text-anchor="middle">&lt;&lt;interface&gt;&gt;</text><text class="type" x="1062" y="265" text-anchor="middle">ICache</text>
+            </g>
+
+            <g>
+              <rect class="node-adapter" x="45" y="500" width="135" height="58" rx="8" stroke="var(--adr-line)"/><text class="type" x="112" y="534" text-anchor="middle">Elasticsearch</text>
+              <rect class="node" x="185" y="500" width="85" height="58" rx="8"/><text class="type" x="227" y="534" text-anchor="middle">StubSearch</text>
+              <rect class="node-adapter" x="280" y="500" width="105" height="58" rx="8" stroke="var(--adr-line)"/><text class="type" x="332" y="525" text-anchor="middle">StorageDev</text><text x="332" y="545" text-anchor="middle">LocalFileSystem</text>
+              <rect class="node-adapter" x="395" y="500" width="85" height="58" rx="8" stroke="var(--adr-line)"/><text class="type" x="437" y="534" text-anchor="middle">StorageS3</text>
+              <rect class="node" x="490" y="500" width="85" height="58" rx="8"/><text class="type" x="532" y="534" text-anchor="middle">StubStorage</text>
+              <rect class="node-adapter" x="585" y="500" width="85" height="58" rx="8" stroke="var(--adr-line)"/><text class="type" x="627" y="534" text-anchor="middle">QueueRedis</text>
+              <rect class="node-adapter" x="680" y="500" width="90" height="58" rx="8" stroke="var(--adr-line)"/><text class="type" x="725" y="534" text-anchor="middle">SignalRedis</text>
+              <rect class="node" x="780" y="500" width="80" height="58" rx="8"/><text class="type" x="820" y="534" text-anchor="middle">SignalStub</text>
+              <rect class="node-adapter" x="870" y="500" width="80" height="58" rx="8" stroke="var(--adr-line)"/><text class="type" x="910" y="534" text-anchor="middle">SESClient</text>
+              <rect class="node" x="960" y="500" width="75" height="58" rx="8"/><text class="type" x="997" y="534" text-anchor="middle">EmailStub</text>
+              <rect class="node-adapter" x="1045" y="500" width="70" height="58" rx="8" stroke="var(--adr-line)"/><text class="type" x="1080" y="525" text-anchor="middle">Cache</text><text x="1080" y="545" text-anchor="middle">Redis</text>
+              <rect class="node" x="585" y="575" width="85" height="45" rx="8"/><text class="type" x="627" y="603" text-anchor="middle">QueueStub</text>
+              <rect class="node" x="1037" y="575" width="85" height="45" rx="8"/><text class="type" x="1079" y="603" text-anchor="middle">CacheStub</text>
+            </g>
+
+            <rect class="node-adapter" x="330" y="635" width="480" height="42" rx="21" stroke="var(--adr-line)"/>
+            <text class="flow-label" x="570" y="661" text-anchor="middle">LowLevelRedisDriver shared by cache, queue, and signal adapters</text>
+          </svg>
+          <div class="legend" aria-label="Cloud diagram legend">
+            <span><i></i> ownership or inheritance</span>
+            <span><i class="dashed"></i> interface realization</span>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="matrix">
+            <thead><tr><th>Environment</th><th>Storage</th><th>Search</th><th>Cache / queue / signal</th><th>Email</th></tr></thead>
+            <tbody>
+              <tr><td>DEV</td><td>Local filesystem</td><td>Elasticsearch REST</td><td>Redis</td><td>AWS SES</td></tr>
+              <tr><td>INTEGRATION</td><td>Local filesystem</td><td>Elasticsearch REST</td><td>Redis</td><td>AWS SES</td></tr>
+              <tr><td>STAGING</td><td>S3, staging-suffixed application bucket</td><td>Elasticsearch REST</td><td>Redis</td><td>AWS SES</td></tr>
+              <tr><td>PRODUCTION</td><td>S3</td><td>Elasticsearch REST</td><td>Redis</td><td>AWS SES</td></tr>
+              <tr><td>STUB</td><td>StubStorage</td><td>StubSearch</td><td>QueueStub / SignalStub / CacheStub</td><td>EmailStub</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Storage and search participation</h3>
+        <p>A <code>Storable</code> exposes a <code>Kind</code>, <code>ObjectId</code>, serialized form, and derived <code>ObjectIdStorageKey</code>. <code>Storage</code> adds caching, scanning, and threaded handlers around the concrete local-filesystem or S3 primitives. An <code>Indexable</code> exposes an index definition, document ID, and field-writing callback. One domain type can implement both—as <code>StandardChangeLogEntry</code> does—without coupling the core module to cloud infrastructure.</p>
+      </section>
+
+      <section id="packages">
+        <h2>Package responsibility map</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Area</th><th>Primary responsibility</th><th>Representative types</th></tr></thead>
+            <tbody>
+              <tr><td><code>core.objects</code></td><td>Domain lifecycle, immutable/value abstractions, builder.</td><td><code>StandardObject</code>, <code>StandardImmutableObject</code>, <code>Stringable</code>, <code>JimmutableBuilder</code></td></tr>
+              <tr><td><code>core.serialization</code></td><td>Stable names, field definitions, formats, type registration.</td><td><code>TypeName</code>, <code>FieldDefinition</code>, <code>ObjectWriter</code>, <code>ObjectParseTree</code></td></tr>
+              <tr><td><code>core.fields</code></td><td>Freezable wrappers for Java lists, sets, maps, and concurrent variants.</td><td><code>FieldCollection</code>, <code>FieldMap</code>, <code>FieldArrayList</code></td></tr>
+              <tr><td><code>core.decks</code></td><td>Immutable collection-shaped domain values.</td><td><code>StandardImmutableListDeck</code>, <code>StandardImmutableSetDeck</code>, <code>StandardImmutableMapDeck</code></td></tr>
+              <tr><td><code>core.threading</code></td><td>Operation pools, monitors, expiration/LRU caches, daemon factories.</td><td><code>OperationRunnable</code>, <code>OperationPool</code>, <code>ExpirationCache</code></td></tr>
+              <tr><td><code>cloud.storage</code></td><td>Object storage port, key model, S3/local adapters, immutable-object cache.</td><td><code>IStorage</code>, <code>Storage</code>, <code>StorageS3</code>, <code>Storable</code></td></tr>
+              <tr><td><code>cloud.elasticsearch</code></td><td>Index definitions, document mapping, search, bulk upsert, reindex.</td><td><code>ISearch</code>, <code>ElasticSearchRESTClient</code>, <code>Indexable</code></td></tr>
+              <tr><td><code>cloud.cache</code> / <code>messaging</code></td><td>Redis-backed cache, queues, and pub/sub signals with stubs.</td><td><code>ICache</code>, <code>IQueue</code>, <code>ISignal</code>, <code>LowLevelRedisDriver</code></td></tr>
+              <tr><td><code>cloud.servlets</code> / <code>servlet_utils</code></td><td>Reusable servlet workflows and standard immutable JSON response/request objects.</td><td><code>DoGetGeneric</code>, <code>DoSearch</code>, <code>JSONServletResponse</code></td></tr>
+              <tr><td><code>cloud.email</code></td><td>Email contract and SES/stub implementations.</td><td><code>IEmail</code>, <code>SESClient</code>, <code>EmailStub</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="consequences">
+        <h2>Consequences and trade-offs</h2>
+        <h3>Benefits</h3>
+        <ul>
+          <li>Immutable domain types are easy to share across threads, caches, queues, and API responses after completion.</li>
+          <li>The same explicit field contract drives JSON/XML persistence, deep cloning, builder edits, and messaging payloads.</li>
+          <li>Stable type names decouple persisted data from Java package refactors.</li>
+          <li>Infrastructure ports keep most application code independent of S3, Redis, Elasticsearch, and SES client APIs.</li>
+          <li>Stub startup provides a fast service-free test mode; integration tests remain opt-in.</li>
+        </ul>
+        <h3>Costs</h3>
+        <ul>
+          <li>Each domain type carries repetitive constructor, writer, comparison, equality, normalization, validation, freeze, and registration code.</li>
+          <li>Manual registration and explicit field readers make schema evolution safe only when developers maintain compatibility deliberately.</li>
+          <li>The global execution environment reduces wiring ceremony but introduces process-wide state and startup-order coupling.</li>
+          <li>The cloud JAR combines HTTP utilities, persistence, search, messaging, email, and operational helpers, producing a broad dependency surface.</li>
+        </ul>
+
+        <h3>Alternatives considered by this record</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Alternative</th><th>Why it is not the current baseline</th></tr></thead>
+            <tbody>
+              <tr><td>Reflection/annotation-based serialization</td><td>Would reduce boilerplate, but weakens the repository’s explicit wire contract and stable simple-name registry unless carefully constrained.</td></tr>
+              <tr><td>Dependency-injection container</td><td>Would improve instance scoping and test substitution, but changes the startup and access model used throughout cloud code.</td></tr>
+              <tr><td>One module per infrastructure capability</td><td>Would narrow dependencies and release units, but requires a compatibility and migration plan for the existing single cloud artifact.</td></tr>
+              <tr><td>Java records plus a general object mapper</td><td>Would simplify value objects, but does not directly reproduce the custom normalization, validation, freezing, type-name, XML, and builder semantics.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="risks">
+        <h2>Observed risks and architectural debt</h2>
+        <div class="risk-grid">
+          <div class="risk"><h3>Reactor version split</h3><p><code>cloud</code> declares <code>core:0.0.18</code> while the local core module is <code>0.0.19-SNAPSHOT</code>. A root reactor build therefore does not represent a single aligned source baseline.</p></div>
+          <div class="risk"><h3>Parent POM split</h3><p>Active modules disable parent relative paths and inherit external <code>com.rws:rws-parent:0.0.6</code>. The checked-in <code>rws-parent:0.0.7-SNAPSHOT</code> is not the active parent.</p></div>
+          <div class="risk"><h3>Duplicate Elasticsearch client</h3><p>The cloud POM declares the same <code>elasticsearch-java</code> GAV twice at versions 8.17.0 and 8.19.12, making effective dependency resolution less obvious.</p></div>
+          <div class="risk"><h3>Global mutable startup state</h3><p>The environment, identifiers, adapters, and object cache are static. Tests in one JVM must control ordering, and application code cannot naturally host multiple environments.</p></div>
+          <div class="risk"><h3>Class-initialization coupling</h3><p>Some static domain metadata, including <code>StandardChangeLogEntry.INDEX_DEFINITION</code>, reads the current environment during class initialization.</p></div>
+          <div class="risk"><h3>Manual type registry</h3><p>New persisted types are not deserializable until explicitly added to a register. Duplicate registration is allowed, so name collisions resolve by last registration.</p></div>
+          <div class="risk"><h3>Broad cloud release unit</h3><p>Servlet, AWS, Elasticsearch, Redis, Apache POI, CSV, logging, and utility dependencies ship together even when a consumer needs only one capability.</p></div>
+          <div class="risk"><h3>Build-policy mismatch</h3><p>The root POM manages Java 8 compiler settings while each active module directly compiles for Java 17; the direct module configuration currently wins.</p></div>
+        </div>
+      </section>
+
+      <section id="guardrails">
+        <h2>Guardrails and follow-up decisions</h2>
+        <ol>
+          <li>Keep <code>core</code> free of cloud-provider, servlet, Redis, Elasticsearch, and AWS dependencies.</li>
+          <li>For every new immutable type, test completion, post-freeze mutation paths, JSON/XML round trips, comparison/equality, and type registration.</li>
+          <li>Treat <code>TypeName</code>, field names, <code>Kind</code>, storage keys, and index definitions as versioned external contracts.</li>
+          <li>Call <code>CloudExecutionEnvironment.startup</code> before loading environment-dependent classes; prefer passing a port into new code where practical.</li>
+          <li>Align module versions and parent resolution in a dedicated build ADR before changing release behavior.</li>
+          <li>Resolve the duplicate Elasticsearch client declaration and record one compatibility matrix for Java, Jetty, Elasticsearch, Redis/Jedis, and AWS SDK.</li>
+          <li>Consider separate cloud capability modules only through a compatibility-preserving migration ADR.</li>
+        </ol>
+      </section>
+
+      <section id="evidence">
+        <h2>Evidence and traceability</h2>
+        <p>This record was derived from production source, Maven configuration, tests, and recent repository history. Counts exclude generated build output and treat archived code separately.</p>
+        <div class="evidence">
+          <details open>
+            <summary>Core lifecycle and serialization</summary>
+            <p class="path-list"><code>core/src/main/java/org/jimmutable/core/objects/StandardObject.java</code><br><code>core/src/main/java/org/jimmutable/core/objects/StandardImmutableObject.java</code><br><code>core/src/main/java/org/jimmutable/core/objects/JimmutableBuilder.java</code><br><code>core/src/main/java/org/jimmutable/core/serialization/writer/ObjectWriter.java</code><br><code>core/src/main/java/org/jimmutable/core/serialization/reader/ObjectParseTree.java</code><br><code>core/src/main/java/org/jimmutable/core/serialization/reader/Parser.java</code></p>
+          </details>
+          <details>
+            <summary>Cloud composition and infrastructure ports</summary>
+            <p class="path-list"><code>cloud/src/main/java/org/jimmutable/cloud/CloudExecutionEnvironment.java</code><br><code>cloud/src/main/java/org/jimmutable/cloud/storage/IStorage.java</code><br><code>cloud/src/main/java/org/jimmutable/cloud/elasticsearch/ISearch.java</code><br><code>cloud/src/main/java/org/jimmutable/cloud/cache/ICache.java</code><br><code>cloud/src/main/java/org/jimmutable/cloud/messaging/queue/IQueue.java</code><br><code>cloud/src/main/java/org/jimmutable/cloud/messaging/signal/ISignal.java</code></p>
+          </details>
+          <details>
+            <summary>Build and test policy</summary>
+            <p class="path-list"><code>pom.xml</code><br><code>core/pom.xml</code><br><code>cloud/pom.xml</code><br><code>rws-parent/pom.xml</code><br><code>core/src/test/java</code><br><code>cloud/src/test/java</code></p>
+          </details>
+        </div>
+      </section>
+
+      <footer>
+        ADR-001 documents the architecture as found; it does not itself authorize module, dependency, wire-format, or runtime-wiring changes.
+      </footer>
+    </article>
+  </div>
+</main>
+</body>
+</html>
