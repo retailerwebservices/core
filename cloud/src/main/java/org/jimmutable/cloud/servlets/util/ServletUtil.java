@@ -8,19 +8,18 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
-import javax.servlet.MultipartConfigElement;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.MultipartConfigElement;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.fileupload2.core.FileItemInput;
+import org.apache.commons.fileupload2.core.FileItemInputIterator;
+import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
+import org.eclipse.jetty.ee10.servlet.ServletContextRequest;
 
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.entity.ContentType;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
-import org.eclipse.jetty.server.Request;
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.elasticsearch.Indexable;
 import org.jimmutable.cloud.servlet_utils.common_objects.GeneralResponseError;
@@ -265,9 +264,9 @@ public class ServletUtil
 	{
 		RequestPageData page_data = new RequestPageData();
 
-		if ( ServletFileUpload.isMultipartContent(request) )
+		if ( JakartaServletFileUpload.isMultipartContent(request) )
 		{
-			request.setAttribute(Request.MULTIPART_CONFIG_ELEMENT, MULTI_PART_CONFIG);
+			request.setAttribute(ServletContextRequest.MULTIPART_CONFIG_ELEMENT, MULTI_PART_CONFIG);
 			page_data = getDataFromMultipartForm(request);
 		}
 		else
@@ -286,23 +285,22 @@ public class ServletUtil
 		String raw_json = "";
 
 		// Create a new file upload handler
-		ServletFileUpload upload = new ServletFileUpload();
-
+		JakartaServletFileUpload upload = new JakartaServletFileUpload();
 		// Parse the request
 
 		InputStream stream = null;
 		try
 		{
 
-			FileItemIterator iter = upload.getItemIterator(request);
+			FileItemInputIterator iter = upload.getItemIterator(request);
 
 			while ( iter.hasNext() )
 			{
-				FileItemStream item = iter.next();
+				FileItemInput item = iter.next();
 
 				String field_name = item.getFieldName();
 				file_name = item.getName();
-				stream = item.openStream();
+				stream = item.getInputStream();
 				if ( item.isFormField() )
 				{
 					// JSON data
@@ -331,7 +329,7 @@ public class ServletUtil
 				stream.close();
 			}
 		}
-		catch ( FileUploadException | IOException e )
+		catch ( IOException e )
 		{
 			logger.error("Error getting multipart data", e);
 			// Replace page with an empty one
@@ -378,15 +376,14 @@ public class ServletUtil
 	 * 
 	 * @param request
 	 *            HttpServletRequest
-	 * @param default_value
 	 *            Default string if reading fails
 	 * @return RequestPageData
 	 */
 	public static void handlePageDataFromPost( HttpServletRequest request, PageDataHandler handler )
 	{
-		if ( ServletFileUpload.isMultipartContent(request) )
+		if ( JakartaServletFileUpload.isMultipartContent(request) )
 		{
-			request.setAttribute(Request.MULTIPART_CONFIG_ELEMENT, MULTI_PART_CONFIG);
+			request.setAttribute(ServletContextRequest.MULTIPART_CONFIG_ELEMENT, MULTI_PART_CONFIG);
 			parseDataFromMultipartFormWithHandler(request, handler);
 		}
 		else
@@ -418,7 +415,7 @@ public class ServletUtil
 		String raw_json = "";
 
 		// Create a new file upload handler
-		ServletFileUpload upload = new ServletFileUpload();
+		JakartaServletFileUpload upload = new JakartaServletFileUpload();
 
 		// Parse the request
 
@@ -426,15 +423,15 @@ public class ServletUtil
 		try
 		{
 
-			FileItemIterator iter = upload.getItemIterator(request);
+			FileItemInputIterator iter = upload.getItemIterator(request);
 
 			while ( iter.hasNext() )
 			{
-				FileItemStream item = iter.next();
+				FileItemInput item = iter.next();
 
 				String field_name = item.getFieldName();
 				file_name = item.getName();
-				stream = item.openStream();
+				stream = item.getInputStream();
 				if ( item.isFormField() )
 				{
 					// JSON data
@@ -459,7 +456,7 @@ public class ServletUtil
 				stream.close();
 			}
 		}
-		catch ( FileUploadException | IOException e )
+		catch ( IOException e )
 		{
 			logger.error("Error getting multipart data", e);
 		}

@@ -11,7 +11,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.eclipse.jetty.util.ConcurrentHashSet;
+import java.util.concurrent.ConcurrentHashMap;
 import org.jimmutable.cloud.ApplicationId;
 import org.jimmutable.cloud.StubTest;
 import org.jimmutable.cloud.cache.redis.LowLevelRedisDriver;
@@ -219,8 +219,7 @@ public class LowLevelRedisDriverTest extends StubTest
 
 	static private class BlockingTestListener implements SignalListener, QueueListener
 	{
-		private Set<ObjectId> ids = new ConcurrentHashSet<>();
-
+		private Set<ObjectId> ids = ConcurrentHashMap.newKeySet();
 		private AtomicInteger currently_working = new AtomicInteger();
 
 		private long sleep_time;
