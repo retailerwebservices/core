@@ -1,8 +1,8 @@
 package org.jimmutable.cloud.servlets.common;
 
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.jimmutable.cloud.CloudExecutionEnvironment;
 import org.jimmutable.cloud.servlet_utils.common_objects.GeneralResponseError;
